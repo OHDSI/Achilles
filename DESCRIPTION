@@ -1,0 +1,13 @@
+Package: OSCAR
+Type: Package
+Title: Creates descriptive statistics summary for an entire OMOP CDM instance.
+Version: 1.0
+Date: 2014-04-03
+Author: Patrick Ryan, Martijn Schuemie
+Maintainer: Patrick Ryan <ryan@ohdsi.org>
+Description: creates descriptive statistics summary for an entire OMOP CDM
+    instance.
+Depends:
+    SQLRender,
+    DatabaseConnector
+License: Apache License
