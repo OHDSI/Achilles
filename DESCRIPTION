@@ -5,6 +5,7 @@ Version: 1.0
 Date: 2014-04-03
 Author: Patrick Ryan, Martijn Schuemie
 Maintainer: Patrick Ryan <ryan@ohdsi.org>
+LazyData: true
 Description: creates descriptive statistics summary for an entire OMOP CDM
     instance.
 Depends:

@@ -27,30 +27,32 @@
 #'
 #' @details
 #' PATRICK HOMEWORK:   complete details
-#' This function loads the appropriate database driver, which is included in the library, and connects to the database server.
+#' 
 #' 
 #' @param connectionDetails	An R object of type ConnectionDetail (details for the function that contains server info, database type, optionally username/password, port)
 #' @param cdmSchema			string name of databsae schema that contains OMOP CDM and vocabulary
 #' @param resultsSchema		string name of database schema that we can write results to
 #' @param sourceName		string name of the database, as recorded in results
+#' @param analysisIds		(optional) a vector containing the set of OSCAR analysisIds for which results will be generated.
+#' If not specified, all analyses will be executed.
 #' 
-#' @return A connectionDetails list pointing to the database containing the results
+#' @return An object of type \code{oscarResults} containing details for connecting to the database containing the results 
 #' @examples \dontrun{
 #'   connectionDetails <- createConnectionDetails(dbms="sql server", server="RNDUSRDHIT07.jnj.com")
-#'   resultsConnectionDetails <- oscar(connectionDetails, "cdm4_sim", "scratch", "TestDB")
-#'   plotPopulation(resultConnectionDetails)
+#'   oscarResults <- oscar(connectionDetails, "cdm4_sim", "scratch", "TestDB")
+#'   plot(oscarResults, "population")
 #' }
 #' @export
-oscar <- function (connectionDetails, cdmSchema, resultsSchema, sourceName){
+oscar <- function (connectionDetails, cdmSchema, resultsSchema, sourceName, analysisIds){
+	if (missing(analysisIds))
+		analysisIds = c() #Todo: add ids
 	
-	# load parameterized SQL
 	pathToSql <- system.file("sql", "OSCARparameterizedSQL.txt", package="OSCAR")
 	parameterizedSql <- readChar(pathToSql,file.info(pathToSql)$size)
-	
-	#render using SQLrender into a R string object
+
 	renderedSql <- renderSql(parameterizedSql[1], CDM_schema = cdmSchema, results_schema = resultsSchema, source_name = sourceName)$sql
 	
-	#connect to database
+
 	conn <- connectUsingConnectionDetails(connectionDetails)
 	
 	writeLines("Executing large query. This could take a while")
@@ -59,7 +61,10 @@ oscar <- function (connectionDetails, cdmSchema, resultsSchema, sourceName){
 	
 	dbDisconnect(conn)
 	
-	resultsConnectionDetails <- list(connectionDetails)
+	resultsConnectionDetails <- connectionDetails
 	resultsConnectionDetails$schema = resultsSchema
-	resultsConnectionDetails
+	
+	result <- list(resultsConnectionDetails = resultsConnectionDetails, call = match.call())
+	class(result) <- "oscarResults"
+	result
 }
