@@ -10,5 +10,6 @@ Description: creates descriptive statistics summary for an entire OMOP CDM
     instance.
 Depends:
     SqlRender,
-    DatabaseConnector
+    DatabaseConnector,
+    rjson
 License: Apache License
