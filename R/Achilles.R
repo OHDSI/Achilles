@@ -20,6 +20,54 @@
 # @author Martijn Schuemie
 # @author Patrick Ryan
 
+executeSql <- function(conn, dbms, sql){
+  sqlStatements = splitSql(sql)
+  progressBar <- txtProgressBar()
+  for (i in 1:length(sqlStatements)){
+    sqlStatement <- sqlStatements[i]
+    tryCatch ({	  
+      dbSendUpdate(conn, sqlStatement)
+    } , error = function(err) {
+      writeLines(paste("Error executing SQL:",err))
+      
+      #Write error report:
+      filename <- paste(getwd(),"/errorReport.txt",sep="")
+      sink(filename)
+      error <<- err
+      cat("DBMS:\n")
+      cat(dbms)
+      cat("\n\n")
+      cat("Error:\n")
+      cat(err$message)
+      cat("\n\n")
+      cat("SQL:\n")
+      cat(sqlStatement)
+      sink()
+      
+      writeLines(paste("An error report has been created at ", filename))
+      break
+    })
+    setTxtProgressBar(progressBar, i/length(sqlStatements))
+  }
+  close(progressBar)
+}
+
+renderAndTranslate <- function(sqlFilename, packageName, dbms, ...){
+  pathToSql <- system.file(paste("sql/",gsub(" ","_",dbms),sep=""), sqlFilename, package=packageName)
+  mustTranslate <- !file.exists(pathToSql)
+  if (mustTranslate) # If DBMS-specific code does not exists, load SQL Server code and translate after rendering
+    pathToSql <- system.file(paste("sql/","sql_server",sep=""), sqlFilename, package=packageName)      
+  parameterizedSql <- readChar(pathToSql,file.info(pathToSql)$size)  
+  
+  renderedSql <- renderSql(parameterizedSql[1], ...)$sql
+  
+  if (mustTranslate)
+    renderedSql <- translateSql(renderedSql, "sql server", dbms)$sql
+  
+  renderedSql
+}
+
+
 #' @title achilles
 #'
 #' @description
@@ -43,27 +91,37 @@
 #'   plot(achillesResults, "population")
 #' }
 #' @export
-achilles <- function (connectionDetails, cdmSchema, resultsSchema, sourceName, analysisIds){
+achilles <- function (connectionDetails, cdmSchema, resultsSchema, sourceName = "", analysisIds){
 	if (missing(analysisIds))
-		analysisIds = c() #Todo: add ids
+		analysisIds = all_analysis_ids
 	
-	pathToSql <- system.file("sql/sql_server", "Achilles.sql", package="Achilles")
-	parameterizedSql <- readChar(pathToSql,file.info(pathToSql)$size)
-
-	renderedSql <- renderSql(parameterizedSql[1], CDM_schema = cdmSchema, results_schema = resultsSchema, source_name = sourceName)$sql
+	renderedSql <- renderAndTranslate(sqlFilename = "Achilles.sql",
+	                                  packageName = "Achilles",
+                                    dbms = connectionDetails$dbms,
+	                                  CDM_schema = cdmSchema, 
+                                    results_schema = resultsSchema, 
+                                    source_name = sourceName, 
+                                    list_of_analysis_ids = analysisIds
+                                    )
+  
+	conn <- connect(connectionDetails)
 	
-	conn <- connectUsingConnectionDetails(connectionDetails)
-	
-	writeLines("Executing large query. This could take a while")
-	dbSendUpdate(conn,renderedSql)
+	writeLines("Executing multiple queries. This could take a while")
+	executeSql(conn,connectionDetails$dbms,renderedSql)
 	writeLines(paste("Done. Results can now be found in",resultsSchema))
 	
 	dbDisconnect(conn)
 	
 	resultsConnectionDetails <- connectionDetails
 	resultsConnectionDetails$schema = resultsSchema
-	
-	result <- list(resultsConnectionDetails = resultsConnectionDetails, call = match.call())
+	result <- list(resultsConnectionDetails = resultsConnectionDetails, 
+                 resultsTable = "ACHILLES_results",
+                 resultsDistributionTable,"ACHILLES_results_dist",
+                 analysis_table = "ACHILLES_analysis",
+                 sourceName = sourceName,
+                 analysisIds = analysisIds,
+                 sql = renderedSql,
+                 call = match.call())
 	class(result) <- "achillesResults"
 	result
 }

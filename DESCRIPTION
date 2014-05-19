@@ -1,4 +1,4 @@
-Package: OSCAR
+Package: Achilles
 Type: Package
 Title: Creates descriptive statistics summary for an entire OMOP CDM instance.
 Version: 1.0
@@ -9,6 +9,7 @@ LazyData: true
 Description: creates descriptive statistics summary for an entire OMOP CDM
     instance.
 Depends:
-    SQLRender,
-    DatabaseConnector
+    SqlRender,
+    DatabaseConnector,
+    rjson
 License: Apache License

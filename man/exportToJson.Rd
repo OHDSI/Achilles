@@ -1,0 +1,36 @@
+\name{exportToJson}
+\alias{exportToJson}
+\title{exportToJson}
+\usage{
+exportToJson(connectionDetails, cdmSchema, outputPath)
+}
+\arguments{
+  \item{connectionDetails}{An R object of type
+  ConnectionDetail (details for the function that contains
+  server info, database type, optionally username/password,
+  port)}
+
+  \item{cdmSchema}{string name of databsae schema that
+  contains OMOP CDM and vocabulary}
+
+  \item{outputPath}{a folder location to save the JSON
+  files}
+}
+\value{
+none
+}
+\description{
+\code{exportToJson} Exports Achilles statistics into a JSON
+form for reports.
+}
+\details{
+Creates individual files for each report found in
+Achilles.Web
+}
+\examples{
+\dontrun{
+  connectionDetails <- createConnectionDetails(dbms="sql server", server="RNDUSRDHIT07.jnj.com")
+  exportToJson(connectionDetails, "cdm4_sim", "C:/achilles.web/data/cdm_name/)
+}
+}
+

@@ -3,7 +3,7 @@
 \title{achilles}
 \usage{
 achilles(connectionDetails, cdmSchema, resultsSchema, sourceName = "",
-  analysisIds, smallcellcount = 5)
+  analysisIds)
 }
 \arguments{
   \item{connectionDetails}{An R object of type
@@ -39,7 +39,7 @@ PATRICK HOMEWORK: complete details
 \examples{
 \dontrun{
   connectionDetails <- createConnectionDetails(dbms="sql server", server="RNDUSRDHIT07.jnj.com")
-  achillesResults <- achilles(connectionDetails, cdmSchema="cdm4_sim", resultsSchema="scratch")
+  achillesResults <- achilles(connectionDetails, "cdm4_sim", "scratch", "TestDB")
   plot(achillesResults, "population")
 }
 }
