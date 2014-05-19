@@ -42,6 +42,7 @@
 exportToJson <- function (connectionDetails, cdmSchema, outputPath)
 {
   generatePersonReport(connectionDetails, cdmSchema, outputPath)
+  generateObservationPeriodReport(connectionDetails, cdmSchema, outputPath)
 }
 
 generatePersonReport <- function(connectionDetails, cdmSchema, outputPath)
@@ -53,10 +54,14 @@ generatePersonReport <- function(connectionDetails, cdmSchema, outputPath)
   # a.  Visualization: Table
   # b.	Row #1:  CDM source name
   # c.	Row #2:  # of persons
-  pathToSql <- system.file("sql/sql_server", "1_Population.sql", package="Achilles")
-  parameterizedSql <- readChar(pathToSql,file.info(pathToSql)$size)
-  renderedSql <- renderSql(parameterizedSql[1], CDM_schema = cdmSchema)$sql
-  personSummaryData <- fetch(dbSendQuery(conn,renderedSql), n=-1)
+  
+  renderedSql <- renderAndTranslate(sqlFilename = "export/person/population.sql",
+                                    packageName = "Achilles",
+                                    dbms = connectionDetails$dbms,
+                                    CDM_schema = cdmSchema
+  )
+  
+  personSummaryData <- dbGetQuery(conn,renderedSql)
   
   output$Summary = personSummaryData
   
@@ -64,10 +69,12 @@ generatePersonReport <- function(connectionDetails, cdmSchema, outputPath)
   # a.   Visualization: Pie
   # b.	Category:  Gender
   # c.	Value:  % of persons  
-  pathToSql <- system.file("sql/sql_server", "2_Gender.sql", package="Achilles")
-  parameterizedSql <- readChar(pathToSql,file.info(pathToSql)$size)
-  renderedSql <- renderSql(parameterizedSql[1], CDM_schema = cdmSchema)$sql
-  genderData <- fetch(dbSendQuery(conn,renderedSql), n=-1)
+  renderedSql <- renderAndTranslate(sqlFilename = "export/person/gender.sql",
+                                    packageName = "Achilles",
+                                    dbms = connectionDetails$dbms,
+                                    CDM_schema = cdmSchema
+  )
+  genderData <- dbGetQuery(conn,renderedSql)
   
   output$GenderData = genderData
   
@@ -75,10 +82,12 @@ generatePersonReport <- function(connectionDetails, cdmSchema, outputPath)
   # a.  Visualization: Pie
   # b.	Category: Race
   # c.	Value: % of persons
-  pathToSql <- system.file("sql/sql_server", "3_Race.sql", package="Achilles")
-  parameterizedSql <- readChar(pathToSql,file.info(pathToSql)$size)
-  renderedSql <- renderSql(parameterizedSql[1], CDM_schema = cdmSchema)$sql
-  raceData <- fetch(dbSendQuery(conn,renderedSql), n=-1)
+  renderedSql <- renderAndTranslate(sqlFilename = "export/person/race.sql",
+                                    packageName = "Achilles",
+                                    dbms = connectionDetails$dbms,
+                                    CDM_schema = cdmSchema
+  )
+  raceData <- dbGetQuery(conn,renderedSql)
   
   output$RaceData = raceData
   
@@ -86,10 +95,12 @@ generatePersonReport <- function(connectionDetails, cdmSchema, outputPath)
   # a.  Visualization: Pie
   # b.	Category: Ethnicity
   # c.	Value: % of persons
-  pathToSql <- system.file("sql/sql_server", "4_Ethnicity.sql", package="Achilles")
-  parameterizedSql <- readChar(pathToSql,file.info(pathToSql)$size)
-  renderedSql <- renderSql(parameterizedSql[1], CDM_schema = cdmSchema)$sql
-  ethnicityData <- fetch(dbSendQuery(conn,renderedSql), n=-1)
+  renderedSql <- renderAndTranslate(sqlFilename = "export/person/ethnicity.sql",
+                                    packageName = "Achilles",
+                                    dbms = connectionDetails$dbms,
+                                    CDM_schema = cdmSchema
+  )
+  ethnicityData <- dbGetQuery(conn,renderedSql)
   
   output$EthnicityData = ethnicityData
   
@@ -99,19 +110,23 @@ generatePersonReport <- function(connectionDetails, cdmSchema, outputPath)
   # c.	Value:  # of persons
   birthYearHist <- {}
   
-  pathToSql <- system.file("sql/sql_server", "5_YearOfBirth_Stats.sql", package="Achilles")
-  parameterizedSql <- readChar(pathToSql,file.info(pathToSql)$size)
-  renderedSql <- renderSql(parameterizedSql[1], CDM_schema = cdmSchema)$sql
-  birthYearStats <- fetch(dbSendQuery(conn,renderedSql), n=-1)
+  renderedSql <- renderAndTranslate(sqlFilename = "export/person/yearofbirth_stats.sql",
+                                    packageName = "Achilles",
+                                    dbms = connectionDetails$dbms,
+                                    CDM_schema = cdmSchema
+  )
+  birthYearStats <- dbGetQuery(conn,renderedSql)
   birthYearHist$min = birthYearStats$MinValue
   birthYearHist$max = birthYearStats$MaxValue
   birthYearHist$intervalSize = birthYearStats$IntervalSize
   birthYearHist$intervals = (birthYearStats$MaxValue - birthYearStats$MinValue) / birthYearStats$IntervalSize
   
-  pathToSql <- system.file("sql/sql_server", "5_YearOfBirth_Data.sql", package="Achilles")
-  parameterizedSql <- readChar(pathToSql,file.info(pathToSql)$size)
-  renderedSql <- renderSql(parameterizedSql[1], CDM_schema = cdmSchema)$sql
-  birthYearData <- fetch(dbSendQuery(conn,renderedSql), n=-1)
+  renderedSql <- renderAndTranslate(sqlFilename = "export/person/yearofbirth_data.sql",
+                                    packageName = "Achilles",
+                                    dbms = connectionDetails$dbms,
+                                    CDM_schema = cdmSchema
+  )
+  birthYearData <- dbGetQuery(conn,renderedSql)
   birthYearHist$data <- birthYearData
 
   output$BirthYearHistogram <- birthYearHist
@@ -119,4 +134,189 @@ generatePersonReport <- function(connectionDetails, cdmSchema, outputPath)
   # Convert to JSON and save file result
   jsonOutput = toJSON(output)
   write(jsonOutput, file=paste(outputPath, "person.json", sep=""))
+}
+
+generateObservationPeriodReport <- function(connectionDetails, cdmSchema, outputPath)
+{
+  output = {}
+  conn <- connect(connectionDetails)
+  
+  # 1.  Title:  Age at time of first observation
+  # a.  Visualization:  Histogram
+  # b.  Category: Age
+  # c.	Value:  # of persons
+  
+  ageAtFirstObservationHist <- {}
+  
+  # stats are hard coded for this result to make x-axis consistent across datasources
+  ageAtFirstObservationHist$min = 0
+  ageAtFirstObservationHist$max =100
+  ageAtFirstObservationHist$intervalSize = 1
+  ageAtFirstObservationHist$intervals = 100
+  
+  renderedSql <- renderAndTranslate(sqlFilename = "export/observationperiod/ageatfirst.sql",
+                                    packageName = "Achilles",
+                                    dbms = connectionDetails$dbms,
+                                    CDM_schema = cdmSchema
+  )
+  ageAtFirstObservationData <- dbGetQuery(conn,renderedSql)
+  ageAtFirstObservationHist$data = ageAtFirstObservationData
+  output$AgeAtFirstObservationHistogram <- ageAtFirstObservationHist
+  
+  # 2.  Title: Age by gender
+  # a.	Visualization:  Side-by-side boxplot
+  # b.	Category:  Gender
+  # c.	Values:  Min/25%/Median/95%/Max  - age at time of first observation
+  
+  renderedSql <- renderAndTranslate(sqlFilename = "export/observationperiod/agebygender.sql",
+                                    packageName = "Achilles",
+                                    dbms = connectionDetails$dbms,
+                                    CDM_schema = cdmSchema
+  )
+  ageByGenderData <- dbGetQuery(conn,renderedSql)
+  output$AgeByGender = ageByGenderData
+  
+  # 3.  Title: Length of observation
+  # a.	Visualization:  bar
+  # b.	Category:  length of observation period, 30d increments
+  # c.	Values: # of persons
+  
+  observationLengthHist <- {}
+  
+  renderedSql <- renderAndTranslate(sqlFilename = "export/observationperiod/observationlength_stats.sql",
+                                    packageName = "Achilles",
+                                    dbms = connectionDetails$dbms,
+                                    CDM_schema = cdmSchema
+  )
+  
+  observationLengthStats <- dbGetQuery(conn,renderedSql)
+  observationLengthHist$min = observationLengthStats$MinValue
+  observationLengthHist$max = observationLengthStats$MaxValue
+  observationLengthHist$intervalSize = observationLengthStats$IntervalSize
+  observationLengthHist$intervals = (observationLengthStats$MaxValue - observationLengthStats$MinValue) / observationLengthStats$IntervalSize
+  
+  renderedSql <- renderAndTranslate(sqlFilename = "export/observationperiod/observationlength_data.sql",
+                                    packageName = "Achilles",
+                                    dbms = connectionDetails$dbms,
+                                    CDM_schema = cdmSchema
+  )
+  observationLengthData <- dbGetQuery(conn,renderedSql)
+  observationLengthHist$data <- observationLengthData
+  
+  output$ObservationLengthHistogram = observationLengthHist
+  
+  
+  # 4.  Title:  Cumulative duration of observation
+  # a.	Visualization:  scatterplot
+  # b.	X-axis:  length of observation period
+  # c.	Y-axis:  % of population observed
+  # d.	Note:  will look like a Kaplan-Meier âsurvivalâ plot, but information is the same as shown in âlength of observationâ barchart, just plotted as cumulative 
+  
+  renderedSql <- renderAndTranslate(sqlFilename = "export/observationperiod/cumulativeduration.sql",
+                                    packageName = "Achilles",
+                                    dbms = connectionDetails$dbms,
+                                    CDM_schema = cdmSchema
+  )  
+  
+  cumulativeDurationData <- dbGetQuery(conn,renderedSql)
+  output$CumulativeDuration = cumulativeDurationData
+  
+  # 5.  Title:  Observation period length distribution, by gender
+  # a.	Visualization:  side-by-side boxplot
+  # b.	Category: Gender
+  # c.	Values: Min/25%/Median/95%/Max  length of observation period
+  
+  renderedSql <- renderAndTranslate(sqlFilename = "export/observationperiod/observationlengthbygender.sql",
+                                    packageName = "Achilles",
+                                    dbms = connectionDetails$dbms,
+                                    CDM_schema = cdmSchema
+  )
+  opLengthByGenderData <- dbGetQuery(conn,renderedSql)
+  output$ObservationPeriodLengthByGender = opLengthByGenderData
+  
+  # 6.  Title:  Observation period length distribution, by age
+  # a.	Visualization:  side-by-side boxplot
+  # b.	Category: Age decile
+  # c.	Values: Min/25%/Median/95%/Max  length of observation period
+  
+  renderedSql <- renderAndTranslate(sqlFilename = "export/observationperiod/observationlengthbyage.sql",
+                                    packageName = "Achilles",
+                                    dbms = connectionDetails$dbms,
+                                    CDM_schema = cdmSchema
+  )
+  opLengthByAgeData <- dbGetQuery(conn,renderedSql)
+  output$ObservationPeriodLengthByAge = opLengthByAgeData
+  
+  # 7.  Title:  Number of persons with continuous observation by year
+  # a.	Visualization:  Histogram
+  # b.	Category:  Year
+  # c.	Values:  # of persons with continuous coverage
+  
+  observedByYearHist <- {}
+  renderedSql <- renderAndTranslate(sqlFilename = "export/observationperiod/observedbyyear_stats.sql",
+                                    packageName = "Achilles",
+                                    dbms = connectionDetails$dbms,
+                                    CDM_schema = cdmSchema
+  )
+  observedByYearStats <- dbGetQuery(conn,renderedSql)
+  observedByYearHist$min = observedByYearStats$MinValue
+  observedByYearHist$max = observedByYearStats$MaxValue
+  observedByYearHist$intervalSize = observedByYearStats$IntervalSize
+  observedByYearHist$intervals = (observedByYearStats$MaxValue - observedByYearStats$MinValue) / observedByYearStats$IntervalSize
+  
+  renderedSql <- renderAndTranslate(sqlFilename = "export/observationperiod/observedbyyear_data.sql",
+                                    packageName = "Achilles",
+                                    dbms = connectionDetails$dbms,
+                                    CDM_schema = cdmSchema
+  )
+  
+  observedByYearData <- dbGetQuery(conn,renderedSql)
+  observedByYearHist$data <- observedByYearData
+  
+  output$ObservedByYearHistogram = observedByYearHist
+  
+  # 8.  Title:  Number of persons with continuous observation by month
+  # a.	Visualization:  Histogram
+  # b.	Category:  Month/year
+  # c.	Values:  # of persons with continuous coverage
+  
+  observedByMonthHist <- {}
+  
+  renderedSql <- renderAndTranslate(sqlFilename = "export/observationperiod/observedbymonth_stats.sql",
+                                    packageName = "Achilles",
+                                    dbms = connectionDetails$dbms,
+                                    CDM_schema = cdmSchema
+  )
+  observedByMonthStats <- dbGetQuery(conn,renderedSql)
+  observedByMonthHist$min = observedByMonthStats$MinValue
+  observedByMonthHist$max = observedByMonthStats$MaxValue
+  observedByMonthHist$intervalSize = observedByMonthStats$IntervalSize
+  observedByMonthHist$intervals = (observedByMonthStats$MaxValue - observedByMonthStats$MinValue) / observedByMonthStats$IntervalSize
+  
+  renderedSql <- renderAndTranslate(sqlFilename = "export/observationperiod/observedbymonth_data.sql",
+                                    packageName = "Achilles",
+                                    dbms = connectionDetails$dbms,
+                                    CDM_schema = cdmSchema
+  )
+  observedByMonthData <- dbGetQuery(conn,renderedSql)
+  observedByMonthHist$data <- observedByMonthData
+  
+  output$ObservedByMonthHistogram = observedByMonthHist
+  
+  # 9.  Title:  Number of observation periods per person
+  # a.	Visualization:  Pie
+  # b.	Category:  Number of observation periods
+  # c.	Values:  # of persons 
+  
+  renderedSql <- renderAndTranslate(sqlFilename = "export/observationperiod/periodsperperson.sql",
+                                    packageName = "Achilles",
+                                    dbms = connectionDetails$dbms,
+                                    CDM_schema = cdmSchema
+  )
+  personPeriodsData <- dbGetQuery(conn,renderedSql)
+  output$PersonPeriodsData = personPeriodsData
+  
+  # Convert to JSON and save file result
+  jsonOutput = toJSON(output)
+  write(jsonOutput, file=paste(outputPath, "observationperiod.json", sep=""))
 }
