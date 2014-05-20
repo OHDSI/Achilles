@@ -280,28 +280,16 @@ generateObservationPeriodReport <- function(connectionDetails, cdmSchema, output
   # b.	Category:  Month/year
   # c.	Values:  # of persons with continuous coverage
   
-  observedByMonthHist <- {}
+  observedByMonth <- {}
   
-  renderedSql <- renderAndTranslate(sqlFilename = "export/observationperiod/observedbymonth_stats.sql",
+  renderedSql <- renderAndTranslate(sqlFilename = "export/observationperiod/observedbymonth.sql",
                                     packageName = "Achilles",
                                     dbms = connectionDetails$dbms,
                                     CDM_schema = cdmSchema
   )
-  observedByMonthStats <- dbGetQuery(conn,renderedSql)
-  observedByMonthHist$min = observedByMonthStats$MinValue
-  observedByMonthHist$max = observedByMonthStats$MaxValue
-  observedByMonthHist$intervalSize = observedByMonthStats$IntervalSize
-  observedByMonthHist$intervals = (observedByMonthStats$MaxValue - observedByMonthStats$MinValue) / observedByMonthStats$IntervalSize
-  
-  renderedSql <- renderAndTranslate(sqlFilename = "export/observationperiod/observedbymonth_data.sql",
-                                    packageName = "Achilles",
-                                    dbms = connectionDetails$dbms,
-                                    CDM_schema = cdmSchema
-  )
-  observedByMonthData <- dbGetQuery(conn,renderedSql)
-  observedByMonthHist$data <- observedByMonthData
-  
-  output$ObservedByMonthHistogram = observedByMonthHist
+  observedByMonth <- dbGetQuery(conn,renderedSql)
+    
+  output$ObservedByMonth = observedByMonth
   
   # 9.  Title:  Number of observation periods per person
   # a.	Visualization:  Pie
