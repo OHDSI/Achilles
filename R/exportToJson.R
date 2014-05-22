@@ -41,8 +41,76 @@
 #' @export
 exportToJson <- function (connectionDetails, cdmSchema, outputPath)
 {
+  # create output path if it doesn't already exist, warns if it does
+  dir.create(outputPath)
+  
   generatePersonReport(connectionDetails, cdmSchema, outputPath)
   generateObservationPeriodReport(connectionDetails, cdmSchema, outputPath)
+  generateConditionReports(connectionDetails, cdmSchema, outputPath)
+  generateConditionTreemap(connectionDetails, cdmSchema, outputPath)
+}
+
+generateConditionTreemap <- function(connectionDetails, cdmSchema, outputPath) {
+  conn <- connect(connectionDetails)
+  
+  queryConditionTreemap <- renderAndTranslate(sqlFilename = "export/condition/sqlConditionTreemap.sql",
+                                                       packageName = "Achilles",
+                                                       dbms = connectionDetails$dbms,
+                                                       CDM_schema = cdmSchema
+  )  
+  
+  dataConditionTreemap <- dbGetQuery(conn,queryConditionTreemap)  
+  
+  write(toJSON(dataConditionTreemap,method="C"),paste(outputPath, "condition_treemap.json", sep=''))
+}
+
+generateConditionReports <- function(connectionDetails, cdmSchema, outputPath) {
+  conn <- connect(connectionDetails)
+  
+  queryPrevalenceByGenderAgeYear <- renderAndTranslate(sqlFilename = "export/condition/sqlPrevalenceByGenderAgeYear.sql",
+                                    packageName = "Achilles",
+                                    dbms = connectionDetails$dbms,
+                                    CDM_schema = cdmSchema
+  )
+  
+  queryPrevalenceByMonth <- renderAndTranslate(sqlFilename = "export/condition/sqlPrevalenceByMonth.sql",
+                                                       packageName = "Achilles",
+                                                       dbms = connectionDetails$dbms,
+                                                       CDM_schema = cdmSchema
+  )
+
+  queryConditionsByType <- renderAndTranslate(sqlFilename = "export/condition/sqlConditionsByType.sql",
+                                                       packageName = "Achilles",
+                                                       dbms = connectionDetails$dbms,
+                                                       CDM_schema = cdmSchema
+  )
+
+  queryAgeAtFirstDiagnosis <- renderAndTranslate(sqlFilename = "export/condition/sqlAgeAtFirstDiagnosis.sql",
+                                                       packageName = "Achilles",
+                                                       dbms = connectionDetails$dbms,
+                                                       CDM_schema = cdmSchema
+  )
+  
+  dataPrevalenceByGenderAgeYear <- dbGetQuery(conn,queryPrevalenceByGenderAgeYear)  
+  dataPrevalenceByMonth <- dbGetQuery(conn,queryPrevalenceByMonth)  
+  dataConditionsByType <- dbGetQuery(conn,queryConditionsByType)  
+  dataAgeAtFirstDiagnosis <- dbGetQuery(conn,queryAgeAtFirstDiagnosis)    
+  
+  uniqueConcepts <- unique(dataPrevalenceByGenderAgeYear$ConceptId)
+  dir.create(file.path(outputPath,"conditions"))
+  
+  buildConditionReport <- function(concept_id) {
+    report <- {}
+    report$PrevalenceByGenderAgeYear <- dataPrevalenceByGenderAgeYear[dataPrevalenceByGenderAgeYear$ConceptId == concept_id,c(3,4,5,6)]    
+    report$PrevalenceByMonth <- dataPrevalenceByMonth[dataPrevalenceByMonth$ConceptId == concept_id,c(3,4)]
+    report$ConditionsByType <- dataConditionsByType[dataConditionsByType$ConceptId == concept_id,c(2,3)]
+    report$AgeAtFirstDiagnosis <- dataAgeAtFirstDiagnosis[dataAgeAtFirstDiagnosis$ConceptId == concept_id,c(2,3,4,5,6,7,8,9)]
+    filename <- paste(outputPath, "conditions/condition_" , concept_id , ".json", sep='')  
+    
+    write(toJSON(report,method="C"),filename)  
+  }
+  
+  lapply(uniqueConcepts, buildConditionReport)  
 }
 
 generatePersonReport <- function(connectionDetails, cdmSchema, outputPath)
