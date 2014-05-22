@@ -46,8 +46,8 @@ exportToJson <- function (connectionDetails, cdmSchema, outputPath)
   
   generatePersonReport(connectionDetails, cdmSchema, outputPath)
   generateObservationPeriodReport(connectionDetails, cdmSchema, outputPath)
+  generateConditionTreemap(connectionDetails, cdmSchema, outputPath)  
   generateConditionReports(connectionDetails, cdmSchema, outputPath)
-  generateConditionTreemap(connectionDetails, cdmSchema, outputPath)
 }
 
 generateConditionTreemap <- function(connectionDetails, cdmSchema, outputPath) {
