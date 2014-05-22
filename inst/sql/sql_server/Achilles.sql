@@ -10,7 +10,7 @@ Patrick Ryan
 {DEFAULT @smallcellcount = 5}
 
   /****
-  	developer comment about general ACHILLES calculation process:  
+    developer comment about general ACHILLES calculation process:  
 		you could drive # of persons by age decile, from # of persons by age decile by gender
 		as a general rule:  do full stratification once, and then aggregate across strata to avoid re-calculation
 		works for all prevalence calculations...does not work for any distribution statistics
@@ -148,10 +148,10 @@ insert into ACHILLES_analysis (analysis_id, analysis_name, stratum_1_name)
 	values (113, 'Number of persons by number of observation periods', 'number of observation periods');
 
 insert into ACHILLES_analysis (analysis_id, analysis_name)
-	values (114, 'Number of persons with observation period before year-of-birth')
+	values (114, 'Number of persons with observation period before year-of-birth');
 
 insert into ACHILLES_analysis (analysis_id, analysis_name)
-	values (115, 'Number of persons with observation period end < observation period start')
+	values (115, 'Number of persons with observation period end < observation period start');
 
 insert into ACHILLES_analysis (analysis_id, analysis_name, stratum_1_name, stratum_2_name, stratum_3_name)
 	values (116, 'Number of persons with at least one day of observation in each year by gender and age decile', 'calendar year', 'gender_concept_id', 'age decile');
@@ -594,50 +594,50 @@ insert into ACHILLES_analysis (analysis_id, analysis_name, stratum_1_name)
 	values (1413, 'Number of persons by number of payer plan periods', 'number of payer plan periods');
 
 insert into ACHILLES_analysis (analysis_id, analysis_name)
-	values (1414, 'Number of persons with payer plan period before year-of-birth')
+	values (1414, 'Number of persons with payer plan period before year-of-birth');
 
 insert into ACHILLES_analysis (analysis_id, analysis_name)
-	values (1415, 'Number of persons with payer plan period end < payer plan period start')
+	values (1415, 'Number of persons with payer plan period end < payer plan period start');
 
 --1500- DRUG_COST
 
 
 
 insert into ACHILLES_analysis (analysis_id, analysis_name)
-	values (1500, 'Number of drug cost records with invalid drug exposure id')
+	values (1500, 'Number of drug cost records with invalid drug exposure id');
 
 insert into ACHILLES_analysis (analysis_id, analysis_name)
-	values (1501, 'Number of drug cost records with invalid payer plan period id')
+	values (1501, 'Number of drug cost records with invalid payer plan period id');
 
 insert into ACHILLES_analysis (analysis_id, analysis_name, stratum_1_name)
-	values (1502, 'Distribution of paid copay, by drug_concept_id', 'drug_concept_id')
+	values (1502, 'Distribution of paid copay, by drug_concept_id', 'drug_concept_id');
 
 insert into ACHILLES_analysis (analysis_id, analysis_name, stratum_1_name)
-	values (1503, 'Distribution of paid coinsurance, by drug_concept_id', 'drug_concept_id')
+	values (1503, 'Distribution of paid coinsurance, by drug_concept_id', 'drug_concept_id');
 
 insert into ACHILLES_analysis (analysis_id, analysis_name, stratum_1_name)
-	values (1504, 'Distribution of paid toward deductible, by drug_concept_id', 'drug_concept_id')
+	values (1504, 'Distribution of paid toward deductible, by drug_concept_id', 'drug_concept_id');
 
 insert into ACHILLES_analysis (analysis_id, analysis_name, stratum_1_name)
-	values (1505, 'Distribution of paid by payer, by drug_concept_id', 'drug_concept_id')
+	values (1505, 'Distribution of paid by payer, by drug_concept_id', 'drug_concept_id');
 
 insert into ACHILLES_analysis (analysis_id, analysis_name, stratum_1_name)
-	values (1506, 'Distribution of paid by coordination of benefit, by drug_concept_id', 'drug_concept_id')
+	values (1506, 'Distribution of paid by coordination of benefit, by drug_concept_id', 'drug_concept_id');
 
 insert into ACHILLES_analysis (analysis_id, analysis_name, stratum_1_name)
-	values (1507, 'Distribution of total out-of-pocket, by drug_concept_id', 'drug_concept_id')
+	values (1507, 'Distribution of total out-of-pocket, by drug_concept_id', 'drug_concept_id');
 
 insert into ACHILLES_analysis (analysis_id, analysis_name, stratum_1_name)
-	values (1508, 'Distribution of total paid, by drug_concept_id', 'drug_concept_id')
+	values (1508, 'Distribution of total paid, by drug_concept_id', 'drug_concept_id');
 
 insert into ACHILLES_analysis (analysis_id, analysis_name, stratum_1_name)
-	values (1509, 'Distribution of ingredient_cost, by drug_concept_id', 'drug_concept_id')
+	values (1509, 'Distribution of ingredient_cost, by drug_concept_id', 'drug_concept_id');
 
 insert into ACHILLES_analysis (analysis_id, analysis_name, stratum_1_name)
-	values (1510, 'Distribution of dispensing fee, by drug_concept_id', 'drug_concept_id')
+	values (1510, 'Distribution of dispensing fee, by drug_concept_id', 'drug_concept_id');
 
 insert into ACHILLES_analysis (analysis_id, analysis_name, stratum_1_name)
-	values (1511, 'Distribution of average wholesale price, by drug_concept_id', 'drug_concept_id')
+	values (1511, 'Distribution of average wholesale price, by drug_concept_id', 'drug_concept_id');
 
 
 --1600- PROCEDURE_COST
@@ -645,46 +645,46 @@ insert into ACHILLES_analysis (analysis_id, analysis_name, stratum_1_name)
 
 
 insert into ACHILLES_analysis (analysis_id, analysis_name)
-	values (1600, 'Number of procedure cost records with invalid procedure occurrence id')
+	values (1600, 'Number of procedure cost records with invalid procedure occurrence id');
 
 insert into ACHILLES_analysis (analysis_id, analysis_name)
-	values (1601, 'Number of procedure cost records with invalid payer plan period id')
+	values (1601, 'Number of procedure cost records with invalid payer plan period id');
 
 insert into ACHILLES_analysis (analysis_id, analysis_name, stratum_1_name)
-	values (1602, 'Distribution of paid copay, by procedure_concept_id', 'procedure_concept_id')
+	values (1602, 'Distribution of paid copay, by procedure_concept_id', 'procedure_concept_id');
 
 insert into ACHILLES_analysis (analysis_id, analysis_name, stratum_1_name)
-	values (1603, 'Distribution of paid coinsurance, by procedure_concept_id', 'procedure_concept_id')
+	values (1603, 'Distribution of paid coinsurance, by procedure_concept_id', 'procedure_concept_id');
 
 insert into ACHILLES_analysis (analysis_id, analysis_name, stratum_1_name)
-	values (1604, 'Distribution of paid toward deductible, by procedure_concept_id', 'procedure_concept_id')
+	values (1604, 'Distribution of paid toward deductible, by procedure_concept_id', 'procedure_concept_id');
 
 insert into ACHILLES_analysis (analysis_id, analysis_name, stratum_1_name)
-	values (1605, 'Distribution of paid by payer, by procedure_concept_id', 'procedure_concept_id')
+	values (1605, 'Distribution of paid by payer, by procedure_concept_id', 'procedure_concept_id');
 
 insert into ACHILLES_analysis (analysis_id, analysis_name, stratum_1_name)
-	values (1606, 'Distribution of paid by coordination of benefit, by procedure_concept_id', 'procedure_concept_id')
+	values (1606, 'Distribution of paid by coordination of benefit, by procedure_concept_id', 'procedure_concept_id');
 
 insert into ACHILLES_analysis (analysis_id, analysis_name, stratum_1_name)
-	values (1607, 'Distribution of total out-of-pocket, by procedure_concept_id', 'procedure_concept_id')
+	values (1607, 'Distribution of total out-of-pocket, by procedure_concept_id', 'procedure_concept_id');
 
 insert into ACHILLES_analysis (analysis_id, analysis_name, stratum_1_name)
-	values (1608, 'Distribution of total paid, by procedure_concept_id', 'procedure_concept_id')
+	values (1608, 'Distribution of total paid, by procedure_concept_id', 'procedure_concept_id');
 
 insert into ACHILLES_analysis (analysis_id, analysis_name, stratum_1_name)
-	values (1609, 'Number of records by disease_class_concept_id', 'disease_class_concept_id')
+	values (1609, 'Number of records by disease_class_concept_id', 'disease_class_concept_id');
 
 insert into ACHILLES_analysis (analysis_id, analysis_name, stratum_1_name)
-	values (1610, 'Number of records by revenue_code_concept_id', 'revenue_code_concept_id')
+	values (1610, 'Number of records by revenue_code_concept_id', 'revenue_code_concept_id');
 
 
 --1700- COHORT
 
 insert into ACHILLES_analysis (analysis_id, analysis_name, stratum_1_name)
-	values (1700, 'Number of records by cohort_concept_id', 'cohort_concept_id')
+	values (1700, 'Number of records by cohort_concept_id', 'cohort_concept_id');
 
 insert into ACHILLES_analysis (analysis_id, analysis_name)
-	values (1701, 'Number of records with cohort end date < cohort start date')
+	values (1701, 'Number of records with cohort end date < cohort start date');
 
 
 

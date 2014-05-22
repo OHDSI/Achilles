@@ -25,8 +25,13 @@ executeSql <- function(conn, dbms, sql){
   progressBar <- txtProgressBar()
   for (i in 1:length(sqlStatements)){
     sqlStatement <- sqlStatements[i]
-    tryCatch ({	  
+    sink(paste("c:/temp/statement_",i,".sql",sep=""))
+    cat(sqlStatement)
+    sink()
+    tryCatch ({   
+      start <- Sys.time()
       dbSendUpdate(conn, sqlStatement)
+      writeLines(paste("Statement_",i," took ", (Sys.time() - start),sep=""))
     } , error = function(err) {
       writeLines(paste("Error executing SQL:",err))
       
@@ -92,36 +97,36 @@ renderAndTranslate <- function(sqlFilename, packageName, dbms, ...){
 #' }
 #' @export
 achilles <- function (connectionDetails, cdmSchema, resultsSchema, sourceName = "", analysisIds){
-	if (missing(analysisIds))
-		analysisIds = all_analysis_ids
-	
-	renderedSql <- renderAndTranslate(sqlFilename = "Achilles.sql",
-	                                  packageName = "Achilles",
+  if (missing(analysisIds))
+    analysisIds = all_analysis_ids
+  
+  renderedSql <- renderAndTranslate(sqlFilename = "Achilles.sql",
+                                    packageName = "Achilles",
                                     dbms = connectionDetails$dbms,
-	                                  CDM_schema = cdmSchema, 
+                                    CDM_schema = cdmSchema, 
                                     results_schema = resultsSchema, 
                                     source_name = sourceName, 
                                     list_of_analysis_ids = analysisIds
-                                    )
+  )
   
-	conn <- connect(connectionDetails)
-	
-	writeLines("Executing multiple queries. This could take a while")
-	executeSql(conn,connectionDetails$dbms,renderedSql)
-	writeLines(paste("Done. Results can now be found in",resultsSchema))
-	
-	dbDisconnect(conn)
-	
-	resultsConnectionDetails <- connectionDetails
-	resultsConnectionDetails$schema = resultsSchema
-	result <- list(resultsConnectionDetails = resultsConnectionDetails, 
+  conn <- connect(connectionDetails)
+  
+  writeLines("Executing multiple queries. This could take a while")
+  executeSql(conn,connectionDetails$dbms,renderedSql)
+  writeLines(paste("Done. Results can now be found in",resultsSchema))
+  
+  dbDisconnect(conn)
+  
+  resultsConnectionDetails <- connectionDetails
+  resultsConnectionDetails$schema = resultsSchema
+  result <- list(resultsConnectionDetails = resultsConnectionDetails, 
                  resultsTable = "ACHILLES_results",
-                 resultsDistributionTable,"ACHILLES_results_dist",
+                 resultsDistributionTable ="ACHILLES_results_dist",
                  analysis_table = "ACHILLES_analysis",
                  sourceName = sourceName,
                  analysisIds = analysisIds,
                  sql = renderedSql,
                  call = match.call())
-	class(result) <- "achillesResults"
-	result
+  class(result) <- "achillesResults"
+  result
 }
