@@ -23,15 +23,17 @@
 executeSql <- function(conn, dbms, sql){
   sqlStatements = splitSql(sql)
   progressBar <- txtProgressBar()
+  start <- Sys.time()
   for (i in 1:length(sqlStatements)){
     sqlStatement <- sqlStatements[i]
     sink(paste("c:/temp/statement_",i,".sql",sep=""))
     cat(sqlStatement)
     sink()
     tryCatch ({   
-      start <- Sys.time()
+      startQuery <- Sys.time()
       dbSendUpdate(conn, sqlStatement)
-      writeLines(paste("Statement_",i," took ", (Sys.time() - start),sep=""))
+      delta <- Sys.time() - startQuery
+      writeLines(paste("Statement ",i,"took", delta, attr(delta,"units")))
     } , error = function(err) {
       writeLines(paste("Error executing SQL:",err))
       
@@ -55,6 +57,8 @@ executeSql <- function(conn, dbms, sql){
     setTxtProgressBar(progressBar, i/length(sqlStatements))
   }
   close(progressBar)
+  delta <- Sys.time() - start
+  writeLines(paste("Analysis took", delta, attr(delta,"units")))
 }
 
 renderAndTranslate <- function(sqlFilename, packageName, dbms, ...){
