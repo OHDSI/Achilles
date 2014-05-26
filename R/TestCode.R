@@ -1,6 +1,8 @@
 # some test-code
 
 testCode <- function(){
+  pw <- ""
+  
   #Test on SQL Server:
   setwd("c:/temp")
   connectionDetailsSqlServer <- createConnectionDetails(dbms="sql server", server="RNDUSRDHIT07.jnj.com")
@@ -8,17 +10,17 @@ testCode <- function(){
 
   #Test on PostgreSQL
   setwd("c:/temp")
-  connectionDetailsPostgreSql <- createConnectionDetails(dbms="postgresql", server="localhost/ohdsi", user="postgres",password="F1r3starter")
+  connectionDetailsPostgreSql <- createConnectionDetails(dbms="postgresql", server="localhost/ohdsi", user="postgres",password=pw)
   achillesResultsPostgreSql <- achilles(connectionDetailsPostgreSql, cdmSchema="cdm4_sim", resultsSchema="scratch")
 
   #Test on PostgreSQL using sample
   setwd("c:/temp")
-  connectionDetailsPostgreSql <- createConnectionDetails(dbms="postgresql", server="localhost/ohdsi", user="postgres",password="F1r3starter")
+  connectionDetailsPostgreSql <- createConnectionDetails(dbms="postgresql", server="localhost/ohdsi", user="postgres",password=pw)
   achillesResultsPostgreSql <- achilles(connectionDetailsPostgreSql, cdmSchema="cdm4_sim_sample", resultsSchema="scratch_sample")
 
   #Test on Oracle using sample:
   setwd("c:/temp")
-  connectionDetailsOracle <- createConnectionDetails(dbms="oracle", server="xe", user="system",password="F1r3starter")
+  connectionDetailsOracle <- createConnectionDetails(dbms="oracle", server="xe", user="system",password=pw)
   achillesResultsOracle <- achilles(connectionDetailsOracle, cdmSchema="cdm4_sim", resultsSchema="scratch")
   
   

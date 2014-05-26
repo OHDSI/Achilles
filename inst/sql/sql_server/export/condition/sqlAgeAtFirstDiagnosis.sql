@@ -9,9 +9,9 @@
   	ard1.max_value as MaxValue
   from ACHILLES_results_dist ard1
   	inner join
-  	concept c1
-  	on ard1.stratum_1 = c1.concept_id
+  	@cdmSchema.dbo.concept c1
+  	on CAST(ard1.stratum_1 AS INT) = c1.concept_id
   	inner join
-  	concept c2
-  	on ard1.stratum_2 = c2.concept_id
+  	@cdmSchema.dbo.concept c2
+  	on CAST(ard1.stratum_2 AS INT) = c2.concept_id
   where ard1.analysis_id = 406

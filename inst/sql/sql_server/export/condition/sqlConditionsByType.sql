@@ -3,9 +3,9 @@
   	ar1.count_value as CountValue
   from ACHILLES_results ar1
   	inner join
-  	concept c1
-  	on ar1.stratum_1 = c1.concept_id
+  	@cdmSchema.dbo.concept c1
+  	on CAST(ar1.stratum_1 AS INT) = c1.concept_id
   	inner join
-  	concept c2
-  	on ar1.stratum_2 = c2.concept_id
+  	@cdmSchema.dbo.concept c2
+  	on CAST(ar1.stratum_2 AS INT) = c2.concept_id
   where ar1.analysis_id = 405

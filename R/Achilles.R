@@ -22,18 +22,18 @@
 
 executeSql <- function(conn, dbms, sql){
   sqlStatements = splitSql(sql)
-  progressBar <- txtProgressBar()
+  progressBar <- txtProgressBar(style=3)
   start <- Sys.time()
   for (i in 1:length(sqlStatements)){
     sqlStatement <- sqlStatements[i]
-    sink(paste("c:/temp/statement_",i,".sql",sep=""))
-    cat(sqlStatement)
-    sink()
+    #sink(paste("c:/temp/statement_",i,".sql",sep=""))
+    #cat(sqlStatement)
+    #sink()
     tryCatch ({   
-      startQuery <- Sys.time()
+      #startQuery <- Sys.time()
       dbSendUpdate(conn, sqlStatement)
-      delta <- Sys.time() - startQuery
-      writeLines(paste("Statement ",i,"took", delta, attr(delta,"units")))
+      #delta <- Sys.time() - startQuery
+      #writeLines(paste("Statement ",i,"took", delta, attr(delta,"units")))
     } , error = function(err) {
       writeLines(paste("Error executing SQL:",err))
       
@@ -59,6 +59,33 @@ executeSql <- function(conn, dbms, sql){
   close(progressBar)
   delta <- Sys.time() - start
   writeLines(paste("Analysis took", signif(delta,3), attr(delta,"units")))
+}
+
+querySql <- function(conn, dbms, sql){
+  tryCatch ({   
+    result <- dbGetQuery(conn, sql)
+    colnames(result) <- toupper(colnames(result))
+    return(result)
+  } , error = function(err) {
+    writeLines(paste("Error executing SQL:",err))
+    
+    #Write error report:
+    filename <- paste(getwd(),"/errorReport.txt",sep="")
+    sink(filename)
+    error <<- err
+    cat("DBMS:\n")
+    cat(dbms)
+    cat("\n\n")
+    cat("Error:\n")
+    cat(err$message)
+    cat("\n\n")
+    cat("SQL:\n")
+    cat(sql)
+    sink()
+    
+    writeLines(paste("An error report has been created at ", filename))
+    break
+  })
 }
 
 renderAndTranslate <- function(sqlFilename, packageName, dbms, ...){
@@ -88,7 +115,7 @@ renderAndTranslate <- function(sqlFilename, packageName, dbms, ...){
 #' 
 #' @param connectionDetails	An R object of type ConnectionDetail (details for the function that contains server info, database type, optionally username/password, port)
 #' @param cdmSchema			string name of databsae schema that contains OMOP CDM and vocabulary
-#' @param resultsSchema		string name of database schema that we can write results to
+#' @param resultsSchema		string name of database schema that we can write results to. Default is cdmSchema
 #' @param sourceName		string name of the database, as recorded in results
 #' @param analysisIds		(optional) a vector containing the set of Achilles analysisIds for which results will be generated.
 #' If not specified, all analyses will be executed.
@@ -103,6 +130,9 @@ renderAndTranslate <- function(sqlFilename, packageName, dbms, ...){
 achilles <- function (connectionDetails, cdmSchema, resultsSchema, sourceName = "", analysisIds){
   if (missing(analysisIds))
     analysisIds = all_analysis_ids
+  
+  if (missing(resultsSchema))
+    resultsSchema <- cdmSchema
   
   renderedSql <- renderAndTranslate(sqlFilename = "Achilles.sql",
                                     packageName = "Achilles",
@@ -119,7 +149,7 @@ achilles <- function (connectionDetails, cdmSchema, resultsSchema, sourceName = 
   executeSql(conn,connectionDetails$dbms,renderedSql)
   writeLines(paste("Done. Results can now be found in",resultsSchema))
   
-  dbDisconnect(conn)
+  dummy <- dbDisconnect(conn)
   
   resultsConnectionDetails <- connectionDetails
   resultsConnectionDetails$schema = resultsSchema
