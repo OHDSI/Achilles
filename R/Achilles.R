@@ -58,7 +58,7 @@ executeSql <- function(conn, dbms, sql){
   }
   close(progressBar)
   delta <- Sys.time() - start
-  writeLines(paste("Analysis took", delta, attr(delta,"units")))
+  writeLines(paste("Analysis took", signif(delta,3), attr(delta,"units")))
 }
 
 renderAndTranslate <- function(sqlFilename, packageName, dbms, ...){

@@ -6,15 +6,21 @@ testCode <- function(){
   connectionDetailsSqlServer <- createConnectionDetails(dbms="sql server", server="RNDUSRDHIT07.jnj.com")
   achillesResultsSqlServer <- achilles(connectionDetailsSqlServer, cdmSchema="cdm4_sim", resultsSchema="scratch")
 
-  #Test on Oracle:
-  setwd("c:/temp")
-  connectionDetailsOracle <- createConnectionDetails(dbms="oracle", server="xe", user="system",password="xxx")
-  achillesResultsOracle <- achilles(connectionDetailsOracle, cdmSchema="cdm4_sim", resultsSchema="scratch")
-
   #Test on PostgreSQL
   setwd("c:/temp")
-  connectionDetailsPostgreSql <- createConnectionDetails(dbms="postgresql", server="localhost/cdm4_sim", user="postgres",password="F1r3starter")
-  achillesResultsPostgreSql <- achilles(connectionDetailsPostgreSql, cdmSchema="public", resultsSchema="scratch")
+  connectionDetailsPostgreSql <- createConnectionDetails(dbms="postgresql", server="localhost/ohdsi", user="postgres",password="F1r3starter")
+  achillesResultsPostgreSql <- achilles(connectionDetailsPostgreSql, cdmSchema="cdm4_sim", resultsSchema="scratch")
+
+  #Test on PostgreSQL using sample
+  setwd("c:/temp")
+  connectionDetailsPostgreSql <- createConnectionDetails(dbms="postgresql", server="localhost/ohdsi", user="postgres",password="F1r3starter")
+  achillesResultsPostgreSql <- achilles(connectionDetailsPostgreSql, cdmSchema="cdm4_sim_sample", resultsSchema="scratch_sample")
+
+  #Test on Oracle using sample:
+  setwd("c:/temp")
+  connectionDetailsOracle <- createConnectionDetails(dbms="oracle", server="xe", user="system",password="F1r3starter")
+  achillesResultsOracle <- achilles(connectionDetailsOracle, cdmSchema="cdm4_sim", resultsSchema="scratch")
+  
   
   #Compare results:
   analysis_id = 109
@@ -31,8 +37,8 @@ testCode <- function(){
     y <- dbGetQuery(connPostgreSql,paste("SELECT * FROM scratch.ACHILLES_results WHERE analysis_id =",analysis_id))
     y <- y[with(y,order(stratum_1,stratum_2,stratum_3,stratum_4,stratum_5)),]
     if (min(x[!is.na(x)] == y[!is.na(y)]) == 0){
-      writeLines(paste("Difference detected for analysisId",analysisId))
-      break
+      writeLines(paste("Difference detected for analysisId",analysis_id))
+      #break
     }
   }
   
@@ -48,7 +54,6 @@ testCode <- function(){
     }
   }
   
-  
   for (i in 1:nrow(x)){
     p <- x[i,]
     q <- y[i,]
@@ -57,6 +62,4 @@ testCode <- function(){
       break
     }
   }
-  
-  
 }

@@ -1033,37 +1033,70 @@ group by floor(DATEDIFF(dd, op1.observation_period_start_date, op1.observation_p
 
 --{109 IN (@list_of_analysis_ids)}?{
 -- 109	Number of persons with continuous observation in each year
-insert into @results_schema.dbo.ACHILLES_results (analysis_id, stratum_1, count_value)
-select 109 as analysis_id,  
-	year(t1.obs_year) as stratum_1, COUNT(distinct op1.PERSON_ID) as count_value
-from
-	observation_period op1
-	,
-	(select distinct cast(cast(YEAR(observation_period_start_date) as varchar(4)) +  '01' + '01' as date) as obs_year 	
-	from OBSERVATION_PERIOD
-	) t1 
-where op1.OBSERVATION_PERIOD_START_DATE <= t1.obs_year
-	and op1.OBSERVATION_PERIOD_END_DATE >= DATEADD(yy,1,t1.obs_year)
-group by t1.obs_year
+-- Note: using temp table instead of nested query because this gives vastly improved performance in Oracle
+SELECT DISTINCT 
+  YEAR(observation_period_start_date) AS obs_year,
+  CAST(CAST(YEAR(observation_period_start_date) AS VARCHAR(4)) +  '01' + '01' AS DATE) AS obs_year_start,	
+  CAST(CAST(YEAR(observation_period_start_date) AS VARCHAR(4)) +  '12' + '31' AS DATE) AS obs_year_end
+INTO
+  #temp_dates
+FROM 
+  observation_period
 ;
+
+INSERT INTO @results_schema.dbo.ACHILLES_results (analysis_id, stratum_1, count_value)
+SELECT 
+  109 AS analysis_id,  
+	obs_year AS stratum_1, 
+	COUNT(DISTINCT person_id) AS count_value
+FROM 
+	observation_period,
+	#temp_dates
+WHERE  
+		observation_period_start_date <= obs_year_start
+	AND 
+		observation_period_end_date >= obs_year_end
+GROUP BY 
+	obs_year
+;
+
+TRUNCATE TABLE #temp_dates;
+DROP TABLE #temp_dates;
 --}
 
 
 --{110 IN (@list_of_analysis_ids)}?{
 -- 110	Number of persons with continuous observation in each month
-insert into @results_schema.dbo.ACHILLES_results (analysis_id, stratum_1, count_value)
-select 110 as analysis_id, 
-	year(t1.obs_month)*100+month(t1.obs_month) as stratum_1, COUNT(distinct op1.PERSON_ID) as count_value
-from
-	observation_period op1
-	,
-	(select distinct cast(cast(YEAR(observation_period_start_date) as varchar(4)) +  RIGHT('0' + CAST(month(OBSERVATION_PERIOD_START_DATE) AS VARCHAR(2)), 2) + '01' as date) as obs_month 	
-	from OBSERVATION_PERIOD
-	) t1 
-where op1.OBSERVATION_PERIOD_START_DATE <= t1.obs_month
-	and op1.OBSERVATION_PERIOD_END_DATE >= DATEADD(mm,1,t1.obs_month)
-group by year(t1.obs_month)*100+month(t1.obs_month)
+-- Note: using temp table instead of nested query because this gives vastly improved performance in Oracle
+SELECT DISTINCT 
+  YEAR(observation_period_start_date)*100 + MONTH(observation_period_start_date) AS obs_month,
+  CAST(CAST(YEAR(observation_period_start_date) AS VARCHAR(4)) +  RIGHT('0' + CAST(MONTH(OBSERVATION_PERIOD_START_DATE) AS VARCHAR(2)), 2) + '01' AS DATE) AS obs_month_start,  
+  DATEADD(mm,1,CAST(CAST(YEAR(observation_period_start_date) AS VARCHAR(4)) +  RIGHT('0' + CAST(MONTH(OBSERVATION_PERIOD_START_DATE) AS VARCHAR(2)), 2) + '01' AS DATE)) AS obs_month_end
+INTO
+  #temp_dates
+FROM 
+  observation_period
 ;
+
+
+INSERT INTO @results_schema.dbo.ACHILLES_results (analysis_id, stratum_1, count_value)
+SELECT 
+  110 AS analysis_id, 
+	obs_month AS stratum_1, 
+	COUNT(DISTINCT person_id) AS count_value
+FROM
+	observation_period,
+	#temp_Dates
+WHERE 
+		observation_period_start_date <= obs_month_start
+	AND 
+		observation_period_end_date >= obs_month_end
+GROUP BY 
+	obs_month
+;
+
+TRUNCATE TABLE #temp_dates;
+DROP TABLE #temp_dates;
 --}
 
 
@@ -1134,6 +1167,15 @@ where op1.observation_period_end_date < op1.observation_period_start_date
 
 --{116 IN (@list_of_analysis_ids)}?{
 -- 116	Number of persons with at least one day of observation in each year by gender and age decile
+-- Note: using temp table instead of nested query because this gives vastly improved performance in Oracle
+select distinct 
+  YEAR(observation_period_start_date) as obs_year 
+INTO
+  #temp_dates
+from 
+  OBSERVATION_PERIOD
+;
+
 insert into @results_schema.dbo.ACHILLES_results (analysis_id, stratum_1, stratum_2, stratum_3, count_value)
 select 116 as analysis_id,  
 	t1.obs_year as stratum_1, 
@@ -1145,33 +1187,44 @@ from
 	inner join observation_period op1
 	on p1.person_id = op1.person_id
 	,
-	(select distinct YEAR(observation_period_start_date) as obs_year 
-	from OBSERVATION_PERIOD
-	) t1 
+	#temp_dates t1 
 where year(op1.OBSERVATION_PERIOD_START_DATE) <= t1.obs_year
 	and year(op1.OBSERVATION_PERIOD_END_DATE) >= t1.obs_year
 group by t1.obs_year,
 	p1.gender_concept_id,
 	floor((t1.obs_year - p1.year_of_birth)/10)
 ;
+
+TRUNCATE TABLE #temp_dates;
+DROP TABLE #temp_dates;
 --}
 
 
 --{117 IN (@list_of_analysis_ids)}?{
 -- 117	Number of persons with at least one day of observation in each year by gender and age decile
+-- Note: using temp table instead of nested query because this gives vastly improved performance in Oracle
+select distinct 
+  YEAR(observation_period_start_date)*100 + MONTH(observation_period_start_date)  as obs_month
+into 
+  #temp_dates
+from 
+  OBSERVATION_PERIOD
+;
+
 insert into @results_schema.dbo.ACHILLES_results (analysis_id, stratum_1, count_value)
 select 117 as analysis_id,  
 	t1.obs_month as stratum_1,
 	COUNT(distinct op1.PERSON_ID) as count_value
 from
 	observation_period op1,
-	(select distinct YEAR(observation_period_start_date)*100 + MONTH(observation_period_start_date)  as obs_month
-	from OBSERVATION_PERIOD
-	) t1 
+	#temp_dates t1 
 where YEAR(observation_period_start_date)*100 + MONTH(observation_period_start_date) <= t1.obs_month
 	and YEAR(observation_period_end_date)*100 + MONTH(observation_period_end_date) >= t1.obs_month
 group by t1.obs_month
 ;
+
+TRUNCATE TABLE #temp_dates;
+DROP TABLE #temp_dates;
 --}
 
 
@@ -3622,6 +3675,15 @@ group by floor(DATEDIFF(dd, ppp1.payer_plan_period_start_date, ppp1.payer_plan_p
 
 --{1409 IN (@list_of_analysis_ids)}?{
 -- 1409	Number of persons with continuous payer plan in each year
+-- Note: using temp table instead of nested query because this gives vastly improved
+select distinct 
+  YEAR(payer_plan_period_start_date) as obs_year 
+INTO
+  #temp_dates
+from 
+  payer_plan_period
+;
+
 insert into @results_schema.dbo.ACHILLES_results (analysis_id, stratum_1, count_value)
 select 1409 as analysis_id,  
 	t1.obs_year as stratum_1, COUNT(distinct p1.PERSON_ID) as count_value
@@ -3630,33 +3692,48 @@ from
 	inner join payer_plan_period ppp1
 	on p1.person_id = ppp1.person_id
 	,
-	(select distinct YEAR(payer_plan_period_start_date) as obs_year 
-	from payer_plan_period
-	) t1 
+	#temp_dates t1 
 where year(ppp1.payer_plan_period_START_DATE) <= t1.obs_year
 	and year(ppp1.payer_plan_period_END_DATE) >= t1.obs_year
 group by t1.obs_year
 ;
+
+truncate table #temp_dates;
+drop table #temp_dates;
 --}
 
 
 --{1410 IN (@list_of_analysis_ids)}?{
 -- 1410	Number of persons with continuous payer plan in each month
+-- Note: using temp table instead of nested query because this gives vastly improved performance in Oracle
+SELECT DISTINCT 
+  YEAR(payer_plan_period_start_date)*100 + MONTH(payer_plan_period_start_date) AS obs_month,
+  CAST(CAST(YEAR(payer_plan_period_start_date) AS VARCHAR(4)) +  RIGHT('0' + CAST(MONTH(payer_plan_period_start_date) AS VARCHAR(2)), 2) + '01' AS DATE) AS obs_month_start,  
+  DATEADD(mm,1,CAST(CAST(YEAR(payer_plan_period_start_date) AS VARCHAR(4)) +  RIGHT('0' + CAST(MONTH(payer_plan_period_start_date) AS VARCHAR(2)), 2) + '01' AS DATE)) AS obs_month_end
+INTO
+  #temp_dates
+FROM 
+  payer_plan_period
+;
+
 insert into @results_schema.dbo.ACHILLES_results (analysis_id, stratum_1, count_value)
-select 1410 as analysis_id, 
-	t1.obs_month as stratum_1, COUNT(distinct p1.PERSON_ID) as count_value
+select 
+  1410 as analysis_id, 
+	obs_month as stratum_1, 
+	COUNT(distinct p1.PERSON_ID) as count_value
 from
 	PERSON p1
 	inner join payer_plan_period ppp1
 	on p1.person_id = ppp1.person_id
 	,
-	(select distinct cast(cast(YEAR(payer_plan_period_start_date) as varchar(4)) +  RIGHT('0' + CAST(month(payer_plan_period_START_DATE) AS VARCHAR(2)), 2) + '01' as date) as obs_month 	
-	from payer_plan_period
-	) t1 
-where ppp1.payer_plan_period_START_DATE <= t1.obs_month
-	and ppp1.payer_plan_period_END_DATE >= DATEADD(mm,1,t1.obs_month)
-group by t1.obs_month
+	#temp_dates
+where ppp1.payer_plan_period_START_DATE <= obs_month_start
+	and ppp1.payer_plan_period_END_DATE >= obs_month_end
+group by obs_month
 ;
+
+TRUNCATE TABLE #temp_dates;
+DROP TABLE #temp_dates;
 --}
 
 
@@ -3828,7 +3905,7 @@ where paid_coinsurance is not null
 ) t1
 group by drug_concept_id
 ;
-
+--}
 
 --{1504 IN (@list_of_analysis_ids)}?{
 -- 1504	Distribution of paid toward deductible, by drug_concept_id
@@ -3858,7 +3935,7 @@ where paid_toward_deductible is not null
 ) t1
 group by drug_concept_id
 ;
-
+--}
 
 --{1505 IN (@list_of_analysis_ids)}?{
 -- 1505	Distribution of paid by payer, by drug_concept_id
@@ -3888,7 +3965,7 @@ where paid_by_payer is not null
 ) t1
 group by drug_concept_id
 ;
-
+--}
 
 --{1506 IN (@list_of_analysis_ids)}?{
 -- 1506	Distribution of paid by coordination of benefit, by drug_concept_id
@@ -3918,7 +3995,7 @@ where paid_by_coordination_benefits is not null
 ) t1
 group by drug_concept_id
 ;
-
+--}
 
 --{1507 IN (@list_of_analysis_ids)}?{
 -- 1507	Distribution of total out-of-pocket, by drug_concept_id
@@ -3948,7 +4025,7 @@ where total_out_of_pocket is not null
 ) t1
 group by drug_concept_id
 ;
-
+--}
 
 
 --{1508 IN (@list_of_analysis_ids)}?{
@@ -3979,7 +4056,7 @@ where total_paid is not null
 ) t1
 group by drug_concept_id
 ;
-
+--}
 
 
 --{1509 IN (@list_of_analysis_ids)}?{
@@ -4010,7 +4087,7 @@ where ingredient_cost is not null
 ) t1
 group by drug_concept_id
 ;
-
+--}
 
 --{1510 IN (@list_of_analysis_ids)}?{
 -- 1510	Distribution of dispensing fee, by drug_concept_id
@@ -4040,7 +4117,7 @@ where dispensing_fee is not null
 ) t1
 group by drug_concept_id
 ;
-
+--}
 
 --{1511 IN (@list_of_analysis_ids)}?{
 -- 1511	Distribution of average wholesale price, by drug_concept_id
@@ -4070,7 +4147,7 @@ where average_wholesale_price is not null
 ) t1
 group by drug_concept_id
 ;
-
+--}
 
 /********************************************
 
