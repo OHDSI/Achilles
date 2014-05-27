@@ -1,6 +1,6 @@
-select  min(cast(ar1.stratum_1 as int)) * 30 as MinValue, 
-	max(cast(ar1.stratum_1 as int)) * 30 as MaxValue, 
-	30 as IntervalSize
+select  min(cast(ar1.stratum_1 as int)) * 30 as min_value, 
+	max(cast(ar1.stratum_1 as int)) * 30 as max_value, 
+	30 as interval_size
 from ACHILLES_analysis aa1
 inner join ACHILLES_results ar1 on aa1.analysis_id = ar1.analysis_id,
 (

@@ -1,5 +1,5 @@
-(select aa1.analysis_name as AttributeName, 
-  ar1.stratum_1 as AttributeValue
+(select aa1.analysis_name as attribute_name, 
+  ar1.stratum_1 as attribute_value
 from ACHILLES_analysis aa1
 inner join
 ACHILLES_results ar1
@@ -8,12 +8,12 @@ where aa1.analysis_id = 0
 
 union
 
-select aa1.analysis_name as AttributeName, 
-cast(ar1.count_value as varchar) as AttributeValue
+select aa1.analysis_name as attribute_name, 
+cast(ar1.count_value as varchar) as attribute_value
 from ACHILLES_analysis aa1
 inner join
 ACHILLES_results ar1
 on aa1.analysis_id = ar1.analysis_id
 where aa1.analysis_id = 1
 )
-order by AttributeName desc
+order by attribute_name desc

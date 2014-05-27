@@ -1,7 +1,7 @@
 select   concept_hierarchy.concept_id,
-	isNull(concept_hierarchy.soc_concept_name,'NA') + '-' + isNull(concept_hierarchy.hlgt_concept_name,'NA') + '-' + isNull(concept_hierarchy.hlt_concept_name,'NA') + '-' + isNull(concept_hierarchy.pt_concept_name,'NA') + '-' + isNull(concept_hierarchy.snomed_concept_name,'NA') ConceptPath,	ar1.count_value as num_persons, 
-	1.0*ar1.count_value / denom.count_value as pct_persons,
-	1.0*ar2.count_value / ar1.count_value as records_per_person
+	isNull(concept_hierarchy.soc_concept_name,'NA') + '||' + isNull(concept_hierarchy.hlgt_concept_name,'NA') + '||' + isNull(concept_hierarchy.hlt_concept_name,'NA') + '||' + isNull(concept_hierarchy.pt_concept_name,'NA') + '||' + isNull(concept_hierarchy.snomed_concept_name,'NA') concept_path,	ar1.count_value as num_persons, 
+	round(1.0*ar1.count_value / denom.count_value,5) as percent_persons,
+	round(1.0*ar2.count_value / ar1.count_value,5) as records_per_person
 from (select * from ACHILLES_results where analysis_id = 400) ar1
 	inner join
 	(select * from ACHILLES_results where analysis_id = 401) ar2

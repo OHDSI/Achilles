@@ -131,15 +131,15 @@ generateConditionReports <- function(conn, dbms, cdmSchema, outputPath) {
   dataConditionsByType <- querySql(conn,dbms,queryConditionsByType)    
   dataAgeAtFirstDiagnosis <- querySql(conn,dbms,queryAgeAtFirstDiagnosis)    
   
-  uniqueConcepts <- unique(dataPrevalenceByGenderAgeYear$CONCEPTID)
+  uniqueConcepts <- unique(dataPrevalenceByGenderAgeYear$CONCEPT_ID)
   totalCount <- length(uniqueConcepts)
   
   buildConditionReport <- function(concept_id) {
     report <- {}
-    report$PrevalenceByGenderAgeYear <- dataPrevalenceByGenderAgeYear[dataPrevalenceByGenderAgeYear$CONCEPTID == concept_id,c(3,4,5,6)]    
-    report$PrevalenceByMonth <- dataPrevalenceByMonth[dataPrevalenceByMonth$CONCEPTID == concept_id,c(3,4)]
-    report$ConditionsByType <- dataConditionsByType[dataConditionsByType$CONCEPTID == concept_id,c(2,3)]
-    report$AgeAtFirstDiagnosis <- dataAgeAtFirstDiagnosis[dataAgeAtFirstDiagnosis$CONCEPTID == concept_id,c(2,3,4,5,6,7,8,9)]
+    report$PREVALENCE_BY_GENDER_AGE_YEAR <- dataPrevalenceByGenderAgeYear[dataPrevalenceByGenderAgeYear$CONCEPT_ID == concept_id,c(3,4,5,6)]    
+    report$PREVALENCE_BY_MONTH <- dataPrevalenceByMonth[dataPrevalenceByMonth$CONCEPT_ID == concept_id,c(3,4)]
+    report$CONDITIONS_BY_TYPE <- dataConditionsByType[dataConditionsByType$CONDITION_CONCEPT_ID == concept_id,c(4,5)]
+    report$AGE_AT_FIRST_DIAGNOSIS <- dataAgeAtFirstDiagnosis[dataAgeAtFirstDiagnosis$CONCEPT_ID == concept_id,c(2,3,4,5,6,7,8,9)]
     filename <- paste(outputPath, "/conditions/condition_" , concept_id , ".json", sep='')  
     
     write(toJSON(report,method="C"),filename)  
@@ -179,7 +179,7 @@ generatePersonReport <- function(conn, dbms, cdmSchema, outputPath)
   progress = progress + 1
   setTxtProgressBar(progressBar, progress)
   
-  output$Summary = personSummaryData
+  output$SUMMARY = personSummaryData
   
   # 2.  Title:  Gender distribution
   # a.   Visualization: Pie
@@ -194,7 +194,7 @@ generatePersonReport <- function(conn, dbms, cdmSchema, outputPath)
   progress = progress + 1
   setTxtProgressBar(progressBar, progress)
   
-  output$GenderData = genderData
+  output$GENDER_DATA = genderData
   
   # 3.  Title: Race distribution
   # a.  Visualization: Pie
@@ -209,7 +209,7 @@ generatePersonReport <- function(conn, dbms, cdmSchema, outputPath)
   progress = progress + 1
   setTxtProgressBar(progressBar, progress)
   
-  output$RaceData = raceData
+  output$RACE_DATA = raceData
   
   # 4.  Title: Ethnicity distribution
   # a.  Visualization: Pie
@@ -224,7 +224,7 @@ generatePersonReport <- function(conn, dbms, cdmSchema, outputPath)
   progress = progress + 1
   setTxtProgressBar(progressBar, progress)
   
-  output$EthnicityData = ethnicityData
+  output$ETHNICITY_DATA = ethnicityData
   
   # 5.  Title:  Year of birth distribution
   # a.  Visualization:  Histogram
@@ -240,10 +240,10 @@ generatePersonReport <- function(conn, dbms, cdmSchema, outputPath)
   progress = progress + 1
   setTxtProgressBar(progressBar, progress)
   
-  birthYearHist$min = birthYearStats$MinValue
-  birthYearHist$max = birthYearStats$MaxValue
-  birthYearHist$intervalSize = birthYearStats$IntervalSize
-  birthYearHist$intervals = (birthYearStats$MaxValue - birthYearStats$MinValue) / birthYearStats$IntervalSize
+  birthYearHist$MIN = birthYearStats$MIN_VALUE
+  birthYearHist$MAX = birthYearStats$MAX_VALUE
+  birthYearHist$INTERVAL_SIZE = birthYearStats$INTERVAL_SIZE
+  birthYearHist$INTERVALS = (birthYearStats$MAX_VALUE - birthYearStats$MIN_VALUE) / birthYearStats$INTERVAL_SIZE
   
   renderedSql <- renderAndTranslate(sqlFilename = "export/person/yearofbirth_data.sql",
                                     packageName = "Achilles",
@@ -253,9 +253,9 @@ generatePersonReport <- function(conn, dbms, cdmSchema, outputPath)
   progress = progress + 1
   setTxtProgressBar(progressBar, progress)
   
-  birthYearHist$data <- birthYearData
+  birthYearHist$DATA <- birthYearData
   
-  output$BirthYearHistogram <- birthYearHist
+  output$BIRTH_YEAR_HISTOGRAM <- birthYearHist
   
   # Convert to JSON and save file result
   jsonOutput = toJSON(output)
@@ -281,10 +281,10 @@ generateObservationPeriodReport <- function(conn, dbms, cdmSchema, outputPath)
   ageAtFirstObservationHist <- {}
   
   # stats are hard coded for this result to make x-axis consistent across datasources
-  ageAtFirstObservationHist$min = 0
-  ageAtFirstObservationHist$max =100
-  ageAtFirstObservationHist$intervalSize = 1
-  ageAtFirstObservationHist$intervals = 100
+  ageAtFirstObservationHist$MIN = 0
+  ageAtFirstObservationHist$MAX =100
+  ageAtFirstObservationHist$INTERVAL_SIZE = 1
+  ageAtFirstObservationHist$INTERVALS = 100
   
   renderedSql <- renderAndTranslate(sqlFilename = "export/observationperiod/ageatfirst.sql",
                                     packageName = "Achilles",
@@ -293,8 +293,8 @@ generateObservationPeriodReport <- function(conn, dbms, cdmSchema, outputPath)
   ageAtFirstObservationData <- querySql(conn,dbms,renderedSql)
   progress = progress + 1
   setTxtProgressBar(progressBar, progress)
-  ageAtFirstObservationHist$data = ageAtFirstObservationData
-  output$AgeAtFirstObservationHistogram <- ageAtFirstObservationHist
+  ageAtFirstObservationHist$DATA = ageAtFirstObservationData
+  output$AGE_AT_FIRST_OBSERVATION_HISTOGRAM <- ageAtFirstObservationHist
   
   # 2.  Title: Age by gender
   # a.	Visualization:  Side-by-side boxplot
@@ -309,7 +309,7 @@ generateObservationPeriodReport <- function(conn, dbms, cdmSchema, outputPath)
   ageByGenderData <- querySql(conn,dbms,renderedSql)
   progress = progress + 1
   setTxtProgressBar(progressBar, progress)
-  output$AgeByGender = ageByGenderData
+  output$AGE_BY_GENDER = ageByGenderData
   
   # 3.  Title: Length of observation
   # a.	Visualization:  bar
@@ -326,10 +326,10 @@ generateObservationPeriodReport <- function(conn, dbms, cdmSchema, outputPath)
   observationLengthStats <- querySql(conn,dbms,renderedSql)
   progress = progress + 1
   setTxtProgressBar(progressBar, progress)
-  observationLengthHist$min = observationLengthStats$MinValue
-  observationLengthHist$max = observationLengthStats$MaxValue
-  observationLengthHist$intervalSize = observationLengthStats$IntervalSize
-  observationLengthHist$intervals = (observationLengthStats$MaxValue - observationLengthStats$MinValue) / observationLengthStats$IntervalSize
+  observationLengthHist$MIN = observationLengthStats$MIN_VALUE
+  observationLengthHist$MAX = observationLengthStats$MAX_VALUE
+  observationLengthHist$INTERVAL_SIZE = observationLengthStats$INTERVAL_SIZE
+  observationLengthHist$INTERVALS = (observationLengthStats$MAX_VALUE - observationLengthStats$MIN_VALUE) / observationLengthStats$INTERVAL_SIZE
   
   renderedSql <- renderAndTranslate(sqlFilename = "export/observationperiod/observationlength_data.sql",
                                     packageName = "Achilles",
@@ -338,7 +338,7 @@ generateObservationPeriodReport <- function(conn, dbms, cdmSchema, outputPath)
   observationLengthData <- querySql(conn,dbms,renderedSql)
   progress = progress + 1
   setTxtProgressBar(progressBar, progress)
-  observationLengthHist$data <- observationLengthData
+  observationLengthHist$DATA <- observationLengthData
   
   output$ObservationLengthHistogram = observationLengthHist
   
@@ -357,7 +357,7 @@ generateObservationPeriodReport <- function(conn, dbms, cdmSchema, outputPath)
   cumulativeDurationData <- querySql(conn,dbms,renderedSql)
   progress = progress + 1
   setTxtProgressBar(progressBar, progress)
-  output$CumulativeDuration = cumulativeDurationData
+  output$CUMULATIVE_DURATION = cumulativeDurationData
   
   # 5.  Title:  Observation period length distribution, by gender
   # a.	Visualization:  side-by-side boxplot
@@ -372,7 +372,7 @@ generateObservationPeriodReport <- function(conn, dbms, cdmSchema, outputPath)
   opLengthByGenderData <- querySql(conn,dbms,renderedSql)
   progress = progress + 1
   setTxtProgressBar(progressBar, progress)
-  output$ObservationPeriodLengthByGender = opLengthByGenderData
+  output$OBSERVATION_PERIOD_LENGTH_BY_GENDER = opLengthByGenderData
   
   # 6.  Title:  Observation period length distribution, by age
   # a.	Visualization:  side-by-side boxplot
@@ -386,7 +386,7 @@ generateObservationPeriodReport <- function(conn, dbms, cdmSchema, outputPath)
   opLengthByAgeData <- querySql(conn,dbms,renderedSql)
   progress = progress + 1
   setTxtProgressBar(progressBar, progress)
-  output$ObservationPeriodLengthByAge = opLengthByAgeData
+  output$OBSERVATION_PERIOD_LENGTH_BY_AGE = opLengthByAgeData
   
   # 7.  Title:  Number of persons with continuous observation by year
   # a.	Visualization:  Histogram
@@ -401,10 +401,10 @@ generateObservationPeriodReport <- function(conn, dbms, cdmSchema, outputPath)
   observedByYearStats <- querySql(conn,dbms,renderedSql)
   progress = progress + 1
   setTxtProgressBar(progressBar, progress)
-  observedByYearHist$min = observedByYearStats$MinValue
-  observedByYearHist$max = observedByYearStats$MaxValue
-  observedByYearHist$intervalSize = observedByYearStats$IntervalSize
-  observedByYearHist$intervals = (observedByYearStats$MaxValue - observedByYearStats$MinValue) / observedByYearStats$IntervalSize
+  observedByYearHist$MIN = observedByYearStats$MIN_VALUE
+  observedByYearHist$MAX = observedByYearStats$MAX_VALUE
+  observedByYearHist$INTERVAL_SIZE = observedByYearStats$INTERVAL_SIZE
+  observedByYearHist$INTERVALS = (observedByYearStats$MAX_VALUE - observedByYearStats$MIN_VALUE) / observedByYearStats$INTERVAL_SIZE
   
   renderedSql <- renderAndTranslate(sqlFilename = "export/observationperiod/observedbyyear_data.sql",
                                     packageName = "Achilles",
@@ -414,9 +414,9 @@ generateObservationPeriodReport <- function(conn, dbms, cdmSchema, outputPath)
   observedByYearData <- querySql(conn,dbms,renderedSql)
   progress = progress + 1
   setTxtProgressBar(progressBar, progress)
-  observedByYearHist$data <- observedByYearData
+  observedByYearHist$DATA <- observedByYearData
   
-  output$ObservedByYearHistogram = observedByYearHist
+  output$OBSERVED_BY_YEAR_HISTOGRAM = observedByYearHist
   
   # 8.  Title:  Number of persons with continuous observation by month
   # a.	Visualization:  Histogram
@@ -433,7 +433,7 @@ generateObservationPeriodReport <- function(conn, dbms, cdmSchema, outputPath)
   progress = progress + 1
   setTxtProgressBar(progressBar, progress)
   
-  output$ObservedByMonth = observedByMonth
+  output$OBSERVED_BY_MONTH = observedByMonth
   
   # 9.  Title:  Number of observation periods per person
   # a.	Visualization:  Pie
@@ -447,7 +447,7 @@ generateObservationPeriodReport <- function(conn, dbms, cdmSchema, outputPath)
   personPeriodsData <- querySql(conn,dbms,renderedSql)
   progress = progress + 1
   setTxtProgressBar(progressBar, progress)
-  output$PersonPeriodsData = personPeriodsData
+  output$PERSON_PERIODS_DATA = personPeriodsData
   
   # Convert to JSON and save file result
   jsonOutput = toJSON(output)

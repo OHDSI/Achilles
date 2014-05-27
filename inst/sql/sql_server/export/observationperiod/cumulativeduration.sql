@@ -1,6 +1,6 @@
-select 'Length of observation' as SeriesName, 
-	cast(ar1.stratum_1 as int)*30 as XLengthOfObservation, 
-	1.0*sum(ar2.count_value) / denom.count_value as YPercentPersons
+select 'Length of observation' as series_name, 
+	cast(ar1.stratum_1 as int)*30 as x_length_of_observation, 
+	round(1.0*sum(ar2.count_value) / denom.count_value,5) as y_percent_persons
 from (select * from ACHILLES_results where analysis_id = 108) ar1
 inner join
 (

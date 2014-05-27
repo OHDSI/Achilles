@@ -1,9 +1,9 @@
-  select c1.concept_id as ConceptId,  
-    c1.concept_name as ConceptName,
-  	cast(cast(num.stratum_4 as int)*10 as varchar) + '-' + cast((cast(num.stratum_4 as int)+1)*10-1 as varchar) as TrellisName, --age decile
-  	c2.concept_name as SeriesName,  --gender
-  	num.stratum_2 as XCalendarYear,   -- calendar year, note, there could be blanks
-  	1000*(1.0*num.count_value/denom.count_value) as YPrevalence1000PP  --prevalence, per 1000 persons
+  select c1.concept_id as concept_id,  
+    c1.concept_name as concept_name,
+  	cast(cast(num.stratum_4 as int)*10 as varchar) + '-' + cast((cast(num.stratum_4 as int)+1)*10-1 as varchar) as trellis_name, --age decile
+  	c2.concept_name as series_name,  --gender
+  	num.stratum_2 as x_calendar_year,   -- calendar year, note, there could be blanks
+  	round(1000*(1.0*num.count_value/denom.count_value),5) as y_prevalence_1000pp  --prevalence, per 1000 persons
   from 
   	(select * from ACHILLES_results where analysis_id = 404) num
   	inner join
@@ -16,4 +16,5 @@
   	on CAST(num.stratum_1 AS INT) = c1.concept_id
   	inner join
   	@cdmSchema.dbo.concept c2
-  	on CAST(num.stratum_3 AS INT) = c2.concept_id
+  	on CAST(num.stratum_3 AS INT) = c2.concept_id 
+  where c2.concept_id in (8507, 8532)

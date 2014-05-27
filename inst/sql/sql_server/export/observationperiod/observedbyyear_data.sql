@@ -1,6 +1,6 @@
-select cast(ar1.stratum_1 as int) - MinValue.MinValue as IntervalIndex, 
-  ar1.count_value as CountValue, 
-  1.0*ar1.count_value / denom.count_value as PercentValue
+select cast(ar1.stratum_1 as int) - MinValue.MinValue as interval_index, 
+  ar1.count_value as count_value, 
+  round(1.0*ar1.count_value / denom.count_value,5) as percent_value
 from 
 (
 	select * from ACHILLES_results where analysis_id = 109
