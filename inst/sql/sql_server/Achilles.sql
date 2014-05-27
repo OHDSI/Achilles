@@ -8,6 +8,7 @@ Patrick Ryan
 {DEFAULT @results_schema = 'scratch'}
 {DEFAULT @source_name = 'TRUVEN MDCD'}
 {DEFAULT @smallcellcount = 5}
+{DEFAULT @createTable = TRUE}
 
   /****
     developer comment about general ACHILLES calculation process:  
@@ -22,6 +23,8 @@ use @results_schema;
 IF OBJECT_ID('ACHILLES_analysis', 'U') IS NOT NULL
   drop table ACHILLES_analysis;
 
+
+--{@createTable}?{
 create table ACHILLES_analysis
 (
 	analysis_id int,
@@ -686,7 +689,7 @@ insert into ACHILLES_analysis (analysis_id, analysis_name, stratum_1_name)
 insert into ACHILLES_analysis (analysis_id, analysis_name)
 	values (1701, 'Number of records with cohort end date < cohort start date');
 
-
+--} end of createTable clause
 
 /****
 7. generate results for analysis_results

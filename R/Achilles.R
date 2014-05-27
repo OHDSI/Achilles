@@ -119,6 +119,7 @@ renderAndTranslate <- function(sqlFilename, packageName, dbms, ...){
 #' @param sourceName		string name of the database, as recorded in results
 #' @param analysisIds		(optional) a vector containing the set of Achilles analysisIds for which results will be generated.
 #' If not specified, all analyses will be executed.
+#' @param createTable     If true, new results tables will be created in the results schema. If not, the tables are assumed to already exists, and analysis results will be added
 #' 
 #' @return An object of type \code{oscarResults} containing details for connecting to the database containing the results 
 #' @examples \dontrun{
@@ -127,7 +128,7 @@ renderAndTranslate <- function(sqlFilename, packageName, dbms, ...){
 #'   plot(achillesResults, "population")
 #' }
 #' @export
-achilles <- function (connectionDetails, cdmSchema, resultsSchema, sourceName = "", analysisIds){
+achilles <- function (connectionDetails, cdmSchema, resultsSchema, sourceName = "", analysisIds, createTable = TRUE){
   if (missing(analysisIds))
     analysisIds = all_analysis_ids
   
@@ -140,7 +141,8 @@ achilles <- function (connectionDetails, cdmSchema, resultsSchema, sourceName = 
                                     CDM_schema = cdmSchema, 
                                     results_schema = resultsSchema, 
                                     source_name = sourceName, 
-                                    list_of_analysis_ids = analysisIds
+                                    list_of_analysis_ids = analysisIds,
+                                    createTable = createTable
   )
   
   conn <- connect(connectionDetails)

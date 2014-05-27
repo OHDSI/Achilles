@@ -1,7 +1,7 @@
 # some test-code
 
 testCode <- function(){
-  pw <- ""
+  pw <- "F1r3starter"
   
   #Test on SQL Server:
   setwd("c:/temp")
