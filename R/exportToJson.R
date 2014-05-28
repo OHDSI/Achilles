@@ -340,7 +340,7 @@ generateObservationPeriodReport <- function(conn, dbms, cdmSchema, outputPath)
   setTxtProgressBar(progressBar, progress)
   observationLengthHist$DATA <- observationLengthData
   
-  output$ObservationLengthHistogram = observationLengthHist
+  output$OBSERVATION_LENGTH_HISTOGRAM = observationLengthHist
   
   
   # 4.  Title:  Cumulative duration of observation
