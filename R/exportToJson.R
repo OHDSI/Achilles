@@ -242,10 +242,7 @@ generateDrugReports <- function(conn, dbms, cdmSchema, outputPath) {
   dataRefillsDistribution <- querySql(conn,dbms,queryRefillsDistribution) 
   
   uniqueConcepts <- unique(dataPrevalenceByGenderAgeYear$CONCEPT_ID)
-  
-  #testing mode
-  uniqueConcepts <- head(uniqueConcepts,100)
-  
+    
   totalCount <- length(uniqueConcepts)
   
   buildDrugReport <- function(concept_id) {
