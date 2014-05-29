@@ -63,6 +63,7 @@ exportToJson <- function (connectionDetails, cdmSchema, resultsSchema, outputPat
   generateConditionReports(conn, connectionDetails$dbms, cdmSchema, outputPath)
   generateDrugTreemap(conn, connectionDetails$dbms, cdmSchema, outputPath)  
   generateDrugReports(conn, connectionDetails$dbms, cdmSchema, outputPath)
+  generateDashboardReport(outputPath)
   
   dummy <- dbDisconnect(conn)
   
@@ -569,3 +570,39 @@ generateObservationPeriodReport <- function(conn, dbms, cdmSchema, outputPath)
   write(jsonOutput, file=paste(outputPath, "/observationperiod.json", sep=""))
   close(progressBar)
 }
+
+generateDashboardReport <- function(outputPath)
+{
+  output <- {}
+
+  progressBar <- txtProgressBar(max=4,style=3)
+  progress = 0
+
+  progress = progress + 1
+  setTxtProgressBar(progressBar, progress)
+  
+  personReport <- fromJSON(file = paste(outputPath, "/person.json", sep=""))
+  output$SUMMARY <- personReport$SUMMARY
+  output$GENDER_DATA <- personReport$GENDER_DATA
+
+  progress = progress + 1
+  setTxtProgressBar(progressBar, progress)
+  
+  opReport <- fromJSON(file = paste(outputPath, "/observationperiod.json", sep=""))
+  
+  output$AGE_AT_FIRST_OBSERVATION_HISTOGRAM = opReport$AGE_AT_FIRST_OBSERVATION_HISTOGRAM
+  output$CUMULATIVE_DURATION = opReport$CUMULATIVE_DURATION
+  output$OBSERVED_BY_MONTH = opReport$OBSERVED_BY_MONTH
+  
+  progress = progress + 1
+  setTxtProgressBar(progressBar, progress)
+  
+  jsonOutput = toJSON(output)
+  write(jsonOutput, file=paste(outputPath, "/dashboard.json", sep=""))  
+  progress = progress + 1
+  setTxtProgressBar(progressBar, progress)
+
+  close(progressBar)
+  
+}
+
