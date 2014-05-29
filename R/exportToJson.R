@@ -61,10 +61,32 @@ exportToJson <- function (connectionDetails, cdmSchema, resultsSchema, outputPat
   generateObservationPeriodReport(conn, connectionDetails$dbms, cdmSchema, outputPath)
   generateConditionTreemap(conn, connectionDetails$dbms, cdmSchema, outputPath)  
   generateConditionReports(conn, connectionDetails$dbms, cdmSchema, outputPath)
+  generateDrugTreemap(conn, connectionDetails$dbms, cdmSchema, outputPath)  
+  generateDrugReports(conn, connectionDetails$dbms, cdmSchema, outputPath)
   
   dummy <- dbDisconnect(conn)
   
   writeLines(paste("Export complete. JSON files can now be found in",outputPath))
+}
+
+generateDrugTreemap <- function(conn, dbms,cdmSchema, outputPath) {
+  writeLines("Generating drug treemap")
+  progressBar <- txtProgressBar(max=1,style=3)
+  progress = 0
+  
+  queryDrugTreemap <- renderAndTranslate(sqlFilename = "export/drug/sqlDrugTreemap.sql",
+                                              packageName = "Achilles",
+                                              dbms = dbms,
+                                              cdmSchema = cdmSchema
+  )  
+  
+  dataDrugTreemap <- querySql(conn,dbms,queryDrugTreemap) 
+  
+  write(toJSON(dataDrugTreemap,method="C"),paste(outputPath, "/drug_treemap.json", sep=''))
+  progress = progress + 1
+  setTxtProgressBar(progressBar, progress)
+  
+  close(progressBar)  
 }
 
 generateConditionTreemap <- function(conn, dbms, cdmSchema, outputPath) {
@@ -83,7 +105,6 @@ generateConditionTreemap <- function(conn, dbms, cdmSchema, outputPath) {
   write(toJSON(dataConditionTreemap,method="C"),paste(outputPath, "/condition_treemap.json", sep=''))
   progress = progress + 1
   setTxtProgressBar(progressBar, progress)
-  
   
   close(progressBar)
 }
@@ -152,6 +173,103 @@ generateConditionReports <- function(conn, dbms, cdmSchema, outputPath) {
   }
   
   dummy <- lapply(uniqueConcepts, buildConditionReport)  
+  
+  setTxtProgressBar(progressBar, 1)
+  close(progressBar)
+}
+
+generateDrugReports <- function(conn, dbms, cdmSchema, outputPath) {
+  writeLines("Generating drug reports")
+  
+  drugsFolder <- file.path(outputPath,"drugs")
+  if (file.exists(drugsFolder)){
+    writeLines(paste("Warning: folder ",drugsFolder," already exists"))
+  } else {
+    dir.create(paste(drugsFolder,"/",sep=""))
+  }
+  
+  progressBar <- txtProgressBar(style=3)
+  progress = 0
+  
+  queryAgeAtFirstExposure <- renderAndTranslate(sqlFilename = "export/drug/sqlAgeAtFirstExposure.sql",
+                                                       packageName = "Achilles",
+                                                       dbms = dbms,
+                                                       cdmSchema = cdmSchema
+  )
+  
+  queryDaysSupplyDistribution <- renderAndTranslate(sqlFilename = "export/drug/sqlDaysSupplyDistribution.sql",
+                                                       packageName = "Achilles",
+                                                       dbms = dbms,
+                                                       cdmSchema = cdmSchema
+  )
+  
+  queryDrugsByType <- renderAndTranslate(sqlFilename = "export/drug/sqlDrugsByType.sql",
+                                                       packageName = "Achilles",
+                                                       dbms = dbms,
+                                                       cdmSchema = cdmSchema
+  )
+  
+  queryPrevalenceByGenderAgeYear <- renderAndTranslate(sqlFilename = "export/drug/sqlPrevalenceByGenderAgeYear.sql",
+                                                       packageName = "Achilles",
+                                                       dbms = dbms,
+                                                       cdmSchema = cdmSchema
+  )
+  
+  queryPrevalenceByMonth <- renderAndTranslate(sqlFilename = "export/drug/sqlPrevalenceByMonth.sql",
+                                                       packageName = "Achilles",
+                                                       dbms = dbms,
+                                                       cdmSchema = cdmSchema
+  )
+  
+  queryQuantityDistribution <- renderAndTranslate(sqlFilename = "export/drug/sqlQuantityDistribution.sql",
+                                                       packageName = "Achilles",
+                                                       dbms = dbms,
+                                                       cdmSchema = cdmSchema
+  )
+  
+  queryRefillsDistribution <- renderAndTranslate(sqlFilename = "export/drug/sqlRefillsDistribution.sql",
+                                                       packageName = "Achilles",
+                                                       dbms = dbms,
+                                                       cdmSchema = cdmSchema
+  )
+
+  dataAgeAtFirstExposure <- querySql(conn,dbms,queryAgeAtFirstExposure) 
+  dataDaysSupplyDistribution <- querySql(conn,dbms,queryDaysSupplyDistribution) 
+  dataDrugsByType <- querySql(conn,dbms,queryDrugsByType) 
+  dataPrevalenceByGenderAgeYear <- querySql(conn,dbms,queryPrevalenceByGenderAgeYear) 
+  dataPrevalenceByMonth <- querySql(conn,dbms,queryPrevalenceByMonth)
+  dataQuantityDistribution <- querySql(conn,dbms,queryQuantityDistribution) 
+  dataRefillsDistribution <- querySql(conn,dbms,queryRefillsDistribution) 
+  
+  uniqueConcepts <- unique(dataPrevalenceByGenderAgeYear$CONCEPT_ID)
+  
+  #testing mode
+  uniqueConcepts <- head(uniqueConcepts,100)
+  
+  totalCount <- length(uniqueConcepts)
+  
+  buildDrugReport <- function(concept_id) {
+    report <- {}
+    report$AGE_AT_FIRST_EXPOSURE <- dataAgeAtFirstExposure[dataAgeAtFirstExposure$DRUG_CONCEPT_ID == concept_id,c(2,3,4,5,6,7,8,9)]
+    report$DAYS_SUPPLY_DISTRIBUTION <- dataDaysSupplyDistribution[dataDaysSupplyDistribution$DRUG_CONCEPT_ID == concept_id, c(2,3,4,5,6,7,8,9)]
+    report$DRUGS_BY_TYPE <- dataDrugsByType[dataDrugsByType$DRUG_CONCEPT_ID == concept_id, c(3,4)]
+    report$PREVALENCE_BY_GENDER_AGE_YEAR <- dataPrevalenceByGenderAgeYear[dataPrevalenceByGenderAgeYear$CONCEPT_ID == concept_id,c(3,4,5,6)]  
+    report$PREVALENCE_BY_MONTH <- dataPrevalenceByMonth[dataPrevalenceByMonth$CONCEPT_ID == concept_id,c(3,4)]
+    report$QUANTITY_DISTRIBUTION <- dataQuantityDistribution[dataQuantityDistribution$DRUG_CONCEPT_ID == concept_id, c(2,3,4,5,6,7,8,9)]
+    report$REFILLS_DISTRIBUTION <- dataRefillsDistribution[dataRefillsDistribution$DRUG_CONCEPT_ID == concept_id, c(2,3,4,5,6,7,8,9)]
+    
+    filename <- paste(outputPath, "/drugs/drug_" , concept_id , ".json", sep='')  
+    
+    write(toJSON(report,method="C"),filename)  
+    
+    #Update progressbar:
+    env <- parent.env(environment())
+    curVal <- get("progress", envir = env)
+    assign("progress", curVal +1 ,envir= env)
+    setTxtProgressBar(get("progressBar", envir= env), (curVal + 1) / get("totalCount", envir= env))
+  }
+  
+  dummy <- lapply(uniqueConcepts, buildDrugReport)  
   
   setTxtProgressBar(progressBar, 1)
   close(progressBar)
