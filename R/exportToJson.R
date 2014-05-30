@@ -57,15 +57,15 @@ exportToJson <- function (connectionDetails, cdmSchema, resultsSchema, outputPat
   conn <- connect(connectionDetails)
   
   # generate reports
-#   generatePersonReport(conn, connectionDetails$dbms, cdmSchema, outputPath)
-#   generateObservationPeriodReport(conn, connectionDetails$dbms, cdmSchema, outputPath)
-#   generateConditionTreemap(conn, connectionDetails$dbms, cdmSchema, outputPath)  
-#   generateConditionReports(conn, connectionDetails$dbms, cdmSchema, outputPath)
-#   generateDrugTreemap(conn, connectionDetails$dbms, cdmSchema, outputPath)  
-#   generateDrugReports(conn, connectionDetails$dbms, cdmSchema, outputPath)
+  generatePersonReport(conn, connectionDetails$dbms, cdmSchema, outputPath)
+  generateObservationPeriodReport(conn, connectionDetails$dbms, cdmSchema, outputPath)
+  generateConditionTreemap(conn, connectionDetails$dbms, cdmSchema, outputPath)  
+  generateConditionReports(conn, connectionDetails$dbms, cdmSchema, outputPath)
+  generateDrugTreemap(conn, connectionDetails$dbms, cdmSchema, outputPath)  
+  generateDrugReports(conn, connectionDetails$dbms, cdmSchema, outputPath)
   generateProcedureTreemap(conn, connectionDetails$dbms, cdmSchema, outputPath)
   generateProcedureReports(conn, connectionDetails$dbms, cdmSchema, outputPath)
-#   generateDashboardReport(outputPath)
+  generateDashboardReport(outputPath)
   
   dummy <- dbDisconnect(conn)
   
