@@ -57,13 +57,15 @@ exportToJson <- function (connectionDetails, cdmSchema, resultsSchema, outputPat
   conn <- connect(connectionDetails)
   
   # generate reports
-  generatePersonReport(conn, connectionDetails$dbms, cdmSchema, outputPath)
-  generateObservationPeriodReport(conn, connectionDetails$dbms, cdmSchema, outputPath)
-  generateConditionTreemap(conn, connectionDetails$dbms, cdmSchema, outputPath)  
-  generateConditionReports(conn, connectionDetails$dbms, cdmSchema, outputPath)
-  generateDrugTreemap(conn, connectionDetails$dbms, cdmSchema, outputPath)  
-  generateDrugReports(conn, connectionDetails$dbms, cdmSchema, outputPath)
-  generateDashboardReport(outputPath)
+#   generatePersonReport(conn, connectionDetails$dbms, cdmSchema, outputPath)
+#   generateObservationPeriodReport(conn, connectionDetails$dbms, cdmSchema, outputPath)
+#   generateConditionTreemap(conn, connectionDetails$dbms, cdmSchema, outputPath)  
+#   generateConditionReports(conn, connectionDetails$dbms, cdmSchema, outputPath)
+#   generateDrugTreemap(conn, connectionDetails$dbms, cdmSchema, outputPath)  
+#   generateDrugReports(conn, connectionDetails$dbms, cdmSchema, outputPath)
+  generateProcedureTreemap(conn, connectionDetails$dbms, cdmSchema, outputPath)
+  generateProcedureReports(conn, connectionDetails$dbms, cdmSchema, outputPath)
+#   generateDashboardReport(outputPath)
   
   dummy <- dbDisconnect(conn)
   
@@ -272,6 +274,100 @@ generateDrugReports <- function(conn, dbms, cdmSchema, outputPath) {
   setTxtProgressBar(progressBar, 1)
   close(progressBar)
 }
+
+generateProcedureTreemap <- function(conn, dbms, cdmSchema, outputPath) {
+  writeLines("Generating procedure treemap")
+  progressBar <- txtProgressBar(max=1,style=3)
+  progress = 0
+  
+  queryProcedureTreemap <- renderAndTranslate(sqlFilename = "export/procedure/sqlProcedureTreemap.sql",
+                                              packageName = "Achilles",
+                                              dbms = dbms,
+                                              cdmSchema = cdmSchema
+  )  
+  
+  dataProcedureTreemap <- querySql(conn,dbms,queryProcedureTreemap) 
+  
+  write(toJSON(dataProcedureTreemap,method="C"),paste(outputPath, "/procedure_treemap.json", sep=''))
+  progress = progress + 1
+  setTxtProgressBar(progressBar, progress)
+  
+  close(progressBar)
+}
+
+generateProcedureReports <- function(conn, dbms, cdmSchema, outputPath) {
+  writeLines("Generating procedure reports")
+  
+  proceduresFolder <- file.path(outputPath,"procedures")
+  if (file.exists(proceduresFolder)){
+    writeLines(paste("Warning: folder ",proceduresFolder," already exists"))
+  } else {
+    dir.create(paste(proceduresFolder,"/",sep=""))
+    
+  }
+  
+  progressBar <- txtProgressBar(style=3)
+  progress = 0
+  
+  queryPrevalenceByGenderAgeYear <- renderAndTranslate(sqlFilename = "export/procedure/sqlPrevalenceByGenderAgeYear.sql",
+                                                       packageName = "Achilles",
+                                                       dbms = dbms,
+                                                       cdmSchema = cdmSchema
+  )
+  
+  queryPrevalenceByMonth <- renderAndTranslate(sqlFilename = "export/procedure/sqlPrevalenceByMonth.sql",
+                                               packageName = "Achilles",
+                                               dbms = dbms,
+                                               cdmSchema = cdmSchema
+  )
+  
+  queryProceduresByType <- renderAndTranslate(sqlFilename = "export/procedure/sqlProceduresByType.sql",
+                                              packageName = "Achilles",
+                                              dbms = dbms,
+                                              cdmSchema = cdmSchema
+  )
+  
+  queryAgeAtFirstOccurrence <- renderAndTranslate(sqlFilename = "export/procedure/sqlAgeAtFirstOccurrence.sql",
+                                                 packageName = "Achilles",
+                                                 dbms = dbms,
+                                                 cdmSchema = cdmSchema
+  )
+  
+  dataPrevalenceByGenderAgeYear <- querySql(conn,dbms,queryPrevalenceByGenderAgeYear) 
+  dataPrevalenceByMonth <- querySql(conn,dbms,queryPrevalenceByMonth)  
+  dataProceduresByType <- querySql(conn,dbms,queryProceduresByType)    
+  dataAgeAtFirstOccurrence <- querySql(conn,dbms,queryAgeAtFirstOccurrence)    
+  
+  uniqueConcepts <- unique(dataPrevalenceByGenderAgeYear$CONCEPT_ID)
+  
+  #todo: remove this for debugging
+  uniqueConcepts <- head(uniqueConcepts,n=10)
+  
+  totalCount <- length(uniqueConcepts)
+  
+  buildProcedureReport <- function(concept_id) {
+    report <- {}
+    report$PREVALENCE_BY_GENDER_AGE_YEAR <- dataPrevalenceByGenderAgeYear[dataPrevalenceByGenderAgeYear$CONCEPT_ID == concept_id,c(3,4,5,6)]    
+    report$PREVALENCE_BY_MONTH <- dataPrevalenceByMonth[dataPrevalenceByMonth$CONCEPT_ID == concept_id,c(3,4)]
+    report$PROCEDURES_BY_TYPE <- dataProceduresByType[dataProceduresByType$PROCEDURE_CONCEPT_ID == concept_id,c(4,5)]
+    report$AGE_AT_FIRST_OCCURRENCE <- dataAgeAtFirstOccurrence[dataAgeAtFirstOccurrence$CONCEPT_ID == concept_id,c(2,3,4,5,6,7,8,9)]
+    filename <- paste(outputPath, "/procedures/procedure_" , concept_id , ".json", sep='')  
+    
+    write(toJSON(report,method="C"),filename)  
+    
+    #Update progressbar:
+    env <- parent.env(environment())
+    curVal <- get("progress", envir = env)
+    assign("progress", curVal +1 ,envir= env)
+    setTxtProgressBar(get("progressBar", envir= env), (curVal + 1) / get("totalCount", envir= env))
+  }
+  
+  dummy <- lapply(uniqueConcepts, buildProcedureReport)  
+  
+  setTxtProgressBar(progressBar, 1)
+  close(progressBar)
+}
+
 
 generatePersonReport <- function(conn, dbms, cdmSchema, outputPath)
 {
