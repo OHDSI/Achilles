@@ -11,6 +11,5 @@ from
 	on num.stratum_2 = denom.stratum_1  --calendar year
 	and num.stratum_3 = denom.stratum_2 --gender
 	and num.stratum_4 = denom.stratum_3 --age decile
-	inner join @cdmSchema.dbo.concept c1 on num.stratum_1 = c1.concept_id
-	inner join @cdmSchema.dbo.concept c2 on num.stratum_3 = c2.concept_id
-;
+	inner join @cdmSchema.dbo.concept c1 on CAST(num.stratum_1 AS INT)= c1.concept_id
+	inner join @cdmSchema.dbo.concept c2 on CAST(num.stratum_3 AS INT) = c2.concept_id

@@ -66,7 +66,7 @@ from (select * from ACHILLES_results where analysis_id = 600) ar1
 	 (select DESCENDANT_CONCEPT_ID as os1_concept_id, concept_name as os1_concept_name
 	 from @cdmSchema.dbo.concept_ancestor ca1
 		inner join
-		concept c1
+		@cdmSchema.dbo.concept c1
 		on ca1.DESCENDANT_CONCEPT_ID = c1.concept_id
 	 where ancestor_concept_id = 4040390
 	 and Min_LEVELS_OF_SEPARATION = 1
@@ -76,13 +76,13 @@ from (select * from ACHILLES_results where analysis_id = 600) ar1
 	 (select max(c1.CONCEPT_ID) as os1_concept_id, c2.concept_id as os2_concept_id, c2.concept_name as os2_concept_name
 	 from @cdmSchema.dbo.concept_ancestor ca1
 		inner join
-		concept c1
+		@cdmSchema.dbo.concept c1
 		on ca1.DESCENDANT_CONCEPT_ID = c1.concept_id
 		inner join
-		concept_ancestor ca2
+		@cdmSchema.dbo.concept_ancestor ca2
 		on c1.concept_id = ca2.ANCESTOR_CONCEPT_ID
 		inner join
-		concept c2
+		@cdmSchema.dbo.concept c2
 		on ca2.DESCENDANT_CONCEPT_ID = c2.concept_id
 	 where ca1.ancestor_concept_id = 4040390
 	 and ca1.Min_LEVELS_OF_SEPARATION = 1
@@ -95,13 +95,13 @@ from (select * from ACHILLES_results where analysis_id = 600) ar1
 	 (select max(c1.CONCEPT_ID) as os2_concept_id, c2.concept_id as os3_concept_id, c2.concept_name as os3_concept_name
 	 from @cdmSchema.dbo.concept_ancestor ca1
 		inner join
-		concept c1
+		@cdmSchema.dbo.concept c1
 		on ca1.DESCENDANT_CONCEPT_ID = c1.concept_id
 		inner join
-		concept_ancestor ca2
+		@cdmSchema.dbo.concept_ancestor ca2
 		on c1.concept_id = ca2.ANCESTOR_CONCEPT_ID
 		inner join
-		concept c2
+		@cdmSchema.dbo.concept c2
 		on ca2.DESCENDANT_CONCEPT_ID = c2.concept_id
 	 where ca1.ancestor_concept_id = 4040390
 	 and ca1.Min_LEVELS_OF_SEPARATION = 2
@@ -115,9 +115,8 @@ from (select * from ACHILLES_results where analysis_id = 600) ar1
 		procs.proc_concept_name
 
 	) concept_hierarchy
-	on ar1.stratum_1 = concept_hierarchy.concept_id
+	on CAST(ar1.stratum_1 AS INT) = concept_hierarchy.concept_id
 	,
 	(select count_value from ACHILLES_results where analysis_id = 1) denom
 
 order by ar1.count_value desc
-;

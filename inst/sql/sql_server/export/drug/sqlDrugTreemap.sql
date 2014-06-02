@@ -91,7 +91,7 @@ from (select * from ACHILLES_results where analysis_id = 700) ar1
 		left join @cdmSchema.dbo.concept atc1
 		 on atc3_to_atc1.atc1_concept_id = atc1.concept_id
 	) concept_hierarchy
-	on ar1.stratum_1 = concept_hierarchy.concept_id
+	on ar1.stratum_1 = CAST(concept_hierarchy.concept_id AS VARCHAR)
 	,
 	(select count_value from ACHILLES_results where analysis_id = 1) denom
 
