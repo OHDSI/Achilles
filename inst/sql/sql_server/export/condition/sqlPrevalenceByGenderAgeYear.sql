@@ -13,8 +13,8 @@
   	and num.stratum_4 = denom.stratum_3 --age decile
   	inner join
   	@cdmSchema.dbo.concept c1
-  	on CAST(num.stratum_1 AS INT) = c1.concept_id
+  	on num.stratum_1 = CAST(c1.concept_id AS VARCHAR)
   	inner join
   	@cdmSchema.dbo.concept c2
-  	on CAST(num.stratum_3 AS INT) = c2.concept_id 
+  	on num.stratum_3 = CAST(c2.concept_id AS VARCHAR)
   where c2.concept_id in (8507, 8532)

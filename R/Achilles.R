@@ -125,7 +125,6 @@ renderAndTranslate <- function(sqlFilename, packageName, dbms, ...){
 #' @examples \dontrun{
 #'   connectionDetails <- createConnectionDetails(dbms="sql server", server="RNDUSRDHIT07.jnj.com")
 #'   achillesResults <- achilles(connectionDetails, "cdm4_sim", "scratch", "TestDB")
-#'   plot(achillesResults, "population")
 #' }
 #' @export
 achilles <- function (connectionDetails, cdmSchema, resultsSchema, sourceName = "", analysisIds, createTable = TRUE){

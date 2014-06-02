@@ -669,6 +669,7 @@ generateObservationPeriodReport <- function(conn, dbms, cdmSchema, outputPath)
 
 generateDashboardReport <- function(outputPath)
 {
+  writeLines("Generating dashboard report")
   output <- {}
 
   progressBar <- txtProgressBar(max=4,style=3)

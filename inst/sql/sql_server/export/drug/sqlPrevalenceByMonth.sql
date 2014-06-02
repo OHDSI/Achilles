@@ -10,4 +10,3 @@ from
 	inner join
 	@cdmSchema.dbo.concept c1
 	on num.stratum_1 = c1.concept_id
-;
