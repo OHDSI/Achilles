@@ -57,6 +57,7 @@ exportToJson <- function (connectionDetails, cdmSchema, resultsSchema, outputPat
   conn <- connect(connectionDetails)
   
   # generate reports
+  generateDataDensityReport(conn, connectionDetails$dbms, cdmSchema, outputPath)
   generatePersonReport(conn, connectionDetails$dbms, cdmSchema, outputPath)
   generateObservationPeriodReport(conn, connectionDetails$dbms, cdmSchema, outputPath)
   generateConditionTreemap(conn, connectionDetails$dbms, cdmSchema, outputPath)  
@@ -700,5 +701,66 @@ generateDashboardReport <- function(outputPath)
 
   close(progressBar)
   
+}
+
+generateDataDensityReport <- function(conn, dbms,cdmSchema, outputPath)
+{
+  writeLines("Generating data density reports")
+  progressBar <- txtProgressBar(max=3,style=3)
+  progress = 0
+  output = {}
+  
+#   1.  Title: Total records
+#   a.	Visualization: scatterplot
+#   b.	X-axis:  month/year
+#   c.	y-axis:  records
+#   d.	series:  person, visit, condition, drug, procedure, observation
+  
+  renderedSql <- renderAndTranslate(sqlFilename = "export/datadensity/totalrecords.sql",
+                                    packageName = "Achilles",
+                                    dbms = dbms
+  )  
+  
+  totalRecordsData <- querySql(conn,dbms,renderedSql)
+  progress = progress + 1
+  setTxtProgressBar(progressBar, progress)
+  output$TOTAL_RECORDS = totalRecordsData
+
+#   2.  Title: Records per person
+#   a.	Visualization: scatterplot
+#   b.	X-axis:  month/year
+#   c.	y-axis:  records/person
+#   d.	series:  person, visit, condition, drug, procedure, observation
+  
+  renderedSql <- renderAndTranslate(sqlFilename = "export/datadensity/recordsperperson.sql",
+                                    packageName = "Achilles",
+                                    dbms = dbms
+  )  
+  
+  recordsPerPerson <- querySql(conn,dbms,renderedSql)
+  progress = progress + 1
+  setTxtProgressBar(progressBar, progress)
+  output$RECORDS_PER_PERSON = recordsPerPerson
+
+#   3.  Title:  Concepts per person
+#   a.	Visualization: side-by-side boxplot
+#   b.	Category: Condition/Drug/Procedure/Observation
+#   c.	Values: Min/25%/Median/95%/Max  number of distinct concepts per person
+  
+  renderedSql <- renderAndTranslate(sqlFilename = "export/datadensity/conceptsperperson.sql",
+                                    packageName = "Achilles",
+                                    dbms = dbms
+  )  
+
+  conceptsPerPerson <- querySql(conn,dbms,renderedSql)
+  progress = progress + 1
+  setTxtProgressBar(progressBar, progress)
+  output$CONCEPTS_PER_PERSON = conceptsPerPerson
+
+  # Convert to JSON and save file result
+  jsonOutput = toJSON(output)
+  write(jsonOutput, file=paste(outputPath, "/datadensity.json", sep=""))
+  close(progressBar)
+
 }
 
