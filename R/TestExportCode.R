@@ -2,7 +2,7 @@
 
 testExportCode <- function(){
   
-  pw <- "F1r3starter"
+  pw <- ""
   
   #Test on SQL Server
   setwd("c:/temp")
