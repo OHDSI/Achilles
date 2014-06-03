@@ -1,6 +1,6 @@
 select t1.table_name as SERIES_NAME,
 	t1.stratum_1 as X_CALENDAR_MONTH,
-	1.0*t1.count_value/denom.count_value as Y_RECORD_COUNT
+	round(1.0*t1.count_value/denom.count_value,5) as Y_RECORD_COUNT
 from
 (
 	select 'Visit occurrence' as table_name, stratum_1, count_value from ACHILLES_results where analysis_id = 220
@@ -24,4 +24,3 @@ from
 inner join
 (select * from ACHILLES_results where analysis_id = 117) denom
 on t1.stratum_1 = denom.stratum_1
-;

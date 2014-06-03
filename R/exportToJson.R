@@ -42,6 +42,7 @@
 #' @export
 exportToJson <- function (connectionDetails, cdmSchema, resultsSchema, outputPath = getwd())
 {
+  start <- Sys.time()
   if (missing(resultsSchema))
     resultsSchema <- cdmSchema
   
@@ -70,7 +71,9 @@ exportToJson <- function (connectionDetails, cdmSchema, resultsSchema, outputPat
   
   dummy <- dbDisconnect(conn)
   
-  writeLines(paste("Export complete. JSON files can now be found in",outputPath))
+  delta <- Sys.time() - start
+  writeLines(paste("Export took", signif(delta,3), attr(delta,"units")))
+  writeLines(paste("JSON files can now be found in",outputPath))
 }
 
 generateDrugTreemap <- function(conn, dbms,cdmSchema, outputPath) {
