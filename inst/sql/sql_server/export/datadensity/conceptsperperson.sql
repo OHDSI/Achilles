@@ -73,4 +73,4 @@ select 'Condition era' as Category,
 	ard1.max_value as max_value
 from ACHILLES_results_dist ard1
 where ard1.analysis_id = 1003
-;
+

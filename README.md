@@ -27,7 +27,7 @@ achillesResults <- achilles(connectionDetails, "cdm4_inst", "results")
 Currently "sql server", "oracle" and "postgresql" are supported as dbms.
 4. To use [AchillesWeb](https://github.com/OHDSI/AchillesWeb) to explore the Achilles statistics, you must first export the statistics to JSON files:
 ```r
-exportToJson(connectionDetails, cdmSchema = "cdm4_inst", resultsSchema = "results",outputPath = "c:/myPath/AchillesExport")
+exportToJson(connectionDetails, "cdm4_inst", "results", "c:/myPath/AchillesExport")
 ```
 
 License
