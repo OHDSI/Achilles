@@ -971,11 +971,11 @@ generateObservationReports <- function(conn, dbms, cdmSchema, outputPath)
     report$OBSERVATIONS_BY_TYPE <- dataObservationsByType[dataObservationsByType$OBSERVATION_CONCEPT_ID == concept_id,c(4,5)]
     report$AGE_AT_FIRST_OCCURRENCE <- dataAgeAtFirstOccurrence[dataAgeAtFirstOccurrence$CONCEPT_ID == concept_id,c(2,3,4,5,6,7,8,9)]
     
-    report$RECORDS_BY_UNIT <- dataRecordsByUnit[dataRecordsByUnit$CONCEPT_ID == concept_id,c(4,5)]
+    report$RECORDS_BY_UNIT <- dataRecordsByUnit[dataRecordsByUnit$OBSERVATION_CONCEPT_ID == concept_id,c(4,5)]
     report$OBSERVATION_VALUE_DISTRIBUTION <- dataObservationValueDistribution[dataObservationValueDistribution$CONCEPT_ID == concept_id,c(2,3,4,5,6,7,8,9)]
     report$LOWER_LIMIT_DISTRIBUTION <- dataLowerLimitDistribution[dataLowerLimitDistribution$CONCEPT_ID == concept_id,c(2,3,4,5,6,7,8,9)]
     report$UPPER_LIMIT_DISTRIBUTION <- dataUpperLimitDistribution[dataUpperLimitDistribution$CONCEPT_ID == concept_id,c(2,3,4,5,6,7,8,9)]
-    report$VALUES_RELATIVE_TO_NORM <- dataValuesRelativeToNorm[dataValuesRelativeToNorm$CONCEPT_ID == concept_id,c(4,5)]
+    report$VALUES_RELATIVE_TO_NORM <- dataValuesRelativeToNorm[dataValuesRelativeToNorm$OBSERVATION_CONCEPT_ID == concept_id,c(4,5)]
     
     filename <- paste(outputPath, "/observations/observation_" , concept_id , ".json", sep='')  
     

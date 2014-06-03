@@ -1,5 +1,4 @@
-select c1.concept_id as OBSERVATION_CONCEPT_ID,
-	c1.concept_name as OBSERVATION_CONCEPT_NAME,
+select c1.concept_id as CONCEPT_ID,
 	c2.concept_name as CATEGORY,
 	ard1.min_value as MIN_VALUE,
 	ard1.p10_value as P10_VALUE,
