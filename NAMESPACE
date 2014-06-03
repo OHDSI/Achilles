@@ -1,4 +1,4 @@
 export(achilles)
+export(achillesHeel)
 export(exportToJson)
-export(renderAndTranslate)
-
+export(summary.achillesHeelResults)

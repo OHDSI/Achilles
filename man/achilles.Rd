@@ -3,7 +3,7 @@
 \title{achilles}
 \usage{
 achilles(connectionDetails, cdmSchema, resultsSchema, sourceName = "",
-  analysisIds)
+  analysisIds, createTable = TRUE)
 }
 \arguments{
   \item{connectionDetails}{An R object of type
@@ -11,7 +11,7 @@ achilles(connectionDetails, cdmSchema, resultsSchema, sourceName = "",
   server info, database type, optionally username/password,
   port)}
 
-  \item{cdmSchema}{string name of databsae schema that
+  \item{cdmSchema}{string name of database schema that
   contains OMOP CDM and vocabulary}
 
   \item{resultsSchema}{string name of database schema that
@@ -24,9 +24,14 @@ achilles(connectionDetails, cdmSchema, resultsSchema, sourceName = "",
   of Achilles analysisIds for which results will be
   generated. If not specified, all analyses will be
   executed.}
+
+  \item{createTable}{If true, new results tables will be
+  created in the results schema. If not, the tables are
+  assumed to already exists, and analysis results will be
+  added}
 }
 \value{
-An object of type \code{oscarResults} containing details
+An object of type \code{achillesResults} containing details
 for connecting to the database containing the results
 }
 \description{
@@ -40,7 +45,6 @@ PATRICK HOMEWORK: complete details
 \dontrun{
   connectionDetails <- createConnectionDetails(dbms="sql server", server="RNDUSRDHIT07.jnj.com")
   achillesResults <- achilles(connectionDetails, "cdm4_sim", "scratch", "TestDB")
-  plot(achillesResults, "population")
 }
 }
 
