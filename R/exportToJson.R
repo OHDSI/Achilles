@@ -61,6 +61,8 @@ exportToJson <- function (connectionDetails, cdmSchema, resultsSchema, outputPat
   generateDataDensityReport(conn, connectionDetails$dbms, cdmSchema, outputPath)
   generatePersonReport(conn, connectionDetails$dbms, cdmSchema, outputPath)
   generateObservationPeriodReport(conn, connectionDetails$dbms, cdmSchema, outputPath)
+  generateDrugEraTreemap(conn,connectionDetails$dbms, cdmSchema, outputPath)
+  generateDrugEraReports(conn,connectionDetails$dbms,cdmSchema,outputPath)
   generateConditionTreemap(conn, connectionDetails$dbms, cdmSchema, outputPath)  
   generateConditionReports(conn, connectionDetails$dbms, cdmSchema, outputPath)
   generateDrugTreemap(conn, connectionDetails$dbms, cdmSchema, outputPath)  
@@ -74,6 +76,26 @@ exportToJson <- function (connectionDetails, cdmSchema, resultsSchema, outputPat
   delta <- Sys.time() - start
   writeLines(paste("Export took", signif(delta,3), attr(delta,"units")))
   writeLines(paste("JSON files can now be found in",outputPath))
+}
+
+generateDrugEraTreemap <- function(conn, dbms,cdmSchema, outputPath) {
+  writeLines("Generating drug era treemap")
+  progressBar <- txtProgressBar(max=1,style=3)
+  progress = 0
+  
+  queryDrugEraTreemap <- renderAndTranslate(sqlFilename = "export/drugera/sqlDrugEraTreemap.sql",
+                                         packageName = "Achilles",
+                                         dbms = dbms,
+                                         cdmSchema = cdmSchema
+  )  
+  
+  dataDrugEraTreemap <- querySql(conn,dbms,queryDrugEraTreemap) 
+  
+  write(toJSON(dataDrugEraTreemap,method="C"),paste(outputPath, "/drugera_treemap.json", sep=''))
+  progress = progress + 1
+  setTxtProgressBar(progressBar, progress)
+  
+  close(progressBar)  
 }
 
 generateDrugTreemap <- function(conn, dbms,cdmSchema, outputPath) {
@@ -180,6 +202,76 @@ generateConditionReports <- function(conn, dbms, cdmSchema, outputPath) {
   }
   
   dummy <- lapply(uniqueConcepts, buildConditionReport)  
+  
+  setTxtProgressBar(progressBar, 1)
+  close(progressBar)
+}
+
+generateDrugEraReports <- function(conn, dbms, cdmSchema, outputPath) {
+  writeLines("Generating drug era reports")
+  
+  drugerasFolder <- file.path(outputPath,"drugeras")
+  if (file.exists(drugerasFolder)){
+    writeLines(paste("Warning: folder ",drugerasFolder," already exists"))
+  } else {
+    dir.create(paste(drugerasFolder,"/",sep=""))
+  }
+  
+  progressBar <- txtProgressBar(style=3)
+  progress = 0
+  
+  queryAgeAtFirstExposure <- renderAndTranslate(sqlFilename = "export/drugera/sqlAgeAtFirstExposure.sql",
+                                                packageName = "Achilles",
+                                                dbms = dbms,
+                                                cdmSchema = cdmSchema
+  )
+  
+  queryPrevalenceByGenderAgeYear <- renderAndTranslate(sqlFilename = "export/drugera/sqlPrevalenceByGenderAgeYear.sql",
+                                                       packageName = "Achilles",
+                                                       dbms = dbms,
+                                                       cdmSchema = cdmSchema
+  )
+  
+  queryPrevalenceByMonth <- renderAndTranslate(sqlFilename = "export/drugera/sqlPrevalenceByMonth.sql",
+                                               packageName = "Achilles",
+                                               dbms = dbms,
+                                               cdmSchema = cdmSchema
+  )
+  
+  queryLengthOfEra <- renderAndTranslate(sqlFilename = "export/drugera/sqlLengthOfEra.sql",
+                                         packageName = "Achilles",
+                                         dbms = dbms,
+                                         cdmSchema = cdmSchema
+  )
+  
+  dataAgeAtFirstExposure <- querySql(conn,dbms,queryAgeAtFirstExposure) 
+  dataPrevalenceByGenderAgeYear <- querySql(conn,dbms,queryPrevalenceByGenderAgeYear) 
+  dataPrevalenceByMonth <- querySql(conn,dbms,queryPrevalenceByMonth)
+  dataLengthOfEra <- querySql(conn,dbms,queryLengthOfEra)
+  
+  uniqueConcepts <- unique(dataPrevalenceByGenderAgeYear$CONCEPT_ID)
+  
+  totalCount <- length(uniqueConcepts)
+  
+  buildDrugEraReport <- function(concept_id) {
+    report <- {}
+    report$AGE_AT_FIRST_EXPOSURE <- dataAgeAtFirstExposure[dataAgeAtFirstExposure$CONCEPT_ID == concept_id,c(2,3,4,5,6,7,8,9)]
+    report$PREVALENCE_BY_GENDER_AGE_YEAR <- dataPrevalenceByGenderAgeYear[dataPrevalenceByGenderAgeYear$CONCEPT_ID == concept_id,c(2,3,4,5)]  
+    report$PREVALENCE_BY_MONTH <- dataPrevalenceByMonth[dataPrevalenceByMonth$CONCEPT_ID == concept_id,c(2,3)]
+    report$LENGTH_OF_ERA <- dataLengthOfEra[dataLengthOfEra$CONCEPT_ID == concept_id, c(2,3,4,5,6,7,8,9)]
+    
+    filename <- paste(outputPath, "/drugeras/drug_" , concept_id , ".json", sep='')  
+    
+    write(toJSON(report,method="C"),filename)  
+    
+    #Update progressbar:
+    env <- parent.env(environment())
+    curVal <- get("progress", envir = env)
+    assign("progress", curVal +1 ,envir= env)
+    setTxtProgressBar(get("progressBar", envir= env), (curVal + 1) / get("totalCount", envir= env))
+  }
+  
+  dummy <- lapply(uniqueConcepts, buildDrugEraReport)  
   
   setTxtProgressBar(progressBar, 1)
   close(progressBar)
