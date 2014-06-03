@@ -66,7 +66,10 @@ exportToJson <- function (connectionDetails, cdmSchema, resultsSchema, outputPat
   generateDrugReports(conn, connectionDetails$dbms, cdmSchema, outputPath)
   generateProcedureTreemap(conn, connectionDetails$dbms, cdmSchema, outputPath)
   generateProcedureReports(conn, connectionDetails$dbms, cdmSchema, outputPath)
+  generateObservationTreemap(conn, connectionDetails$dbms, cdmSchema, outputPath)
+  generateObservationReports(conn, connectionDetails$dbms, cdmSchema, outputPath)
   generateDashboardReport(outputPath)
+  
   
   dummy <- dbDisconnect(conn)
   
@@ -340,9 +343,6 @@ generateProcedureReports <- function(conn, dbms, cdmSchema, outputPath) {
   dataAgeAtFirstOccurrence <- querySql(conn,dbms,queryAgeAtFirstOccurrence)    
   
   uniqueConcepts <- unique(dataPrevalenceByGenderAgeYear$CONCEPT_ID)
-  
-  #todo: remove this for debugging
-  uniqueConcepts <- head(uniqueConcepts,n=10)
   
   totalCount <- length(uniqueConcepts)
   
@@ -763,5 +763,140 @@ generateDataDensityReport <- function(conn, dbms,cdmSchema, outputPath)
   write(jsonOutput, file=paste(outputPath, "/datadensity.json", sep=""))
   close(progressBar)
 
+}
+
+generateObservationTreemap <- function(conn, dbms, cdmSchema, outputPath) {
+  writeLines("Generating observation treemap")
+  progressBar <- txtProgressBar(max=1,style=3)
+  progress = 0
+  
+  queryObservationTreemap <- renderAndTranslate(sqlFilename = "export/observation/sqlObservationTreemap.sql",
+                                              packageName = "Achilles",
+                                              dbms = dbms,
+                                              cdmSchema = cdmSchema
+  )
+  
+  dataObservationTreemap <- querySql(conn,dbms,queryObservationTreemap) 
+  
+  write(toJSON(dataObservationTreemap,method="C"),paste(outputPath, "/observation_treemap.json", sep=''))
+  progress = progress + 1
+  setTxtProgressBar(progressBar, progress)
+  
+  close(progressBar)  
+  
+}
+
+generateObservationReports <- function(conn, dbms, cdmSchema, outputPath)
+{
+  writeLines("Generating Observation reports")
+  
+  observationsFolder <- file.path(outputPath,"observations")
+  if (file.exists(observationsFolder)){
+    writeLines(paste("Warning: folder ",observationsFolder," already exists"))
+  } else {
+    dir.create(paste(observationsFolder,"/",sep=""))
+    
+  }
+  
+  progressBar <- txtProgressBar(style=3)
+  progress = 0
+  
+  queryPrevalenceByGenderAgeYear <- renderAndTranslate(sqlFilename = "export/observation/sqlPrevalenceByGenderAgeYear.sql",
+                                                       packageName = "Achilles",
+                                                       dbms = dbms,
+                                                       cdmSchema = cdmSchema
+  )
+  
+  queryPrevalenceByMonth <- renderAndTranslate(sqlFilename = "export/observation/sqlPrevalenceByMonth.sql",
+                                               packageName = "Achilles",
+                                               dbms = dbms,
+                                               cdmSchema = cdmSchema
+  )
+  
+  queryObservationsByType <- renderAndTranslate(sqlFilename = "export/observation/sqlObservationsByType.sql",
+                                              packageName = "Achilles",
+                                              dbms = dbms,
+                                              cdmSchema = cdmSchema
+  )
+  
+  queryAgeAtFirstOccurrence <- renderAndTranslate(sqlFilename = "export/observation/sqlAgeAtFirstOccurrence.sql",
+                                                  packageName = "Achilles",
+                                                  dbms = dbms,
+                                                  cdmSchema = cdmSchema
+  )
+  
+  queryRecordsByUnit <- renderAndTranslate(sqlFilename = "export/observation/sqlRecordsByUnit.sql",
+                                                  packageName = "Achilles",
+                                                  dbms = dbms,
+                                                  cdmSchema = cdmSchema
+  )
+  
+  queryObservationValueDistribution <- renderAndTranslate(sqlFilename = "export/observation/sqlObservationValueDistribution.sql",
+                                           packageName = "Achilles",
+                                           dbms = dbms,
+                                           cdmSchema = cdmSchema
+  )
+  
+  queryLowerLimitDistribution <- renderAndTranslate(sqlFilename = "export/observation/sqlLowerLimitDistribution.sql",
+                                                          packageName = "Achilles",
+                                                          dbms = dbms,
+                                                          cdmSchema = cdmSchema
+  )
+  
+  queryUpperLimitDistribution <- renderAndTranslate(sqlFilename = "export/observation/sqlUpperLimitDistribution.sql",
+                                                    packageName = "Achilles",
+                                                    dbms = dbms,
+                                                    cdmSchema = cdmSchema
+  )
+  
+  queryValuesRelativeToNorm <- renderAndTranslate(sqlFilename = "export/observation/sqlValuesRelativeToNorm.sql",
+                                                    packageName = "Achilles",
+                                                    dbms = dbms,
+                                                    cdmSchema = cdmSchema
+  )
+  
+  dataPrevalenceByGenderAgeYear <- querySql(conn,dbms,queryPrevalenceByGenderAgeYear) 
+  dataPrevalenceByMonth <- querySql(conn,dbms,queryPrevalenceByMonth)  
+  dataObservationsByType <- querySql(conn,dbms,queryObservationsByType)    
+  dataAgeAtFirstOccurrence <- querySql(conn,dbms,queryAgeAtFirstOccurrence)
+  dataRecordsByUnit <- querySql(conn,dbms,queryRecordsByUnit)
+  dataObservationValueDistribution <- querySql(conn,dbms,queryObservationValueDistribution)
+  dataLowerLimitDistribution <- querySql(conn,dbms,queryLowerLimitDistribution)
+  dataUpperLimitDistribution <- querySql(conn,dbms,queryUpperLimitDistribution)
+  dataValuesRelativeToNorm <- querySql(conn,dbms,queryValuesRelativeToNorm)
+  
+  uniqueConcepts <- unique(dataPrevalenceByGenderAgeYear$CONCEPT_ID)
+  
+  totalCount <- length(uniqueConcepts)
+  
+  buildObservationReport <- function(concept_id) {
+    report <- {}
+    report$PREVALENCE_BY_GENDER_AGE_YEAR <- dataPrevalenceByGenderAgeYear[dataPrevalenceByGenderAgeYear$CONCEPT_ID == concept_id,c(3,4,5,6)]    
+    report$PREVALENCE_BY_MONTH <- dataPrevalenceByMonth[dataPrevalenceByMonth$CONCEPT_ID == concept_id,c(3,4)]
+    report$OBSERVATIONS_BY_TYPE <- dataObservationsByType[dataObservationsByType$OBSERVATION_CONCEPT_ID == concept_id,c(4,5)]
+    report$AGE_AT_FIRST_OCCURRENCE <- dataAgeAtFirstOccurrence[dataAgeAtFirstOccurrence$CONCEPT_ID == concept_id,c(2,3,4,5,6,7,8,9)]
+    
+    report$RECORDS_BY_UNIT <- dataRecordsByUnit[dataRecordsByUnit$CONCEPT_ID == concept_id,c(4,5)]
+    report$OBSERVATION_VALUE_DISTRIBUTION <- dataObservationValueDistribution[dataObservationValueDistribution$CONCEPT_ID == concept_id,c(2,3,4,5,6,7,8,9)]
+    report$LOWER_LIMIT_DISTRIBUTION <- dataLowerLimitDistribution[dataLowerLimitDistribution$CONCEPT_ID == concept_id,c(2,3,4,5,6,7,8,9)]
+    report$UPPER_LIMIT_DISTRIBUTION <- dataUpperLimitDistribution[dataUpperLimitDistribution$CONCEPT_ID == concept_id,c(2,3,4,5,6,7,8,9)]
+    report$VALUES_RELATIVE_TO_NORM <- dataValuesRelativeToNorm[dataValuesRelativeToNorm$CONCEPT_ID == concept_id,c(4,5)]
+    
+    filename <- paste(outputPath, "/observations/observation_" , concept_id , ".json", sep='')  
+    
+    write(toJSON(report,method="C"),filename)  
+    
+    #Update progressbar:
+    env <- parent.env(environment())
+    curVal <- get("progress", envir = env)
+    assign("progress", curVal +1 ,envir= env)
+    setTxtProgressBar(get("progressBar", envir= env), (curVal + 1) / get("totalCount", envir= env))
+  }
+  
+  dummy <- lapply(uniqueConcepts, buildObservationReport)  
+  
+  setTxtProgressBar(progressBar, 1)
+  close(progressBar)  
+  
 }
 
