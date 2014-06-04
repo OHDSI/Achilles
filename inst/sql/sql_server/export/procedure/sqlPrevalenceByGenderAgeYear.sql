@@ -13,3 +13,5 @@ from
 	and num.stratum_4 = denom.stratum_3 --age decile
 	inner join @cdmSchema.dbo.concept c1 on CAST(num.stratum_1 AS INT)= c1.concept_id
 	inner join @cdmSchema.dbo.concept c2 on CAST(num.stratum_3 AS INT) = c2.concept_id
+where c2.concept_id in (8507, 8532)
+ORDER BY c1.concept_id, CAST(num.stratum_2 as INT)

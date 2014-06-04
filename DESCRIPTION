@@ -13,3 +13,4 @@ Depends:
     DatabaseConnector,
     rjson
 License: Apache License
+Roxygen: list(wrap = TRUE)

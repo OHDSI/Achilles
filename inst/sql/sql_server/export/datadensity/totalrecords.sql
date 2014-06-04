@@ -21,3 +21,4 @@ from
 	union all
 	select 'Observation period' as table_name, stratum_1, count_value from ACHILLES_results where analysis_id = 111
 ) t1
+ORDER BY SERIES_NAME, CAST(stratum_1 as INT)

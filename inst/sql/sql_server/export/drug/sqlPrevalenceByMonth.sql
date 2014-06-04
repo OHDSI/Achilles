@@ -10,3 +10,4 @@ from
 	inner join
 	@cdmSchema.dbo.concept c1
 	on CAST(num.stratum_1 AS INT) = c1.concept_id
+ORDER BY CAST(num.stratum_2 as INT)

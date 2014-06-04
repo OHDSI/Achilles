@@ -24,3 +24,4 @@ from
 inner join
 (select * from ACHILLES_results where analysis_id = 117) denom
 on t1.stratum_1 = denom.stratum_1
+ORDER BY SERIES_NAME, CAST(t1.stratum_1 as INT)

@@ -9,3 +9,4 @@ from
 	inner join
 	@cdmSchema.dbo.concept c1
 	on num.stratum_1 = CAST(c1.concept_id as VARCHAR)
+ORDER BY CAST(num.stratum_2 as INT)

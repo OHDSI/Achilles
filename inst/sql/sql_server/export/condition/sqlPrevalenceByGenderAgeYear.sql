@@ -18,3 +18,4 @@
   	@cdmSchema.dbo.concept c2
   	on num.stratum_3 = CAST(c2.concept_id AS VARCHAR)
   where c2.concept_id in (8507, 8532)
+ORDER BY c1.concept_id, CAST(num.stratum_2 as INT)
