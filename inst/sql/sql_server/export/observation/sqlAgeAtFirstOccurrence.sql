@@ -11,4 +11,3 @@ from ACHILLES_results_dist ard1
 	inner join @cdmSchema.dbo.concept c1 on ard1.stratum_1 = CAST(c1.concept_id as VARCHAR)
 	inner join @cdmSchema.dbo.concept c2 on ard1.stratum_2 = CAST(c2.concept_id as VARCHAR)
 where ard1.analysis_id = 806
-;

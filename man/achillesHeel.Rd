@@ -2,16 +2,13 @@
 \alias{achillesHeel}
 \title{achillesHeel}
 \usage{
-achillesHeel(connectionDetails, cdmSchema, resultsSchema)
+achillesHeel(connectionDetails, resultsSchema)
 }
 \arguments{
   \item{connectionDetails}{An R object of type
   ConnectionDetail (details for the function that contains
   server info, database type, optionally username/password,
   port)}
-
-  \item{cdmSchema}{string name of database schema that
-  contains OMOP CDM and vocabulary}
 
   \item{resultsSchema}{string name of database schema
   containing the Achilles descriptive statistics. Default
@@ -32,7 +29,7 @@ PATRICK HOMEWORK: complete details
 \dontrun{
   connectionDetails <- createConnectionDetails(dbms="sql server", server="RNDUSRDHIT07.jnj.com")
   achillesResults <- achilles(connectionDetails, "cdm4_sim", "scratch", "TestDB")
-  achillesHeelResults <- achillesHeel(connectionDetails, "cdm4_sim", "scratch")
+  achillesHeelResults <- achillesHeel(connectionDetails, "scratch")
   summary(achillesHeelResults)
 }
 }

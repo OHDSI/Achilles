@@ -12,4 +12,4 @@ from ACHILLES_results_dist ard1
 	inner join @cdmSchema.dbo.concept c2 on ard1.stratum_2 = CAST(c2.concept_id as VARCHAR)
 where ard1.analysis_id = 815
 and ard1.count_value > 0
-;
+

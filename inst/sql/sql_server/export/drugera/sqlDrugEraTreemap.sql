@@ -28,9 +28,9 @@ from (select * from ACHILLES_results where analysis_id = 900) ar1
 		left join
 			(select c1.concept_id as rxnorm_ingredient_concept_id, max(c2.concept_id) as atc5_concept_id
 			from
-			concept c1
+			@cdmSchema.dbo.concept c1
 			inner join 
-			concept_ancestor ca1
+			@cdmSchema.dbo.concept_ancestor ca1
 			on c1.concept_id = ca1.descendant_concept_id
 			and c1.vocabulary_id = 8
 			and c1.concept_class = 'Ingredient'

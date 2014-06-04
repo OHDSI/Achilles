@@ -28,4 +28,3 @@ from (select * from ACHILLES_results where analysis_id = 800) ar1
 	) concept_hierarchy on ar1.stratum_1 = CAST(concept_hierarchy.concept_id as VARCHAR),
 	(select count_value from ACHILLES_results where analysis_id = 1) denom
 order by ar1.count_value desc
-;

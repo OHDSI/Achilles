@@ -12,4 +12,3 @@ from ACHILLES_results_dist ard1
 	inner join @cdmSchema.dbo.concept c2 on ard1.stratum_2 = cast(c2.concept_id AS VARCHAR)
 where ard1.analysis_id = 816
 and ard1.count_value > 0
-;
