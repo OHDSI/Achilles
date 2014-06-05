@@ -3,7 +3,7 @@
 \title{achilles}
 \usage{
 achilles(connectionDetails, cdmSchema, resultsSchema, sourceName = "",
-  analysisIds, createTable = TRUE)
+  analysisIds, createTable = TRUE, smallcellcount = 5)
 }
 \arguments{
   \item{connectionDetails}{An R object of type
@@ -30,6 +30,10 @@ achilles(connectionDetails, cdmSchema, resultsSchema, sourceName = "",
   created in the results schema. If not, the tables are
   assumed to already exists, and analysis results will be
   added}
+
+  \item{smallcellcount}{Minimum number in a cell to keep
+  that cell. To avoid patient identifiability, cells with
+  lower counts are deleted.}
 }
 \value{
 An object of type \code{achillesResults} containing details

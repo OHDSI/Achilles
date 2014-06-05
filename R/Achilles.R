@@ -120,6 +120,7 @@ renderAndTranslate <- function(sqlFilename, packageName, dbms, ...){
 #' @param analysisIds		(optional) a vector containing the set of Achilles analysisIds for which results will be generated.
 #' If not specified, all analyses will be executed. See \code{data(analysesDetails)} for a list of all Achilles analyses and their Ids.
 #' @param createTable     If true, new results tables will be created in the results schema. If not, the tables are assumed to already exists, and analysis results will be added
+#' @param smallcellcount     Minimum number in a cell to keep that cell. To avoid patient identifiability, cells with lower counts are deleted.
 #' 
 #' @return An object of type \code{achillesResults} containing details for connecting to the database containing the results 
 #' @examples \dontrun{
@@ -128,7 +129,7 @@ renderAndTranslate <- function(sqlFilename, packageName, dbms, ...){
 #'   fetchAchillesAnalysisResults(connectionDetails, "scratch", 106)
 #' }
 #' @export
-achilles <- function (connectionDetails, cdmSchema, resultsSchema, sourceName = "", analysisIds, createTable = TRUE){
+achilles <- function (connectionDetails, cdmSchema, resultsSchema, sourceName = "", analysisIds, createTable = TRUE, smallcellcount = 5){
   if (missing(analysisIds))
     analysisIds = analysesDetails$ANALYSIS_ID
   
@@ -142,7 +143,8 @@ achilles <- function (connectionDetails, cdmSchema, resultsSchema, sourceName = 
                                     results_schema = resultsSchema, 
                                     source_name = sourceName, 
                                     list_of_analysis_ids = analysisIds,
-                                    createTable = createTable
+                                    createTable = createTable,
+                                    smallcellcount = smallcellcount
   )
   
   conn <- connect(connectionDetails)
