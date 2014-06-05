@@ -50,5 +50,12 @@ testExportCode <- function(){
   compareJSONFiles("c:/temp/oracle","c:/temp/postgresql_sample")
   
   compareJSONFiles("c:/temp/postgresql","c:/temp/sqlserver")
+  
+  connectionDetails <- createConnectionDetails(dbms="oracle", server="xe", user="system", schema="scratch",password=pw)
+  conn <- connect(connectionDetails)
+  analysesDetails <- dbGetQuery(conn,"SELECT * FROM ACHILLES_ANALYSiS")
+  save(analysesDetails,"c:/temp/analysesDetails.rda")
+  dbDisconnect(conn)
 }
+
 

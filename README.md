@@ -6,7 +6,8 @@ Automated Characterization of Health Information at Large-scale Longitudinal Evi
 Getting Started
 ===============
 1. Make sure you have your data in the [OMOP CDM v4 format](http://omop.org/cdm).
-2. in R, use the following commands to install Achilles:
+2. If you're using Windows, make sure you install [RTools](http://cran.r-project.org/bin/windows/Rtools/)
+3. in R, use the following commands to install Achilles:
 ```r
 install.packages("devtools")
 library(devtools)
@@ -14,7 +15,7 @@ install_github("ohdsi/DatabaseConnector")
 install_github("ohdsi/SqlRender")
 install_github("ohdsi/Achilles")
 ```
-3. To run the Achilles analysis, use the following commands in R:
+4. To run the Achilles analysis, use the following commands in R:
 ```r
 library(Achilles)
 connectionDetails <- createConnectionDetails(dbms="sql server", server="server.com")
@@ -25,7 +26,7 @@ achillesResults <- achilles(connectionDetails, "cdm4_inst", "results")
 ?createConnectionDetails
 ```
 Currently "sql server", "oracle" and "postgresql" are supported as dbms.
-4. To use [AchillesWeb](https://github.com/OHDSI/AchillesWeb) to explore the Achilles statistics, you must first export the statistics to JSON files:
+5. To use [AchillesWeb](https://github.com/OHDSI/AchillesWeb) to explore the Achilles statistics, you must first export the statistics to JSON files:
 ```r
 exportToJson(connectionDetails, "cdm4_inst", "results", "c:/myPath/AchillesExport")
 ```

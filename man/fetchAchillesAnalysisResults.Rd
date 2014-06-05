@@ -1,0 +1,36 @@
+\name{fetchAchillesAnalysisResults}
+\alias{fetchAchillesAnalysisResults}
+\title{fetchAchillesAnalysisResults}
+\usage{
+fetchAchillesAnalysisResults(connectionDetails, resultsSchema, analysisId)
+}
+\arguments{
+  \item{connectionDetails}{An R object of type
+  ConnectionDetail (details for the function that contains
+  server info, database type, optionally username/password,
+  port)}
+
+  \item{resultsSchema}{Name of database schema containing
+  the Achilles descriptive statistics.}
+
+  \item{analysisId}{A single analysisId}
+}
+\value{
+An object of type \code{achillesAnalysisResults}
+}
+\description{
+\code{fetchAchillesAnalysisResults} returns the results for
+one Achilles analysis Id.
+}
+\details{
+See \code{data(analysesDetails)} for a list of all Achilles
+analyses and their Ids.
+}
+\examples{
+\dontrun{
+  connectionDetails <- createConnectionDetails(dbms="sql server", server="RNDUSRDHIT07.jnj.com")
+  achillesResults <- achilles(connectionDetails, "cdm4_sim", "scratch", "TestDB")
+  fetchAchillesAnalysisResults(connectionDetails, "scratch",106)
+}
+}
+
