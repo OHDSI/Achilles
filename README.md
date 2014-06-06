@@ -7,7 +7,7 @@ Getting Started
 ===============
 1. Make sure you have your data in the [OMOP CDM v4 format](http://omop.org/cdm).
 
-2. If you're using Windows, make sure you install [RTools](http://cran.r-project.org/bin/windows/Rtools/)
+2. If you're using Windows, make sure you install [RTools](http://cran.r-project.org/bin/windows/Rtools/).
 
 3. in R, use the following commands to install Achilles:
 
@@ -33,9 +33,9 @@ Getting Started
   Currently "sql server", "oracle" and "postgresql" are supported as dbms.
 
 5. To use [AchillesWeb](https://github.com/OHDSI/AchillesWeb) to explore the Achilles statistics, you must first export the statistics to JSON files:
-```r
-exportToJson(connectionDetails, "cdm4_inst", "results", "c:/myPath/AchillesExport")
-```
+  ```r
+  exportToJson(connectionDetails, "cdm4_inst", "results", "c:/myPath/AchillesExport")
+  ```
 
 License
 =======
