@@ -120,7 +120,7 @@ renderAndTranslate <- function(sqlFilename, packageName, dbms, ...){
 #' @param analysisIds		(optional) a vector containing the set of Achilles analysisIds for which results will be generated.
 #' If not specified, all analyses will be executed. See \code{data(analysesDetails)} for a list of all Achilles analyses and their Ids.
 #' @param createTable     If true, new results tables will be created in the results schema. If not, the tables are assumed to already exists, and analysis results will be added
-#' @param smallcellcount     Minimum number in a cell to keep that cell. To avoid patient identifiability, cells with lower counts are deleted.
+#' @param smallcellcount     To avoid patient identifiability, cells with small counts (<= smallcellcount) are deleted.
 #' 
 #' @return An object of type \code{achillesResults} containing details for connecting to the database containing the results 
 #' @examples \dontrun{

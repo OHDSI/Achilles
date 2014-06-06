@@ -31,9 +31,8 @@ achilles(connectionDetails, cdmSchema, resultsSchema, sourceName = "",
   assumed to already exists, and analysis results will be
   added}
 
-  \item{smallcellcount}{Minimum number in a cell to keep
-  that cell. To avoid patient identifiability, cells with
-  lower counts are deleted.}
+  \item{smallcellcount}{To avoid patient identifiability,
+  cells with small counts (<= smallcellcount) are deleted.}
 }
 \value{
 An object of type \code{achillesResults} containing details
