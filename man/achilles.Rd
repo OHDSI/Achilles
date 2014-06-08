@@ -1,6 +1,6 @@
 \name{achilles}
 \alias{achilles}
-\title{achilles}
+\title{The main Achilles analysis}
 \usage{
 achilles(connectionDetails, cdmSchema, resultsSchema, sourceName = "",
   analysisIds, createTable = TRUE, smallcellcount = 5)
