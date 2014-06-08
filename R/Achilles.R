@@ -63,6 +63,7 @@ executeSql <- function(conn, dbms, sql){
 
 querySql <- function(conn, dbms, sql){
   tryCatch ({   
+    .jcall("java/lang/System",,"gc") #Calling garbage collection prevents crashes
     result <- dbGetQuery(conn, sql)
     colnames(result) <- toupper(colnames(result))
     return(result)
