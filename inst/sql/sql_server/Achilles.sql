@@ -20,11 +20,12 @@ Patrick Ryan
 use @results_schema;
 --use CDM_TRUVEN_MDCD;
 
+
+--{@createTable}?{
+
 IF OBJECT_ID('ACHILLES_analysis', 'U') IS NOT NULL
   drop table ACHILLES_analysis;
 
-
---{@createTable}?{
 create table ACHILLES_analysis
 (
 	analysis_id int,
@@ -699,6 +700,8 @@ insert into ACHILLES_analysis (analysis_id, analysis_name)
 
 use @CDM_schema;
 
+delete from @results_schema.dbo.ACHILLES_results where analysis_id IN (@list_of_analysis_ids);
+delete from @results_schema.dbo.ACHILLES_results_dist where analysis_id IN (@list_of_analysis_ids);
 
 --{0 IN (@list_of_analysis_ids)}?{
 -- 0	Number of persons
