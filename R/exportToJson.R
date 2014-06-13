@@ -63,6 +63,8 @@ exportToJson <- function (connectionDetails, cdmSchema, resultsSchema, outputPat
   generateObservationPeriodReport(conn, connectionDetails$dbms, cdmSchema, outputPath)
   generateDrugEraTreemap(conn,connectionDetails$dbms, cdmSchema, outputPath)
   generateDrugEraReports(conn,connectionDetails$dbms,cdmSchema,outputPath)
+  generateConditionEraTreemap(conn, connectionDetails$dbms, cdmSchema, outputPath)
+  generateConditionEraReports(conn, connectionDetails$dbms, cdmSchema, outputPath)
   generateConditionTreemap(conn, connectionDetails$dbms, cdmSchema, outputPath)  
   generateConditionReports(conn, connectionDetails$dbms, cdmSchema, outputPath)
   generateDrugTreemap(conn, connectionDetails$dbms, cdmSchema, outputPath)  
@@ -141,6 +143,26 @@ generateConditionTreemap <- function(conn, dbms, cdmSchema, outputPath) {
   close(progressBar)
 }
 
+generateConditionEraTreemap <- function(conn, dbms, cdmSchema, outputPath) {
+  writeLines("Generating condition era treemap")
+  progressBar <- txtProgressBar(max=1,style=3)
+  progress = 0
+  
+  queryConditionEraTreemap <- renderAndTranslate(sqlFilename = "export/conditionera/sqlConditionEraTreemap.sql",
+                                              packageName = "Achilles",
+                                              dbms = dbms,
+                                              cdmSchema = cdmSchema
+  )  
+  
+  dataConditionEraTreemap <- querySql(conn,dbms,queryConditionEraTreemap) 
+  
+  write(toJSON(dataConditionEraTreemap,method="C"),paste(outputPath, "/conditionera_treemap.json", sep=''))
+  progress = progress + 1
+  setTxtProgressBar(progressBar, progress)
+  
+  close(progressBar)
+}
+
 generateConditionReports <- function(conn, dbms, cdmSchema, outputPath) {
   writeLines("Generating condition reports")
   
@@ -205,6 +227,75 @@ generateConditionReports <- function(conn, dbms, cdmSchema, outputPath) {
   }
   
   dummy <- lapply(uniqueConcepts, buildConditionReport)  
+  
+  setTxtProgressBar(progressBar, 1)
+  close(progressBar)
+}
+
+generateConditionEraReports <- function(conn, dbms, cdmSchema, outputPath) {
+  writeLines("Generating condition era reports")
+  
+  conditionsFolder <- file.path(outputPath,"conditioneras")
+  if (file.exists(conditionsFolder)){
+    writeLines(paste("Warning: folder ",conditionsFolder," already exists"))
+  } else {
+    dir.create(paste(conditionsFolder,"/",sep=""))
+    
+  }
+  
+  progressBar <- txtProgressBar(style=3)
+  progress = 0
+  
+  queryPrevalenceByGenderAgeYear <- renderAndTranslate(sqlFilename = "export/conditionera/sqlPrevalenceByGenderAgeYear.sql",
+                                                       packageName = "Achilles",
+                                                       dbms = dbms,
+                                                       cdmSchema = cdmSchema
+  )
+  
+  queryPrevalenceByMonth <- renderAndTranslate(sqlFilename = "export/conditionera/sqlPrevalenceByMonth.sql",
+                                               packageName = "Achilles",
+                                               dbms = dbms,
+                                               cdmSchema = cdmSchema
+  )
+  
+  queryAgeAtFirstDiagnosis <- renderAndTranslate(sqlFilename = "export/conditionera/sqlAgeAtFirstDiagnosis.sql",
+                                                 packageName = "Achilles",
+                                                 dbms = dbms,
+                                                 cdmSchema = cdmSchema
+  )
+  
+  queryLengthOfEra <- renderAndTranslate(sqlFilename = "export/conditionera/sqlLengthOfEra.sql",
+                                                 packageName = "Achilles",
+                                                 dbms = dbms,
+                                                 cdmSchema = cdmSchema
+  )  
+  
+  dataPrevalenceByGenderAgeYear <- querySql(conn,dbms,queryPrevalenceByGenderAgeYear) 
+  dataPrevalenceByMonth <- querySql(conn,dbms,queryPrevalenceByMonth)  
+  dataLengthOfEra <- querySql(conn,dbms,queryLengthOfEra)    
+  dataAgeAtFirstDiagnosis <- querySql(conn,dbms,queryAgeAtFirstDiagnosis)    
+  
+  uniqueConcepts <- unique(dataPrevalenceByGenderAgeYear$CONCEPT_ID)
+  totalCount <- length(uniqueConcepts)
+  
+  buildConditionEraReport <- function(concept_id) {
+    report <- {}
+    report$PREVALENCE_BY_GENDER_AGE_YEAR <- dataPrevalenceByGenderAgeYear[dataPrevalenceByGenderAgeYear$CONCEPT_ID == concept_id,c(2,3,4,5)]    
+    report$PREVALENCE_BY_MONTH <- dataPrevalenceByMonth[dataPrevalenceByMonth$CONCEPT_ID == concept_id,c(2,3)]
+    report$LENGTH_OF_ERA <- dataLengthOfEra[dataLengthOfEra$CONCEPT_ID == concept_id,c(2,3,4,5,6,7,8,9)]
+    report$AGE_AT_FIRST_DIAGNOSIS <- dataAgeAtFirstDiagnosis[dataAgeAtFirstDiagnosis$CONCEPT_ID == concept_id,c(2,3,4,5,6,7,8,9)]
+    filename <- paste(outputPath, "/conditioneras/condition_" , concept_id , ".json", sep='')  
+    
+    write(toJSON(report,method="C"),filename)  
+    
+    #Update progressbar:
+    env <- parent.env(environment())
+    curVal <- get("progress", envir = env)
+    assign("progress", curVal +1 ,envir= env)
+    setTxtProgressBar(get("progressBar", envir= env), (curVal + 1) / get("totalCount", envir= env))
+  }
+  
+  dummy <- lapply(uniqueConcepts, buildConditionEraReport)  
   
   setTxtProgressBar(progressBar, 1)
   close(progressBar)

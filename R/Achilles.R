@@ -89,6 +89,7 @@ querySql <- function(conn, dbms, sql){
   })
 }
 
+#' @export
 renderAndTranslate <- function(sqlFilename, packageName, dbms, ...){
   pathToSql <- system.file(paste("sql/",gsub(" ","_",dbms),sep=""), sqlFilename, package=packageName)
   mustTranslate <- !file.exists(pathToSql)
