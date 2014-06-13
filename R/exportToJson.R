@@ -72,6 +72,8 @@ exportToJson <- function (connectionDetails, cdmSchema, resultsSchema, outputPat
   generateProcedureTreemap(conn, connectionDetails$dbms, cdmSchema, outputPath)
   generateProcedureReports(conn, connectionDetails$dbms, cdmSchema, outputPath)
   generateObservationTreemap(conn, connectionDetails$dbms, cdmSchema, outputPath)
+  generateVisitTreemap(conn, connectionDetails$dbms, cdmSchema, outputPath)
+  generateVisitReports(conn, connectionDetails$dbms, cdmSchema, outputPath)
   generateObservationReports(conn, connectionDetails$dbms, cdmSchema, outputPath)
   generateDashboardReport(outputPath)
   
@@ -1084,5 +1086,95 @@ generateObservationReports <- function(conn, dbms, cdmSchema, outputPath)
   setTxtProgressBar(progressBar, 1)
   close(progressBar)  
   
+}
+
+generateVisitTreemap <- function(conn, dbms, cdmSchema, outputPath){
+  writeLines("Generating visit_occurrence treemap")
+  progressBar <- txtProgressBar(max=1,style=3)
+  progress = 0
+  
+  queryVisitTreemap <- renderAndTranslate(sqlFilename = "export/visit/sqlVisitTreemap.sql",
+                                                packageName = "Achilles",
+                                                dbms = dbms,
+                                                cdmSchema = cdmSchema
+  )
+  
+  dataVisitTreemap <- querySql(conn,dbms,queryVisitTreemap) 
+  
+  write(toJSON(dataVisitTreemap,method="C"),paste(outputPath, "/visit_treemap.json", sep=''))
+  progress = progress + 1
+  setTxtProgressBar(progressBar, progress)
+  
+  close(progressBar)  
+}
+
+generateVisitReports <- function(conn, dbms, cdmSchema, outputPath){
+  writeLines("Generating visit reports")
+  
+  visitsFolder <- file.path(outputPath,"visits")
+  if (file.exists(visitsFolder)){
+    writeLines(paste("Warning: folder ",visitsFolder," already exists"))
+  } else {
+    dir.create(paste(visitsFolder,"/",sep=""))
+    
+  }
+  
+  progressBar <- txtProgressBar(style=3)
+  progress = 0
+  
+  queryPrevalenceByGenderAgeYear <- renderAndTranslate(sqlFilename = "export/visit/sqlPrevalenceByGenderAgeYear.sql",
+                                                       packageName = "Achilles",
+                                                       dbms = dbms,
+                                                       cdmSchema = cdmSchema
+  )
+  
+  queryPrevalenceByMonth <- renderAndTranslate(sqlFilename = "export/visit/sqlPrevalenceByMonth.sql",
+                                               packageName = "Achilles",
+                                               dbms = dbms,
+                                               cdmSchema = cdmSchema
+  )
+  
+  queryVisitDurationByType <- renderAndTranslate(sqlFilename = "export/visit/sqlVisitDurationByType.sql",
+                                              packageName = "Achilles",
+                                              dbms = dbms,
+                                              cdmSchema = cdmSchema
+  )
+  
+  queryAgeAtFirstOccurrence <- renderAndTranslate(sqlFilename = "export/visit/sqlAgeAtFirstOccurrence.sql",
+                                                  packageName = "Achilles",
+                                                  dbms = dbms,
+                                                  cdmSchema = cdmSchema
+  )
+  
+  dataPrevalenceByGenderAgeYear <- querySql(conn,dbms,queryPrevalenceByGenderAgeYear) 
+  dataPrevalenceByMonth <- querySql(conn,dbms,queryPrevalenceByMonth)  
+  dataVisitDurationByType <- querySql(conn,dbms,queryVisitDurationByType)    
+  dataAgeAtFirstOccurrence <- querySql(conn,dbms,queryAgeAtFirstOccurrence)    
+  
+  uniqueConcepts <- unique(dataPrevalenceByGenderAgeYear$CONCEPT_ID)
+  
+  totalCount <- length(uniqueConcepts)
+  
+  buildProcedureReport <- function(concept_id) {
+    report <- {}
+    report$PREVALENCE_BY_GENDER_AGE_YEAR <- dataPrevalenceByGenderAgeYear[dataPrevalenceByGenderAgeYear$CONCEPT_ID == concept_id,c(3,4,5,6)]    
+    report$PREVALENCE_BY_MONTH <- dataPrevalenceByMonth[dataPrevalenceByMonth$CONCEPT_ID == concept_id,c(3,4)]
+    report$VISIT_DURATION_BY_TYPE <- dataVisitDurationByType[dataVisitDurationByType$CONCEPT_ID == concept_id,c(2,3,4,5,6,7,8,9)]
+    report$AGE_AT_FIRST_OCCURRENCE <- dataAgeAtFirstOccurrence[dataAgeAtFirstOccurrence$CONCEPT_ID == concept_id,c(2,3,4,5,6,7,8,9)]
+    filename <- paste(outputPath, "/visits/visit_" , concept_id , ".json", sep='')  
+    
+    write(toJSON(report,method="C"),filename)  
+    
+    #Update progressbar:
+    env <- parent.env(environment())
+    curVal <- get("progress", envir = env)
+    assign("progress", curVal +1 ,envir= env)
+    setTxtProgressBar(get("progressBar", envir= env), (curVal + 1) / get("totalCount", envir= env))
+  }
+  
+  dummy <- lapply(uniqueConcepts, buildProcedureReport)  
+  
+  setTxtProgressBar(progressBar, 1)
+  close(progressBar)  
 }
 
