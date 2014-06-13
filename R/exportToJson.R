@@ -58,22 +58,23 @@ exportToJson <- function (connectionDetails, cdmSchema, resultsSchema, outputPat
   conn <- connect(connectionDetails)
   
   # generate reports
-  generateDataDensityReport(conn, connectionDetails$dbms, cdmSchema, outputPath)
-  generatePersonReport(conn, connectionDetails$dbms, cdmSchema, outputPath)
-  generateObservationPeriodReport(conn, connectionDetails$dbms, cdmSchema, outputPath)
-  generateDrugEraTreemap(conn,connectionDetails$dbms, cdmSchema, outputPath)
-  generateDrugEraReports(conn,connectionDetails$dbms,cdmSchema,outputPath)
-  generateConditionEraTreemap(conn, connectionDetails$dbms, cdmSchema, outputPath)
-  generateConditionEraReports(conn, connectionDetails$dbms, cdmSchema, outputPath)
-  generateConditionTreemap(conn, connectionDetails$dbms, cdmSchema, outputPath)  
-  generateConditionReports(conn, connectionDetails$dbms, cdmSchema, outputPath)
-  generateDrugTreemap(conn, connectionDetails$dbms, cdmSchema, outputPath)  
-  generateDrugReports(conn, connectionDetails$dbms, cdmSchema, outputPath)
-  generateProcedureTreemap(conn, connectionDetails$dbms, cdmSchema, outputPath)
-  generateProcedureReports(conn, connectionDetails$dbms, cdmSchema, outputPath)
-  generateObservationTreemap(conn, connectionDetails$dbms, cdmSchema, outputPath)
-  generateObservationReports(conn, connectionDetails$dbms, cdmSchema, outputPath)
-  generateDashboardReport(outputPath)
+#   generateDataDensityReport(conn, connectionDetails$dbms, cdmSchema, outputPath)
+#   generatePersonReport(conn, connectionDetails$dbms, cdmSchema, outputPath)
+#   generateObservationPeriodReport(conn, connectionDetails$dbms, cdmSchema, outputPath)
+#   generateDrugEraTreemap(conn,connectionDetails$dbms, cdmSchema, outputPath)
+#   generateDrugEraReports(conn,connectionDetails$dbms,cdmSchema,outputPath)
+#   generateConditionEraTreemap(conn, connectionDetails$dbms, cdmSchema, outputPath)
+#   generateConditionEraReports(conn, connectionDetails$dbms, cdmSchema, outputPath)
+#   generateConditionTreemap(conn, connectionDetails$dbms, cdmSchema, outputPath)  
+#   generateConditionReports(conn, connectionDetails$dbms, cdmSchema, outputPath)
+#   generateDrugTreemap(conn, connectionDetails$dbms, cdmSchema, outputPath)  
+#   generateDrugReports(conn, connectionDetails$dbms, cdmSchema, outputPath)
+#   generateProcedureTreemap(conn, connectionDetails$dbms, cdmSchema, outputPath)
+#   generateProcedureReports(conn, connectionDetails$dbms, cdmSchema, outputPath)
+#   generateObservationTreemap(conn, connectionDetails$dbms, cdmSchema, outputPath)
+#   generateObservationReports(conn, connectionDetails$dbms, cdmSchema, outputPath)
+#   generateDashboardReport(outputPath)
+   generateAchillesHeelReport(conn, connectionDetails$dbms, cdmSchema, outputPath)
   
   
   dummy <- dbDisconnect(conn)
@@ -81,6 +82,21 @@ exportToJson <- function (connectionDetails, cdmSchema, resultsSchema, outputPat
   delta <- Sys.time() - start
   writeLines(paste("Export took", signif(delta,3), attr(delta,"units")))
   writeLines(paste("JSON files can now be found in",outputPath))
+}
+
+generateAchillesHeelReport <- function(conn, dbms, cdmSchema, outputPath) {
+  writeLines("Generating achilles heel report")
+  output <- {}
+  
+  queryAchillesHeel <- renderAndTranslate(sqlFilename = "export/achillesheel/sqlAchillesHeel.sql",
+                                               packageName = "Achilles",
+                                               dbms = dbms,
+                                               cdmSchema = cdmSchema
+  )  
+
+  output$MESSAGES <- querySql(conn,dbms,queryAchillesHeel)
+  jsonOutput = toJSON(output)
+  write(jsonOutput, file=paste(outputPath, "/achillesheel.json", sep=""))  
 }
 
 generateDrugEraTreemap <- function(conn, dbms,cdmSchema, outputPath) {
@@ -555,7 +571,6 @@ generateProcedureReports <- function(conn, dbms, cdmSchema, outputPath) {
   close(progressBar)
 }
 
-
 generatePersonReport <- function(conn, dbms, cdmSchema, outputPath)
 {
   writeLines("Generating person reports")
@@ -887,7 +902,6 @@ generateDashboardReport <- function(outputPath)
   setTxtProgressBar(progressBar, progress)
 
   close(progressBar)
-  
 }
 
 generateDataDensityReport <- function(conn, dbms,cdmSchema, outputPath)
