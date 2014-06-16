@@ -1,7 +1,7 @@
 select 	concept_hierarchy.concept_id,
 	isNull(concept_hierarchy.soc_concept_name,'NA') + '||' + isNull(concept_hierarchy.hlgt_concept_name,'NA') + '||' + isNull(concept_hierarchy.hlt_concept_name, 'NA') + '||' + isNull(concept_hierarchy.pt_concept_name,'NA') + '||' + isNull(concept_hierarchy.snomed_concept_name,'NA') concept_path, 
 	ar1.count_value as num_persons, 
-	ROUND(1.0*ar1.count_value / denom.count_value,5) as percent_persons,
+	ROUND(CAST(1.0*ar1.count_value / denom.count_value AS FLOAT),5) as percent_persons,
 	ROUND(ar2.avg_value,5) as length_of_era
 from (select * from ACHILLES_results where analysis_id = 1000) ar1
 	inner join
@@ -18,7 +18,7 @@ from (select * from ACHILLES_results where analysis_id = 1000) ar1
 		from	
 		(
 		select concept_id, concept_name
-		from concept
+		from @cdmSchema.dbo.concept
 		where vocabulary_id = 1
 		) snomed
 		left join
@@ -66,7 +66,7 @@ from (select * from ACHILLES_results where analysis_id = 1000) ar1
 			and c1.vocabulary_id = 15
 			and c1.concept_class = 'High Level Term'
 			inner join 
-			concept c2
+			@cdmSchema.dbo.concept c2
 			on ca1.ancestor_concept_id = c2.concept_id
 			and c2.vocabulary_id = 15
 			and c2.concept_class = 'High Level Group Term'
@@ -91,7 +91,7 @@ from (select * from ACHILLES_results where analysis_id = 1000) ar1
 			group by c1.concept_id, c1.concept_name
 			) hlgt_to_soc
 		on hlt_to_hlgt.hlgt_concept_id = hlgt_to_soc.hlgt_concept_id
-		left join concept soc
+		left join @cdmSchema.dbo.concept soc
 		 on hlgt_to_soc.soc_concept_id = soc.concept_id
 	) concept_hierarchy
 	on CAST(ar1.stratum_1 AS INT) = concept_hierarchy.concept_id

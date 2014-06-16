@@ -4249,7 +4249,7 @@ where paid_coinsurance is not null
 ) t1
 group by procedure_concept_id
 ;
-
+--}
 
 --{1604 IN (@list_of_analysis_ids)}?{
 -- 1604	Distribution of paid toward deductible, by procedure_concept_id
@@ -4279,7 +4279,7 @@ where paid_toward_deductible is not null
 ) t1
 group by procedure_concept_id
 ;
-
+--}
 
 --{1605 IN (@list_of_analysis_ids)}?{
 -- 1605	Distribution of paid by payer, by procedure_concept_id
@@ -4309,7 +4309,7 @@ where paid_by_payer is not null
 ) t1
 group by procedure_concept_id
 ;
-
+--}
 
 --{1606 IN (@list_of_analysis_ids)}?{
 -- 1606	Distribution of paid by coordination of benefit, by procedure_concept_id
@@ -4339,7 +4339,7 @@ where paid_by_coordination_benefits is not null
 ) t1
 group by procedure_concept_id
 ;
-
+--}
 
 --{1607 IN (@list_of_analysis_ids)}?{
 -- 1607	Distribution of total out-of-pocket, by procedure_concept_id
@@ -4369,7 +4369,7 @@ where total_out_of_pocket is not null
 ) t1
 group by procedure_concept_id
 ;
-
+--}
 
 
 --{1608 IN (@list_of_analysis_ids)}?{
@@ -4400,7 +4400,7 @@ where total_paid is not null
 ) t1
 group by procedure_concept_id
 ;
-
+--}
 
 
 --{1609 IN (@list_of_analysis_ids)}?{
