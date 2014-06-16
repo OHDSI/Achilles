@@ -106,7 +106,7 @@ renderAndTranslate <- function(sqlFilename, packageName, dbms, ...){
 }
 
 
-#' @title achilles
+#' The main Achilles analysis
 #'
 #' @description
 #' \code{achilles} creates descriptive statistics summary for an entire OMOP CDM instance.
