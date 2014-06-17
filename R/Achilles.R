@@ -31,7 +31,16 @@ executeSql <- function(conn, dbms, sql){
     #sink()
     tryCatch ({   
       #startQuery <- Sys.time()
-      dbSendUpdate(conn, sqlStatement)
+      
+      #Horrible hack for Redshift, which doesn't support DROP TABLE IF EXIST (or anything similar):
+      if (dbms == "redshift" & grepl("DROP TABLE IF EXISTS",sqlStatement)){
+        nameStart = regexpr("DROP TABLE IF EXISTS", sqlStatement) + nchar("DROP TABLE IF EXISTS") + 1
+        tableName = gsub("(^ +)|( +$)", "", substr(sqlStatement,nameStart,nchar(sqlStatement)))
+        tableCount = dbGetQuery(paste("SELECT COUNT(*) FROM pg_table_def WHERE tablename = '",tableName,"'",sep=""))
+        if (tableCount != 0)
+          dbSendUpdate(conn, paste("DROP TABLE",tableName))
+      } else
+        dbSendUpdate(conn, sqlStatement)
       #delta <- Sys.time() - startQuery
       #writeLines(paste("Statement ",i,"took", delta, attr(delta,"units")))
     } , error = function(err) {
