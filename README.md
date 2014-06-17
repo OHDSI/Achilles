@@ -32,7 +32,7 @@ Getting Started
   ```r
   ?createConnectionDetails
   ```
-  Currently "sql server", "oracle" and "postgresql" are supported as dbms.
+  Currently "sql server", "oracle", "postgresql", and "redshift" are supported as dbms.
 
 6. To use [AchillesWeb](https://github.com/OHDSI/AchillesWeb) to explore the Achilles statistics, you must first export the statistics to JSON files:
   ```r
