@@ -20,6 +20,48 @@
 # @author Chris Knoll
 # @author Frank DeFalco
 
+allReports <- c("CONDITION",
+                "CONDITION_ERA",  
+                "DASHBOARD", 
+                "DATA_DENSITY",
+                "DEATH",
+                "DRUG",
+                "DRUG_ERA",
+                "HEEL",
+                "OBSERVATION",
+                "OBSERVATION_PERIOD",
+                "PERSON", 
+                "PROCEDURE",
+                "VISIT")
+
+initOutputPath <- function (outputPath){
+  # create output path if it doesn't already exist, warn if it does
+  if (file.exists(outputPath)){
+    writeLines(paste("Warning: folder",outputPath,"already exists"))
+  } else {
+    dir.create(paste(outputPath,"/",sep=""))
+  }
+}
+
+#' @title showReportTypes
+#'
+#' @description
+#' \code{showReportTypes} Displays the Report Types that can be passed as vector values to exportToJson.
+#'
+#' @details
+#' exportToJson supports the following report types:
+#' "CONDITION","CONDITION_ERA", "DASHBOARD", "DATA_DENSITY", "DEATH", "DRUG", "DRUG_ERA", "HEEL", "OBSERVATION", "OBSERVATION_PERIOD", "PERSON", "PROCEDURE","VISIT"
+#' 
+#' @return none (opens the allReports vector in a View() display) 
+#' @examples \dontrun{
+#'   showReportTypes()
+#' }
+#' @export
+showReportTypes <- function()
+{
+  View(allReports)
+}
+
 #' @title exportToJson
 #'
 #' @description
@@ -36,54 +78,421 @@
 #' 
 #' @return none 
 #' @examples \dontrun{
-#'   connectionDetails <- createConnectionDetails(dbms="sql server", server="RNDUSRDHIT07.jnj.com")
-#'   exportToJson(connectionDetails, cdmSchema="cdm4_sim", outputPath="C:/achilles.web/data/cdm_name/)
+#'   connectionDetails <- createConnectionDetails(dbms="sql server", server="yourserver")
+#'   exportToJson(connectionDetails, cdmSchema="cdm4_sim", outputPath="your/output/path")
 #' }
 #' @export
-exportToJson <- function (connectionDetails, cdmSchema, resultsSchema, outputPath = getwd())
+exportToJson <- function (connectionDetails, cdmSchema, resultsSchema, outputPath = getwd(), reports = allReports)
 {
   start <- Sys.time()
   if (missing(resultsSchema))
     resultsSchema <- cdmSchema
   
-  # create output path if it doesn't already exist, warn if it does
-  if (file.exists(outputPath)){
-    writeLines(paste("Warning: folder",outputPath,"already exists"))
-  } else {
-    dir.create(paste(outputPath,"/",sep=""))
-  }
+  initOutputPath(outputPath)
   
   # connect to the results schema
   connectionDetails$schema = resultsSchema
   conn <- connect(connectionDetails)
   
   # generate reports
-  generateDataDensityReport(conn, connectionDetails$dbms, cdmSchema, outputPath)
-  generatePersonReport(conn, connectionDetails$dbms, cdmSchema, outputPath)
-  generateObservationPeriodReport(conn, connectionDetails$dbms, cdmSchema, outputPath)
-  generateDrugEraTreemap(conn,connectionDetails$dbms, cdmSchema, outputPath)
-  generateDrugEraReports(conn,connectionDetails$dbms,cdmSchema,outputPath)
-  generateConditionEraTreemap(conn, connectionDetails$dbms, cdmSchema, outputPath)
-  generateConditionEraReports(conn, connectionDetails$dbms, cdmSchema, outputPath)
-  generateConditionTreemap(conn, connectionDetails$dbms, cdmSchema, outputPath)  
-  generateConditionReports(conn, connectionDetails$dbms, cdmSchema, outputPath)
-  generateDrugTreemap(conn, connectionDetails$dbms, cdmSchema, outputPath)  
-  generateDrugReports(conn, connectionDetails$dbms, cdmSchema, outputPath)
-  generateProcedureTreemap(conn, connectionDetails$dbms, cdmSchema, outputPath)
-  generateProcedureReports(conn, connectionDetails$dbms, cdmSchema, outputPath)
-  generateObservationTreemap(conn, connectionDetails$dbms, cdmSchema, outputPath)
-  generateObservationReports(conn, connectionDetails$dbms, cdmSchema, outputPath)
-  generateVisitTreemap(conn, connectionDetails$dbms, cdmSchema, outputPath)
-  generateVisitReports(conn, connectionDetails$dbms, cdmSchema, outputPath)
-  generateDeathReports(conn, connectionDetails$dbms, cdmSchema, outputPath)
-  generateDashboardReport(outputPath)
-  generateAchillesHeelReport(conn, connectionDetails$dbms, cdmSchema, outputPath)
+  
+  if (length(reports[reports == "CONDITION"]) > 0)
+  {
+    generateConditionTreemap(conn, connectionDetails$dbms, cdmSchema, outputPath)  
+    generateConditionReports(conn, connectionDetails$dbms, cdmSchema, outputPath)
+  }
+  
+  if (length(reports[reports == "CONDITION_ERA"]) > 0)
+  {
+    generateConditionEraTreemap(conn, connectionDetails$dbms, cdmSchema, outputPath)
+    generateConditionEraReports(conn, connectionDetails$dbms, cdmSchema, outputPath)
+  }
+  
+  if (length(reports[reports == "DATA_DENSITY"]) > 0)
+    generateDataDensityReport(conn, connectionDetails$dbms, cdmSchema, outputPath)
+       
+  if (length(reports[reports == "DASHBOARD"]) > 0)
+  {
+    generateDashboardReport(outputPath)
+  }
+  
+  if (length(reports[reports == "DEATH"]) > 0)
+  {
+    generateDeathReports(conn, connectionDetails$dbms, cdmSchema, outputPath)
+  }
+  
+  if (length(reports[reports == "DRUG_ERA"]) > 0)
+  {
+    generateDrugEraTreemap(conn,connectionDetails$dbms, cdmSchema, outputPath)
+    generateDrugEraReports(conn,connectionDetails$dbms,cdmSchema,outputPath)
+  }
+
+  if (length(reports[reports == "DRUG"]) > 0)
+  {
+    generateDrugTreemap(conn, connectionDetails$dbms, cdmSchema, outputPath)  
+    generateDrugReports(conn, connectionDetails$dbms, cdmSchema, outputPath)
+  }
+  
+  if (length(reports[reports == "HEEL"]) > 0)
+  {
+    generateAchillesHeelReport(conn, connectionDetails$dbms, cdmSchema, outputPath)
+  }
+  
+  if (length(reports[reports == "OBSERVATION"]) > 0)
+  {  
+    generateObservationTreemap(conn, connectionDetails$dbms, cdmSchema, outputPath)
+    generateObservationReports(conn, connectionDetails$dbms, cdmSchema, outputPath)
+  }
+  
+  if (length(reports[reports == "OBSERVATION_PERIOD"]) > 0)  
+    generateObservationPeriodReport(conn, connectionDetails$dbms, cdmSchema, outputPath)
+  
+  if (length(reports[reports == "PERSON"]) > 0)    
+    generatePersonReport(conn, connectionDetails$dbms, cdmSchema, outputPath)
+    
+  if (length(reports[reports == "PROCEDURE"]) > 0)
+  {
+    generateProcedureTreemap(conn, connectionDetails$dbms, cdmSchema, outputPath)
+    generateProcedureReports(conn, connectionDetails$dbms, cdmSchema, outputPath)
+  }
+  
+  if (length(reports[reports == "VISIT"]) > 0)
+  {  
+    generateVisitTreemap(conn, connectionDetails$dbms, cdmSchema, outputPath)
+    generateVisitReports(conn, connectionDetails$dbms, cdmSchema, outputPath)
+  }
   
   dummy <- dbDisconnect(conn)
   
   delta <- Sys.time() - start
   writeLines(paste("Export took", signif(delta,3), attr(delta,"units")))
   writeLines(paste("JSON files can now be found in",outputPath))
+}
+
+#' @title exportConditionToJson
+#'
+#' @description
+#' \code{exportConditonToJson} Exports Achilles Condition report into a JSON form for reports.
+#'
+#' @details
+#' Creates individual files for Condition report found in Achilles.Web
+#' 
+#' 
+#' @param connectionDetails  An R object of type ConnectionDetail (details for the function that contains server info, database type, optionally username/password, port)
+#' @param cdmSchema      Name of the database schema that contains the vocabulary files
+#' @param resultsSchema  		Name of the database schema that contains the Achilles analysis files. Default is cdmSchema
+#' @param outputPath		A folder location to save the JSON files. Default is current working folder
+#' 
+#' @return none 
+#' @examples \dontrun{
+#'   connectionDetails <- createConnectionDetails(dbms="sql server", server="yourserver")
+#'   exportConditionToJson(connectionDetails, cdmSchema="cdm4_sim", outputPath="your/output/path")
+#' }
+#' @export
+exportConditionToJson <- function (connectionDetails, cdmSchema, resultsSchema, outputPath = getwd())
+{
+  exportToJson(connectionDetails, cdmSchema, resultsSchema, outputPath, reports = c("CONDITION"))  
+}
+
+#' @title exportConditionEraToJson
+#'
+#' @description
+#' \code{exportConditionEraToJson} Exports Achilles Condition Era report into a JSON form for reports.
+#'
+#' @details
+#' Creates individual files for Condition Era report found in Achilles.Web
+#' 
+#' 
+#' @param connectionDetails  An R object of type ConnectionDetail (details for the function that contains server info, database type, optionally username/password, port)
+#' @param cdmSchema      Name of the database schema that contains the vocabulary files
+#' @param resultsSchema  		Name of the database schema that contains the Achilles analysis files. Default is cdmSchema
+#' @param outputPath		A folder location to save the JSON files. Default is current working folder
+#' 
+#' @return none 
+#' @examples \dontrun{
+#'   connectionDetails <- createConnectionDetails(dbms="sql server", server="yourserver")
+#'   exportConditionEraToJson(connectionDetails, cdmSchema="cdm4_sim", outputPath="your/output/path")
+#' }
+#' @export
+exportConditionEraToJson <- function (connectionDetails, cdmSchema, resultsSchema, outputPath = getwd())
+{
+  exportToJson(connectionDetails, cdmSchema, resultsSchema, outputPath, reports = c("CONDITION_ERA"))  
+}
+
+#' @title exportDashboardToJson
+#'
+#' @description
+#' \code{exportDashboardToJson} Exports Achilles Dashboard report into a JSON form for reports.
+#'
+#' @details
+#' Creates individual files for Dashboard report found in Achilles.Web. NOTE: This function reads the results
+#' from the other exports and aggregates them into a single file. If other reports are not genreated, this function will fail.
+#' 
+#' 
+#' @param connectionDetails  An R object of type ConnectionDetail (details for the function that contains server info, database type, optionally username/password, port)
+#' @param cdmSchema      Name of the database schema that contains the vocabulary files
+#' @param resultsSchema  		Name of the database schema that contains the Achilles analysis files. Default is cdmSchema
+#' @param outputPath		A folder location to save the JSON files. Default is current working folder
+#' 
+#' @return none 
+#' @examples \dontrun{
+#'   connectionDetails <- createConnectionDetails(dbms="sql server", server="yourserver")
+#'   exportDashboardToJson(connectionDetails, cdmSchema="cdm4_sim", outputPath="your/output/path")
+#' }
+#' @export
+exportDashboardToJson <- function (connectionDetails, cdmSchema, resultsSchema, outputPath = getwd())
+{
+  exportToJson(connectionDetails, cdmSchema, resultsSchema, outputPath, reports = c("DASHBOARD"))  
+}
+
+#' @title exportDataDensityToJson
+#'
+#' @description
+#' \code{exportDataDensityToJson} Exports Achilles Data Density report into a JSON form for reports.
+#'
+#' @details
+#' Creates individual files for Data Density report found in Achilles.Web
+#' 
+#' 
+#' @param connectionDetails  An R object of type ConnectionDetail (details for the function that contains server info, database type, optionally username/password, port)
+#' @param cdmSchema      Name of the database schema that contains the vocabulary files
+#' @param resultsSchema  		Name of the database schema that contains the Achilles analysis files. Default is cdmSchema
+#' @param outputPath		A folder location to save the JSON files. Default is current working folder
+#' 
+#' @return none 
+#' @examples \dontrun{
+#'   connectionDetails <- createConnectionDetails(dbms="sql server", server="yourserver")
+#'   exportDataDensityToJson(connectionDetails, cdmSchema="cdm4_sim", outputPath="your/output/path")
+#' }
+#' @export
+exportDataDensityToJson <- function (connectionDetails, cdmSchema, resultsSchema, outputPath = getwd())
+{
+  exportToJson(connectionDetails, cdmSchema, resultsSchema, outputPath, reports = c("DATA_DENSITY"))  
+}
+
+#' @title exportDeathToJson
+#'
+#' @description
+#' \code{exportDeathToJson} Exports Achilles Death report into a JSON form for reports.
+#'
+#' @details
+#' Creates individual files for Death report found in Achilles.Web
+#' 
+#' 
+#' @param connectionDetails  An R object of type ConnectionDetail (details for the function that contains server info, database type, optionally username/password, port)
+#' @param cdmSchema      Name of the database schema that contains the vocabulary files
+#' @param resultsSchema  		Name of the database schema that contains the Achilles analysis files. Default is cdmSchema
+#' @param outputPath		A folder location to save the JSON files. Default is current working folder
+#' 
+#' @return none 
+#' @examples \dontrun{
+#'   connectionDetails <- createConnectionDetails(dbms="sql server", server="yourserver")
+#'   exportDeathToJson(connectionDetails, cdmSchema="cdm4_sim", outputPath="your/output/path")
+#' }
+#' @export
+exportDeathToJson <- function (connectionDetails, cdmSchema, resultsSchema, outputPath = getwd())
+{
+  exportToJson(connectionDetails, cdmSchema, resultsSchema, outputPath, reports = c("DEATH"))  
+}
+
+#' @title exportDrugToJson
+#'
+#' @description
+#' \code{exportDrugToJson} Exports Achilles Drug report into a JSON form for reports.
+#'
+#' @details
+#' Creates individual files for Drug report found in Achilles.Web
+#' 
+#' 
+#' @param connectionDetails  An R object of type ConnectionDetail (details for the function that contains server info, database type, optionally username/password, port)
+#' @param cdmSchema      Name of the database schema that contains the vocabulary files
+#' @param resultsSchema  		Name of the database schema that contains the Achilles analysis files. Default is cdmSchema
+#' @param outputPath		A folder location to save the JSON files. Default is current working folder
+#' 
+#' @return none 
+#' @examples \dontrun{
+#'   connectionDetails <- createConnectionDetails(dbms="sql server", server="yourserver")
+#'   exportDrugToJson(connectionDetails, cdmSchema="cdm4_sim", outputPath="your/output/path")
+#' }
+#' @export
+exportDrugToJson <- function (connectionDetails, cdmSchema, resultsSchema, outputPath = getwd())
+{
+  exportToJson(connectionDetails, cdmSchema, resultsSchema, outputPath, reports = c("DRUG"))  
+}
+
+#' @title exportDrugEraToJson
+#'
+#' @description
+#' \code{exportDrugEraToJson} Exports Achilles Drug Era report into a JSON form for reports.
+#'
+#' @details
+#' Creates individual files for Drug Era report found in Achilles.Web
+#' 
+#' 
+#' @param connectionDetails  An R object of type ConnectionDetail (details for the function that contains server info, database type, optionally username/password, port)
+#' @param cdmSchema      Name of the database schema that contains the vocabulary files
+#' @param resultsSchema  		Name of the database schema that contains the Achilles analysis files. Default is cdmSchema
+#' @param outputPath		A folder location to save the JSON files. Default is current working folder
+#' 
+#' @return none 
+#' @examples \dontrun{
+#'   connectionDetails <- createConnectionDetails(dbms="sql server", server="yourserver")
+#'   exportDrugEraToJson(connectionDetails, cdmSchema="cdm4_sim", outputPath="your/output/path")
+#' }
+#' @export
+exportDrugEraToJson <- function (connectionDetails, cdmSchema, resultsSchema, outputPath = getwd())
+{
+  exportToJson(connectionDetails, cdmSchema, resultsSchema, outputPath, reports = c("DRUG_ERA"))  
+}
+
+#' @title exportHeelToJson
+#'
+#' @description
+#' \code{exportHeelToJson} Exports Achilles Heel report into a JSON form for reports.
+#'
+#' @details
+#' Creates individual files for Achilles Heel report found in Achilles.Web
+#' 
+#' 
+#' @param connectionDetails  An R object of type ConnectionDetail (details for the function that contains server info, database type, optionally username/password, port)
+#' @param cdmSchema      Name of the database schema that contains the vocabulary files
+#' @param resultsSchema  		Name of the database schema that contains the Achilles analysis files. Default is cdmSchema
+#' @param outputPath		A folder location to save the JSON files. Default is current working folder
+#' 
+#' @return none 
+#' @examples \dontrun{
+#'   connectionDetails <- createConnectionDetails(dbms="sql server", server="yourserver")
+#'   exportHeelToJson(connectionDetails, cdmSchema="cdm4_sim", outputPath="your/output/path")
+#' }
+#' @export
+exportHeelToJson <- function (connectionDetails, cdmSchema, resultsSchema, outputPath = getwd())
+{
+  exportToJson(connectionDetails, cdmSchema, resultsSchema, outputPath, reports = c("HEEL"))  
+}
+
+#' @title exportObservationToJson
+#'
+#' @description
+#' \code{exportObservationToJson} Exports Achilles Observation report into a JSON form for reports.
+#'
+#' @details
+#' Creates individual files for Observation report found in Achilles.Web
+#' 
+#' 
+#' @param connectionDetails  An R object of type ConnectionDetail (details for the function that contains server info, database type, optionally username/password, port)
+#' @param cdmSchema      Name of the database schema that contains the vocabulary files
+#' @param resultsSchema  		Name of the database schema that contains the Achilles analysis files. Default is cdmSchema
+#' @param outputPath		A folder location to save the JSON files. Default is current working folder
+#' 
+#' @return none 
+#' @examples \dontrun{
+#'   connectionDetails <- createConnectionDetails(dbms="sql server", server="yourserver")
+#'   exportObservationToJson(connectionDetails, cdmSchema="cdm4_sim", outputPath="your/output/path")
+#' }
+#' @export
+exportObservationToJson <- function (connectionDetails, cdmSchema, resultsSchema, outputPath = getwd())
+{
+  exportToJson(connectionDetails, cdmSchema, resultsSchema, outputPath, reports = c("OBSERVATION"))  
+}
+
+#' @title exportObservationPeriodToJson
+#'
+#' @description
+#' \code{exportObservationPeriodToJson} Exports Achilles Observation Period report into a JSON form for reports.
+#'
+#' @details
+#' Creates individual files for Observation Period report found in Achilles.Web
+#' 
+#' 
+#' @param connectionDetails  An R object of type ConnectionDetail (details for the function that contains server info, database type, optionally username/password, port)
+#' @param cdmSchema      Name of the database schema that contains the vocabulary files
+#' @param resultsSchema  		Name of the database schema that contains the Achilles analysis files. Default is cdmSchema
+#' @param outputPath		A folder location to save the JSON files. Default is current working folder
+#' 
+#' @return none 
+#' @examples \dontrun{
+#'   connectionDetails <- createConnectionDetails(dbms="sql server", server="yourserver")
+#'   exportObservationPeriodToJson(connectionDetails, cdmSchema="cdm4_sim", outputPath="your/output/path")
+#' }
+#' @export
+exportObservationPeriodToJson <- function (connectionDetails, cdmSchema, resultsSchema, outputPath = getwd())
+{
+  exportToJson(connectionDetails, cdmSchema, resultsSchema, outputPath, reports = c("OBSERVATION_PERIOD"))  
+}
+
+#' @title exportPersonToJson
+#'
+#' @description
+#' \code{exportPersonToJson} Exports Achilles Person report into a JSON form for reports.
+#'
+#' @details
+#' Creates individual files for Person report found in Achilles.Web
+#' 
+#' 
+#' @param connectionDetails  An R object of type ConnectionDetail (details for the function that contains server info, database type, optionally username/password, port)
+#' @param cdmSchema    	Name of the database schema that contains the vocabulary files
+#' @param resultsSchema			Name of the database schema that contains the Achilles analysis files. Default is cdmSchema
+#' @param outputPath		A folder location to save the JSON files. Default is current working folder
+#' 
+#' @return none 
+#' @examples \dontrun{
+#'   connectionDetails <- createConnectionDetails(dbms="sql server", server="yourserver")
+#'   exportPersonToJson(connectionDetails, cdmSchema="cdm4_sim", outputPath="your/output/path")
+#' }
+#' @export
+exportPersonToJson <- function (connectionDetails, cdmSchema, resultsSchema, outputPath = getwd())
+{
+  exportToJson(connectionDetails, cdmSchema, resultsSchema, outputPath, reports = c("PERSON"))  
+}
+
+#' @title exportProcedureToJson
+#'
+#' @description
+#' \code{exportProcedureToJson} Exports Achilles Procedure report into a JSON form for reports.
+#'
+#' @details
+#' Creates individual files for Procedure report found in Achilles.Web
+#' 
+#' 
+#' @param connectionDetails  An R object of type ConnectionDetail (details for the function that contains server info, database type, optionally username/password, port)
+#' @param cdmSchema      Name of the database schema that contains the vocabulary files
+#' @param resultsSchema  		Name of the database schema that contains the Achilles analysis files. Default is cdmSchema
+#' @param outputPath		A folder location to save the JSON files. Default is current working folder
+#' 
+#' @return none 
+#' @examples \dontrun{
+#'   connectionDetails <- createConnectionDetails(dbms="sql server", server="yourserver")
+#'   exportProcedureToJson(connectionDetails, cdmSchema="cdm4_sim", outputPath="your/output/path")
+#' }
+#' @export
+exportProcedureToJson <- function (connectionDetails, cdmSchema, resultsSchema, outputPath = getwd())
+{
+  exportToJson(connectionDetails, cdmSchema, resultsSchema, outputPath, reports = c("PROCEDURE"))  
+}
+
+#' @title exportVisitToJson
+#'
+#' @description
+#' \code{exportVisitToJson} Exports Achilles Visit report into a JSON form for reports.
+#'
+#' @details
+#' Creates individual files for Visit report found in Achilles.Web
+#' 
+#' 
+#' @param connectionDetails  An R object of type ConnectionDetail (details for the function that contains server info, database type, optionally username/password, port)
+#' @param cdmSchema      Name of the database schema that contains the vocabulary files
+#' @param resultsSchema  		Name of the database schema that contains the Achilles analysis files. Default is cdmSchema
+#' @param outputPath		A folder location to save the JSON files. Default is current working folder
+#' 
+#' @return none 
+#' @examples \dontrun{
+#'   connectionDetails <- createConnectionDetails(dbms="sql server", server="yourserver")
+#'   exportVisitToJson(connectionDetails, cdmSchema="cdm4_sim", outputPath="your/output/path")
+#' }
+#' @export
+exportVisitToJson <- function (connectionDetails, cdmSchema, resultsSchema, outputPath = getwd())
+{
+  exportToJson(connectionDetails, cdmSchema, resultsSchema, outputPath, reports = c("VISIT"))  
 }
 
 generateAchillesHeelReport <- function(conn, dbms, cdmSchema, outputPath) {
