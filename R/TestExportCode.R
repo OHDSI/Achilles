@@ -8,6 +8,7 @@ testExportCode <- function(){
   setwd("c:/temp")
   connectionDetails <- createConnectionDetails(dbms="sql server", server="RNDUSRDHIT07.jnj.com")
   exportToJson(connectionDetails, cdmSchema = "cdm4_sim", resultsSchema = "scratch",outputPath = "c:/temp/SqlServer")
+  #exportToJson(connectionDetails, cdmSchema = "cdm4_sim", resultsSchema = "scratch",outputPath = "c:/temp/SqlServer",reports = c("HEEL","PERSON"))
   
   #Test on PostgreSQL
   setwd("c:/temp")

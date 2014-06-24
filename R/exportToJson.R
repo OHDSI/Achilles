@@ -20,19 +20,20 @@
 # @author Chris Knoll
 # @author Frank DeFalco
 
-allReports <- c("CONDITION",
-                "CONDITION_ERA",  
-                "DASHBOARD", 
-                "DATA_DENSITY",
-                "DEATH",
-                "DRUG",
-                "DRUG_ERA",
-                "HEEL",
-                "OBSERVATION",
-                "OBSERVATION_PERIOD",
-                "PERSON", 
-                "PROCEDURE",
-                "VISIT")
+#allReports <- c("CONDITION",
+#                "CONDITION_ERA",  
+#                "DASHBOARD", 
+#                "DATA_DENSITY",
+#                "DEATH",
+#                "DRUG",
+#                "DRUG_ERA",
+#                "HEEL",
+#                "OBSERVATION",
+#                "OBSERVATION_PERIOD",
+#                "PERSON", 
+#                "PROCEDURE",
+#                "VISIT")
+#save(allReports,file="allReports.rda")
 
 initOutputPath <- function (outputPath){
   # create output path if it doesn't already exist, warn if it does
@@ -75,6 +76,8 @@ showReportTypes <- function()
 #' @param cdmSchema  		Name of the database schema that contains the vocabulary files
 #' @param resultsSchema			Name of the database schema that contains the Achilles analysis files. Default is cdmSchema
 #' @param outputPath		A folder location to save the JSON files. Default is current working folder
+#' @param reports       A character vector listing the set of reports to generate. Default is all reports. 
+#' See \code{data(allReports)} for a list of all report types
 #' 
 #' @return none 
 #' @examples \dontrun{
@@ -96,67 +99,67 @@ exportToJson <- function (connectionDetails, cdmSchema, resultsSchema, outputPat
   
   # generate reports
   
-  if (length(reports[reports == "CONDITION"]) > 0)
+  if ("CONDITION" %in% reports)
   {
     generateConditionTreemap(conn, connectionDetails$dbms, cdmSchema, outputPath)  
     generateConditionReports(conn, connectionDetails$dbms, cdmSchema, outputPath)
   }
   
-  if (length(reports[reports == "CONDITION_ERA"]) > 0)
+  if ("CONDITION_ERA" %in% reports)
   {
     generateConditionEraTreemap(conn, connectionDetails$dbms, cdmSchema, outputPath)
     generateConditionEraReports(conn, connectionDetails$dbms, cdmSchema, outputPath)
   }
   
-  if (length(reports[reports == "DATA_DENSITY"]) > 0)
+  if ("DATA_DENSITY" %in% reports)
     generateDataDensityReport(conn, connectionDetails$dbms, cdmSchema, outputPath)
        
-  if (length(reports[reports == "DASHBOARD"]) > 0)
+  if ("DASHBOARD" %in% reports)
   {
     generateDashboardReport(outputPath)
   }
   
-  if (length(reports[reports == "DEATH"]) > 0)
+  if ("DEATH" %in% reports)
   {
     generateDeathReports(conn, connectionDetails$dbms, cdmSchema, outputPath)
   }
   
-  if (length(reports[reports == "DRUG_ERA"]) > 0)
+  if ("DRUG_ERA" %in% reports)
   {
     generateDrugEraTreemap(conn,connectionDetails$dbms, cdmSchema, outputPath)
     generateDrugEraReports(conn,connectionDetails$dbms,cdmSchema,outputPath)
   }
 
-  if (length(reports[reports == "DRUG"]) > 0)
+  if ("DRUG" %in% reports)
   {
     generateDrugTreemap(conn, connectionDetails$dbms, cdmSchema, outputPath)  
     generateDrugReports(conn, connectionDetails$dbms, cdmSchema, outputPath)
   }
   
-  if (length(reports[reports == "HEEL"]) > 0)
+  if ("HEEL" %in% reports)
   {
     generateAchillesHeelReport(conn, connectionDetails$dbms, cdmSchema, outputPath)
   }
   
-  if (length(reports[reports == "OBSERVATION"]) > 0)
+  if ("OBSERVATION" %in% reports)
   {  
     generateObservationTreemap(conn, connectionDetails$dbms, cdmSchema, outputPath)
     generateObservationReports(conn, connectionDetails$dbms, cdmSchema, outputPath)
   }
   
-  if (length(reports[reports == "OBSERVATION_PERIOD"]) > 0)  
+  if ("OBSERVATION_PERIOD" %in% reports)  
     generateObservationPeriodReport(conn, connectionDetails$dbms, cdmSchema, outputPath)
   
-  if (length(reports[reports == "PERSON"]) > 0)    
+  if ("PERSON" %in% reports)    
     generatePersonReport(conn, connectionDetails$dbms, cdmSchema, outputPath)
     
-  if (length(reports[reports == "PROCEDURE"]) > 0)
+  if ("PROCEDURE" %in% reports)
   {
     generateProcedureTreemap(conn, connectionDetails$dbms, cdmSchema, outputPath)
     generateProcedureReports(conn, connectionDetails$dbms, cdmSchema, outputPath)
   }
   
-  if (length(reports[reports == "VISIT"]) > 0)
+  if ("VISIT" %in% reports)
   {  
     generateVisitTreemap(conn, connectionDetails$dbms, cdmSchema, outputPath)
     generateVisitReports(conn, connectionDetails$dbms, cdmSchema, outputPath)
