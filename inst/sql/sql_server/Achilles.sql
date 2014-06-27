@@ -1040,6 +1040,9 @@ group by floor(DATEDIFF(dd, op1.observation_period_start_date, op1.observation_p
 --{109 IN (@list_of_analysis_ids)}?{
 -- 109	Number of persons with continuous observation in each year
 -- Note: using temp table instead of nested query because this gives vastly improved performance in Oracle
+
+USE @results_schema; --Set to result schema so temp tables are created where user has write rights (Oracle)
+
 SELECT DISTINCT 
   YEAR(observation_period_start_date) AS obs_year,
   CAST(CAST(YEAR(observation_period_start_date) AS VARCHAR(4)) +  '01' + '01' AS DATE) AS obs_year_start,	
@@ -1047,16 +1050,16 @@ SELECT DISTINCT
 INTO
   #temp_dates
 FROM 
-  observation_period
+  @CDM_schema.dbo.observation_period
 ;
 
-INSERT INTO @results_schema.dbo.ACHILLES_results (analysis_id, stratum_1, count_value)
+INSERT INTO ACHILLES_results (analysis_id, stratum_1, count_value)
 SELECT 
   109 AS analysis_id,  
 	obs_year AS stratum_1, 
 	COUNT(DISTINCT person_id) AS count_value
 FROM 
-	observation_period,
+	@CDM_schema.dbo.observation_period,
 	#temp_dates
 WHERE  
 		observation_period_start_date <= obs_year_start
@@ -1068,12 +1071,17 @@ GROUP BY
 
 TRUNCATE TABLE #temp_dates;
 DROP TABLE #temp_dates;
+
+USE @CDM_schema;
 --}
 
 
 --{110 IN (@list_of_analysis_ids)}?{
 -- 110	Number of persons with continuous observation in each month
 -- Note: using temp table instead of nested query because this gives vastly improved performance in Oracle
+
+USE @results_schema; --Set to result schema so temp tables are created where user has write rights (Oracle)
+
 SELECT DISTINCT 
   YEAR(observation_period_start_date)*100 + MONTH(observation_period_start_date) AS obs_month,
   CAST(CAST(YEAR(observation_period_start_date) AS VARCHAR(4)) +  RIGHT('0' + CAST(MONTH(OBSERVATION_PERIOD_START_DATE) AS VARCHAR(2)), 2) + '01' AS DATE) AS obs_month_start,  
@@ -1081,17 +1089,17 @@ SELECT DISTINCT
 INTO
   #temp_dates
 FROM 
-  observation_period
+  @CDM_schema.dbo.observation_period
 ;
 
 
-INSERT INTO @results_schema.dbo.ACHILLES_results (analysis_id, stratum_1, count_value)
+INSERT INTO ACHILLES_results (analysis_id, stratum_1, count_value)
 SELECT 
   110 AS analysis_id, 
 	obs_month AS stratum_1, 
 	COUNT(DISTINCT person_id) AS count_value
 FROM
-	observation_period,
+	@CDM_schema.dbo.observation_period,
 	#temp_Dates
 WHERE 
 		observation_period_start_date <= obs_month_start
@@ -1103,6 +1111,8 @@ GROUP BY
 
 TRUNCATE TABLE #temp_dates;
 DROP TABLE #temp_dates;
+
+USE @CDM_schema;
 --}
 
 
@@ -1174,23 +1184,27 @@ where op1.observation_period_end_date < op1.observation_period_start_date
 --{116 IN (@list_of_analysis_ids)}?{
 -- 116	Number of persons with at least one day of observation in each year by gender and age decile
 -- Note: using temp table instead of nested query because this gives vastly improved performance in Oracle
+
+USE @results_schema; --Set to result schema so temp tables are created where user has write rights (Oracle)
+
 select distinct 
   YEAR(observation_period_start_date) as obs_year 
 INTO
   #temp_dates
 from 
-  OBSERVATION_PERIOD
+  @CDM_schema.dbo.OBSERVATION_PERIOD
 ;
 
-insert into @results_schema.dbo.ACHILLES_results (analysis_id, stratum_1, stratum_2, stratum_3, count_value)
+insert into ACHILLES_results (analysis_id, stratum_1, stratum_2, stratum_3, count_value)
 select 116 as analysis_id,  
 	t1.obs_year as stratum_1, 
 	p1.gender_concept_id as stratum_2,
 	floor((t1.obs_year - p1.year_of_birth)/10) as stratum_3,
 	COUNT(distinct p1.PERSON_ID) as count_value
 from
-	PERSON p1
-	inner join observation_period op1
+	@CDM_schema.dbo.PERSON p1
+	inner join 
+  @CDM_schema.dbo.observation_period op1
 	on p1.person_id = op1.person_id
 	,
 	#temp_dates t1 
@@ -1203,26 +1217,31 @@ group by t1.obs_year,
 
 TRUNCATE TABLE #temp_dates;
 DROP TABLE #temp_dates;
+
+USE @CDM_schema;
 --}
 
 
 --{117 IN (@list_of_analysis_ids)}?{
 -- 117	Number of persons with at least one day of observation in each year by gender and age decile
 -- Note: using temp table instead of nested query because this gives vastly improved performance in Oracle
+
+USE @results_schema; --Set to result schema so temp tables are created where user has write rights (Oracle)
+
 select distinct 
   YEAR(observation_period_start_date)*100 + MONTH(observation_period_start_date)  as obs_month
 into 
   #temp_dates
 from 
-  OBSERVATION_PERIOD
+  @CDM_schema.dbo.OBSERVATION_PERIOD
 ;
 
-insert into @results_schema.dbo.ACHILLES_results (analysis_id, stratum_1, count_value)
+insert into ACHILLES_results (analysis_id, stratum_1, count_value)
 select 117 as analysis_id,  
 	t1.obs_month as stratum_1,
 	COUNT(distinct op1.PERSON_ID) as count_value
 from
-	observation_period op1,
+	@CDM_schema.dbo.observation_period op1,
 	#temp_dates t1 
 where YEAR(observation_period_start_date)*100 + MONTH(observation_period_start_date) <= t1.obs_month
 	and YEAR(observation_period_end_date)*100 + MONTH(observation_period_end_date) >= t1.obs_month
@@ -1231,6 +1250,8 @@ group by t1.obs_month
 
 TRUNCATE TABLE #temp_dates;
 DROP TABLE #temp_dates;
+
+USE @CDM_schema;
 --}
 
 
@@ -3682,20 +3703,24 @@ group by floor(DATEDIFF(dd, ppp1.payer_plan_period_start_date, ppp1.payer_plan_p
 --{1409 IN (@list_of_analysis_ids)}?{
 -- 1409	Number of persons with continuous payer plan in each year
 -- Note: using temp table instead of nested query because this gives vastly improved
+
+USE @results_schema; --Set to result schema so temp tables are created where user has write rights (Oracle)
+
 select distinct 
   YEAR(payer_plan_period_start_date) as obs_year 
 INTO
   #temp_dates
 from 
-  payer_plan_period
+  @CDM_schema.dbo.payer_plan_period
 ;
 
-insert into @results_schema.dbo.ACHILLES_results (analysis_id, stratum_1, count_value)
+insert into ACHILLES_results (analysis_id, stratum_1, count_value)
 select 1409 as analysis_id,  
 	t1.obs_year as stratum_1, COUNT(distinct p1.PERSON_ID) as count_value
 from
-	PERSON p1
-	inner join payer_plan_period ppp1
+	@CDM_schema.dbo.PERSON p1
+	inner join 
+  @CDM_schema.dbo.payer_plan_period ppp1
 	on p1.person_id = ppp1.person_id
 	,
 	#temp_dates t1 
@@ -3706,12 +3731,17 @@ group by t1.obs_year
 
 truncate table #temp_dates;
 drop table #temp_dates;
+
+USE @CDM_schema;
 --}
 
 
 --{1410 IN (@list_of_analysis_ids)}?{
 -- 1410	Number of persons with continuous payer plan in each month
 -- Note: using temp table instead of nested query because this gives vastly improved performance in Oracle
+
+USE @results_schema; --Set to result schema so temp tables are created where user has write rights (Oracle)
+
 SELECT DISTINCT 
   YEAR(payer_plan_period_start_date)*100 + MONTH(payer_plan_period_start_date) AS obs_month,
   CAST(CAST(YEAR(payer_plan_period_start_date) AS VARCHAR(4)) +  RIGHT('0' + CAST(MONTH(payer_plan_period_start_date) AS VARCHAR(2)), 2) + '01' AS DATE) AS obs_month_start,  
@@ -3719,17 +3749,18 @@ SELECT DISTINCT
 INTO
   #temp_dates
 FROM 
-  payer_plan_period
+  @CDM_schema.dbo.payer_plan_period
 ;
 
-insert into @results_schema.dbo.ACHILLES_results (analysis_id, stratum_1, count_value)
+insert into ACHILLES_results (analysis_id, stratum_1, count_value)
 select 
   1410 as analysis_id, 
 	obs_month as stratum_1, 
 	COUNT(distinct p1.PERSON_ID) as count_value
 from
-	PERSON p1
-	inner join payer_plan_period ppp1
+	@CDM_schema.dbo.PERSON p1
+	inner join 
+  @CDM_schema.dbo.payer_plan_period ppp1
 	on p1.person_id = ppp1.person_id
 	,
 	#temp_dates
@@ -3740,6 +3771,8 @@ group by obs_month
 
 TRUNCATE TABLE #temp_dates;
 DROP TABLE #temp_dates;
+
+USE @CDM_schema;
 --}
 
 
