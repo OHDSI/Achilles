@@ -1,7 +1,7 @@
 select 	concept_hierarchy.concept_id,
 	isNull(concept_hierarchy.soc_concept_name,'NA') + '||' + isNull(concept_hierarchy.hlgt_concept_name,'NA') + '||' + isNull(concept_hierarchy.hlt_concept_name, 'NA') + '||' + isNull(concept_hierarchy.pt_concept_name,'NA') + '||' + isNull(concept_hierarchy.snomed_concept_name,'NA') concept_path, 
 	ar1.count_value as num_persons, 
-	ROUND(CAST(1.0*ar1.count_value / denom.count_value AS NUMERIC(8,6)),5) as percent_persons,
+	ROUND(CAST(1.0*ar1.count_value / denom.count_value AS FLOAT),5) as percent_persons,
 	ROUND(ar2.avg_value,5) as length_of_era
 from (select * from ACHILLES_results where analysis_id = 1000) ar1
 	inner join
