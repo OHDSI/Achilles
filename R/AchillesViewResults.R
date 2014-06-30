@@ -1,7 +1,7 @@
-#' @title fetchAchillesHeelResult
+#' @title fetchAchillesHeelResults
 #'
 #' @description
-#' \code{fetchAchillesHeelResult} retrieves the AchillesHeel results for the AChilles analysis to identify potential data quality issues.
+#' \code{fetchAchillesHeelResults} retrieves the AchillesHeel results for the AChilles analysis to identify potential data quality issues.
 #' 
 #' @details
 #' AchillesHeel is a part of the Achilles analysis aimed at identifying potential data quality issues. It will list errors (things
@@ -14,10 +14,10 @@
 #' @examples \dontrun{
 #'   connectionDetails <- createConnectionDetails(dbms="sql server", server="RNDUSRDHIT07.jnj.com")
 #'   achillesResults <- achilles(connectionDetails, "cdm4_sim", "scratch", "TestDB")
-#'   fetchAchillesHeelResult(connectionDetails, "scratch")
+#'   fetchAchillesHeelResults(connectionDetails, "scratch")
 #' }
 #' @export
-fetchAchillesHeelResult <- function (connectionDetails, resultsSchema){
+fetchAchillesHeelResults <- function (connectionDetails, resultsSchema){
   connectionDetails$schema = resultsSchema
   conn <- connect(connectionDetails)
   

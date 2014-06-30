@@ -690,7 +690,10 @@ insert into ACHILLES_analysis (analysis_id, analysis_name, stratum_1_name)
 insert into ACHILLES_analysis (analysis_id, analysis_name)
 	values (1701, 'Number of records with cohort end date < cohort start date');
 
---} end of createTable clause
+--} : {else if not createTable
+delete from @results_schema.dbo.ACHILLES_results where analysis_id IN (@list_of_analysis_ids);
+delete from @results_schema.dbo.ACHILLES_results_dist where analysis_id IN (@list_of_analysis_ids);
+}
 
 /****
 7. generate results for analysis_results
@@ -700,8 +703,6 @@ insert into ACHILLES_analysis (analysis_id, analysis_name)
 
 use @CDM_schema;
 
-delete from @results_schema.dbo.ACHILLES_results where analysis_id IN (@list_of_analysis_ids);
-delete from @results_schema.dbo.ACHILLES_results_dist where analysis_id IN (@list_of_analysis_ids);
 
 --{0 IN (@list_of_analysis_ids)}?{
 -- 0	Number of persons
@@ -2983,7 +2984,7 @@ where o1.value_as_number is not null
 	and o1.range_high is not null
 group by observation_concept_id,
 	unit_concept_id,
-	case when o1.value_as_number < o1.range_low then 'Below Range Low'
+	  case when o1.value_as_number < o1.range_low then 'Below Range Low'
 		when o1.value_as_number >= o1.range_low and o1.value_as_number <= o1.range_high then 'Within Range'
 		when o1.value_as_number > o1.range_high then 'Above Range High'
 		else 'Other' end
