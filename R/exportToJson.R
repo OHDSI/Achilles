@@ -113,6 +113,10 @@ exportToJson <- function (connectionDetails, cdmSchema, resultsSchema, outputPat
   
   if ("DATA_DENSITY" %in% reports)
     generateDataDensityReport(conn, connectionDetails$dbms, cdmSchema, outputPath)
+
+  #Test codes
+  if ("PERSON" %in% reports)    
+    generatePersonReport(conn, connectionDetails$dbms, cdmSchema, outputPath)
        
   if ("DASHBOARD" %in% reports)
   {
@@ -1297,7 +1301,7 @@ generateObservationPeriodReport <- function(conn, dbms, cdmSchema, outputPath)
 
 generateDashboardReport <- function(outputPath)
 {
-  writeLines("Generating dashboard report")
+  writeLines("Generating dashboard report")	
   output <- {}
 
   progressBar <- txtProgressBar(max=4,style=3)
