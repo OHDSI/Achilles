@@ -114,11 +114,6 @@ exportToJson <- function (connectionDetails, cdmSchema, resultsSchema, outputPat
   if ("DATA_DENSITY" %in% reports)
     generateDataDensityReport(conn, connectionDetails$dbms, cdmSchema, outputPath)
        
-  if ("DASHBOARD" %in% reports)
-  {
-    generateDashboardReport(outputPath)
-  }
-  
   if ("DEATH" %in% reports)
   {
     generateDeathReports(conn, connectionDetails$dbms, cdmSchema, outputPath)
@@ -163,6 +158,12 @@ exportToJson <- function (connectionDetails, cdmSchema, resultsSchema, outputPat
   {  
     generateVisitTreemap(conn, connectionDetails$dbms, cdmSchema, outputPath)
     generateVisitReports(conn, connectionDetails$dbms, cdmSchema, outputPath)
+  }
+  
+  # dashboard is always last
+  if ("DASHBOARD" %in% reports)
+  {
+    generateDashboardReport(outputPath)
   }
   
   dummy <- dbDisconnect(conn)
