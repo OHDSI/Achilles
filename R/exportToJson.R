@@ -597,6 +597,17 @@ generateConditionEraTreemap <- function(conn, dbms, cdmSchema, outputPath) {
 generateConditionReports <- function(conn, dbms, cdmSchema, outputPath) {
   writeLines("Generating condition reports")
   
+  treemapFile <- file.path(outputPath,"condition_treemap.json")
+  if (!file.exists(treemapFile)){
+    writeLines(paste("Warning: treemap file",treemapFile,"does not exist. Skipping detail report generation."))
+    return()
+  }
+  
+  treemapData <- fromJSON(file = treemapFile)
+  uniqueConcepts <- unique(treemapData$CONCEPT_ID)
+  totalCount <- length(uniqueConcepts)
+  
+  
   conditionsFolder <- file.path(outputPath,"conditions")
   if (file.exists(conditionsFolder)){
     writeLines(paste("Warning: folder ",conditionsFolder," already exists"))
@@ -637,8 +648,6 @@ generateConditionReports <- function(conn, dbms, cdmSchema, outputPath) {
   dataConditionsByType <- querySql(conn,dbms,queryConditionsByType)    
   dataAgeAtFirstDiagnosis <- querySql(conn,dbms,queryAgeAtFirstDiagnosis)    
   
-  uniqueConcepts <- unique(dataPrevalenceByGenderAgeYear$CONCEPT_ID)
-  totalCount <- length(uniqueConcepts)
   
   buildConditionReport <- function(concept_id) {
     report <- {}
@@ -665,6 +674,16 @@ generateConditionReports <- function(conn, dbms, cdmSchema, outputPath) {
 
 generateConditionEraReports <- function(conn, dbms, cdmSchema, outputPath) {
   writeLines("Generating condition era reports")
+  
+  treemapFile <- file.path(outputPath,"conditionera_treemap.json")
+  if (!file.exists(treemapFile)){
+    writeLines(paste("Warning: treemap file",treemapFile,"does not exist. Skipping detail report generation."))
+    return()
+  }
+  
+  treemapData <- fromJSON(file = treemapFile)
+  uniqueConcepts <- unique(treemapData$CONCEPT_ID)
+  totalCount <- length(uniqueConcepts)
   
   conditionsFolder <- file.path(outputPath,"conditioneras")
   if (file.exists(conditionsFolder)){
@@ -706,9 +725,7 @@ generateConditionEraReports <- function(conn, dbms, cdmSchema, outputPath) {
   dataLengthOfEra <- querySql(conn,dbms,queryLengthOfEra)    
   dataAgeAtFirstDiagnosis <- querySql(conn,dbms,queryAgeAtFirstDiagnosis)    
   
-  uniqueConcepts <- unique(dataPrevalenceByGenderAgeYear$CONCEPT_ID)
-  totalCount <- length(uniqueConcepts)
-  
+
   buildConditionEraReport <- function(concept_id) {
     report <- {}
     report$PREVALENCE_BY_GENDER_AGE_YEAR <- dataPrevalenceByGenderAgeYear[dataPrevalenceByGenderAgeYear$CONCEPT_ID == concept_id,c(2,3,4,5)]    
@@ -734,6 +751,18 @@ generateConditionEraReports <- function(conn, dbms, cdmSchema, outputPath) {
 
 generateDrugEraReports <- function(conn, dbms, cdmSchema, outputPath) {
   writeLines("Generating drug era reports")
+  
+  
+  treemapFile <- file.path(outputPath,"drugera_treemap.json")
+  if (!file.exists(treemapFile)){
+    writeLines(paste("Warning: treemap file",treemapFile,"does not exist. Skipping detail report generation."))
+    return()
+  }
+  
+  treemapData <- fromJSON(file = treemapFile)
+  uniqueConcepts <- unique(treemapData$CONCEPT_ID)
+  totalCount <- length(uniqueConcepts)
+  
   
   drugerasFolder <- file.path(outputPath,"drugeras")
   if (file.exists(drugerasFolder)){
@@ -774,10 +803,6 @@ generateDrugEraReports <- function(conn, dbms, cdmSchema, outputPath) {
   dataPrevalenceByMonth <- querySql(conn,dbms,queryPrevalenceByMonth)
   dataLengthOfEra <- querySql(conn,dbms,queryLengthOfEra)
   
-  uniqueConcepts <- unique(dataPrevalenceByGenderAgeYear$CONCEPT_ID)
-  
-  totalCount <- length(uniqueConcepts)
-  
   buildDrugEraReport <- function(concept_id) {
     report <- {}
     report$AGE_AT_FIRST_EXPOSURE <- dataAgeAtFirstExposure[dataAgeAtFirstExposure$CONCEPT_ID == concept_id,c(2,3,4,5,6,7,8,9)]
@@ -804,6 +829,16 @@ generateDrugEraReports <- function(conn, dbms, cdmSchema, outputPath) {
 
 generateDrugReports <- function(conn, dbms, cdmSchema, outputPath) {
   writeLines("Generating drug reports")
+  
+  treemapFile <- file.path(outputPath,"drug_treemap.json")
+  if (!file.exists(treemapFile)){
+    writeLines(paste("Warning: treemap file",treemapFile,"does not exist. Skipping detail report generation."))
+    return()
+  }
+  
+  treemapData <- fromJSON(file = treemapFile)
+  uniqueConcepts <- unique(treemapData$CONCEPT_ID)
+  totalCount <- length(uniqueConcepts)
   
   drugsFolder <- file.path(outputPath,"drugs")
   if (file.exists(drugsFolder)){
@@ -865,10 +900,6 @@ generateDrugReports <- function(conn, dbms, cdmSchema, outputPath) {
   dataQuantityDistribution <- querySql(conn,dbms,queryQuantityDistribution) 
   dataRefillsDistribution <- querySql(conn,dbms,queryRefillsDistribution) 
   
-  uniqueConcepts <- unique(dataPrevalenceByGenderAgeYear$CONCEPT_ID)
-    
-  totalCount <- length(uniqueConcepts)
-  
   buildDrugReport <- function(concept_id) {
     report <- {}
     report$AGE_AT_FIRST_EXPOSURE <- dataAgeAtFirstExposure[dataAgeAtFirstExposure$DRUG_CONCEPT_ID == concept_id,c(2,3,4,5,6,7,8,9)]
@@ -919,6 +950,16 @@ generateProcedureTreemap <- function(conn, dbms, cdmSchema, outputPath) {
 generateProcedureReports <- function(conn, dbms, cdmSchema, outputPath) {
   writeLines("Generating procedure reports")
   
+  treemapFile <- file.path(outputPath,"procedure_treemap.json")
+  if (!file.exists(treemapFile)){
+    writeLines(paste("Warning: treemap file",treemapFile,"does not exist. Skipping detail report generation."))
+    return()
+  }
+  
+  treemapData <- fromJSON(file = treemapFile)
+  uniqueConcepts <- unique(treemapData$CONCEPT_ID)
+  totalCount <- length(uniqueConcepts)
+  
   proceduresFolder <- file.path(outputPath,"procedures")
   if (file.exists(proceduresFolder)){
     writeLines(paste("Warning: folder ",proceduresFolder," already exists"))
@@ -958,10 +999,6 @@ generateProcedureReports <- function(conn, dbms, cdmSchema, outputPath) {
   dataPrevalenceByMonth <- querySql(conn,dbms,queryPrevalenceByMonth)  
   dataProceduresByType <- querySql(conn,dbms,queryProceduresByType)    
   dataAgeAtFirstOccurrence <- querySql(conn,dbms,queryAgeAtFirstOccurrence)    
-  
-  uniqueConcepts <- unique(dataPrevalenceByGenderAgeYear$CONCEPT_ID)
-  
-  totalCount <- length(uniqueConcepts)
   
   buildProcedureReport <- function(concept_id) {
     report <- {}
@@ -1420,6 +1457,16 @@ generateObservationReports <- function(conn, dbms, cdmSchema, outputPath)
 {
   writeLines("Generating Observation reports")
   
+  treemapFile <- file.path(outputPath,"observation_treemap.json")
+  if (!file.exists(treemapFile)){
+    writeLines(paste("Warning: treemap file",treemapFile,"does not exist. Skipping detail report generation."))
+    return()
+  }
+  
+  treemapData <- fromJSON(file = treemapFile)
+  uniqueConcepts <- unique(treemapData$CONCEPT_ID)
+  totalCount <- length(uniqueConcepts)
+  
   observationsFolder <- file.path(outputPath,"observations")
   if (file.exists(observationsFolder)){
     writeLines(paste("Warning: folder ",observationsFolder," already exists"))
@@ -1495,10 +1542,6 @@ generateObservationReports <- function(conn, dbms, cdmSchema, outputPath)
   dataUpperLimitDistribution <- querySql(conn,dbms,queryUpperLimitDistribution)
   dataValuesRelativeToNorm <- querySql(conn,dbms,queryValuesRelativeToNorm)
   
-  uniqueConcepts <- unique(dataPrevalenceByGenderAgeYear$CONCEPT_ID)
-  
-  totalCount <- length(uniqueConcepts)
-  
   buildObservationReport <- function(concept_id) {
     report <- {}
     report$PREVALENCE_BY_GENDER_AGE_YEAR <- dataPrevalenceByGenderAgeYear[dataPrevalenceByGenderAgeYear$CONCEPT_ID == concept_id,c(3,4,5,6)]    
@@ -1553,6 +1596,16 @@ generateVisitTreemap <- function(conn, dbms, cdmSchema, outputPath){
 generateVisitReports <- function(conn, dbms, cdmSchema, outputPath){
   writeLines("Generating visit reports")
   
+  treemapFile <- file.path(outputPath,"visit_treemap.json")
+  if (!file.exists(treemapFile)){
+    writeLines(paste("Warning: treemap file",treemapFile,"does not exist. Skipping detail report generation."))
+    return()
+  }
+  
+  treemapData <- fromJSON(file = treemapFile)
+  uniqueConcepts <- unique(treemapData$CONCEPT_ID)
+  totalCount <- length(uniqueConcepts)
+  
   visitsFolder <- file.path(outputPath,"visits")
   if (file.exists(visitsFolder)){
     writeLines(paste("Warning: folder ",visitsFolder," already exists"))
@@ -1592,10 +1645,6 @@ generateVisitReports <- function(conn, dbms, cdmSchema, outputPath){
   dataPrevalenceByMonth <- querySql(conn,dbms,queryPrevalenceByMonth)  
   dataVisitDurationByType <- querySql(conn,dbms,queryVisitDurationByType)    
   dataAgeAtFirstOccurrence <- querySql(conn,dbms,queryAgeAtFirstOccurrence)    
-  
-  uniqueConcepts <- unique(dataPrevalenceByGenderAgeYear$CONCEPT_ID)
-  
-  totalCount <- length(uniqueConcepts)
   
   buildVisitReport <- function(concept_id) {
     report <- {}
