@@ -5,6 +5,8 @@ Automated Characterization of Health Information at Large-scale Longitudinal Evi
 
 Getting Started
 ===============
+(Please review the [Achilles Wiki](https://github.com/OHDSI/Achilles/wiki/Additional-instructions-for-Linux) for specific details for Linux)
+
 1. Make sure you have your data in the [OMOP CDM v4 format](http://omop.org/cdm).
 
 2. Make sure that you have Java installed. If you don't have Java already intalled on your computed (on most computers it already is installed), go to [java.com](http://java.com) to get the latest version.
