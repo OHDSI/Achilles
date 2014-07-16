@@ -2,7 +2,7 @@
 
 testAchillesCode <- function(){
 
-  pw <- " "
+  pw <- "x"
   
   #Test on SQL Server:
   setwd("c:/temp")
