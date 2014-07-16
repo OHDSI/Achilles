@@ -1044,6 +1044,9 @@ group by floor(DATEDIFF(dd, op1.observation_period_start_date, op1.observation_p
 
 USE @results_schema; --Set to result schema so temp tables are created where user has write rights (Oracle)
 
+IF OBJECT_ID('temp_dates', 'U') IS NOT NULL --This should only do something in Oracle
+  drop table temp_dates;
+
 SELECT DISTINCT 
   YEAR(observation_period_start_date) AS obs_year,
   CAST(CAST(YEAR(observation_period_start_date) AS VARCHAR(4)) +  '01' + '01' AS DATE) AS obs_year_start,	
@@ -1082,6 +1085,9 @@ USE @CDM_schema;
 -- Note: using temp table instead of nested query because this gives vastly improved performance in Oracle
 
 USE @results_schema; --Set to result schema so temp tables are created where user has write rights (Oracle)
+
+IF OBJECT_ID('temp_dates', 'U') IS NOT NULL --This should only do something in Oracle
+  drop table temp_dates;
 
 SELECT DISTINCT 
   YEAR(observation_period_start_date)*100 + MONTH(observation_period_start_date) AS obs_month,
@@ -1188,6 +1194,9 @@ where op1.observation_period_end_date < op1.observation_period_start_date
 
 USE @results_schema; --Set to result schema so temp tables are created where user has write rights (Oracle)
 
+IF OBJECT_ID('temp_dates', 'U') IS NOT NULL --This should only do something in Oracle
+  drop table temp_dates;
+
 select distinct 
   YEAR(observation_period_start_date) as obs_year 
 INTO
@@ -1228,6 +1237,9 @@ USE @CDM_schema;
 -- Note: using temp table instead of nested query because this gives vastly improved performance in Oracle
 
 USE @results_schema; --Set to result schema so temp tables are created where user has write rights (Oracle)
+
+IF OBJECT_ID('temp_dates', 'U') IS NOT NULL --This should only do something in Oracle
+  drop table temp_dates;
 
 select distinct 
   YEAR(observation_period_start_date)*100 + MONTH(observation_period_start_date)  as obs_month
@@ -3707,6 +3719,9 @@ group by floor(DATEDIFF(dd, ppp1.payer_plan_period_start_date, ppp1.payer_plan_p
 
 USE @results_schema; --Set to result schema so temp tables are created where user has write rights (Oracle)
 
+IF OBJECT_ID('temp_dates', 'U') IS NOT NULL --This should only do something in Oracle
+  drop table temp_dates;
+
 select distinct 
   YEAR(payer_plan_period_start_date) as obs_year 
 INTO
@@ -3742,6 +3757,9 @@ USE @CDM_schema;
 -- Note: using temp table instead of nested query because this gives vastly improved performance in Oracle
 
 USE @results_schema; --Set to result schema so temp tables are created where user has write rights (Oracle)
+
+IF OBJECT_ID('temp_dates', 'U') IS NOT NULL --This should only do something in Oracle
+  drop table temp_dates;
 
 SELECT DISTINCT 
   YEAR(payer_plan_period_start_date)*100 + MONTH(payer_plan_period_start_date) AS obs_month,

@@ -25,13 +25,15 @@ testAchillesCode <- function(){
   connectionDetailsPostgreSql <- createConnectionDetails(dbms="postgresql", server="localhost/ohdsi", user="postgres",password=pw)
   achillesResultsPostgreSql <- achilles(connectionDetailsPostgreSql, cdmSchema="cdm4_sim_sample", resultsSchema="scratch_sample")
   
+  achillesResultsPostgreSql <- achilles(connectionDetailsPostgreSql, cdmSchema="cdm4_sim_sample", resultsSchema="scratch_sample", analysisIds=c(116),createTable=FALSE)
+  
   
   #Test on Oracle using sample:
   setwd("c:/temp")
   connectionDetailsOracle <- createConnectionDetails(dbms="oracle", server="xe", user="system",password=pw)
   achillesResultsOracle <- achilles(connectionDetailsOracle, cdmSchema="cdm4_sim", resultsSchema="scratch")
   
-  #achillesResultsOracle <- achilles(connectionDetailsOracle, cdmSchema="cdm4_sim", resultsSchema="scratch", analysisIds=c(606),createTable=FALSE)
+  achillesResultsOracle <- achilles(connectionDetailsOracle, cdmSchema="cdm4_sim", resultsSchema="scratch", analysisIds=c(116),createTable=FALSE)
   
   #fetchAchillesAnalysisResults(connectionDetailsPostgreSql, "scratch", 606)
   
