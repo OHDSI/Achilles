@@ -49,7 +49,7 @@ create table ACHILLES_results
 	stratum_3 varchar(255),
 	stratum_4 varchar(255),
 	stratum_5 varchar(255),
-	count_value int
+	count_value bigint
 );
 
 
@@ -64,7 +64,7 @@ create table ACHILLES_results_dist
 	stratum_3 varchar(255),
 	stratum_4 varchar(255),
 	stratum_5 varchar(255),
-	count_value float,
+	count_value bigint,
 	min_value float,
 	max_value float,
 	avg_value float,
@@ -707,11 +707,11 @@ use @CDM_schema;
 --{0 IN (@list_of_analysis_ids)}?{
 -- 0	Number of persons
 insert into @results_schema.dbo.ACHILLES_results (analysis_id, stratum_1, count_value)
-select 0 as analysis_id,  '@source_name' as stratum_1, COUNT(distinct person_id) as count_value
+select 0 as analysis_id,  '@source_name' as stratum_1, COUNT_BIG(distinct person_id) as count_value
 from PERSON;
 
 insert into @results_schema.dbo.ACHILLES_results_dist (analysis_id, stratum_1, count_value)
-select 0 as analysis_id, '@source_name' as stratum_1, COUNT(distinct person_id) as count_value
+select 0 as analysis_id, '@source_name' as stratum_1, COUNT_BIG(distinct person_id) as count_value
 from PERSON;
 
 --}
@@ -726,7 +726,7 @@ ACHILLES Analyses on PERSON table
 --{1 IN (@list_of_analysis_ids)}?{
 -- 1	Number of persons
 insert into @results_schema.dbo.ACHILLES_results (analysis_id, count_value)
-select 1 as analysis_id,  COUNT(distinct person_id) as count_value
+select 1 as analysis_id,  COUNT_BIG(distinct person_id) as count_value
 from PERSON;
 --}
 
@@ -734,7 +734,7 @@ from PERSON;
 --{2 IN (@list_of_analysis_ids)}?{
 -- 2	Number of persons by gender
 insert into @results_schema.dbo.ACHILLES_results (analysis_id, stratum_1, count_value)
-select 2 as analysis_id,  gender_concept_id as stratum_1, COUNT(distinct person_id) as count_value
+select 2 as analysis_id,  gender_concept_id as stratum_1, COUNT_BIG(distinct person_id) as count_value
 from PERSON
 group by GENDER_CONCEPT_ID;
 --}
@@ -744,7 +744,7 @@ group by GENDER_CONCEPT_ID;
 --{3 IN (@list_of_analysis_ids)}?{
 -- 3	Number of persons by year of birth
 insert into @results_schema.dbo.ACHILLES_results (analysis_id, stratum_1, count_value)
-select 3 as analysis_id,  year_of_birth as stratum_1, COUNT(distinct person_id) as count_value
+select 3 as analysis_id,  year_of_birth as stratum_1, COUNT_BIG(distinct person_id) as count_value
 from PERSON
 group by YEAR_OF_BIRTH;
 --}
@@ -753,7 +753,7 @@ group by YEAR_OF_BIRTH;
 --{4 IN (@list_of_analysis_ids)}?{
 -- 4	Number of persons by race
 insert into @results_schema.dbo.ACHILLES_results (analysis_id, stratum_1, count_value)
-select 4 as analysis_id,  RACE_CONCEPT_ID as stratum_1, COUNT(distinct person_id) as count_value
+select 4 as analysis_id,  RACE_CONCEPT_ID as stratum_1, COUNT_BIG(distinct person_id) as count_value
 from PERSON
 group by RACE_CONCEPT_ID;
 --}
@@ -763,7 +763,7 @@ group by RACE_CONCEPT_ID;
 --{5 IN (@list_of_analysis_ids)}?{
 -- 5	Number of persons by ethnicity
 insert into @results_schema.dbo.ACHILLES_results (analysis_id, stratum_1, count_value)
-select 5 as analysis_id,  ETHNICITY_CONCEPT_ID as stratum_1, COUNT(distinct person_id) as count_value
+select 5 as analysis_id,  ETHNICITY_CONCEPT_ID as stratum_1, COUNT_BIG(distinct person_id) as count_value
 from PERSON
 group by ETHNICITY_CONCEPT_ID;
 --}
@@ -775,7 +775,7 @@ group by ETHNICITY_CONCEPT_ID;
 --{7 IN (@list_of_analysis_ids)}?{
 -- 7	Number of persons with invalid provider_id
 insert into @results_schema.dbo.ACHILLES_results (analysis_id, count_value)
-select 7 as analysis_id,  COUNT(p1.person_id) as count_value
+select 7 as analysis_id,  COUNT_BIG(p1.person_id) as count_value
 from PERSON p1
 	left join provider pr1
 	on p1.provider_id = pr1.provider_id
@@ -789,7 +789,7 @@ where p1.provider_id is not null
 --{8 IN (@list_of_analysis_ids)}?{
 -- 8	Number of persons with invalid location_id
 insert into @results_schema.dbo.ACHILLES_results (analysis_id, count_value)
-select 8 as analysis_id,  COUNT(p1.person_id) as count_value
+select 8 as analysis_id,  COUNT_BIG(p1.person_id) as count_value
 from PERSON p1
 	left join location l1
 	on p1.location_id = l1.location_id
@@ -802,7 +802,7 @@ where p1.location_id is not null
 --{9 IN (@list_of_analysis_ids)}?{
 -- 9	Number of persons with invalid care_site_id
 insert into @results_schema.dbo.ACHILLES_results (analysis_id, count_value)
-select 9 as analysis_id,  COUNT(p1.person_id) as count_value
+select 9 as analysis_id,  COUNT_BIG(p1.person_id) as count_value
 from PERSON p1
 	left join care_site cs1
 	on p1.care_site_id = cs1.care_site_id
@@ -826,7 +826,7 @@ ACHILLES Analyses on OBSERVATION_PERIOD table
 --{101 IN (@list_of_analysis_ids)}?{
 -- 101	Number of persons by age, with age at first observation period
 insert into @results_schema.dbo.ACHILLES_results (analysis_id, stratum_1, count_value)
-select 101 as analysis_id,   year(op1.index_date) - p1.YEAR_OF_BIRTH as stratum_1, COUNT(p1.person_id) as count_value
+select 101 as analysis_id,   year(op1.index_date) - p1.YEAR_OF_BIRTH as stratum_1, COUNT_BIG(p1.person_id) as count_value
 from PERSON p1
 	inner join (select person_id, MIN(observation_period_start_date) as index_date from OBSERVATION_PERIOD group by PERSON_ID) op1
 	on p1.PERSON_ID = op1.PERSON_ID
@@ -838,7 +838,7 @@ group by year(op1.index_date) - p1.YEAR_OF_BIRTH;
 --{102 IN (@list_of_analysis_ids)}?{
 -- 102	Number of persons by gender by age, with age at first observation period
 insert into @results_schema.dbo.ACHILLES_results (analysis_id, stratum_1, stratum_2, count_value)
-select 102 as analysis_id,  p1.gender_concept_id as stratum_1, year(op1.index_date) - p1.YEAR_OF_BIRTH as stratum_2, COUNT(p1.person_id) as count_value
+select 102 as analysis_id,  p1.gender_concept_id as stratum_1, year(op1.index_date) - p1.YEAR_OF_BIRTH as stratum_2, COUNT_BIG(p1.person_id) as count_value
 from PERSON p1
 	inner join (select person_id, MIN(observation_period_start_date) as index_date from OBSERVATION_PERIOD group by PERSON_ID) op1
 	on p1.PERSON_ID = op1.PERSON_ID
@@ -850,7 +850,7 @@ group by p1.gender_concept_id, year(op1.index_date) - p1.YEAR_OF_BIRTH;
 -- 103	Distribution of age at first observation period
 insert into @results_schema.dbo.ACHILLES_results_dist (analysis_id, count_value, min_value, max_value, avg_value, stdev_value, median_value, p10_value, p25_value, p75_value, p90_value)
 select 103 as analysis_id,
-	count(count_value) as count_value,
+	COUNT_BIG(count_value) as count_value,
 	min(count_value) as min_value,
 	max(count_value) as max_value,
 	avg(1.0*count_value) as avg_value,
@@ -863,7 +863,7 @@ select 103 as analysis_id,
 from
 (
 select year(op1.index_date) - p1.YEAR_OF_BIRTH as count_value,
-	1.0*(row_number() over (order by year(op1.index_date) - p1.YEAR_OF_BIRTH))/(count(year(op1.index_date) - p1.YEAR_OF_BIRTH) over ()+1) as p1
+	1.0*(row_number() over (order by year(op1.index_date) - p1.YEAR_OF_BIRTH))/(COUNT_BIG(year(op1.index_date) - p1.YEAR_OF_BIRTH) over ()+1) as p1
 from
 	PERSON p1
 	inner join (select person_id, MIN(observation_period_start_date) as index_date from OBSERVATION_PERIOD group by PERSON_ID) op1
@@ -880,7 +880,7 @@ from
 insert into @results_schema.dbo.ACHILLES_results_dist (analysis_id, stratum_1, count_value, min_value, max_value, avg_value, stdev_value, median_value, p10_value, p25_value, p75_value, p90_value)
 select 104 as analysis_id,
 	gender_concept_id,
-	count(count_value) as count_value,
+	COUNT_BIG(count_value) as count_value,
 	min(count_value) as min_value,
 	max(count_value) as max_value,
 	avg(1.0*count_value) as avg_value,
@@ -894,7 +894,7 @@ from
 (
 select p1.gender_concept_id,
 	year(op1.index_date) - p1.YEAR_OF_BIRTH as count_value,
-	1.0*(row_number() over (partition by p1.gender_concept_id order by year(op1.index_date) - p1.YEAR_OF_BIRTH))/(count(year(op1.index_date) - p1.YEAR_OF_BIRTH) over (partition by p1.gender_concept_id)+1) as p1
+	1.0*(row_number() over (partition by p1.gender_concept_id order by year(op1.index_date) - p1.YEAR_OF_BIRTH))/(COUNT_BIG(year(op1.index_date) - p1.YEAR_OF_BIRTH) over (partition by p1.gender_concept_id)+1) as p1
 from
 	PERSON p1
 	inner join (select person_id, MIN(observation_period_start_date) as index_date from OBSERVATION_PERIOD group by PERSON_ID) op1
@@ -911,7 +911,7 @@ group by gender_concept_id
 -- 105	Length of observation (days) of first observation period
 insert into @results_schema.dbo.ACHILLES_results_dist (analysis_id, count_value, min_value, max_value, avg_value, stdev_value, median_value, p10_value, p25_value, p75_value, p90_value)
 select 105 as analysis_id,
-	count(count_value) as count_value,
+	COUNT_BIG(count_value) as count_value,
 	min(count_value) as min_value,
 	max(count_value) as max_value,
 	avg(1.0*count_value) as avg_value,
@@ -924,7 +924,7 @@ select 105 as analysis_id,
 from
 (
 select DATEDIFF(dd,op1.observation_period_start_date, op1.observation_period_end_date) as count_value,
-	1.0*(row_number() over (order by DATEDIFF(dd,op1.observation_period_start_date, op1.observation_period_end_date)))/(count(DATEDIFF(dd,op1.observation_period_start_date, op1.observation_period_end_date)) over ()+1) as p1
+	1.0*(row_number() over (order by DATEDIFF(dd,op1.observation_period_start_date, op1.observation_period_end_date)))/(COUNT_BIG(DATEDIFF(dd,op1.observation_period_start_date, op1.observation_period_end_date)) over ()+1) as p1
 from PERSON p1
 	inner join 
 	(select person_id, 
@@ -945,7 +945,7 @@ from PERSON p1
 insert into @results_schema.dbo.ACHILLES_results_dist (analysis_id, stratum_1, count_value, min_value, max_value, avg_value, stdev_value, median_value, p10_value, p25_value, p75_value, p90_value)
 select 106 as analysis_id,
 	gender_concept_id as stratum_1,
-	count(count_value) as count_value,
+	COUNT_BIG(count_value) as count_value,
 	min(count_value) as min_value,
 	max(count_value) as max_value,
 	avg(1.0*count_value) as avg_value,
@@ -959,7 +959,7 @@ from
 (
 select p1.gender_concept_id,
 	DATEDIFF(dd,op1.observation_period_start_date, op1.observation_period_end_date) as count_value,
-	1.0*(row_number() over (partition by p1.gender_concept_id order by DATEDIFF(dd,op1.observation_period_start_date, op1.observation_period_end_date)))/(count(DATEDIFF(dd,op1.observation_period_start_date, op1.observation_period_end_date)) over (partition by p1.gender_concept_id)+1) as p1
+	1.0*(row_number() over (partition by p1.gender_concept_id order by DATEDIFF(dd,op1.observation_period_start_date, op1.observation_period_end_date)))/(COUNT_BIG(DATEDIFF(dd,op1.observation_period_start_date, op1.observation_period_end_date)) over (partition by p1.gender_concept_id)+1) as p1
 from PERSON p1
 	inner join 
 	(select person_id, 
@@ -982,7 +982,7 @@ group by gender_concept_id
 insert into @results_schema.dbo.ACHILLES_results_dist (analysis_id, stratum_1, count_value, min_value, max_value, avg_value, stdev_value, median_value, p10_value, p25_value, p75_value, p90_value)
 select 107 as analysis_id,
 	age_decile as stratum_1,
-	count(count_value) as count_value,
+	COUNT_BIG(count_value) as count_value,
 	min(count_value) as min_value,
 	max(count_value) as max_value,
 	avg(1.0*count_value) as avg_value,
@@ -996,7 +996,7 @@ from
 (
 select floor((year(op1.OBSERVATION_PERIOD_START_DATE) - p1.YEAR_OF_BIRTH)/10) as age_decile,
 	DATEDIFF(dd,op1.observation_period_start_date, op1.observation_period_end_date) as count_value,
-	1.0*(row_number() over (partition by floor((year(op1.OBSERVATION_PERIOD_START_DATE) - p1.YEAR_OF_BIRTH)/10) order by DATEDIFF(dd,op1.observation_period_start_date, op1.observation_period_end_date)))/(count(DATEDIFF(dd,op1.observation_period_start_date, op1.observation_period_end_date)) over (partition by floor((year(op1.OBSERVATION_PERIOD_START_DATE) - p1.YEAR_OF_BIRTH)/10))+1) as p1
+	1.0*(row_number() over (partition by floor((year(op1.OBSERVATION_PERIOD_START_DATE) - p1.YEAR_OF_BIRTH)/10) order by DATEDIFF(dd,op1.observation_period_start_date, op1.observation_period_end_date)))/(COUNT_BIG(DATEDIFF(dd,op1.observation_period_start_date, op1.observation_period_end_date)) over (partition by floor((year(op1.OBSERVATION_PERIOD_START_DATE) - p1.YEAR_OF_BIRTH)/10))+1) as p1
 from PERSON p1
 	inner join 
 	(select person_id, 
@@ -1020,7 +1020,7 @@ group by age_decile
 --{108 IN (@list_of_analysis_ids)}?{
 -- 108	Number of persons by length of observation period, in 30d increments
 insert into @results_schema.dbo.ACHILLES_results (analysis_id, stratum_1, count_value)
-select 108 as analysis_id,  floor(DATEDIFF(dd, op1.observation_period_start_date, op1.observation_period_end_date)/30) as stratum_1, COUNT(distinct p1.person_id) as count_value
+select 108 as analysis_id,  floor(DATEDIFF(dd, op1.observation_period_start_date, op1.observation_period_end_date)/30) as stratum_1, COUNT_BIG(distinct p1.person_id) as count_value
 from PERSON p1
 	inner join 
 	(select person_id, 
@@ -1061,7 +1061,7 @@ INSERT INTO ACHILLES_results (analysis_id, stratum_1, count_value)
 SELECT 
   109 AS analysis_id,  
 	obs_year AS stratum_1, 
-	COUNT(DISTINCT person_id) AS count_value
+	COUNT_BIG(DISTINCT person_id) AS count_value
 FROM 
 	@CDM_schema.dbo.observation_period,
 	#temp_dates
@@ -1104,7 +1104,7 @@ INSERT INTO ACHILLES_results (analysis_id, stratum_1, count_value)
 SELECT 
   110 AS analysis_id, 
 	obs_month AS stratum_1, 
-	COUNT(DISTINCT person_id) AS count_value
+	COUNT_BIG(DISTINCT person_id) AS count_value
 FROM
 	@CDM_schema.dbo.observation_period,
 	#temp_Dates
@@ -1129,7 +1129,7 @@ USE @CDM_schema;
 insert into @results_schema.dbo.ACHILLES_results (analysis_id, stratum_1, count_value)
 select 111 as analysis_id, 
 	YEAR(observation_period_start_date)*100 + month(OBSERVATION_PERIOD_START_DATE) as stratum_1, 
-	COUNT(distinct op1.PERSON_ID) as count_value
+	COUNT_BIG(distinct op1.PERSON_ID) as count_value
 from
 	observation_period op1
 group by YEAR(observation_period_start_date)*100 + month(OBSERVATION_PERIOD_START_DATE)
@@ -1143,7 +1143,7 @@ group by YEAR(observation_period_start_date)*100 + month(OBSERVATION_PERIOD_STAR
 insert into @results_schema.dbo.ACHILLES_results (analysis_id, stratum_1, count_value)
 select 112 as analysis_id,  
 	YEAR(observation_period_end_date)*100 + month(observation_period_end_date) as stratum_1, 
-	COUNT(distinct op1.PERSON_ID) as count_value
+	COUNT_BIG(distinct op1.PERSON_ID) as count_value
 from
 	observation_period op1
 group by YEAR(observation_period_end_date)*100 + month(observation_period_end_date)
@@ -1155,9 +1155,9 @@ group by YEAR(observation_period_end_date)*100 + month(observation_period_end_da
 -- 113	Number of persons by number of observation periods
 insert into @results_schema.dbo.ACHILLES_results (analysis_id, stratum_1, count_value)
 select 113 as analysis_id,  
-	op1.num_periods as stratum_1, COUNT(distinct op1.PERSON_ID) as count_value
+	op1.num_periods as stratum_1, COUNT_BIG(distinct op1.PERSON_ID) as count_value
 from
-	(select person_id, COUNT(OBSERVATION_period_start_date) as num_periods from observation_period group by PERSON_ID) op1
+	(select person_id, COUNT_BIG(OBSERVATION_period_start_date) as num_periods from observation_period group by PERSON_ID) op1
 group by op1.num_periods
 ;
 --}
@@ -1166,7 +1166,7 @@ group by op1.num_periods
 -- 114	Number of persons with observation period before year-of-birth
 insert into @results_schema.dbo.ACHILLES_results (analysis_id, count_value)
 select 114 as analysis_id,  
-	COUNT(distinct p1.PERSON_ID) as count_value
+	COUNT_BIG(distinct p1.PERSON_ID) as count_value
 from
 	PERSON p1
 	inner join (select person_id, MIN(year(OBSERVATION_period_start_date)) as first_obs_year from observation_period group by PERSON_ID) op1
@@ -1179,7 +1179,7 @@ where p1.year_of_birth > op1.first_obs_year
 -- 115	Number of persons with observation period end < start
 insert into @results_schema.dbo.ACHILLES_results (analysis_id, count_value)
 select 115 as analysis_id,  
-	COUNT(op1.PERSON_ID) as count_value
+	COUNT_BIG(op1.PERSON_ID) as count_value
 from
 	observation_period op1
 where op1.observation_period_end_date < op1.observation_period_start_date
@@ -1210,7 +1210,7 @@ select 116 as analysis_id,
 	t1.obs_year as stratum_1, 
 	p1.gender_concept_id as stratum_2,
 	floor((t1.obs_year - p1.year_of_birth)/10) as stratum_3,
-	COUNT(distinct p1.PERSON_ID) as count_value
+	COUNT_BIG(distinct p1.PERSON_ID) as count_value
 from
 	@CDM_schema.dbo.PERSON p1
 	inner join 
@@ -1252,7 +1252,7 @@ from
 insert into ACHILLES_results (analysis_id, stratum_1, count_value)
 select 117 as analysis_id,  
 	t1.obs_month as stratum_1,
-	COUNT(distinct op1.PERSON_ID) as count_value
+	COUNT_BIG(distinct op1.PERSON_ID) as count_value
 from
 	@CDM_schema.dbo.observation_period op1,
 	#temp_dates t1 
@@ -1280,7 +1280,7 @@ ACHILLES Analyses on VISIT_OCCURRENCE table
 insert into @results_schema.dbo.ACHILLES_results (analysis_id, stratum_1, count_value)
 select 200 as analysis_id, 
 	vo1.place_of_service_CONCEPT_ID as stratum_1,
-	COUNT(distinct vo1.PERSON_ID) as count_value
+	COUNT_BIG(distinct vo1.PERSON_ID) as count_value
 from
 	visit_occurrence vo1
 group by vo1.place_of_service_CONCEPT_ID
@@ -1293,7 +1293,7 @@ group by vo1.place_of_service_CONCEPT_ID
 insert into @results_schema.dbo.ACHILLES_results (analysis_id, stratum_1, count_value)
 select 201 as analysis_id, 
 	vo1.place_of_service_CONCEPT_ID as stratum_1,
-	COUNT(vo1.PERSON_ID) as count_value
+	COUNT_BIG(vo1.PERSON_ID) as count_value
 from
 	visit_occurrence vo1
 group by vo1.place_of_service_CONCEPT_ID
@@ -1308,7 +1308,7 @@ insert into @results_schema.dbo.ACHILLES_results (analysis_id, stratum_1, stratu
 select 202 as analysis_id,   
 	vo1.place_of_service_concept_id as stratum_1,
 	YEAR(visit_start_date)*100 + month(visit_start_date) as stratum_2, 
-	COUNT(distinct PERSON_ID) as count_value
+	COUNT_BIG(distinct PERSON_ID) as count_value
 from
 visit_occurrence vo1
 group by vo1.place_of_service_concept_id, 
@@ -1322,7 +1322,7 @@ group by vo1.place_of_service_concept_id,
 -- 203	Number of distinct visit occurrence concepts per person
 insert into @results_schema.dbo.ACHILLES_results_dist (analysis_id, count_value, min_value, max_value, avg_value, stdev_value, median_value, p10_value, p25_value, p75_value, p90_value)
 select 203 as analysis_id,
-	count(count_value) as count_value,
+	COUNT_BIG(count_value) as count_value,
 	min(count_value) as min_value,
 	max(count_value) as max_value,
 	avg(1.0*count_value) as avg_value,
@@ -1335,10 +1335,10 @@ select 203 as analysis_id,
 from
 (
 select num_visits as count_value,
-	1.0*(row_number() over (order by num_visits))/(count(num_visits) over ()+1) as p1
+	1.0*(row_number() over (order by num_visits))/(COUNT_BIG(num_visits) over ()+1) as p1
 from
 	(
-	select vo1.person_id, count(distinct vo1.place_of_service_concept_id) as num_visits
+	select vo1.person_id, COUNT_BIG(distinct vo1.place_of_service_concept_id) as num_visits
 	from
 	visit_occurrence vo1
 	group by vo1.person_id
@@ -1357,7 +1357,7 @@ select 204 as analysis_id,
 	YEAR(visit_start_date) as stratum_2,
 	p1.gender_concept_id as stratum_3,
 	floor((year(visit_start_date) - p1.year_of_birth)/10) as stratum_4, 
-	COUNT(distinct p1.PERSON_ID) as count_value
+	COUNT_BIG(distinct p1.PERSON_ID) as count_value
 from person p1
 inner join
 visit_occurrence vo1
@@ -1379,7 +1379,7 @@ insert into @results_schema.dbo.ACHILLES_results_dist (analysis_id, stratum_1, s
 select 206 as analysis_id,
 	place_of_service_concept_id as stratum_1,
 	gender_concept_id as stratum_2,
-	count(count_value) as count_value,
+	COUNT_BIG(count_value) as count_value,
 	min(count_value) as min_value,
 	max(count_value) as max_value,
 	avg(1.0*count_value) as avg_value,
@@ -1394,7 +1394,7 @@ from
 select vo1.place_of_service_concept_id,
 	p1.gender_concept_id,
 	vo1.visit_start_year - p1.year_of_birth as count_value,
-	1.0*(row_number() over (partition by vo1.place_of_service_concept_id, p1.gender_concept_id order by vo1.visit_start_year - p1.year_of_birth))/(count(vo1.visit_start_year - p1.year_of_birth) over (partition by vo1.place_of_service_concept_id, p1.gender_concept_id)+1) as p1
+	1.0*(row_number() over (partition by vo1.place_of_service_concept_id, p1.gender_concept_id order by vo1.visit_start_year - p1.year_of_birth))/(COUNT_BIG(vo1.visit_start_year - p1.year_of_birth) over (partition by vo1.place_of_service_concept_id, p1.gender_concept_id)+1) as p1
 from person p1
 inner join
 (select person_id, place_of_service_concept_id, min(year(visit_start_date)) as visit_start_year
@@ -1412,7 +1412,7 @@ group by place_of_service_concept_id, gender_concept_id
 --207	Number of visit records with invalid person_id
 insert into @results_schema.dbo.ACHILLES_results (analysis_id, count_value)
 select 207 as analysis_id,  
-	COUNT(vo1.PERSON_ID) as count_value
+	COUNT_BIG(vo1.PERSON_ID) as count_value
 from
 	visit_occurrence vo1
 	left join PERSON p1
@@ -1426,7 +1426,7 @@ where p1.person_id is null
 --208	Number of visit records outside valid observation period
 insert into @results_schema.dbo.ACHILLES_results (analysis_id, count_value)
 select 208 as analysis_id,  
-	COUNT(vo1.PERSON_ID) as count_value
+	COUNT_BIG(vo1.PERSON_ID) as count_value
 from
 	visit_occurrence vo1
 	left join observation_period op1
@@ -1441,7 +1441,7 @@ where op1.person_id is null
 --209	Number of visit records with end date < start date
 insert into @results_schema.dbo.ACHILLES_results (analysis_id, count_value)
 select 209 as analysis_id,  
-	COUNT(vo1.PERSON_ID) as count_value
+	COUNT_BIG(vo1.PERSON_ID) as count_value
 from
 	visit_occurrence vo1
 where visit_end_date < visit_start_date
@@ -1452,7 +1452,7 @@ where visit_end_date < visit_start_date
 --210	Number of visit records with invalid care_site_id
 insert into @results_schema.dbo.ACHILLES_results (analysis_id, count_value)
 select 210 as analysis_id,  
-	COUNT(vo1.PERSON_ID) as count_value
+	COUNT_BIG(vo1.PERSON_ID) as count_value
 from
 	visit_occurrence vo1
 	left join care_site cs1
@@ -1468,7 +1468,7 @@ where vo1.care_site_id is not null
 insert into @results_schema.dbo.ACHILLES_results_dist (analysis_id, stratum_1, count_value, min_value, max_value, avg_value, stdev_value, median_value, p10_value, p25_value, p75_value, p90_value)
 select 211 as analysis_id,
 	place_of_service_concept_id as stratum_1,
-	count(count_value) as count_value,
+	COUNT_BIG(count_value) as count_value,
 	min(count_value) as min_value,
 	max(count_value) as max_value,
 	avg(1.0*count_value) as avg_value,
@@ -1482,7 +1482,7 @@ from
 (
 select vo1.place_of_service_concept_id,
 	datediff(dd,visit_start_date,visit_end_date) as count_value,
-	1.0*(row_number() over (partition by vo1.place_of_service_concept_id order by datediff(dd,visit_start_date,visit_end_date)))/(count(datediff(dd,visit_start_date,visit_end_date)) over (partition by vo1.place_of_service_concept_id)+1) as p1
+	1.0*(row_number() over (partition by vo1.place_of_service_concept_id order by datediff(dd,visit_start_date,visit_end_date)))/(COUNT_BIG(datediff(dd,visit_start_date,visit_end_date)) over (partition by vo1.place_of_service_concept_id)+1) as p1
 from visit_occurrence vo1
 ) t1
 group by place_of_service_concept_id
@@ -1495,7 +1495,7 @@ group by place_of_service_concept_id
 insert into @results_schema.dbo.ACHILLES_results (analysis_id, stratum_1, count_value)
 select 220 as analysis_id,   
 	YEAR(visit_start_date)*100 + month(visit_start_date) as stratum_1, 
-	COUNT(PERSON_ID) as count_value
+	COUNT_BIG(PERSON_ID) as count_value
 from
 visit_occurrence vo1
 group by YEAR(visit_start_date)*100 + month(visit_start_date)
@@ -1512,7 +1512,7 @@ ACHILLES Analyses on PROVIDER table
 --{300 IN (@list_of_analysis_ids)}?{
 -- 300	Number of providers
 insert into @results_schema.dbo.ACHILLES_results (analysis_id, count_value)
-select 300 as analysis_id,  COUNT(distinct provider_id) as count_value
+select 300 as analysis_id,  COUNT_BIG(distinct provider_id) as count_value
 from provider;
 --}
 
@@ -1520,7 +1520,7 @@ from provider;
 --{301 IN (@list_of_analysis_ids)}?{
 -- 301	Number of providers by specialty concept_id
 insert into @results_schema.dbo.ACHILLES_results (analysis_id, stratum_1, count_value)
-select 301 as analysis_id,  specialty_concept_id as stratum_1, COUNT(distinct provider_id) as count_value
+select 301 as analysis_id,  specialty_concept_id as stratum_1, COUNT_BIG(distinct provider_id) as count_value
 from provider
 group by specialty_CONCEPT_ID;
 --}
@@ -1528,7 +1528,7 @@ group by specialty_CONCEPT_ID;
 --{302 IN (@list_of_analysis_ids)}?{
 -- 302	Number of providers with invalid care site id
 insert into @results_schema.dbo.ACHILLES_results (analysis_id, count_value)
-select 302 as analysis_id,  COUNT(provider_id) as count_value
+select 302 as analysis_id,  COUNT_BIG(provider_id) as count_value
 from provider p1
 	left join care_site cs1
 	on p1.care_site_id = cs1.care_site_id
@@ -1551,7 +1551,7 @@ ACHILLES Analyses on CONDITION_OCCURRENCE table
 insert into @results_schema.dbo.ACHILLES_results (analysis_id, stratum_1, count_value)
 select 400 as analysis_id, 
 	co1.condition_CONCEPT_ID as stratum_1,
-	COUNT(distinct co1.PERSON_ID) as count_value
+	COUNT_BIG(distinct co1.PERSON_ID) as count_value
 from
 	condition_occurrence co1
 group by co1.condition_CONCEPT_ID
@@ -1564,7 +1564,7 @@ group by co1.condition_CONCEPT_ID
 insert into @results_schema.dbo.ACHILLES_results (analysis_id, stratum_1, count_value)
 select 401 as analysis_id, 
 	co1.condition_CONCEPT_ID as stratum_1,
-	COUNT(co1.PERSON_ID) as count_value
+	COUNT_BIG(co1.PERSON_ID) as count_value
 from
 	condition_occurrence co1
 group by co1.condition_CONCEPT_ID
@@ -1579,7 +1579,7 @@ insert into @results_schema.dbo.ACHILLES_results (analysis_id, stratum_1, stratu
 select 402 as analysis_id,   
 	co1.condition_concept_id as stratum_1,
 	YEAR(condition_start_date)*100 + month(condition_start_date) as stratum_2, 
-	COUNT(distinct PERSON_ID) as count_value
+	COUNT_BIG(distinct PERSON_ID) as count_value
 from
 condition_occurrence co1
 group by co1.condition_concept_id, 
@@ -1593,7 +1593,7 @@ group by co1.condition_concept_id,
 -- 403	Number of distinct condition occurrence concepts per person
 insert into @results_schema.dbo.ACHILLES_results_dist (analysis_id, count_value, min_value, max_value, avg_value, stdev_value, median_value, p10_value, p25_value, p75_value, p90_value)
 select 403 as analysis_id,
-	count(count_value) as count_value,
+	COUNT_BIG(count_value) as count_value,
 	min(count_value) as min_value,
 	max(count_value) as max_value,
 	avg(1.0*count_value) as avg_value,
@@ -1606,10 +1606,10 @@ select 403 as analysis_id,
 from
 (
 select num_conditions as count_value,
-	1.0*(row_number() over (order by num_conditions))/(count(num_conditions) over ()+1) as p1
+	1.0*(row_number() over (order by num_conditions))/(COUNT_BIG(num_conditions) over ()+1) as p1
 from
 	(
-	select co1.person_id, count(distinct co1.condition_concept_id) as num_conditions
+	select co1.person_id, COUNT_BIG(distinct co1.condition_concept_id) as num_conditions
 	from
 	condition_occurrence co1
 	group by co1.person_id
@@ -1628,7 +1628,7 @@ select 404 as analysis_id,
 	YEAR(condition_start_date) as stratum_2,
 	p1.gender_concept_id as stratum_3,
 	floor((year(condition_start_date) - p1.year_of_birth)/10) as stratum_4, 
-	COUNT(distinct p1.PERSON_ID) as count_value
+	COUNT_BIG(distinct p1.PERSON_ID) as count_value
 from person p1
 inner join
 condition_occurrence co1
@@ -1646,7 +1646,7 @@ insert into @results_schema.dbo.ACHILLES_results (analysis_id, stratum_1, stratu
 select 405 as analysis_id, 
 	co1.condition_CONCEPT_ID as stratum_1,
 	co1.condition_type_concept_id as stratum_2,
-	COUNT(co1.PERSON_ID) as count_value
+	COUNT_BIG(co1.PERSON_ID) as count_value
 from
 	condition_occurrence co1
 group by co1.condition_CONCEPT_ID,	
@@ -1662,7 +1662,7 @@ insert into @results_schema.dbo.ACHILLES_results_dist (analysis_id, stratum_1, s
 select 406 as analysis_id,
 	condition_concept_id as stratum_1,
 	gender_concept_id as stratum_2,
-	count(count_value) as count_value,
+	COUNT_BIG(count_value) as count_value,
 	min(count_value) as min_value,
 	max(count_value) as max_value,
 	avg(1.0*count_value) as avg_value,
@@ -1677,7 +1677,7 @@ from
 select co1.condition_concept_id,
 	p1.gender_concept_id,
 	co1.condition_start_year - p1.year_of_birth as count_value,
-	1.0*(row_number() over (partition by co1.condition_concept_id, p1.gender_concept_id order by co1.condition_start_year - p1.year_of_birth))/(count(co1.condition_start_year - p1.year_of_birth) over (partition by co1.condition_concept_id, p1.gender_concept_id)+1) as p1
+	1.0*(row_number() over (partition by co1.condition_concept_id, p1.gender_concept_id order by co1.condition_start_year - p1.year_of_birth))/(COUNT_BIG(co1.condition_start_year - p1.year_of_birth) over (partition by co1.condition_concept_id, p1.gender_concept_id)+1) as p1
 from person p1
 inner join
 (select person_id, condition_concept_id, min(year(condition_start_date)) as condition_start_year
@@ -1699,7 +1699,7 @@ group by condition_concept_id, gender_concept_id
 -- 409	Number of condition occurrence records with invalid person_id
 insert into @results_schema.dbo.ACHILLES_results (analysis_id, count_value)
 select 409 as analysis_id,  
-	COUNT(co1.PERSON_ID) as count_value
+	COUNT_BIG(co1.PERSON_ID) as count_value
 from
 	condition_occurrence co1
 	left join PERSON p1
@@ -1713,7 +1713,7 @@ where p1.person_id is null
 -- 410	Number of condition occurrence records outside valid observation period
 insert into @results_schema.dbo.ACHILLES_results (analysis_id, count_value)
 select 410 as analysis_id,  
-	COUNT(co1.PERSON_ID) as count_value
+	COUNT_BIG(co1.PERSON_ID) as count_value
 from
 	condition_occurrence co1
 	left join observation_period op1
@@ -1729,7 +1729,7 @@ where op1.person_id is null
 -- 411	Number of condition occurrence records with end date < start date
 insert into @results_schema.dbo.ACHILLES_results (analysis_id, count_value)
 select 411 as analysis_id,  
-	COUNT(co1.PERSON_ID) as count_value
+	COUNT_BIG(co1.PERSON_ID) as count_value
 from
 	condition_occurrence co1
 where co1.condition_end_date < co1.condition_start_date
@@ -1741,7 +1741,7 @@ where co1.condition_end_date < co1.condition_start_date
 -- 412	Number of condition occurrence records with invalid provider_id
 insert into @results_schema.dbo.ACHILLES_results (analysis_id, count_value)
 select 412 as analysis_id,  
-	COUNT(co1.PERSON_ID) as count_value
+	COUNT_BIG(co1.PERSON_ID) as count_value
 from
 	condition_occurrence co1
 	left join provider p1
@@ -1755,7 +1755,7 @@ where co1.associated_provider_id is not null
 -- 413	Number of condition occurrence records with invalid visit_id
 insert into @results_schema.dbo.ACHILLES_results (analysis_id, count_value)
 select 413 as analysis_id,  
-	COUNT(co1.PERSON_ID) as count_value
+	COUNT_BIG(co1.PERSON_ID) as count_value
 from
 	condition_occurrence co1
 	left join visit_occurrence vo1
@@ -1770,7 +1770,7 @@ where co1.visit_occurrence_id is not null
 insert into @results_schema.dbo.ACHILLES_results (analysis_id, stratum_1, count_value)
 select 420 as analysis_id,   
 	YEAR(condition_start_date)*100 + month(condition_start_date) as stratum_1, 
-	COUNT(PERSON_ID) as count_value
+	COUNT_BIG(PERSON_ID) as count_value
 from
 condition_occurrence co1
 group by YEAR(condition_start_date)*100 + month(condition_start_date)
@@ -1792,7 +1792,7 @@ ACHILLES Analyses on DEATH table
 insert into @results_schema.dbo.ACHILLES_results (analysis_id, stratum_1, count_value)
 select 500 as analysis_id, 
 	d1.cause_of_death_concept_id as stratum_1,
-	COUNT(distinct d1.PERSON_ID) as count_value
+	COUNT_BIG(distinct d1.PERSON_ID) as count_value
 from
 	death d1
 group by d1.cause_of_death_CONCEPT_ID
@@ -1805,7 +1805,7 @@ group by d1.cause_of_death_CONCEPT_ID
 insert into @results_schema.dbo.ACHILLES_results (analysis_id, stratum_1, count_value)
 select 501 as analysis_id, 
 	d1.cause_of_death_concept_id as stratum_1,
-	COUNT(d1.PERSON_ID) as count_value
+	COUNT_BIG(d1.PERSON_ID) as count_value
 from
 	death d1
 group by d1.cause_of_death_CONCEPT_ID
@@ -1819,7 +1819,7 @@ group by d1.cause_of_death_CONCEPT_ID
 insert into @results_schema.dbo.ACHILLES_results (analysis_id, stratum_1, count_value)
 select 502 as analysis_id,   
 	YEAR(death_date)*100 + month(death_date) as stratum_1, 
-	COUNT(distinct PERSON_ID) as count_value
+	COUNT_BIG(distinct PERSON_ID) as count_value
 from
 death d1
 group by YEAR(death_date)*100 + month(death_date)
@@ -1835,7 +1835,7 @@ select 504 as analysis_id,
 	YEAR(death_date) as stratum_1,
 	p1.gender_concept_id as stratum_2,
 	floor((year(death_date) - p1.year_of_birth)/10) as stratum_3, 
-	COUNT(distinct p1.PERSON_ID) as count_value
+	COUNT_BIG(distinct p1.PERSON_ID) as count_value
 from person p1
 inner join
 death d1
@@ -1851,7 +1851,7 @@ group by YEAR(death_date),
 insert into @results_schema.dbo.ACHILLES_results (analysis_id, stratum_1, count_value)
 select 505 as analysis_id, 
 	death_type_concept_id as stratum_1,
-	COUNT(PERSON_ID) as count_value
+	COUNT_BIG(PERSON_ID) as count_value
 from
 	death d1
 group by death_type_concept_id
@@ -1865,7 +1865,7 @@ group by death_type_concept_id
 insert into @results_schema.dbo.ACHILLES_results_dist (analysis_id, stratum_1, count_value, min_value, max_value, avg_value, stdev_value, median_value, p10_value, p25_value, p75_value, p90_value)
 select 506 as analysis_id,
 	gender_concept_id as stratum_1,
-	count(count_value) as count_value,
+	COUNT_BIG(count_value) as count_value,
 	min(count_value) as min_value,
 	max(count_value) as max_value,
 	avg(1.0*count_value) as avg_value,
@@ -1879,7 +1879,7 @@ from
 (
 select p1.gender_concept_id,
 	d1.death_year - p1.year_of_birth as count_value,
-	1.0*(row_number() over (partition by p1.gender_concept_id order by d1.death_year - p1.year_of_birth))/(count(d1.death_year - p1.year_of_birth) over (partition by p1.gender_concept_id)+1) as p1
+	1.0*(row_number() over (partition by p1.gender_concept_id order by d1.death_year - p1.year_of_birth))/(COUNT_BIG(d1.death_year - p1.year_of_birth) over (partition by p1.gender_concept_id)+1) as p1
 from person p1
 inner join
 (select person_id, min(year(death_date)) as death_year
@@ -1898,7 +1898,7 @@ group by gender_concept_id
 -- 509	Number of death records with invalid person_id
 insert into @results_schema.dbo.ACHILLES_results (analysis_id, count_value)
 select 509 as analysis_id, 
-	COUNT(d1.PERSON_ID) as count_value
+	COUNT_BIG(d1.PERSON_ID) as count_value
 from
 	death d1
 		left join person p1
@@ -1913,7 +1913,7 @@ where p1.person_id is null
 -- 510	Number of death records outside valid observation period
 insert into @results_schema.dbo.ACHILLES_results (analysis_id, count_value)
 select 510 as analysis_id, 
-	COUNT(d1.PERSON_ID) as count_value
+	COUNT_BIG(d1.PERSON_ID) as count_value
 from
 	death d1
 		left join observation_period op1
@@ -1929,7 +1929,7 @@ where op1.person_id is null
 -- 511	Distribution of time from death to last condition
 insert into @results_schema.dbo.ACHILLES_results_dist (analysis_id, count_value, min_value, max_value, avg_value, stdev_value, median_value, p10_value, p25_value, p75_value, p90_value)
 select 511 as analysis_id,
-	count(count_value) as count_value,
+	COUNT_BIG(count_value) as count_value,
 	min(count_value) as min_value,
 	max(count_value) as max_value,
 	avg(1.0*count_value) as avg_value,
@@ -1942,7 +1942,7 @@ select 511 as analysis_id,
 from
 (
 select datediff(dd,d1.death_date, t0.max_date) as count_value,
-	1.0*(row_number() over (order by datediff(dd,d1.death_date, t0.max_date)))/(count(datediff(dd,d1.death_date, t0.max_date)) over ()+1) as p1
+	1.0*(row_number() over (order by datediff(dd,d1.death_date, t0.max_date)))/(COUNT_BIG(datediff(dd,d1.death_date, t0.max_date)) over ()+1) as p1
 from death d1
 	inner join
 	(
@@ -1960,7 +1960,7 @@ from death d1
 -- 512	Distribution of time from death to last drug
 insert into @results_schema.dbo.ACHILLES_results_dist (analysis_id, count_value, min_value, max_value, avg_value, stdev_value, median_value, p10_value, p25_value, p75_value, p90_value)
 select 512 as analysis_id,
-	count(count_value) as count_value,
+	COUNT_BIG(count_value) as count_value,
 	min(count_value) as min_value,
 	max(count_value) as max_value,
 	avg(1.0*count_value) as avg_value,
@@ -1973,7 +1973,7 @@ select 512 as analysis_id,
 from
 (
 select datediff(dd,d1.death_date, t0.max_date) as count_value,
-	1.0*(row_number() over (order by datediff(dd,d1.death_date, t0.max_date)))/(count(datediff(dd,d1.death_date, t0.max_date)) over ()+1) as p1
+	1.0*(row_number() over (order by datediff(dd,d1.death_date, t0.max_date)))/(COUNT_BIG(datediff(dd,d1.death_date, t0.max_date)) over ()+1) as p1
 from death d1
 	inner join
 	(
@@ -1991,7 +1991,7 @@ from death d1
 -- 513	Distribution of time from death to last visit
 insert into @results_schema.dbo.ACHILLES_results_dist (analysis_id, count_value, min_value, max_value, avg_value, stdev_value, median_value, p10_value, p25_value, p75_value, p90_value)
 select 513 as analysis_id,
-	count(count_value) as count_value,
+	COUNT_BIG(count_value) as count_value,
 	min(count_value) as min_value,
 	max(count_value) as max_value,
 	avg(1.0*count_value) as avg_value,
@@ -2004,7 +2004,7 @@ select 513 as analysis_id,
 from
 (
 select datediff(dd,d1.death_date, t0.max_date) as count_value,
-	1.0*(row_number() over (order by datediff(dd,d1.death_date, t0.max_date)))/(count(datediff(dd,d1.death_date, t0.max_date)) over ()+1) as p1
+	1.0*(row_number() over (order by datediff(dd,d1.death_date, t0.max_date)))/(COUNT_BIG(datediff(dd,d1.death_date, t0.max_date)) over ()+1) as p1
 from death d1
 	inner join
 	(
@@ -2022,7 +2022,7 @@ from death d1
 -- 514	Distribution of time from death to last procedure
 insert into @results_schema.dbo.ACHILLES_results_dist (analysis_id, count_value, min_value, max_value, avg_value, stdev_value, median_value, p10_value, p25_value, p75_value, p90_value)
 select 514 as analysis_id,
-	count(count_value) as count_value,
+	COUNT_BIG(count_value) as count_value,
 	min(count_value) as min_value,
 	max(count_value) as max_value,
 	avg(1.0*count_value) as avg_value,
@@ -2035,7 +2035,7 @@ select 514 as analysis_id,
 from
 (
 select datediff(dd,d1.death_date, t0.max_date) as count_value,
-	1.0*(row_number() over (order by datediff(dd,d1.death_date, t0.max_date)))/(count(datediff(dd,d1.death_date, t0.max_date)) over ()+1) as p1
+	1.0*(row_number() over (order by datediff(dd,d1.death_date, t0.max_date)))/(COUNT_BIG(datediff(dd,d1.death_date, t0.max_date)) over ()+1) as p1
 from death d1
 	inner join
 	(
@@ -2053,7 +2053,7 @@ from death d1
 -- 515	Distribution of time from death to last observation
 insert into @results_schema.dbo.ACHILLES_results_dist (analysis_id, count_value, min_value, max_value, avg_value, stdev_value, median_value, p10_value, p25_value, p75_value, p90_value)
 select 515 as analysis_id,
-	count(count_value) as count_value,
+	COUNT_BIG(count_value) as count_value,
 	min(count_value) as min_value,
 	max(count_value) as max_value,
 	avg(1.0*count_value) as avg_value,
@@ -2066,7 +2066,7 @@ select 515 as analysis_id,
 from
 (
 select datediff(dd,d1.death_date, t0.max_date) as count_value,
-	1.0*(row_number() over (order by datediff(dd,d1.death_date, t0.max_date)))/(count(datediff(dd,d1.death_date, t0.max_date)) over ()+1) as p1
+	1.0*(row_number() over (order by datediff(dd,d1.death_date, t0.max_date)))/(COUNT_BIG(datediff(dd,d1.death_date, t0.max_date)) over ()+1) as p1
 from death d1
 	inner join
 	(
@@ -2094,7 +2094,7 @@ ACHILLES Analyses on PROCEDURE_OCCURRENCE table
 insert into @results_schema.dbo.ACHILLES_results (analysis_id, stratum_1, count_value)
 select 600 as analysis_id, 
 	po1.procedure_CONCEPT_ID as stratum_1,
-	COUNT(distinct po1.PERSON_ID) as count_value
+	COUNT_BIG(distinct po1.PERSON_ID) as count_value
 from
 	procedure_occurrence po1
 group by po1.procedure_CONCEPT_ID
@@ -2107,7 +2107,7 @@ group by po1.procedure_CONCEPT_ID
 insert into @results_schema.dbo.ACHILLES_results (analysis_id, stratum_1, count_value)
 select 601 as analysis_id, 
 	po1.procedure_CONCEPT_ID as stratum_1,
-	COUNT(po1.PERSON_ID) as count_value
+	COUNT_BIG(po1.PERSON_ID) as count_value
 from
 	procedure_occurrence po1
 group by po1.procedure_CONCEPT_ID
@@ -2122,7 +2122,7 @@ insert into @results_schema.dbo.ACHILLES_results (analysis_id, stratum_1, stratu
 select 602 as analysis_id,   
 	po1.procedure_concept_id as stratum_1,
 	YEAR(procedure_date)*100 + month(procedure_date) as stratum_2, 
-	COUNT(distinct PERSON_ID) as count_value
+	COUNT_BIG(distinct PERSON_ID) as count_value
 from
 procedure_occurrence po1
 group by po1.procedure_concept_id, 
@@ -2136,7 +2136,7 @@ group by po1.procedure_concept_id,
 -- 603	Number of distinct procedure occurrence concepts per person
 insert into @results_schema.dbo.ACHILLES_results_dist (analysis_id, count_value, min_value, max_value, avg_value, stdev_value, median_value, p10_value, p25_value, p75_value, p90_value)
 select 603 as analysis_id,
-	count(count_value) as count_value,
+	COUNT_BIG(count_value) as count_value,
 	min(count_value) as min_value,
 	max(count_value) as max_value,
 	avg(1.0*count_value) as avg_value,
@@ -2149,10 +2149,10 @@ select 603 as analysis_id,
 from
 (
 select num_procedures as count_value,
-	1.0*(row_number() over (order by num_procedures))/(count(num_procedures) over ()+1) as p1
+	1.0*(row_number() over (order by num_procedures))/(COUNT_BIG(num_procedures) over ()+1) as p1
 from
 	(
-	select po1.person_id, count(distinct po1.procedure_concept_id) as num_procedures
+	select po1.person_id, COUNT_BIG(distinct po1.procedure_concept_id) as num_procedures
 	from
 	procedure_occurrence po1
 	group by po1.person_id
@@ -2171,7 +2171,7 @@ select 604 as analysis_id,
 	YEAR(procedure_date) as stratum_2,
 	p1.gender_concept_id as stratum_3,
 	floor((year(procedure_date) - p1.year_of_birth)/10) as stratum_4, 
-	COUNT(distinct p1.PERSON_ID) as count_value
+	COUNT_BIG(distinct p1.PERSON_ID) as count_value
 from person p1
 inner join
 procedure_occurrence po1
@@ -2189,7 +2189,7 @@ insert into @results_schema.dbo.ACHILLES_results (analysis_id, stratum_1, stratu
 select 605 as analysis_id, 
 	po1.procedure_CONCEPT_ID as stratum_1,
 	po1.procedure_type_concept_id as stratum_2,
-	COUNT(po1.PERSON_ID) as count_value
+	COUNT_BIG(po1.PERSON_ID) as count_value
 from
 	procedure_occurrence po1
 group by po1.procedure_CONCEPT_ID,	
@@ -2205,7 +2205,7 @@ insert into @results_schema.dbo.ACHILLES_results_dist (analysis_id, stratum_1, s
 select 606 as analysis_id,
 	procedure_concept_id as stratum_1,
 	gender_concept_id as stratum_2,
-	count(count_value) as count_value,
+	COUNT_BIG(count_value) as count_value,
 	min(count_value) as min_value,
 	max(count_value) as max_value,
 	avg(1.0*count_value) as avg_value,
@@ -2220,7 +2220,7 @@ from
 select po1.procedure_concept_id,
 	p1.gender_concept_id,
 	po1.procedure_start_year - p1.year_of_birth as count_value,
-	1.0*(row_number() over (partition by po1.procedure_concept_id, p1.gender_concept_id order by po1.procedure_start_year - p1.year_of_birth))/(count(po1.procedure_start_year - p1.year_of_birth) over (partition by po1.procedure_concept_id, p1.gender_concept_id)+1) as p1
+	1.0*(row_number() over (partition by po1.procedure_concept_id, p1.gender_concept_id order by po1.procedure_start_year - p1.year_of_birth))/(COUNT_BIG(po1.procedure_start_year - p1.year_of_birth) over (partition by po1.procedure_concept_id, p1.gender_concept_id)+1) as p1
 from person p1
 inner join
 (select person_id, procedure_concept_id, min(year(procedure_date)) as procedure_start_year
@@ -2243,7 +2243,7 @@ group by procedure_concept_id, gender_concept_id
 -- 609	Number of procedure occurrence records with invalid person_id
 insert into @results_schema.dbo.ACHILLES_results (analysis_id, count_value)
 select 609 as analysis_id,  
-	COUNT(po1.PERSON_ID) as count_value
+	COUNT_BIG(po1.PERSON_ID) as count_value
 from
 	procedure_occurrence po1
 	left join PERSON p1
@@ -2257,7 +2257,7 @@ where p1.person_id is null
 -- 610	Number of procedure occurrence records outside valid observation period
 insert into @results_schema.dbo.ACHILLES_results (analysis_id, count_value)
 select 610 as analysis_id,  
-	COUNT(po1.PERSON_ID) as count_value
+	COUNT_BIG(po1.PERSON_ID) as count_value
 from
 	procedure_occurrence po1
 	left join observation_period op1
@@ -2274,7 +2274,7 @@ where op1.person_id is null
 -- 612	Number of procedure occurrence records with invalid provider_id
 insert into @results_schema.dbo.ACHILLES_results (analysis_id, count_value)
 select 612 as analysis_id,  
-	COUNT(po1.PERSON_ID) as count_value
+	COUNT_BIG(po1.PERSON_ID) as count_value
 from
 	procedure_occurrence po1
 	left join provider p1
@@ -2288,7 +2288,7 @@ where po1.associated_provider_id is not null
 -- 613	Number of procedure occurrence records with invalid visit_id
 insert into @results_schema.dbo.ACHILLES_results (analysis_id, count_value)
 select 613 as analysis_id,  
-	COUNT(po1.PERSON_ID) as count_value
+	COUNT_BIG(po1.PERSON_ID) as count_value
 from
 	procedure_occurrence po1
 	left join visit_occurrence vo1
@@ -2304,7 +2304,7 @@ where po1.visit_occurrence_id is not null
 insert into @results_schema.dbo.ACHILLES_results (analysis_id, stratum_1, count_value)
 select 620 as analysis_id,   
 	YEAR(procedure_date)*100 + month(procedure_date) as stratum_1, 
-	COUNT(PERSON_ID) as count_value
+	COUNT_BIG(PERSON_ID) as count_value
 from
 procedure_occurrence po1
 group by YEAR(procedure_date)*100 + month(procedure_date)
@@ -2326,7 +2326,7 @@ ACHILLES Analyses on DRUG_EXPOSURE table
 insert into @results_schema.dbo.ACHILLES_results (analysis_id, stratum_1, count_value)
 select 700 as analysis_id, 
 	de1.drug_CONCEPT_ID as stratum_1,
-	COUNT(distinct de1.PERSON_ID) as count_value
+	COUNT_BIG(distinct de1.PERSON_ID) as count_value
 from
 	drug_exposure de1
 group by de1.drug_CONCEPT_ID
@@ -2339,7 +2339,7 @@ group by de1.drug_CONCEPT_ID
 insert into @results_schema.dbo.ACHILLES_results (analysis_id, stratum_1, count_value)
 select 701 as analysis_id, 
 	de1.drug_CONCEPT_ID as stratum_1,
-	COUNT(de1.PERSON_ID) as count_value
+	COUNT_BIG(de1.PERSON_ID) as count_value
 from
 	drug_exposure de1
 group by de1.drug_CONCEPT_ID
@@ -2354,7 +2354,7 @@ insert into @results_schema.dbo.ACHILLES_results (analysis_id, stratum_1, stratu
 select 702 as analysis_id,   
 	de1.drug_concept_id as stratum_1,
 	YEAR(drug_exposure_start_date)*100 + month(drug_exposure_start_date) as stratum_2, 
-	COUNT(distinct PERSON_ID) as count_value
+	COUNT_BIG(distinct PERSON_ID) as count_value
 from
 drug_exposure de1
 group by de1.drug_concept_id, 
@@ -2368,7 +2368,7 @@ group by de1.drug_concept_id,
 -- 703	Number of distinct drug exposure concepts per person
 insert into @results_schema.dbo.ACHILLES_results_dist (analysis_id, count_value, min_value, max_value, avg_value, stdev_value, median_value, p10_value, p25_value, p75_value, p90_value)
 select 703 as analysis_id,
-	count(count_value) as count_value,
+	COUNT_BIG(count_value) as count_value,
 	min(count_value) as min_value,
 	max(count_value) as max_value,
 	avg(1.0*count_value) as avg_value,
@@ -2381,10 +2381,10 @@ select 703 as analysis_id,
 from
 (
 select num_drugs as count_value,
-	1.0*(row_number() over (order by num_drugs))/(count(num_drugs) over ()+1) as p1
+	1.0*(row_number() over (order by num_drugs))/(COUNT_BIG(num_drugs) over ()+1) as p1
 from
 	(
-	select de1.person_id, count(distinct de1.drug_concept_id) as num_drugs
+	select de1.person_id, COUNT_BIG(distinct de1.drug_concept_id) as num_drugs
 	from
 	drug_exposure de1
 	group by de1.person_id
@@ -2403,7 +2403,7 @@ select 704 as analysis_id,
 	YEAR(drug_exposure_start_date) as stratum_2,
 	p1.gender_concept_id as stratum_3,
 	floor((year(drug_exposure_start_date) - p1.year_of_birth)/10) as stratum_4, 
-	COUNT(distinct p1.PERSON_ID) as count_value
+	COUNT_BIG(distinct p1.PERSON_ID) as count_value
 from person p1
 inner join
 drug_exposure de1
@@ -2421,7 +2421,7 @@ insert into @results_schema.dbo.ACHILLES_results (analysis_id, stratum_1, stratu
 select 705 as analysis_id, 
 	de1.drug_CONCEPT_ID as stratum_1,
 	de1.drug_type_concept_id as stratum_2,
-	COUNT(de1.PERSON_ID) as count_value
+	COUNT_BIG(de1.PERSON_ID) as count_value
 from
 	drug_exposure de1
 group by de1.drug_CONCEPT_ID,	
@@ -2437,7 +2437,7 @@ insert into @results_schema.dbo.ACHILLES_results_dist (analysis_id, stratum_1, s
 select 706 as analysis_id,
 	drug_concept_id as stratum_1,
 	gender_concept_id as stratum_2,
-	count(count_value) as count_value,
+	COUNT_BIG(count_value) as count_value,
 	min(count_value) as min_value,
 	max(count_value) as max_value,
 	avg(1.0*count_value) as avg_value,
@@ -2452,7 +2452,7 @@ from
 select de1.drug_concept_id,
 	p1.gender_concept_id,
 	de1.drug_start_year - p1.year_of_birth as count_value,
-	1.0*(row_number() over (partition by de1.drug_concept_id, p1.gender_concept_id order by de1.drug_start_year - p1.year_of_birth))/(count(de1.drug_start_year - p1.year_of_birth) over (partition by de1.drug_concept_id, p1.gender_concept_id)+1) as p1
+	1.0*(row_number() over (partition by de1.drug_concept_id, p1.gender_concept_id order by de1.drug_start_year - p1.year_of_birth))/(COUNT_BIG(de1.drug_start_year - p1.year_of_birth) over (partition by de1.drug_concept_id, p1.gender_concept_id)+1) as p1
 from person p1
 inner join
 (select person_id, drug_concept_id, min(year(drug_exposure_start_date)) as drug_start_year
@@ -2472,7 +2472,7 @@ group by drug_concept_id, gender_concept_id
 -- 709	Number of drug exposure records with invalid person_id
 insert into @results_schema.dbo.ACHILLES_results (analysis_id, count_value)
 select 709 as analysis_id,  
-	COUNT(de1.PERSON_ID) as count_value
+	COUNT_BIG(de1.PERSON_ID) as count_value
 from
 	drug_exposure de1
 	left join PERSON p1
@@ -2486,7 +2486,7 @@ where p1.person_id is null
 -- 710	Number of drug exposure records outside valid observation period
 insert into @results_schema.dbo.ACHILLES_results (analysis_id, count_value)
 select 710 as analysis_id,  
-	COUNT(de1.PERSON_ID) as count_value
+	COUNT_BIG(de1.PERSON_ID) as count_value
 from
 	drug_exposure de1
 	left join observation_period op1
@@ -2502,7 +2502,7 @@ where op1.person_id is null
 -- 711	Number of drug exposure records with end date < start date
 insert into @results_schema.dbo.ACHILLES_results (analysis_id, count_value)
 select 711 as analysis_id,  
-	COUNT(de1.PERSON_ID) as count_value
+	COUNT_BIG(de1.PERSON_ID) as count_value
 from
 	drug_exposure de1
 where de1.drug_exposure_end_date < de1.drug_exposure_start_date
@@ -2514,7 +2514,7 @@ where de1.drug_exposure_end_date < de1.drug_exposure_start_date
 -- 712	Number of drug exposure records with invalid provider_id
 insert into @results_schema.dbo.ACHILLES_results (analysis_id, count_value)
 select 712 as analysis_id,  
-	COUNT(de1.PERSON_ID) as count_value
+	COUNT_BIG(de1.PERSON_ID) as count_value
 from
 	drug_exposure de1
 	left join provider p1
@@ -2528,7 +2528,7 @@ where de1.prescribing_provider_id is not null
 -- 713	Number of drug exposure records with invalid visit_id
 insert into @results_schema.dbo.ACHILLES_results (analysis_id, count_value)
 select 713 as analysis_id,  
-	COUNT(de1.PERSON_ID) as count_value
+	COUNT_BIG(de1.PERSON_ID) as count_value
 from
 	drug_exposure de1
 	left join visit_occurrence vo1
@@ -2545,7 +2545,7 @@ where de1.visit_occurrence_id is not null
 insert into @results_schema.dbo.ACHILLES_results_dist (analysis_id, stratum_1, count_value, min_value, max_value, avg_value, stdev_value, median_value, p10_value, p25_value, p75_value, p90_value)
 select 715 as analysis_id,
 	drug_concept_id as stratum_1,
-	count(count_value) as count_value,
+	COUNT_BIG(count_value) as count_value,
 	min(count_value) as min_value,
 	max(count_value) as max_value,
 	avg(1.0*count_value) as avg_value,
@@ -2559,7 +2559,7 @@ from
 (
 select drug_concept_id,
 	days_supply as count_value,
-	1.0*(row_number() over (partition by drug_concept_id order by days_supply))/(count(days_supply) over (partition by drug_concept_id)+1) as p1
+	1.0*(row_number() over (partition by drug_concept_id order by days_supply))/(COUNT_BIG(days_supply) over (partition by drug_concept_id)+1) as p1
 from drug_exposure de1
 
 ) t1
@@ -2574,7 +2574,7 @@ group by drug_concept_id
 insert into @results_schema.dbo.ACHILLES_results_dist (analysis_id, stratum_1, count_value, min_value, max_value, avg_value, stdev_value, median_value, p10_value, p25_value, p75_value, p90_value)
 select 716 as analysis_id,
 	drug_concept_id as stratum_1,
-	count(count_value) as count_value,
+	COUNT_BIG(count_value) as count_value,
 	min(count_value) as min_value,
 	max(count_value) as max_value,
 	avg(1.0*count_value) as avg_value,
@@ -2588,7 +2588,7 @@ from
 (
 select drug_concept_id,
 	refills as count_value,
-	1.0*(row_number() over (partition by drug_concept_id order by refills))/(count(refills) over (partition by drug_concept_id)+1) as p1
+	1.0*(row_number() over (partition by drug_concept_id order by refills))/(COUNT_BIG(refills) over (partition by drug_concept_id)+1) as p1
 from drug_exposure de1
 ) t1
 group by drug_concept_id
@@ -2604,7 +2604,7 @@ group by drug_concept_id
 insert into @results_schema.dbo.ACHILLES_results_dist (analysis_id, stratum_1, count_value, min_value, max_value, avg_value, stdev_value, median_value, p10_value, p25_value, p75_value, p90_value)
 select 717 as analysis_id,
 	drug_concept_id as stratum_1,
-	count(count_value) as count_value,
+	COUNT_BIG(count_value) as count_value,
 	min(count_value) as min_value,
 	max(count_value) as max_value,
 	avg(1.0*count_value) as avg_value,
@@ -2618,7 +2618,7 @@ from
 (
 select drug_concept_id,
 	quantity as count_value,
-	1.0*(row_number() over (partition by drug_concept_id order by quantity))/(count(quantity) over (partition by drug_concept_id)+1) as p1
+	1.0*(row_number() over (partition by drug_concept_id order by quantity))/(COUNT_BIG(quantity) over (partition by drug_concept_id)+1) as p1
 from drug_exposure de1
 ) t1
 group by drug_concept_id
@@ -2631,7 +2631,7 @@ group by drug_concept_id
 insert into @results_schema.dbo.ACHILLES_results (analysis_id, stratum_1, count_value)
 select 720 as analysis_id,   
 	YEAR(drug_exposure_start_date)*100 + month(drug_exposure_start_date) as stratum_1, 
-	COUNT(PERSON_ID) as count_value
+	COUNT_BIG(PERSON_ID) as count_value
 from
 drug_exposure de1
 group by YEAR(drug_exposure_start_date)*100 + month(drug_exposure_start_date)
@@ -2651,7 +2651,7 @@ ACHILLES Analyses on OBSERVATION table
 insert into @results_schema.dbo.ACHILLES_results (analysis_id, stratum_1, count_value)
 select 800 as analysis_id, 
 	o1.observation_CONCEPT_ID as stratum_1,
-	COUNT(distinct o1.PERSON_ID) as count_value
+	COUNT_BIG(distinct o1.PERSON_ID) as count_value
 from
 	observation o1
 group by o1.observation_CONCEPT_ID
@@ -2664,7 +2664,7 @@ group by o1.observation_CONCEPT_ID
 insert into @results_schema.dbo.ACHILLES_results (analysis_id, stratum_1, count_value)
 select 801 as analysis_id, 
 	o1.observation_CONCEPT_ID as stratum_1,
-	COUNT(o1.PERSON_ID) as count_value
+	COUNT_BIG(o1.PERSON_ID) as count_value
 from
 	observation o1
 group by o1.observation_CONCEPT_ID
@@ -2679,7 +2679,7 @@ insert into @results_schema.dbo.ACHILLES_results (analysis_id, stratum_1, stratu
 select 802 as analysis_id,   
 	o1.observation_concept_id as stratum_1,
 	YEAR(observation_date)*100 + month(observation_date) as stratum_2, 
-	COUNT(distinct PERSON_ID) as count_value
+	COUNT_BIG(distinct PERSON_ID) as count_value
 from
 observation o1
 group by o1.observation_concept_id, 
@@ -2693,7 +2693,7 @@ group by o1.observation_concept_id,
 -- 803	Number of distinct observation occurrence concepts per person
 insert into @results_schema.dbo.ACHILLES_results_dist (analysis_id, count_value, min_value, max_value, avg_value, stdev_value, median_value, p10_value, p25_value, p75_value, p90_value)
 select 803 as analysis_id,
-	count(count_value) as count_value,
+	COUNT_BIG(count_value) as count_value,
 	min(count_value) as min_value,
 	max(count_value) as max_value,
 	avg(1.0*count_value) as avg_value,
@@ -2706,10 +2706,10 @@ select 803 as analysis_id,
 from
 (
 select num_observations as count_value,
-	1.0*(row_number() over (order by num_observations))/(count(num_observations) over ()+1) as p1
+	1.0*(row_number() over (order by num_observations))/(COUNT_BIG(num_observations) over ()+1) as p1
 from
 	(
-	select o1.person_id, count(distinct o1.observation_concept_id) as num_observations
+	select o1.person_id, COUNT_BIG(distinct o1.observation_concept_id) as num_observations
 	from
 	observation o1
 	group by o1.person_id
@@ -2728,7 +2728,7 @@ select 804 as analysis_id,
 	YEAR(observation_date) as stratum_2,
 	p1.gender_concept_id as stratum_3,
 	floor((year(observation_date) - p1.year_of_birth)/10) as stratum_4, 
-	COUNT(distinct p1.PERSON_ID) as count_value
+	COUNT_BIG(distinct p1.PERSON_ID) as count_value
 from person p1
 inner join
 observation o1
@@ -2746,7 +2746,7 @@ insert into @results_schema.dbo.ACHILLES_results (analysis_id, stratum_1, stratu
 select 805 as analysis_id, 
 	o1.observation_CONCEPT_ID as stratum_1,
 	o1.observation_type_concept_id as stratum_2,
-	COUNT(o1.PERSON_ID) as count_value
+	COUNT_BIG(o1.PERSON_ID) as count_value
 from
 	observation o1
 group by o1.observation_CONCEPT_ID,	
@@ -2762,7 +2762,7 @@ insert into @results_schema.dbo.ACHILLES_results_dist (analysis_id, stratum_1, s
 select 806 as analysis_id,
 	observation_concept_id as stratum_1,
 	gender_concept_id as stratum_2,
-	count(count_value) as count_value,
+	COUNT_BIG(count_value) as count_value,
 	min(count_value) as min_value,
 	max(count_value) as max_value,
 	avg(1.0*count_value) as avg_value,
@@ -2777,7 +2777,7 @@ from
 select o1.observation_concept_id,
 	p1.gender_concept_id,
 	o1.observation_start_year - p1.year_of_birth as count_value,
-	1.0*(row_number() over (partition by o1.observation_concept_id, p1.gender_concept_id order by o1.observation_start_year - p1.year_of_birth))/(count(o1.observation_start_year - p1.year_of_birth) over (partition by o1.observation_concept_id, p1.gender_concept_id)+1) as p1
+	1.0*(row_number() over (partition by o1.observation_concept_id, p1.gender_concept_id order by o1.observation_start_year - p1.year_of_birth))/(COUNT_BIG(o1.observation_start_year - p1.year_of_birth) over (partition by o1.observation_concept_id, p1.gender_concept_id)+1) as p1
 from person p1
 inner join
 (select person_id, observation_concept_id, min(year(observation_date)) as observation_start_year
@@ -2796,7 +2796,7 @@ insert into @results_schema.dbo.ACHILLES_results (analysis_id, stratum_1, stratu
 select 807 as analysis_id, 
 	o1.observation_CONCEPT_ID as stratum_1,
 	o1.unit_concept_id as stratum_2,
-	COUNT(o1.PERSON_ID) as count_value
+	COUNT_BIG(o1.PERSON_ID) as count_value
 from
 	observation o1
 group by o1.observation_CONCEPT_ID,
@@ -2812,7 +2812,7 @@ group by o1.observation_CONCEPT_ID,
 -- 809	Number of observation records with invalid person_id
 insert into @results_schema.dbo.ACHILLES_results (analysis_id, count_value)
 select 809 as analysis_id,  
-	COUNT(o1.PERSON_ID) as count_value
+	COUNT_BIG(o1.PERSON_ID) as count_value
 from
 	observation o1
 	left join PERSON p1
@@ -2826,7 +2826,7 @@ where p1.person_id is null
 -- 810	Number of observation records outside valid observation period
 insert into @results_schema.dbo.ACHILLES_results (analysis_id, count_value)
 select 810 as analysis_id,  
-	COUNT(o1.PERSON_ID) as count_value
+	COUNT_BIG(o1.PERSON_ID) as count_value
 from
 	observation o1
 	left join observation_period op1
@@ -2843,7 +2843,7 @@ where op1.person_id is null
 -- 812	Number of observation records with invalid provider_id
 insert into @results_schema.dbo.ACHILLES_results (analysis_id, count_value)
 select 812 as analysis_id,  
-	COUNT(o1.PERSON_ID) as count_value
+	COUNT_BIG(o1.PERSON_ID) as count_value
 from
 	observation o1
 	left join provider p1
@@ -2857,7 +2857,7 @@ where o1.associated_provider_id is not null
 -- 813	Number of observation records with invalid visit_id
 insert into @results_schema.dbo.ACHILLES_results (analysis_id, count_value)
 select 813 as analysis_id,  
-	COUNT(o1.PERSON_ID) as count_value
+	COUNT_BIG(o1.PERSON_ID) as count_value
 from
 	observation o1
 	left join visit_occurrence vo1
@@ -2872,7 +2872,7 @@ where o1.visit_occurrence_id is not null
 -- 814	Number of observation records with no value (numeric, string, or concept)
 insert into @results_schema.dbo.ACHILLES_results (analysis_id, count_value)
 select 814 as analysis_id,  
-	COUNT(o1.PERSON_ID) as count_value
+	COUNT_BIG(o1.PERSON_ID) as count_value
 from
 	observation o1
 where o1.value_as_number is null
@@ -2888,7 +2888,7 @@ insert into @results_schema.dbo.ACHILLES_results_dist (analysis_id, stratum_1, s
 select 815 as analysis_id,
 	observation_concept_id as stratum_1,
 	unit_concept_id as stratum_2,
-	count(count_value) as count_value,
+	COUNT_BIG(count_value) as count_value,
 	min(count_value) as min_value,
 	max(count_value) as max_value,
 	avg(1.0*count_value) as avg_value,
@@ -2902,7 +2902,7 @@ from
 (
 select observation_concept_id, unit_concept_id,
 	value_as_number as count_value,
-	1.0*(row_number() over (partition by observation_concept_id, unit_concept_id order by value_as_number))/(count(value_as_number) over (partition by observation_concept_id, unit_concept_id)+1) as p1
+	1.0*(row_number() over (partition by observation_concept_id, unit_concept_id order by value_as_number))/(COUNT_BIG(value_as_number) over (partition by observation_concept_id, unit_concept_id)+1) as p1
 from observation o1
 where o1.unit_concept_id is not null
 	and o1.value_as_number is not null
@@ -2918,7 +2918,7 @@ insert into @results_schema.dbo.ACHILLES_results_dist (analysis_id, stratum_1, s
 select 816 as analysis_id,
 	observation_concept_id as stratum_1,
 	unit_concept_id as stratum_2,
-	count(count_value) as count_value,
+	COUNT_BIG(count_value) as count_value,
 	min(count_value) as min_value,
 	max(count_value) as max_value,
 	avg(1.0*count_value) as avg_value,
@@ -2932,7 +2932,7 @@ from
 (
 select observation_concept_id, unit_concept_id,
 	range_low as count_value,
-	1.0*(row_number() over (partition by observation_concept_id, unit_concept_id order by range_low))/(count(range_low) over (partition by observation_concept_id, unit_concept_id)+1) as p1
+	1.0*(row_number() over (partition by observation_concept_id, unit_concept_id order by range_low))/(COUNT_BIG(range_low) over (partition by observation_concept_id, unit_concept_id)+1) as p1
 from observation o1
 where o1.unit_concept_id is not null
 	and o1.value_as_number is not null
@@ -2950,7 +2950,7 @@ insert into @results_schema.dbo.ACHILLES_results_dist (analysis_id, stratum_1, s
 select 817 as analysis_id,
 	observation_concept_id as stratum_1,
 	unit_concept_id as stratum_2,
-	count(count_value) as count_value,
+	COUNT_BIG(count_value) as count_value,
 	min(count_value) as min_value,
 	max(count_value) as max_value,
 	avg(1.0*count_value) as avg_value,
@@ -2964,7 +2964,7 @@ from
 (
 select observation_concept_id, unit_concept_id,
 	range_high as count_value,
-	1.0*(row_number() over (partition by observation_concept_id, unit_concept_id order by range_high))/(count(range_high) over (partition by observation_concept_id, unit_concept_id)+1) as p1
+	1.0*(row_number() over (partition by observation_concept_id, unit_concept_id order by range_high))/(COUNT_BIG(range_high) over (partition by observation_concept_id, unit_concept_id)+1) as p1
 from observation o1
 where o1.unit_concept_id is not null
 	and o1.value_as_number is not null
@@ -2987,7 +2987,7 @@ select 818 as analysis_id,
 		when o1.value_as_number >= o1.range_low and o1.value_as_number <= o1.range_high then 'Within Range'
 		when o1.value_as_number > o1.range_high then 'Above Range High'
 		else 'Other' end as stratum_3,
-	COUNT(o1.PERSON_ID) as count_value
+	COUNT_BIG(o1.PERSON_ID) as count_value
 from
 	observation o1
 where o1.value_as_number is not null
@@ -3010,7 +3010,7 @@ group by observation_concept_id,
 insert into @results_schema.dbo.ACHILLES_results (analysis_id, stratum_1, count_value)
 select 820 as analysis_id,   
 	YEAR(observation_date)*100 + month(observation_date) as stratum_1, 
-	COUNT(PERSON_ID) as count_value
+	COUNT_BIG(PERSON_ID) as count_value
 from
 observation o1
 group by YEAR(observation_date)*100 + month(observation_date)
@@ -3032,7 +3032,7 @@ ACHILLES Analyses on DRUG_ERA table
 insert into @results_schema.dbo.ACHILLES_results (analysis_id, stratum_1, count_value)
 select 900 as analysis_id, 
 	de1.drug_CONCEPT_ID as stratum_1,
-	COUNT(distinct de1.PERSON_ID) as count_value
+	COUNT_BIG(distinct de1.PERSON_ID) as count_value
 from
 	drug_era de1
 group by de1.drug_CONCEPT_ID
@@ -3045,7 +3045,7 @@ group by de1.drug_CONCEPT_ID
 insert into @results_schema.dbo.ACHILLES_results (analysis_id, stratum_1, count_value)
 select 901 as analysis_id, 
 	de1.drug_CONCEPT_ID as stratum_1,
-	COUNT(de1.PERSON_ID) as count_value
+	COUNT_BIG(de1.PERSON_ID) as count_value
 from
 	drug_era de1
 group by de1.drug_CONCEPT_ID
@@ -3060,7 +3060,7 @@ insert into @results_schema.dbo.ACHILLES_results (analysis_id, stratum_1, stratu
 select 902 as analysis_id,   
 	de1.drug_concept_id as stratum_1,
 	YEAR(drug_era_start_date)*100 + month(drug_era_start_date) as stratum_2, 
-	COUNT(distinct PERSON_ID) as count_value
+	COUNT_BIG(distinct PERSON_ID) as count_value
 from
 drug_era de1
 group by de1.drug_concept_id, 
@@ -3074,7 +3074,7 @@ group by de1.drug_concept_id,
 -- 903	Number of distinct drug era concepts per person
 insert into @results_schema.dbo.ACHILLES_results_dist (analysis_id, count_value, min_value, max_value, avg_value, stdev_value, median_value, p10_value, p25_value, p75_value, p90_value)
 select 903 as analysis_id,
-	count(count_value) as count_value,
+	COUNT_BIG(count_value) as count_value,
 	min(count_value) as min_value,
 	max(count_value) as max_value,
 	avg(1.0*count_value) as avg_value,
@@ -3087,10 +3087,10 @@ select 903 as analysis_id,
 from
 (
 select num_drugs as count_value,
-	1.0*(row_number() over (order by num_drugs))/(count(num_drugs) over ()+1) as p1
+	1.0*(row_number() over (order by num_drugs))/(COUNT_BIG(num_drugs) over ()+1) as p1
 from
 	(
-	select de1.person_id, count(distinct de1.drug_concept_id) as num_drugs
+	select de1.person_id, COUNT_BIG(distinct de1.drug_concept_id) as num_drugs
 	from
 	drug_era de1
 	group by de1.person_id
@@ -3109,7 +3109,7 @@ select 904 as analysis_id,
 	YEAR(drug_era_start_date) as stratum_2,
 	p1.gender_concept_id as stratum_3,
 	floor((year(drug_era_start_date) - p1.year_of_birth)/10) as stratum_4, 
-	COUNT(distinct p1.PERSON_ID) as count_value
+	COUNT_BIG(distinct p1.PERSON_ID) as count_value
 from person p1
 inner join
 drug_era de1
@@ -3130,7 +3130,7 @@ insert into @results_schema.dbo.ACHILLES_results_dist (analysis_id, stratum_1, s
 select 906 as analysis_id,
 	drug_concept_id as stratum_1,
 	gender_concept_id as stratum_2,
-	count(count_value) as count_value,
+	COUNT_BIG(count_value) as count_value,
 	min(count_value) as min_value,
 	max(count_value) as max_value,
 	avg(1.0*count_value) as avg_value,
@@ -3145,7 +3145,7 @@ from
 select de1.drug_concept_id,
 	p1.gender_concept_id,
 	de1.drug_start_year - p1.year_of_birth as count_value,
-	1.0*(row_number() over (partition by de1.drug_concept_id, p1.gender_concept_id order by de1.drug_start_year - p1.year_of_birth))/(count(de1.drug_start_year - p1.year_of_birth) over (partition by de1.drug_concept_id, p1.gender_concept_id)+1) as p1
+	1.0*(row_number() over (partition by de1.drug_concept_id, p1.gender_concept_id order by de1.drug_start_year - p1.year_of_birth))/(COUNT_BIG(de1.drug_start_year - p1.year_of_birth) over (partition by de1.drug_concept_id, p1.gender_concept_id)+1) as p1
 from person p1
 inner join
 (select person_id, drug_concept_id, min(year(drug_era_start_date)) as drug_start_year
@@ -3167,7 +3167,7 @@ group by drug_concept_id, gender_concept_id
 insert into @results_schema.dbo.ACHILLES_results_dist (analysis_id, stratum_1, count_value, min_value, max_value, avg_value, stdev_value, median_value, p10_value, p25_value, p75_value, p90_value)
 select 907 as analysis_id,
 	drug_concept_id as stratum_1,
-	count(count_value) as count_value,
+	COUNT_BIG(count_value) as count_value,
 	min(count_value) as min_value,
 	max(count_value) as max_value,
 	avg(1.0*count_value) as avg_value,
@@ -3181,7 +3181,7 @@ from
 (
 select drug_concept_id,
 	datediff(dd,drug_era_start_date, drug_era_end_date) as count_value,
-	1.0*(row_number() over (partition by drug_concept_id order by datediff(dd,drug_era_start_date, drug_era_end_date)))/(count(datediff(dd,drug_era_start_date, drug_era_end_date)) over (partition by drug_concept_id)+1) as p1
+	1.0*(row_number() over (partition by drug_concept_id order by datediff(dd,drug_era_start_date, drug_era_end_date)))/(COUNT_BIG(datediff(dd,drug_era_start_date, drug_era_end_date)) over (partition by drug_concept_id)+1) as p1
 from  drug_era de1
 
 ) t1
@@ -3195,7 +3195,7 @@ group by drug_concept_id
 -- 908	Number of drug eras with invalid person
 insert into @results_schema.dbo.ACHILLES_results (analysis_id, count_value)
 select 908 as analysis_id,  
-	COUNT(de1.PERSON_ID) as count_value
+	COUNT_BIG(de1.PERSON_ID) as count_value
 from
 	drug_era de1
 	left join PERSON p1
@@ -3209,7 +3209,7 @@ where p1.person_id is null
 -- 909	Number of drug eras outside valid observation period
 insert into @results_schema.dbo.ACHILLES_results (analysis_id, count_value)
 select 909 as analysis_id,  
-	COUNT(de1.PERSON_ID) as count_value
+	COUNT_BIG(de1.PERSON_ID) as count_value
 from
 	drug_era de1
 	left join observation_period op1
@@ -3225,7 +3225,7 @@ where op1.person_id is null
 -- 910	Number of drug eras with end date < start date
 insert into @results_schema.dbo.ACHILLES_results (analysis_id, count_value)
 select 910 as analysis_id,  
-	COUNT(de1.PERSON_ID) as count_value
+	COUNT_BIG(de1.PERSON_ID) as count_value
 from
 	drug_era de1
 where de1.drug_era_end_date < de1.drug_era_start_date
@@ -3239,7 +3239,7 @@ where de1.drug_era_end_date < de1.drug_era_start_date
 insert into @results_schema.dbo.ACHILLES_results (analysis_id, stratum_1, count_value)
 select 920 as analysis_id,   
 	YEAR(drug_era_start_date)*100 + month(drug_era_start_date) as stratum_1, 
-	COUNT(PERSON_ID) as count_value
+	COUNT_BIG(PERSON_ID) as count_value
 from
 drug_era de1
 group by YEAR(drug_era_start_date)*100 + month(drug_era_start_date)
@@ -3262,7 +3262,7 @@ ACHILLES Analyses on CONDITION_ERA table
 insert into @results_schema.dbo.ACHILLES_results (analysis_id, stratum_1, count_value)
 select 1000 as analysis_id, 
 	ce1.condition_CONCEPT_ID as stratum_1,
-	COUNT(distinct ce1.PERSON_ID) as count_value
+	COUNT_BIG(distinct ce1.PERSON_ID) as count_value
 from
 	condition_era ce1
 group by ce1.condition_CONCEPT_ID
@@ -3275,7 +3275,7 @@ group by ce1.condition_CONCEPT_ID
 insert into @results_schema.dbo.ACHILLES_results (analysis_id, stratum_1, count_value)
 select 1001 as analysis_id, 
 	ce1.condition_CONCEPT_ID as stratum_1,
-	COUNT(ce1.PERSON_ID) as count_value
+	COUNT_BIG(ce1.PERSON_ID) as count_value
 from
 	condition_era ce1
 group by ce1.condition_CONCEPT_ID
@@ -3290,7 +3290,7 @@ insert into @results_schema.dbo.ACHILLES_results (analysis_id, stratum_1, stratu
 select 1002 as analysis_id,   
 	ce1.condition_concept_id as stratum_1,
 	YEAR(condition_era_start_date)*100 + month(condition_era_start_date) as stratum_2, 
-	COUNT(distinct PERSON_ID) as count_value
+	COUNT_BIG(distinct PERSON_ID) as count_value
 from
 condition_era ce1
 group by ce1.condition_concept_id, 
@@ -3304,7 +3304,7 @@ group by ce1.condition_concept_id,
 -- 1003	Number of distinct condition era concepts per person
 insert into @results_schema.dbo.ACHILLES_results_dist (analysis_id, count_value, min_value, max_value, avg_value, stdev_value, median_value, p10_value, p25_value, p75_value, p90_value)
 select 1003 as analysis_id,
-	count(count_value) as count_value,
+	COUNT_BIG(count_value) as count_value,
 	min(count_value) as min_value,
 	max(count_value) as max_value,
 	avg(1.0*count_value) as avg_value,
@@ -3317,10 +3317,10 @@ select 1003 as analysis_id,
 from
 (
 select num_conditions as count_value,
-	1.0*(row_number() over (order by num_conditions))/(count(num_conditions) over ()+1) as p1
+	1.0*(row_number() over (order by num_conditions))/(COUNT_BIG(num_conditions) over ()+1) as p1
 from
 	(
-	select ce1.person_id, count(distinct ce1.condition_concept_id) as num_conditions
+	select ce1.person_id, COUNT_BIG(distinct ce1.condition_concept_id) as num_conditions
 	from
 	condition_era ce1
 	group by ce1.person_id
@@ -3339,7 +3339,7 @@ select 1004 as analysis_id,
 	YEAR(condition_era_start_date) as stratum_2,
 	p1.gender_concept_id as stratum_3,
 	floor((year(condition_era_start_date) - p1.year_of_birth)/10) as stratum_4, 
-	COUNT(distinct p1.PERSON_ID) as count_value
+	COUNT_BIG(distinct p1.PERSON_ID) as count_value
 from person p1
 inner join
 condition_era ce1
@@ -3360,7 +3360,7 @@ insert into @results_schema.dbo.ACHILLES_results_dist (analysis_id, stratum_1, s
 select 1006 as analysis_id,
 	condition_concept_id as stratum_1,
 	gender_concept_id as stratum_2,
-	count(count_value) as count_value,
+	COUNT_BIG(count_value) as count_value,
 	min(count_value) as min_value,
 	max(count_value) as max_value,
 	avg(1.0*count_value) as avg_value,
@@ -3375,7 +3375,7 @@ from
 select ce1.condition_concept_id,
 	p1.gender_concept_id,
 	ce1.condition_start_year - p1.year_of_birth as count_value,
-	1.0*(row_number() over (partition by ce1.condition_concept_id, p1.gender_concept_id order by ce1.condition_start_year - p1.year_of_birth))/(count(ce1.condition_start_year - p1.year_of_birth) over (partition by ce1.condition_concept_id, p1.gender_concept_id)+1) as p1
+	1.0*(row_number() over (partition by ce1.condition_concept_id, p1.gender_concept_id order by ce1.condition_start_year - p1.year_of_birth))/(COUNT_BIG(ce1.condition_start_year - p1.year_of_birth) over (partition by ce1.condition_concept_id, p1.gender_concept_id)+1) as p1
 from person p1
 inner join
 (select person_id, condition_concept_id, min(year(condition_era_start_date)) as condition_start_year
@@ -3397,7 +3397,7 @@ group by condition_concept_id, gender_concept_id
 insert into @results_schema.dbo.ACHILLES_results_dist (analysis_id, stratum_1, count_value, min_value, max_value, avg_value, stdev_value, median_value, p10_value, p25_value, p75_value, p90_value)
 select 1007 as analysis_id,
 	condition_concept_id as stratum_1,
-	count(count_value) as count_value,
+	COUNT_BIG(count_value) as count_value,
 	min(count_value) as min_value,
 	max(count_value) as max_value,
 	avg(1.0*count_value) as avg_value,
@@ -3411,7 +3411,7 @@ from
 (
 select condition_concept_id,
 	datediff(dd,condition_era_start_date, condition_era_end_date) as count_value,
-	1.0*(row_number() over (partition by condition_concept_id order by datediff(dd,condition_era_start_date, condition_era_end_date)))/(count(datediff(dd,condition_era_start_date, condition_era_end_date)) over (partition by condition_concept_id)+1) as p1
+	1.0*(row_number() over (partition by condition_concept_id order by datediff(dd,condition_era_start_date, condition_era_end_date)))/(COUNT_BIG(datediff(dd,condition_era_start_date, condition_era_end_date)) over (partition by condition_concept_id)+1) as p1
 from  condition_era ce1
 
 ) t1
@@ -3425,7 +3425,7 @@ group by condition_concept_id
 -- 1008	Number of condition eras with invalid person
 insert into @results_schema.dbo.ACHILLES_results (analysis_id, count_value)
 select 1008 as analysis_id,  
-	COUNT(ce1.PERSON_ID) as count_value
+	COUNT_BIG(ce1.PERSON_ID) as count_value
 from
 	condition_era ce1
 	left join PERSON p1
@@ -3439,7 +3439,7 @@ where p1.person_id is null
 -- 1009	Number of condition eras outside valid observation period
 insert into @results_schema.dbo.ACHILLES_results (analysis_id, count_value)
 select 1009 as analysis_id,  
-	COUNT(ce1.PERSON_ID) as count_value
+	COUNT_BIG(ce1.PERSON_ID) as count_value
 from
 	condition_era ce1
 	left join observation_period op1
@@ -3455,7 +3455,7 @@ where op1.person_id is null
 -- 1010	Number of condition eras with end date < start date
 insert into @results_schema.dbo.ACHILLES_results (analysis_id, count_value)
 select 1010 as analysis_id,  
-	COUNT(ce1.PERSON_ID) as count_value
+	COUNT_BIG(ce1.PERSON_ID) as count_value
 from
 	condition_era ce1
 where ce1.condition_era_end_date < ce1.condition_era_start_date
@@ -3468,7 +3468,7 @@ where ce1.condition_era_end_date < ce1.condition_era_start_date
 insert into @results_schema.dbo.ACHILLES_results (analysis_id, stratum_1, count_value)
 select 1020 as analysis_id,   
 	YEAR(condition_era_start_date)*100 + month(condition_era_start_date) as stratum_1, 
-	COUNT(PERSON_ID) as count_value
+	COUNT_BIG(PERSON_ID) as count_value
 from
 condition_era ce1
 group by YEAR(condition_era_start_date)*100 + month(condition_era_start_date)
@@ -3488,7 +3488,7 @@ ACHILLES Analyses on LOCATION table
 -- 1100	Number of persons by location 3-digit zip
 insert into @results_schema.dbo.ACHILLES_results (analysis_id, stratum_1, count_value)
 select 1100 as analysis_id,  
-	left(l1.zip,3) as stratum_1, COUNT(distinct person_id) as count_value
+	left(l1.zip,3) as stratum_1, COUNT_BIG(distinct person_id) as count_value
 from PERSON p1
 	inner join LOCATION l1
 	on p1.location_id = l1.location_id
@@ -3502,7 +3502,7 @@ group by left(l1.zip,3);
 -- 1101	Number of persons by location state
 insert into @results_schema.dbo.ACHILLES_results (analysis_id, stratum_1, count_value)
 select 1101 as analysis_id,  
-	l1.state as stratum_1, COUNT(distinct person_id) as count_value
+	l1.state as stratum_1, COUNT_BIG(distinct person_id) as count_value
 from PERSON p1
 	inner join LOCATION l1
 	on p1.location_id = l1.location_id
@@ -3516,7 +3516,7 @@ group by l1.state;
 -- 1102	Number of care sites by location 3-digit zip
 insert into @results_schema.dbo.ACHILLES_results (analysis_id, stratum_1, count_value)
 select 1102 as analysis_id,  
-	left(l1.zip,3) as stratum_1, COUNT(distinct care_site_id) as count_value
+	left(l1.zip,3) as stratum_1, COUNT_BIG(distinct care_site_id) as count_value
 from care_site cs1
 	inner join LOCATION l1
 	on cs1.location_id = l1.location_id
@@ -3530,7 +3530,7 @@ group by left(l1.zip,3);
 -- 1103	Number of care sites by location state
 insert into @results_schema.dbo.ACHILLES_results (analysis_id, stratum_1, count_value)
 select 1103 as analysis_id,  
-	l1.state as stratum_1, COUNT(distinct care_site_id) as count_value
+	l1.state as stratum_1, COUNT_BIG(distinct care_site_id) as count_value
 from care_site cs1
 	inner join LOCATION l1
 	on cs1.location_id = l1.location_id
@@ -3551,7 +3551,7 @@ ACHILLES Analyses on CARE_SITE table
 -- 1200	Number of persons by place of service
 insert into @results_schema.dbo.ACHILLES_results (analysis_id, stratum_1, count_value)
 select 1200 as analysis_id,  
-	cs1.place_of_service_concept_id as stratum_1, COUNT(person_id) as count_value
+	cs1.place_of_service_concept_id as stratum_1, COUNT_BIG(person_id) as count_value
 from PERSON p1
 	inner join care_site cs1
 	on p1.care_site_id = cs1.care_site_id
@@ -3565,7 +3565,7 @@ group by cs1.place_of_service_concept_id;
 -- 1201	Number of visits by place of service
 insert into @results_schema.dbo.ACHILLES_results (analysis_id, stratum_1, count_value)
 select 1201 as analysis_id,  
-	cs1.place_of_service_concept_id as stratum_1, COUNT(visit_occurrence_id) as count_value
+	cs1.place_of_service_concept_id as stratum_1, COUNT_BIG(visit_occurrence_id) as count_value
 from visit_occurrence vo1
 	inner join care_site cs1
 	on vo1.care_site_id = cs1.care_site_id
@@ -3580,7 +3580,7 @@ group by cs1.place_of_service_concept_id;
 insert into @results_schema.dbo.ACHILLES_results (analysis_id, stratum_1, count_value)
 select 1202 as analysis_id,  
 	cs1.place_of_service_concept_id as stratum_1, 
-	COUNT(care_site_id) as count_value
+	COUNT_BIG(care_site_id) as count_value
 from care_site cs1
 where cs1.place_of_service_concept_id is not null
 group by cs1.place_of_service_concept_id;
@@ -3598,7 +3598,7 @@ ACHILLES Analyses on ORGANIZATION table
 insert into @results_schema.dbo.ACHILLES_results (analysis_id, stratum_1, count_value)
 select 1300 as analysis_id,  
 	place_of_service_concept_id as stratum_1, 
-	COUNT(organization_id) as count_value
+	COUNT_BIG(organization_id) as count_value
 from organization o1
 where place_of_service_concept_id is not null
 group by place_of_service_concept_id;
@@ -3620,7 +3620,7 @@ ACHILLES Analyses on PAYOR_PLAN_PERIOD table
 insert into @results_schema.dbo.ACHILLES_results_dist (analysis_id, stratum_1, count_value, min_value, max_value, avg_value, stdev_value, median_value, p10_value, p25_value, p75_value, p90_value)
 select 1406 as analysis_id,
 	gender_concept_id as stratum_1,
-	count(count_value) as count_value,
+	COUNT_BIG(count_value) as count_value,
 	min(count_value) as min_value,
 	max(count_value) as max_value,
 	avg(1.0*count_value) as avg_value,
@@ -3634,7 +3634,7 @@ from
 (
 select p1.gender_concept_id,
 	DATEDIFF(dd,ppp1.payer_plan_period_start_date, ppp1.payer_plan_period_end_date) as count_value,
-	1.0*(row_number() over (partition by p1.gender_concept_id order by DATEDIFF(dd,ppp1.payer_plan_period_start_date, ppp1.payer_plan_period_end_date)))/(count(DATEDIFF(dd,ppp1.payer_plan_period_start_date, ppp1.payer_plan_period_end_date)) over (partition by p1.gender_concept_id)+1) as p1
+	1.0*(row_number() over (partition by p1.gender_concept_id order by DATEDIFF(dd,ppp1.payer_plan_period_start_date, ppp1.payer_plan_period_end_date)))/(COUNT_BIG(DATEDIFF(dd,ppp1.payer_plan_period_start_date, ppp1.payer_plan_period_end_date)) over (partition by p1.gender_concept_id)+1) as p1
 from PERSON p1
 	inner join 
 	(select person_id, 
@@ -3657,7 +3657,7 @@ group by gender_concept_id
 insert into @results_schema.dbo.ACHILLES_results_dist (analysis_id, stratum_1, count_value, min_value, max_value, avg_value, stdev_value, median_value, p10_value, p25_value, p75_value, p90_value)
 select 1407 as analysis_id,
 	age_decile as stratum_1,
-	count(count_value) as count_value,
+	COUNT_BIG(count_value) as count_value,
 	min(count_value) as min_value,
 	max(count_value) as max_value,
 	avg(1.0*count_value) as avg_value,
@@ -3671,7 +3671,7 @@ from
 (
 select floor((year(ppp1.payer_plan_period_START_DATE) - p1.YEAR_OF_BIRTH)/140) as age_decile,
 	DATEDIFF(dd,ppp1.payer_plan_period_start_date, ppp1.payer_plan_period_end_date) as count_value,
-	1.0*(row_number() over (partition by floor((year(ppp1.payer_plan_period_START_DATE) - p1.YEAR_OF_BIRTH)/140) order by DATEDIFF(dd,ppp1.payer_plan_period_start_date, ppp1.payer_plan_period_end_date)))/(count(DATEDIFF(dd,ppp1.payer_plan_period_start_date, ppp1.payer_plan_period_end_date)) over (partition by floor((year(ppp1.payer_plan_period_START_DATE) - p1.YEAR_OF_BIRTH)/140))+1) as p1
+	1.0*(row_number() over (partition by floor((year(ppp1.payer_plan_period_START_DATE) - p1.YEAR_OF_BIRTH)/140) order by DATEDIFF(dd,ppp1.payer_plan_period_start_date, ppp1.payer_plan_period_end_date)))/(COUNT_BIG(DATEDIFF(dd,ppp1.payer_plan_period_start_date, ppp1.payer_plan_period_end_date)) over (partition by floor((year(ppp1.payer_plan_period_START_DATE) - p1.YEAR_OF_BIRTH)/140))+1) as p1
 from PERSON p1
 	inner join 
 	(select person_id, 
@@ -3697,7 +3697,7 @@ group by age_decile
 insert into @results_schema.dbo.ACHILLES_results (analysis_id, stratum_1, count_value)
 select 1408 as analysis_id,  
 	floor(DATEDIFF(dd, ppp1.payer_plan_period_start_date, ppp1.payer_plan_period_end_date)/30) as stratum_1, 
-	COUNT(distinct p1.person_id) as count_value
+	COUNT_BIG(distinct p1.person_id) as count_value
 from PERSON p1
 	inner join 
 	(select person_id, 
@@ -3732,7 +3732,7 @@ from
 
 insert into ACHILLES_results (analysis_id, stratum_1, count_value)
 select 1409 as analysis_id,  
-	t1.obs_year as stratum_1, COUNT(distinct p1.PERSON_ID) as count_value
+	t1.obs_year as stratum_1, COUNT_BIG(distinct p1.PERSON_ID) as count_value
 from
 	@CDM_schema.dbo.PERSON p1
 	inner join 
@@ -3775,7 +3775,7 @@ insert into ACHILLES_results (analysis_id, stratum_1, count_value)
 select 
   1410 as analysis_id, 
 	obs_month as stratum_1, 
-	COUNT(distinct p1.PERSON_ID) as count_value
+	COUNT_BIG(distinct p1.PERSON_ID) as count_value
 from
 	@CDM_schema.dbo.PERSON p1
 	inner join 
@@ -3801,7 +3801,7 @@ USE @CDM_schema;
 insert into @results_schema.dbo.ACHILLES_results (analysis_id, stratum_1, count_value)
 select 1411 as analysis_id, 
 	cast(cast(YEAR(payer_plan_period_start_date) as varchar(4)) +  RIGHT('0' + CAST(month(payer_plan_period_START_DATE) AS VARCHAR(2)), 2) + '01' as date) as stratum_1,
-	 COUNT(distinct p1.PERSON_ID) as count_value
+	 COUNT_BIG(distinct p1.PERSON_ID) as count_value
 from
 	PERSON p1
 	inner join payer_plan_period ppp1
@@ -3817,7 +3817,7 @@ group by cast(cast(YEAR(payer_plan_period_start_date) as varchar(4)) +  RIGHT('0
 insert into @results_schema.dbo.ACHILLES_results (analysis_id, stratum_1, count_value)
 select 1412 as analysis_id,  
 	cast(cast(YEAR(payer_plan_period_end_date) as varchar(4)) +  RIGHT('0' + CAST(month(payer_plan_period_end_DATE) AS VARCHAR(2)), 2) + '01' as date) as stratum_1, 
-	COUNT(distinct p1.PERSON_ID) as count_value
+	COUNT_BIG(distinct p1.PERSON_ID) as count_value
 from
 	PERSON p1
 	inner join payer_plan_period ppp1
@@ -3832,10 +3832,10 @@ group by cast(cast(YEAR(payer_plan_period_end_date) as varchar(4)) +  RIGHT('0' 
 insert into @results_schema.dbo.ACHILLES_results (analysis_id, stratum_1, count_value)
 select 1413 as analysis_id,  
 	ppp1.num_periods as stratum_1, 
-	COUNT(distinct p1.PERSON_ID) as count_value
+	COUNT_BIG(distinct p1.PERSON_ID) as count_value
 from
 	PERSON p1
-	inner join (select person_id, COUNT(payer_plan_period_start_date) as num_periods from payer_plan_period group by PERSON_ID) ppp1
+	inner join (select person_id, COUNT_BIG(payer_plan_period_start_date) as num_periods from payer_plan_period group by PERSON_ID) ppp1
 	on p1.person_id = ppp1.person_id
 group by ppp1.num_periods
 ;
@@ -3845,7 +3845,7 @@ group by ppp1.num_periods
 -- 1414	Number of persons with payer plan period before year-of-birth
 insert into @results_schema.dbo.ACHILLES_results (analysis_id, count_value)
 select 1414 as analysis_id,  
-	COUNT(distinct p1.PERSON_ID) as count_value
+	COUNT_BIG(distinct p1.PERSON_ID) as count_value
 from
 	PERSON p1
 	inner join (select person_id, MIN(year(payer_plan_period_start_date)) as first_obs_year from payer_plan_period group by PERSON_ID) ppp1
@@ -3858,7 +3858,7 @@ where p1.year_of_birth > ppp1.first_obs_year
 -- 1415	Number of persons with payer plan period end < start
 insert into @results_schema.dbo.ACHILLES_results (analysis_id, count_value)
 select 1415 as analysis_id,  
-	COUNT(ppp1.PERSON_ID) as count_value
+	COUNT_BIG(ppp1.PERSON_ID) as count_value
 from
 	payer_plan_period ppp1
 where ppp1.payer_plan_period_end_date < ppp1.payer_plan_period_start_date
@@ -3880,7 +3880,7 @@ ACHILLES Analyses on DRUG_COST table
 -- 1500	Number of drug cost records with invalid drug exposure id
 insert into @results_schema.dbo.ACHILLES_results (analysis_id, count_value)
 select 1500 as analysis_id,  
-	COUNT(dc1.drug_cost_ID) as count_value
+	COUNT_BIG(dc1.drug_cost_ID) as count_value
 from
 	drug_cost dc1
 		left join drug_exposure de1
@@ -3893,7 +3893,7 @@ where de1.drug_exposure_id is null
 -- 1501	Number of drug cost records with invalid payer plan period id
 insert into @results_schema.dbo.ACHILLES_results (analysis_id, count_value)
 select 1501 as analysis_id,  
-	COUNT(dc1.drug_cost_ID) as count_value
+	COUNT_BIG(dc1.drug_cost_ID) as count_value
 from
 	drug_cost dc1
 		left join payer_plan_period ppp1
@@ -3909,7 +3909,7 @@ where dc1.payer_plan_period_id is not null
 insert into @results_schema.dbo.ACHILLES_results_dist (analysis_id, stratum_1, count_value, min_value, max_value, avg_value, stdev_value, median_value, p10_value, p25_value, p75_value, p90_value)
 select 1502 as analysis_id,
 	drug_concept_id as stratum_1,
-	count(count_value) as count_value,
+	COUNT_BIG(count_value) as count_value,
 	min(count_value) as min_value,
 	max(count_value) as max_value,
 	avg(1.0*count_value) as avg_value,
@@ -3923,7 +3923,7 @@ from
 (
 select drug_concept_id,
 	paid_copay as count_value,
-	1.0*(row_number() over (partition by drug_concept_id order by paid_copay))/(count(paid_copay) over (partition by drug_concept_id)+1) as p1
+	1.0*(row_number() over (partition by drug_concept_id order by paid_copay))/(COUNT_BIG(paid_copay) over (partition by drug_concept_id)+1) as p1
 from drug_exposure de1
 	inner join
 	drug_cost dc1
@@ -3940,7 +3940,7 @@ group by drug_concept_id
 insert into @results_schema.dbo.ACHILLES_results_dist (analysis_id, stratum_1, count_value, min_value, max_value, avg_value, stdev_value, median_value, p10_value, p25_value, p75_value, p90_value)
 select 1503 as analysis_id,
 	drug_concept_id as stratum_1,
-	count(count_value) as count_value,
+	COUNT_BIG(count_value) as count_value,
 	min(count_value) as min_value,
 	max(count_value) as max_value,
 	avg(1.0*count_value) as avg_value,
@@ -3954,7 +3954,7 @@ from
 (
 select drug_concept_id,
 	paid_coinsurance as count_value,
-	1.0*(row_number() over (partition by drug_concept_id order by paid_coinsurance))/(count(paid_coinsurance) over (partition by drug_concept_id)+1) as p1
+	1.0*(row_number() over (partition by drug_concept_id order by paid_coinsurance))/(COUNT_BIG(paid_coinsurance) over (partition by drug_concept_id)+1) as p1
 from drug_exposure de1
 	inner join
 	drug_cost dc1
@@ -3970,7 +3970,7 @@ group by drug_concept_id
 insert into @results_schema.dbo.ACHILLES_results_dist (analysis_id, stratum_1, count_value, min_value, max_value, avg_value, stdev_value, median_value, p10_value, p25_value, p75_value, p90_value)
 select 1504 as analysis_id,
 	drug_concept_id as stratum_1,
-	count(count_value) as count_value,
+	COUNT_BIG(count_value) as count_value,
 	min(count_value) as min_value,
 	max(count_value) as max_value,
 	avg(1.0*count_value) as avg_value,
@@ -3984,7 +3984,7 @@ from
 (
 select drug_concept_id,
 	paid_toward_deductible as count_value,
-	1.0*(row_number() over (partition by drug_concept_id order by paid_toward_deductible))/(count(paid_toward_deductible) over (partition by drug_concept_id)+1) as p1
+	1.0*(row_number() over (partition by drug_concept_id order by paid_toward_deductible))/(COUNT_BIG(paid_toward_deductible) over (partition by drug_concept_id)+1) as p1
 from drug_exposure de1
 	inner join
 	drug_cost dc1
@@ -4000,7 +4000,7 @@ group by drug_concept_id
 insert into @results_schema.dbo.ACHILLES_results_dist (analysis_id, stratum_1, count_value, min_value, max_value, avg_value, stdev_value, median_value, p10_value, p25_value, p75_value, p90_value)
 select 1505 as analysis_id,
 	drug_concept_id as stratum_1,
-	count(count_value) as count_value,
+	COUNT_BIG(count_value) as count_value,
 	min(count_value) as min_value,
 	max(count_value) as max_value,
 	avg(1.0*count_value) as avg_value,
@@ -4014,7 +4014,7 @@ from
 (
 select drug_concept_id,
 	paid_by_payer as count_value,
-	1.0*(row_number() over (partition by drug_concept_id order by paid_by_payer))/(count(paid_by_payer) over (partition by drug_concept_id)+1) as p1
+	1.0*(row_number() over (partition by drug_concept_id order by paid_by_payer))/(COUNT_BIG(paid_by_payer) over (partition by drug_concept_id)+1) as p1
 from drug_exposure de1
 	inner join
 	drug_cost dc1
@@ -4030,7 +4030,7 @@ group by drug_concept_id
 insert into @results_schema.dbo.ACHILLES_results_dist (analysis_id, stratum_1, count_value, min_value, max_value, avg_value, stdev_value, median_value, p10_value, p25_value, p75_value, p90_value)
 select 1506 as analysis_id,
 	drug_concept_id as stratum_1,
-	count(count_value) as count_value,
+	COUNT_BIG(count_value) as count_value,
 	min(count_value) as min_value,
 	max(count_value) as max_value,
 	avg(1.0*count_value) as avg_value,
@@ -4044,7 +4044,7 @@ from
 (
 select drug_concept_id,
 	paid_by_coordination_benefits as count_value,
-	1.0*(row_number() over (partition by drug_concept_id order by paid_by_coordination_benefits))/(count(paid_by_coordination_benefits) over (partition by drug_concept_id)+1) as p1
+	1.0*(row_number() over (partition by drug_concept_id order by paid_by_coordination_benefits))/(COUNT_BIG(paid_by_coordination_benefits) over (partition by drug_concept_id)+1) as p1
 from drug_exposure de1
 	inner join
 	drug_cost dc1
@@ -4060,7 +4060,7 @@ group by drug_concept_id
 insert into @results_schema.dbo.ACHILLES_results_dist (analysis_id, stratum_1, count_value, min_value, max_value, avg_value, stdev_value, median_value, p10_value, p25_value, p75_value, p90_value)
 select 1507 as analysis_id,
 	drug_concept_id as stratum_1,
-	count(count_value) as count_value,
+	COUNT_BIG(count_value) as count_value,
 	min(count_value) as min_value,
 	max(count_value) as max_value,
 	avg(1.0*count_value) as avg_value,
@@ -4074,7 +4074,7 @@ from
 (
 select drug_concept_id,
 	total_out_of_pocket as count_value,
-	1.0*(row_number() over (partition by drug_concept_id order by total_out_of_pocket))/(count(total_out_of_pocket) over (partition by drug_concept_id)+1) as p1
+	1.0*(row_number() over (partition by drug_concept_id order by total_out_of_pocket))/(COUNT_BIG(total_out_of_pocket) over (partition by drug_concept_id)+1) as p1
 from drug_exposure de1
 	inner join
 	drug_cost dc1
@@ -4091,7 +4091,7 @@ group by drug_concept_id
 insert into @results_schema.dbo.ACHILLES_results_dist (analysis_id, stratum_1, count_value, min_value, max_value, avg_value, stdev_value, median_value, p10_value, p25_value, p75_value, p90_value)
 select 1508 as analysis_id,
 	drug_concept_id as stratum_1,
-	count(count_value) as count_value,
+	COUNT_BIG(count_value) as count_value,
 	min(count_value) as min_value,
 	max(count_value) as max_value,
 	avg(1.0*count_value) as avg_value,
@@ -4105,7 +4105,7 @@ from
 (
 select drug_concept_id,
 	total_paid as count_value,
-	1.0*(row_number() over (partition by drug_concept_id order by total_paid))/(count(total_paid) over (partition by drug_concept_id)+1) as p1
+	1.0*(row_number() over (partition by drug_concept_id order by total_paid))/(COUNT_BIG(total_paid) over (partition by drug_concept_id)+1) as p1
 from drug_exposure de1
 	inner join
 	drug_cost dc1
@@ -4122,7 +4122,7 @@ group by drug_concept_id
 insert into @results_schema.dbo.ACHILLES_results_dist (analysis_id, stratum_1, count_value, min_value, max_value, avg_value, stdev_value, median_value, p10_value, p25_value, p75_value, p90_value)
 select 1509 as analysis_id,
 	drug_concept_id as stratum_1,
-	count(count_value) as count_value,
+	COUNT_BIG(count_value) as count_value,
 	min(count_value) as min_value,
 	max(count_value) as max_value,
 	avg(1.0*count_value) as avg_value,
@@ -4136,7 +4136,7 @@ from
 (
 select drug_concept_id,
 	ingredient_cost as count_value,
-	1.0*(row_number() over (partition by drug_concept_id order by ingredient_cost))/(count(ingredient_cost) over (partition by drug_concept_id)+1) as p1
+	1.0*(row_number() over (partition by drug_concept_id order by ingredient_cost))/(COUNT_BIG(ingredient_cost) over (partition by drug_concept_id)+1) as p1
 from drug_exposure de1
 	inner join
 	drug_cost dc1
@@ -4152,7 +4152,7 @@ group by drug_concept_id
 insert into @results_schema.dbo.ACHILLES_results_dist (analysis_id, stratum_1, count_value, min_value, max_value, avg_value, stdev_value, median_value, p10_value, p25_value, p75_value, p90_value)
 select 1510 as analysis_id,
 	drug_concept_id as stratum_1,
-	count(count_value) as count_value,
+	COUNT_BIG(count_value) as count_value,
 	min(count_value) as min_value,
 	max(count_value) as max_value,
 	avg(1.0*count_value) as avg_value,
@@ -4166,7 +4166,7 @@ from
 (
 select drug_concept_id,
 	dispensing_fee as count_value,
-	1.0*(row_number() over (partition by drug_concept_id order by dispensing_fee))/(count(dispensing_fee) over (partition by drug_concept_id)+1) as p1
+	1.0*(row_number() over (partition by drug_concept_id order by dispensing_fee))/(COUNT_BIG(dispensing_fee) over (partition by drug_concept_id)+1) as p1
 from drug_exposure de1
 	inner join
 	drug_cost dc1
@@ -4182,7 +4182,7 @@ group by drug_concept_id
 insert into @results_schema.dbo.ACHILLES_results_dist (analysis_id, stratum_1, count_value, min_value, max_value, avg_value, stdev_value, median_value, p10_value, p25_value, p75_value, p90_value)
 select 1511 as analysis_id,
 	drug_concept_id as stratum_1,
-	count(count_value) as count_value,
+	COUNT_BIG(count_value) as count_value,
 	min(count_value) as min_value,
 	max(count_value) as max_value,
 	avg(1.0*count_value) as avg_value,
@@ -4196,7 +4196,7 @@ from
 (
 select drug_concept_id,
 	average_wholesale_price as count_value,
-	1.0*(row_number() over (partition by drug_concept_id order by average_wholesale_price))/(count(average_wholesale_price) over (partition by drug_concept_id)+1) as p1
+	1.0*(row_number() over (partition by drug_concept_id order by average_wholesale_price))/(COUNT_BIG(average_wholesale_price) over (partition by drug_concept_id)+1) as p1
 from drug_exposure de1
 	inner join
 	drug_cost dc1
@@ -4218,7 +4218,7 @@ ACHILLES Analyses on PROCEDURE_COST table
 -- 1600	Number of procedure cost records with invalid procedure exposure id
 insert into @results_schema.dbo.ACHILLES_results (analysis_id, count_value)
 select 1600 as analysis_id,  
-	COUNT(pc1.procedure_cost_ID) as count_value
+	COUNT_BIG(pc1.procedure_cost_ID) as count_value
 from
 	procedure_cost pc1
 		left join procedure_occurrence po1
@@ -4231,7 +4231,7 @@ where po1.procedure_occurrence_id is null
 -- 1601	Number of procedure cost records with invalid payer plan period id
 insert into @results_schema.dbo.ACHILLES_results (analysis_id, count_value)
 select 1601 as analysis_id,  
-	COUNT(pc1.procedure_cost_ID) as count_value
+	COUNT_BIG(pc1.procedure_cost_ID) as count_value
 from
 	procedure_cost pc1
 		left join payer_plan_period ppp1
@@ -4247,7 +4247,7 @@ where pc1.payer_plan_period_id is not null
 insert into @results_schema.dbo.ACHILLES_results_dist (analysis_id, stratum_1, count_value, min_value, max_value, avg_value, stdev_value, median_value, p10_value, p25_value, p75_value, p90_value)
 select 1602 as analysis_id,
 	procedure_concept_id as stratum_1,
-	count(count_value) as count_value,
+	COUNT_BIG(count_value) as count_value,
 	min(count_value) as min_value,
 	max(count_value) as max_value,
 	avg(1.0*count_value) as avg_value,
@@ -4261,7 +4261,7 @@ from
 (
 select procedure_concept_id,
 	paid_copay as count_value,
-	1.0*(row_number() over (partition by procedure_concept_id order by paid_copay))/(count(paid_copay) over (partition by procedure_concept_id)+1) as p1
+	1.0*(row_number() over (partition by procedure_concept_id order by paid_copay))/(COUNT_BIG(paid_copay) over (partition by procedure_concept_id)+1) as p1
 from procedure_occurrence po1
 	inner join
 	procedure_cost pc1
@@ -4278,7 +4278,7 @@ group by procedure_concept_id
 insert into @results_schema.dbo.ACHILLES_results_dist (analysis_id, stratum_1, count_value, min_value, max_value, avg_value, stdev_value, median_value, p10_value, p25_value, p75_value, p90_value)
 select 1603 as analysis_id,
 	procedure_concept_id as stratum_1,
-	count(count_value) as count_value,
+	COUNT_BIG(count_value) as count_value,
 	min(count_value) as min_value,
 	max(count_value) as max_value,
 	avg(1.0*count_value) as avg_value,
@@ -4292,7 +4292,7 @@ from
 (
 select procedure_concept_id,
 	paid_coinsurance as count_value,
-	1.0*(row_number() over (partition by procedure_concept_id order by paid_coinsurance))/(count(paid_coinsurance) over (partition by procedure_concept_id)+1) as p1
+	1.0*(row_number() over (partition by procedure_concept_id order by paid_coinsurance))/(COUNT_BIG(paid_coinsurance) over (partition by procedure_concept_id)+1) as p1
 from procedure_occurrence po1
 	inner join
 	procedure_cost pc1
@@ -4308,7 +4308,7 @@ group by procedure_concept_id
 insert into @results_schema.dbo.ACHILLES_results_dist (analysis_id, stratum_1, count_value, min_value, max_value, avg_value, stdev_value, median_value, p10_value, p25_value, p75_value, p90_value)
 select 1604 as analysis_id,
 	procedure_concept_id as stratum_1,
-	count(count_value) as count_value,
+	COUNT_BIG(count_value) as count_value,
 	min(count_value) as min_value,
 	max(count_value) as max_value,
 	avg(1.0*count_value) as avg_value,
@@ -4322,7 +4322,7 @@ from
 (
 select procedure_concept_id,
 	paid_toward_deductible as count_value,
-	1.0*(row_number() over (partition by procedure_concept_id order by paid_toward_deductible))/(count(paid_toward_deductible) over (partition by procedure_concept_id)+1) as p1
+	1.0*(row_number() over (partition by procedure_concept_id order by paid_toward_deductible))/(COUNT_BIG(paid_toward_deductible) over (partition by procedure_concept_id)+1) as p1
 from procedure_occurrence po1
 	inner join
 	procedure_cost pc1
@@ -4338,7 +4338,7 @@ group by procedure_concept_id
 insert into @results_schema.dbo.ACHILLES_results_dist (analysis_id, stratum_1, count_value, min_value, max_value, avg_value, stdev_value, median_value, p10_value, p25_value, p75_value, p90_value)
 select 1605 as analysis_id,
 	procedure_concept_id as stratum_1,
-	count(count_value) as count_value,
+	COUNT_BIG(count_value) as count_value,
 	min(count_value) as min_value,
 	max(count_value) as max_value,
 	avg(1.0*count_value) as avg_value,
@@ -4352,7 +4352,7 @@ from
 (
 select procedure_concept_id,
 	paid_by_payer as count_value,
-	1.0*(row_number() over (partition by procedure_concept_id order by paid_by_payer))/(count(paid_by_payer) over (partition by procedure_concept_id)+1) as p1
+	1.0*(row_number() over (partition by procedure_concept_id order by paid_by_payer))/(COUNT_BIG(paid_by_payer) over (partition by procedure_concept_id)+1) as p1
 from procedure_occurrence po1
 	inner join
 	procedure_cost pc1
@@ -4368,7 +4368,7 @@ group by procedure_concept_id
 insert into @results_schema.dbo.ACHILLES_results_dist (analysis_id, stratum_1, count_value, min_value, max_value, avg_value, stdev_value, median_value, p10_value, p25_value, p75_value, p90_value)
 select 1606 as analysis_id,
 	procedure_concept_id as stratum_1,
-	count(count_value) as count_value,
+	COUNT_BIG(count_value) as count_value,
 	min(count_value) as min_value,
 	max(count_value) as max_value,
 	avg(1.0*count_value) as avg_value,
@@ -4382,7 +4382,7 @@ from
 (
 select procedure_concept_id,
 	paid_by_coordination_benefits as count_value,
-	1.0*(row_number() over (partition by procedure_concept_id order by paid_by_coordination_benefits))/(count(paid_by_coordination_benefits) over (partition by procedure_concept_id)+1) as p1
+	1.0*(row_number() over (partition by procedure_concept_id order by paid_by_coordination_benefits))/(COUNT_BIG(paid_by_coordination_benefits) over (partition by procedure_concept_id)+1) as p1
 from procedure_occurrence po1
 	inner join
 	procedure_cost pc1
@@ -4398,7 +4398,7 @@ group by procedure_concept_id
 insert into @results_schema.dbo.ACHILLES_results_dist (analysis_id, stratum_1, count_value, min_value, max_value, avg_value, stdev_value, median_value, p10_value, p25_value, p75_value, p90_value)
 select 1607 as analysis_id,
 	procedure_concept_id as stratum_1,
-	count(count_value) as count_value,
+	COUNT_BIG(count_value) as count_value,
 	min(count_value) as min_value,
 	max(count_value) as max_value,
 	avg(1.0*count_value) as avg_value,
@@ -4412,7 +4412,7 @@ from
 (
 select procedure_concept_id,
 	total_out_of_pocket as count_value,
-	1.0*(row_number() over (partition by procedure_concept_id order by total_out_of_pocket))/(count(total_out_of_pocket) over (partition by procedure_concept_id)+1) as p1
+	1.0*(row_number() over (partition by procedure_concept_id order by total_out_of_pocket))/(COUNT_BIG(total_out_of_pocket) over (partition by procedure_concept_id)+1) as p1
 from procedure_occurrence po1
 	inner join
 	procedure_cost pc1
@@ -4429,7 +4429,7 @@ group by procedure_concept_id
 insert into @results_schema.dbo.ACHILLES_results_dist (analysis_id, stratum_1, count_value, min_value, max_value, avg_value, stdev_value, median_value, p10_value, p25_value, p75_value, p90_value)
 select 1608 as analysis_id,
 	procedure_concept_id as stratum_1,
-	count(count_value) as count_value,
+	COUNT_BIG(count_value) as count_value,
 	min(count_value) as min_value,
 	max(count_value) as max_value,
 	avg(1.0*count_value) as avg_value,
@@ -4443,7 +4443,7 @@ from
 (
 select procedure_concept_id,
 	total_paid as count_value,
-	1.0*(row_number() over (partition by procedure_concept_id order by total_paid))/(count(total_paid) over (partition by procedure_concept_id)+1) as p1
+	1.0*(row_number() over (partition by procedure_concept_id order by total_paid))/(COUNT_BIG(total_paid) over (partition by procedure_concept_id)+1) as p1
 from procedure_occurrence po1
 	inner join
 	procedure_cost pc1
@@ -4460,7 +4460,7 @@ group by procedure_concept_id
 insert into @results_schema.dbo.ACHILLES_results (analysis_id, stratum_1, count_value)
 select 1609 as analysis_id, 
 	disease_class_concept_id as stratum_1, 
-	COUNT(pc1.procedure_cost_ID) as count_value
+	COUNT_BIG(pc1.procedure_cost_ID) as count_value
 from
 	procedure_cost pc1
 where disease_class_concept_id is not null
@@ -4474,7 +4474,7 @@ group by disease_class_concept_id
 insert into @results_schema.dbo.ACHILLES_results (analysis_id, stratum_1, count_value)
 select 1610 as analysis_id, 
 	revenue_code_concept_id as stratum_1, 
-	COUNT(pc1.procedure_cost_ID) as count_value
+	COUNT_BIG(pc1.procedure_cost_ID) as count_value
 from
 	procedure_cost pc1
 where revenue_code_concept_id is not null
@@ -4495,7 +4495,7 @@ ACHILLES Analyses on COHORT table
 insert into @results_schema.dbo.ACHILLES_results (analysis_id, stratum_1, count_value)
 select 1700 as analysis_id, 
 	cohort_concept_id as stratum_1, 
-	COUNT(subject_ID) as count_value
+	COUNT_BIG(subject_ID) as count_value
 from
 	cohort c1
 group by cohort_concept_id
@@ -4507,7 +4507,7 @@ group by cohort_concept_id
 -- 1701	Number of records with cohort end date < cohort start date
 insert into @results_schema.dbo.ACHILLES_results (analysis_id, count_value)
 select 1701 as analysis_id, 
-	COUNT(subject_ID) as count_value
+	COUNT_BIG(subject_ID) as count_value
 from
 	cohort c1
 where c1.cohort_end_date < c1.cohort_start_date
@@ -4536,7 +4536,7 @@ INSERT INTO ACHILLES_HEEL_results (
 	ACHILLES_HEEL_warning
 	)
 SELECT DISTINCT or1.analysis_id,
-	'ERROR: ' + oa1.analysis_name + '; count should not be > 0' AS ACHILLES_HEEL_warning
+	'ERROR: ' + cast(or1.analysis_id as VARCHAR) + '-' + oa1.analysis_name + '; count (n=' + cast(or1.count_value as VARCHAR) + ') should not be > 0' AS ACHILLES_HEEL_warning
 FROM ACHILLES_results or1
 INNER JOIN ACHILLES_analysis oa1
 	ON or1.analysis_id = oa1.analysis_id
@@ -4593,7 +4593,7 @@ INSERT INTO ACHILLES_HEEL_results (
 	ACHILLES_HEEL_warning
 	)
 SELECT DISTINCT ord1.analysis_id,
-	'ERROR: ' + oa1.analysis_name + '; min should not be negative' AS ACHILLES_HEEL_warning
+	'ERROR: ' + cast(ord1.analysis_id as VARCHAR) + '-' + oa1.analysis_name + '; min (value=' + cast(ord1.min_value as VARCHAR) + ') should not be negative' AS ACHILLES_HEEL_warning
 FROM ACHILLES_results_dist ord1
 INNER JOIN ACHILLES_analysis oa1
 	ON ord1.analysis_id = oa1.analysis_id
@@ -4639,7 +4639,7 @@ INSERT INTO ACHILLES_HEEL_results (
 	ACHILLES_HEEL_warning
 	)
 SELECT DISTINCT ord1.analysis_id,
-	'WARNING: ' + oa1.analysis_name + '; max should not be positive, otherwise its a zombie with data >1mo after death ' AS ACHILLES_HEEL_warning
+	'WARNING: ' + cast(ord1.analysis_id as VARCHAR) + '-' + oa1.analysis_name + '; max (value=' + cast(ord1.max_value as VARCHAR) + ') should not be positive, otherwise its a zombie with data >1mo after death ' AS ACHILLES_HEEL_warning
 FROM ACHILLES_results_dist ord1
 INNER JOIN ACHILLES_analysis oa1
 	ON ord1.analysis_id = oa1.analysis_id
@@ -4658,7 +4658,7 @@ INSERT INTO ACHILLES_HEEL_results (
 	ACHILLES_HEEL_warning
 	)
 SELECT or1.analysis_id,
-	'ERROR: ' + oa1.analysis_name + ' ; ' + cast(count(DISTINCT stratum_1) AS VARCHAR) + ' concepts in data are not in vocabulary' AS ACHILLES_HEEL_warning
+	'ERROR: ' + cast(or1.analysis_id as VARCHAR) + '-' + oa1.analysis_name + '; ' + cast(COUNT_BIG(DISTINCT stratum_1) AS VARCHAR) + ' concepts in data are not in vocabulary' AS ACHILLES_HEEL_warning
 FROM ACHILLES_results or1
 INNER JOIN ACHILLES_analysis oa1
 	ON or1.analysis_id = oa1.analysis_id
@@ -4692,7 +4692,7 @@ INSERT INTO ACHILLES_HEEL_results (
 	ACHILLES_HEEL_warning
 	)
 SELECT or1.analysis_id,
-	'ERROR: ' + oa1.analysis_name + ' ; ' + cast(count(DISTINCT stratum_2) AS VARCHAR) + ' concepts in data are not in vocabulary' AS ACHILLES_HEEL_warning
+	'ERROR: ' + cast(or1.analysis_id as VARCHAR) + '-' + oa1.analysis_name + '; ' + cast(COUNT_BIG(DISTINCT stratum_2) AS VARCHAR) + ' concepts in data are not in vocabulary' AS ACHILLES_HEEL_warning
 FROM ACHILLES_results or1
 INNER JOIN ACHILLES_analysis oa1
 	ON or1.analysis_id = oa1.analysis_id
@@ -4715,7 +4715,7 @@ INSERT INTO ACHILLES_HEEL_results (
 	ACHILLES_HEEL_warning
 	)
 SELECT or1.analysis_id,
-	'WARNING: ' + oa1.analysis_name + ' ; data with unmapped concepts' AS ACHILLES_HEEL_warning
+	'WARNING: ' + cast(or1.analysis_id as VARCHAR) + '-' + oa1.analysis_name + '; data with unmapped concepts' AS ACHILLES_HEEL_warning
 FROM ACHILLES_results or1
 INNER JOIN ACHILLES_analysis oa1
 	ON or1.analysis_id = oa1.analysis_id
@@ -4747,7 +4747,7 @@ INSERT INTO ACHILLES_HEEL_results (
 	ACHILLES_HEEL_warning
 	)
 SELECT or1.analysis_id,
-	'ERROR: ' + oa1.analysis_name + ' ; ' + cast(count(DISTINCT stratum_1) AS VARCHAR) + ' concepts in data are not in correct vocabulary (HL7 Sex)' AS ACHILLES_HEEL_warning
+	'ERROR: ' + cast(or1.analysis_id as VARCHAR) + '-' + oa1.analysis_name + '; ' + cast(COUNT_BIG(DISTINCT stratum_1) AS VARCHAR) + ' concepts in data are not in correct vocabulary (HL7 Sex)' AS ACHILLES_HEEL_warning
 FROM ACHILLES_results or1
 INNER JOIN ACHILLES_analysis oa1
 	ON or1.analysis_id = oa1.analysis_id
@@ -4768,7 +4768,7 @@ INSERT INTO ACHILLES_HEEL_results (
 	ACHILLES_HEEL_warning
 	)
 SELECT or1.analysis_id,
-	'ERROR: ' + oa1.analysis_name + ' ; ' + cast(count(DISTINCT stratum_1) AS VARCHAR) + ' concepts in data are not in correct vocabulary (CDC Race)' AS ACHILLES_HEEL_warning
+	'ERROR: ' + cast(or1.analysis_id as VARCHAR) + '-' + oa1.analysis_name + '; ' + cast(COUNT_BIG(DISTINCT stratum_1) AS VARCHAR) + ' concepts in data are not in correct vocabulary (CDC Race)' AS ACHILLES_HEEL_warning
 FROM ACHILLES_results or1
 INNER JOIN ACHILLES_analysis oa1
 	ON or1.analysis_id = oa1.analysis_id
@@ -4789,7 +4789,7 @@ INSERT INTO ACHILLES_HEEL_results (
 	ACHILLES_HEEL_warning
 	)
 SELECT or1.analysis_id,
-	'ERROR: ' + oa1.analysis_name + ' ; ' + cast(count(DISTINCT stratum_1) AS VARCHAR) + ' concepts in data are not in correct vocabulary (CMS Ethnicity)' AS ACHILLES_HEEL_warning
+	'ERROR: ' + cast(or1.analysis_id as VARCHAR) + '-' + oa1.analysis_name + '; ' + cast(COUNT_BIG(DISTINCT stratum_1) AS VARCHAR) + ' concepts in data are not in correct vocabulary (CMS Ethnicity)' AS ACHILLES_HEEL_warning
 FROM ACHILLES_results or1
 INNER JOIN ACHILLES_analysis oa1
 	ON or1.analysis_id = oa1.analysis_id
@@ -4810,7 +4810,7 @@ INSERT INTO ACHILLES_HEEL_results (
 	ACHILLES_HEEL_warning
 	)
 SELECT or1.analysis_id,
-	'ERROR: ' + oa1.analysis_name + ' ; ' + cast(count(DISTINCT stratum_1) AS VARCHAR) + ' concepts in data are not in correct vocabulary (CMS place of service or OMOP visit)' AS ACHILLES_HEEL_warning
+	'ERROR: ' + cast(or1.analysis_id as VARCHAR) + '-' + oa1.analysis_name + '; ' + cast(COUNT_BIG(DISTINCT stratum_1) AS VARCHAR) + ' concepts in data are not in correct vocabulary (CMS place of service or OMOP visit)' AS ACHILLES_HEEL_warning
 FROM ACHILLES_results or1
 INNER JOIN ACHILLES_analysis oa1
 	ON or1.analysis_id = oa1.analysis_id
@@ -4832,7 +4832,7 @@ INSERT INTO ACHILLES_HEEL_results (
 	ACHILLES_HEEL_warning
 	)
 SELECT or1.analysis_id,
-	'ERROR: ' + oa1.analysis_name + ' ; ' + cast(count(DISTINCT stratum_1) AS VARCHAR) + ' concepts in data are not in correct vocabulary (Specialty)' AS ACHILLES_HEEL_warning
+	'ERROR: ' + cast(or1.analysis_id as VARCHAR) + '-' + oa1.analysis_name + '; ' + cast(COUNT_BIG(DISTINCT stratum_1) AS VARCHAR) + ' concepts in data are not in correct vocabulary (Specialty)' AS ACHILLES_HEEL_warning
 FROM ACHILLES_results or1
 INNER JOIN ACHILLES_analysis oa1
 	ON or1.analysis_id = oa1.analysis_id
@@ -4853,7 +4853,7 @@ INSERT INTO ACHILLES_HEEL_results (
 	ACHILLES_HEEL_warning
 	)
 SELECT or1.analysis_id,
-	'ERROR: ' + oa1.analysis_name + ' ; ' + cast(count(DISTINCT stratum_1) AS VARCHAR) + ' concepts in data are not in correct vocabulary (SNOMED)' AS ACHILLES_HEEL_warning
+	'ERROR: ' + cast(or1.analysis_id as VARCHAR) + '-' + oa1.analysis_name + '; ' + cast(COUNT_BIG(DISTINCT stratum_1) AS VARCHAR) + ' concepts in data are not in correct vocabulary (SNOMED)' AS ACHILLES_HEEL_warning
 FROM ACHILLES_results or1
 INNER JOIN ACHILLES_analysis oa1
 	ON or1.analysis_id = oa1.analysis_id
@@ -4877,7 +4877,7 @@ INSERT INTO ACHILLES_HEEL_results (
 	ACHILLES_HEEL_warning
 	)
 SELECT or1.analysis_id,
-	'ERROR: ' + oa1.analysis_name + ' ; ' + cast(count(DISTINCT stratum_1) AS VARCHAR) + ' concepts in data are not in correct vocabulary (RxNorm)' AS ACHILLES_HEEL_warning
+	'ERROR: ' + cast(or1.analysis_id as VARCHAR) + '-' + oa1.analysis_name + '; ' + cast(COUNT_BIG(DISTINCT stratum_1) AS VARCHAR) + ' concepts in data are not in correct vocabulary (RxNorm)' AS ACHILLES_HEEL_warning
 FROM ACHILLES_results or1
 INNER JOIN ACHILLES_analysis oa1
 	ON or1.analysis_id = oa1.analysis_id
@@ -4901,7 +4901,7 @@ INSERT INTO ACHILLES_HEEL_results (
 	ACHILLES_HEEL_warning
 	)
 SELECT or1.analysis_id,
-	'ERROR: ' + oa1.analysis_name + ' ; ' + cast(count(DISTINCT stratum_1) AS VARCHAR) + ' concepts in data are not in correct vocabulary (CPT4/HCPCS/ICD9P)' AS ACHILLES_HEEL_warning
+	'ERROR: ' + cast(or1.analysis_id as VARCHAR) + '-' + oa1.analysis_name + '; ' + cast(COUNT_BIG(DISTINCT stratum_1) AS VARCHAR) + ' concepts in data are not in correct vocabulary (CPT4/HCPCS/ICD9P)' AS ACHILLES_HEEL_warning
 FROM ACHILLES_results or1
 INNER JOIN ACHILLES_analysis oa1
 	ON or1.analysis_id = oa1.analysis_id
@@ -4924,7 +4924,7 @@ INSERT INTO ACHILLES_HEEL_results (
 	ACHILLES_HEEL_warning
 	)
 SELECT or1.analysis_id,
-	'ERROR: ' + oa1.analysis_name + ' ; ' + cast(count(DISTINCT stratum_1) AS VARCHAR) + ' concepts in data are not in correct vocabulary (LOINC)' AS ACHILLES_HEEL_warning
+	'ERROR: ' + cast(or1.analysis_id as VARCHAR) + '-' + oa1.analysis_name + '; ' + cast(COUNT_BIG(DISTINCT stratum_1) AS VARCHAR) + ' concepts in data are not in correct vocabulary (LOINC)' AS ACHILLES_HEEL_warning
 FROM ACHILLES_results or1
 INNER JOIN ACHILLES_analysis oa1
 	ON or1.analysis_id = oa1.analysis_id
@@ -4939,13 +4939,14 @@ WHERE or1.analysis_id IN (800)
 GROUP BY or1.analysis_id,
 	oa1.analysis_name;
 
---revenue code - 43 revenue code
+
+--disease class - 40 DRG
 INSERT INTO ACHILLES_HEEL_results (
-	analysis_id,
+  analysis_id,
 	ACHILLES_HEEL_warning
 	)
 SELECT or1.analysis_id,
-	'ERROR: ' + oa1.analysis_name + ' ; ' + cast(count(DISTINCT stratum_1) AS VARCHAR) + ' concepts in data are not in correct vocabulary (revenue code)' AS ACHILLES_HEEL_warning
+	'ERROR: ' + cast(or1.analysis_id as VARCHAR) + '-' + oa1.analysis_name + '; ' + cast(COUNT_BIG(DISTINCT stratum_1) AS VARCHAR) + ' concepts in data are not in correct vocabulary (DRG)' AS ACHILLES_HEEL_warning
 FROM ACHILLES_results or1
 INNER JOIN ACHILLES_analysis oa1
 	ON or1.analysis_id = oa1.analysis_id
@@ -4955,18 +4956,18 @@ WHERE or1.analysis_id IN (1609)
 	AND or1.stratum_1 IS NOT NULL
 	AND c1.vocabulary_id NOT IN (
 		0,
-		43
+		40
 		)
 GROUP BY or1.analysis_id,
 	oa1.analysis_name;
 
---disease class - 40 DRG
+--revenue code - 43 revenue code
 INSERT INTO ACHILLES_HEEL_results (
 	analysis_id,
 	ACHILLES_HEEL_warning
 	)
 SELECT or1.analysis_id,
-	'ERROR: ' + oa1.analysis_name + ' ; ' + cast(count(DISTINCT stratum_1) AS VARCHAR) + ' concepts in data are not in correct vocabulary (DRG)' AS ACHILLES_HEEL_warning
+	'ERROR: ' + cast(or1.analysis_id as VARCHAR) + '-' + oa1.analysis_name + '; ' + cast(COUNT_BIG(DISTINCT stratum_1) AS VARCHAR) + ' concepts in data are not in correct vocabulary (revenue code)' AS ACHILLES_HEEL_warning
 FROM ACHILLES_results or1
 INNER JOIN ACHILLES_analysis oa1
 	ON or1.analysis_id = oa1.analysis_id
@@ -4976,10 +4977,11 @@ WHERE or1.analysis_id IN (1610)
 	AND or1.stratum_1 IS NOT NULL
 	AND c1.vocabulary_id NOT IN (
 		0,
-		40
+		43
 		)
 GROUP BY or1.analysis_id,
 	oa1.analysis_name;
+
 
 --ERROR:  year of birth in the future
 INSERT INTO ACHILLES_HEEL_results (
@@ -4987,55 +4989,64 @@ INSERT INTO ACHILLES_HEEL_results (
 	ACHILLES_HEEL_warning
 	)
 SELECT DISTINCT or1.analysis_id,
-	'ERROR: ' + oa1.analysis_name + '; should not have year of birth in the future' AS ACHILLES_HEEL_warning
+	'ERROR: ' + cast(or1.analysis_id as VARCHAR) + '-' + oa1.analysis_name + '; should not have year of birth in the future, (n=' + cast(sum(or1.count_value) as VARCHAR) + ')' AS ACHILLES_HEEL_warning
 FROM ACHILLES_results or1
 INNER JOIN ACHILLES_analysis oa1
 	ON or1.analysis_id = oa1.analysis_id
 WHERE or1.analysis_id IN (3)
 	AND CAST(or1.stratum_1 AS INT) > year(getdate())
-	AND or1.count_value > 0;
+	AND or1.count_value > 0
+GROUP BY or1.analysis_id,
+  oa1.analysis_name;
+
 
 --WARNING:  year of birth < 1900
 INSERT INTO ACHILLES_HEEL_results (
 	analysis_id,
 	ACHILLES_HEEL_warning
 	)
-SELECT DISTINCT or1.analysis_id,
-	'ERROR: ' + oa1.analysis_name + '; should not have year of birth < 1900' AS ACHILLES_HEEL_warning
+SELECT or1.analysis_id,
+	'ERROR: ' + cast(or1.analysis_id as VARCHAR) + '-' + oa1.analysis_name + '; should not have year of birth < 1900, (n=' + cast(sum(or1.count_value) as VARCHAR) + ')' AS ACHILLES_HEEL_warning
 FROM ACHILLES_results or1
 INNER JOIN ACHILLES_analysis oa1
 	ON or1.analysis_id = oa1.analysis_id
 WHERE or1.analysis_id IN (3)
 	AND cAST(or1.stratum_1 AS INT) < 1900
-	AND or1.count_value > 0;
+	AND or1.count_value > 0
+GROUP BY or1.analysis_id,
+  oa1.analysis_name;
 
 --ERROR:  age < 0
 INSERT INTO ACHILLES_HEEL_results (
 	analysis_id,
 	ACHILLES_HEEL_warning
 	)
-SELECT DISTINCT or1.analysis_id,
-	'ERROR: ' + oa1.analysis_name + '; should not have age < 0' AS ACHILLES_HEEL_warning
+SELECT or1.analysis_id,
+	'ERROR: ' + cast(or1.analysis_id as VARCHAR) + '-' + oa1.analysis_name + '; should not have age < 0, (n=' + cast(sum(or1.count_value) as VARCHAR) + ')' AS ACHILLES_HEEL_warning
 FROM ACHILLES_results or1
 INNER JOIN ACHILLES_analysis oa1
 	ON or1.analysis_id = oa1.analysis_id
 WHERE or1.analysis_id IN (101)
 	AND CAST(or1.stratum_1 AS INT) < 0
-	AND or1.count_value > 0;
+	AND or1.count_value > 0
+GROUP BY or1.analysis_id,
+  oa1.analysis_name;
 
 --ERROR: age > 100
 INSERT INTO ACHILLES_HEEL_results (
 	analysis_id,
 	ACHILLES_HEEL_warning
 	)
-SELECT DISTINCT or1.analysis_id,
-	'ERROR: ' + oa1.analysis_name + '; should not have age > 100' AS ACHILLES_HEEL_warning
+SELECT or1.analysis_id,
+	'ERROR: ' + cast(or1.analysis_id as VARCHAR) + '-' + oa1.analysis_name + '; should not have age > 100, (n=' + cast(sum(or1.count_value) as VARCHAR) + ')' AS ACHILLES_HEEL_warning
 FROM ACHILLES_results or1
 INNER JOIN ACHILLES_analysis oa1
 	ON or1.analysis_id = oa1.analysis_id
 WHERE or1.analysis_id IN (101)
 	AND CAST(or1.stratum_1 AS INT) > 100
-	AND or1.count_value > 0;
+	AND or1.count_value > 0
+GROUP BY or1.analysis_id,
+  oa1.analysis_name;
 
 --WARNING:  monthly change > 100%
 INSERT INTO ACHILLES_HEEL_results (
@@ -5043,7 +5054,7 @@ INSERT INTO ACHILLES_HEEL_results (
 	ACHILLES_HEEL_warning
 	)
 SELECT DISTINCT ar1.analysis_id,
-	'WARNING: ' + aa1.analysis_name + '; theres a 100% change in monthly count of events' AS ACHILLES_HEEL_warning
+	'WARNING: ' + cast(ar1.analysis_id as VARCHAR) + '-' + oa1.analysis_name + '; theres a 100% change in monthly count of events' AS ACHILLES_HEEL_warning
 FROM ACHILLES_analysis aa1
 INNER JOIN ACHILLES_results ar1
 	ON aa1.analysis_id = ar1.analysis_id
@@ -5070,7 +5081,7 @@ INSERT INTO ACHILLES_HEEL_results (
 	ACHILLES_HEEL_warning
 	)
 SELECT ar1.analysis_id,
-	'WARNING: ' + aa1.analysis_name + '; ' + cast(count(DISTINCT ar1.stratum_1) AS VARCHAR) + ' concepts have a 100% change in monthly count of events' AS ACHILLES_HEEL_warning
+	'WARNING: ' + cast(ar1.analysis_id as VARCHAR) + '-' + oa1.analysis_name + '; ' + cast(COUNT_BIG(DISTINCT ar1.stratum_1) AS VARCHAR) + ' concepts have a 100% change in monthly count of events' AS ACHILLES_HEEL_warning
 FROM ACHILLES_analysis aa1
 INNER JOIN ACHILLES_results ar1
 	ON aa1.analysis_id = ar1.analysis_id
@@ -5100,7 +5111,7 @@ INSERT INTO ACHILLES_HEEL_results (
 	ACHILLES_HEEL_warning
 	)
 SELECT DISTINCT ord1.analysis_id,
-	'ERROR: ' + oa1.analysis_name + '; max should not be > 180' AS ACHILLES_HEEL_warning
+	'ERROR: ' + cast(ord1.analysis_id as VARCHAR) + '-' + oa1.analysis_name + '; max (value=' + cast(ord1.max_value as VARCHAR) + ' should not be > 180' AS ACHILLES_HEEL_warning
 FROM ACHILLES_results_dist ord1
 INNER JOIN ACHILLES_analysis oa1
 	ON ord1.analysis_id = oa1.analysis_id
@@ -5113,7 +5124,7 @@ INSERT INTO ACHILLES_HEEL_results (
 	ACHILLES_HEEL_warning
 	)
 SELECT DISTINCT ord1.analysis_id,
-	'ERROR: ' + oa1.analysis_name + '; max should not be > 10' AS ACHILLES_HEEL_warning
+	'ERROR: ' + cast(ord1.analysis_id as VARCHAR) + '-' + oa1.analysis_name + '; max (value=' + cast(ord1.max_value as VARCHAR) + ' should not be > 10' AS ACHILLES_HEEL_warning
 FROM ACHILLES_results_dist ord1
 INNER JOIN ACHILLES_analysis oa1
 	ON ord1.analysis_id = oa1.analysis_id
@@ -5126,7 +5137,7 @@ INSERT INTO ACHILLES_HEEL_results (
 	ACHILLES_HEEL_warning
 	)
 SELECT DISTINCT ord1.analysis_id,
-	'ERROR: ' + oa1.analysis_name + '; max should not be > 600' AS ACHILLES_HEEL_warning
+	'ERROR: ' + cast(ord1.analysis_id as VARCHAR) + '-' + oa1.analysis_name + '; max (value=' + cast(ord1.max_value as VARCHAR) + ' should not be > 600' AS ACHILLES_HEEL_warning
 FROM ACHILLES_results_dist ord1
 INNER JOIN ACHILLES_analysis oa1
 	ON ord1.analysis_id = oa1.analysis_id
