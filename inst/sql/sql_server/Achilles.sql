@@ -5054,7 +5054,7 @@ INSERT INTO ACHILLES_HEEL_results (
 	ACHILLES_HEEL_warning
 	)
 SELECT DISTINCT ar1.analysis_id,
-	'WARNING: ' + cast(ar1.analysis_id as VARCHAR) + '-' + oa1.analysis_name + '; theres a 100% change in monthly count of events' AS ACHILLES_HEEL_warning
+	'WARNING: ' + cast(ar1.analysis_id as VARCHAR) + '-' + aa1.analysis_name + '; theres a 100% change in monthly count of events' AS ACHILLES_HEEL_warning
 FROM ACHILLES_analysis aa1
 INNER JOIN ACHILLES_results ar1
 	ON aa1.analysis_id = ar1.analysis_id
@@ -5081,7 +5081,7 @@ INSERT INTO ACHILLES_HEEL_results (
 	ACHILLES_HEEL_warning
 	)
 SELECT ar1.analysis_id,
-	'WARNING: ' + cast(ar1.analysis_id as VARCHAR) + '-' + oa1.analysis_name + '; ' + cast(COUNT_BIG(DISTINCT ar1.stratum_1) AS VARCHAR) + ' concepts have a 100% change in monthly count of events' AS ACHILLES_HEEL_warning
+	'WARNING: ' + cast(ar1.analysis_id as VARCHAR) + '-' + aa1.analysis_name + '; ' + cast(COUNT_BIG(DISTINCT ar1.stratum_1) AS VARCHAR) + ' concepts have a 100% change in monthly count of events' AS ACHILLES_HEEL_warning
 FROM ACHILLES_analysis aa1
 INNER JOIN ACHILLES_results ar1
 	ON aa1.analysis_id = ar1.analysis_id

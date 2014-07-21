@@ -8,24 +8,24 @@ testExportCode <- function(){
   setwd("c:/temp")
   connectionDetails <- createConnectionDetails(dbms="sql server", server="RNDUSRDHIT07.jnj.com")
   exportToJson(connectionDetails, cdmSchema = "cdm4_sim", resultsSchema = "scratch",outputPath = "c:/temp/SqlServer")
-  #exportToJson(connectionDetails, cdmSchema = "cdm4_sim", resultsSchema = "scratch",outputPath = "c:/temp/SqlServer",reports = c("HEEL","PERSON"))
+  #exportToJson(connectionDetails, cdmSchema = "cdm4_sim", resultsSchema = "scratch",outputPath = "c:/temp/SqlServer",reports = c("PROCEDURE"))
   
   #Test on PostgreSQL
-  setwd("c:/temp")
-  connectionDetails <- createConnectionDetails(dbms="postgresql", server="localhost/ohdsi", user="postgres",password=pw)
-  exportToJson(connectionDetails, cdmSchema = "cdm4_sim", resultsSchema = "scratch",outputPath = "c:/temp/PostgreSQL")
+  #setwd("c:/temp")
+  #connectionDetails <- createConnectionDetails(dbms="postgresql", server="localhost/ohdsi", user="postgres",password=pw)
+  #exportToJson(connectionDetails, cdmSchema = "cdm4_sim", resultsSchema = "scratch",outputPath = "c:/temp/PostgreSQL")
   #exportToJson(connectionDetails, cdmSchema = "cdm4_sim", resultsSchema = "scratch",outputPath = "c:/temp/PostgreSQL", reports = c("DRUG"))
   
   #Test on PostgreSQL sample
   setwd("c:/temp")
   connectionDetails <- createConnectionDetails(dbms="postgresql", server="localhost/ohdsi", user="postgres",password=pw)
   exportToJson(connectionDetails, cdmSchema = "cdm4_sim_sample", resultsSchema = "scratch_sample",outputPath = "c:/temp/PostgreSQL_sample")
+  #exportToJson(connectionDetails, cdmSchema = "cdm4_sim_sample", resultsSchema = "scratch_sample",outputPath = "c:/temp/PostgreSQL_sample", report = c("CONDITION_ERA"))
   
   #Test on Oracle sample
   setwd("c:/temp")
   connectionDetails <- createConnectionDetails(dbms="oracle", server="xe", user="system",password=pw)
-  exportToJson(connectionDetails, cdmSchema = "cdm4_sim", resultsSchema = "scratch",outputPath = "c:/temp/Oracle")
-  
+  exportToJson(connectionDetails, cdmSchema = "cdm4_sim", resultsSchema = "scratch",outputPath = "c:/temp/Oracle")  
   
   #Compare JSON files:
   loadTextFile <- function(fileName){

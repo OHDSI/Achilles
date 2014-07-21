@@ -2,7 +2,7 @@
 
 testAchillesCode <- function(){
 
-  pw <- "x"
+  pw <- ""
   
   #Test on SQL Server:
   setwd("c:/temp")
@@ -12,9 +12,9 @@ testAchillesCode <- function(){
   #achillesResultsSqlServer <- achilles(connectionDetailsSqlServer, cdmSchema="cdm4_sim", resultsSchema="scratch", analysisIds=c(606),createTable=FALSE)
 
   #Test on PostgreSQL
-  setwd("c:/temp")
-  connectionDetailsPostgreSql <- createConnectionDetails(dbms="postgresql", server="localhost/ohdsi", user="postgres",password=pw)
-  achillesResultsPostgreSql <- achilles(connectionDetailsPostgreSql, cdmSchema="cdm4_sim", resultsSchema="scratch")
+  #setwd("c:/temp")
+  #connectionDetailsPostgreSql <- createConnectionDetails(dbms="postgresql", server="localhost/ohdsi", user="postgres",password=pw)
+  #achillesResultsPostgreSql <- achilles(connectionDetailsPostgreSql, cdmSchema="cdm4_sim", resultsSchema="scratch")
  
   #achillesResultsPostgreSql <- achilles(connectionDetailsPostgreSql, cdmSchema="cdm4_sim", resultsSchema="scratch",analysisIds=c(600:620),createTable = FALSE)
   
@@ -25,7 +25,7 @@ testAchillesCode <- function(){
   connectionDetailsPostgreSql <- createConnectionDetails(dbms="postgresql", server="localhost/ohdsi", user="postgres",password=pw)
   achillesResultsPostgreSql <- achilles(connectionDetailsPostgreSql, cdmSchema="cdm4_sim_sample", resultsSchema="scratch_sample")
   
-  achillesResultsPostgreSql <- achilles(connectionDetailsPostgreSql, cdmSchema="cdm4_sim_sample", resultsSchema="scratch_sample", analysisIds=c(116),createTable=FALSE)
+  #achillesResultsPostgreSql <- achilles(connectionDetailsPostgreSql, cdmSchema="cdm4_sim_sample", resultsSchema="scratch_sample", analysisIds=c(116),createTable=FALSE)
   
   
   #Test on Oracle using sample:
@@ -33,7 +33,7 @@ testAchillesCode <- function(){
   connectionDetailsOracle <- createConnectionDetails(dbms="oracle", server="xe", user="system",password=pw)
   achillesResultsOracle <- achilles(connectionDetailsOracle, cdmSchema="cdm4_sim", resultsSchema="scratch")
   
-  achillesResultsOracle <- achilles(connectionDetailsOracle, cdmSchema="cdm4_sim", resultsSchema="scratch", analysisIds=c(116),createTable=FALSE)
+  #achillesResultsOracle <- achilles(connectionDetailsOracle, cdmSchema="cdm4_sim", resultsSchema="scratch", analysisIds=c(116),createTable=FALSE)
   
   #fetchAchillesAnalysisResults(connectionDetailsPostgreSql, "scratch", 606)
   

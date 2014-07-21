@@ -1,8 +1,8 @@
 SELECT c1.concept_id AS concept_id,
-  cast(num_stratum_4 * 10 AS VARCHAR) + '-' + cast((num_stratum_4 + 1) * 10 - 1 AS VARCHAR) AS trellis_name,
-	c2.concept_name AS series_name,
-	num_stratum_2 AS x_calendar_year,
-	ROUND(1000 * (1.0 * num_count_value / denom_count_value), 5) AS y_prevalence_1000pp
+	cast(num_stratum_4 * 10 AS VARCHAR) + '-' + cast((num_stratum_4 + 1) * 10 - 1 AS VARCHAR) AS trellis_name, --age decile
+	c2.concept_name AS series_name,  --gender
+	num_stratum_2 AS x_calendar_year, -- calendar year, note, there could be blanks
+	ROUND(1000 * (1.0 * num_count_value / denom_count_value), 5) AS y_prevalence_1000pp --prevalence, per 1000 persons
 FROM (
 	SELECT CAST(num.stratum_1 AS INT) AS num_stratum_1,
 		CAST(num.stratum_2 AS INT) AS num_stratum_2,
@@ -13,12 +13,14 @@ FROM (
 	FROM (
 		SELECT *
 		FROM ACHILLES_results
-		WHERE analysis_id = 1004 AND stratum_3 IN ('8507','8532')
+		WHERE analysis_id = 1004
+			AND stratum_3 IN ('8507', '8532')
 		) num
 	INNER JOIN (
 		SELECT *
 		FROM ACHILLES_results
-		WHERE analysis_id = 116 AND stratum_3 IN ('8507','8532')
+		WHERE analysis_id = 116
+			AND stratum_2 IN ('8507', '8532')
 		) denom
 		ON num.stratum_2 = denom.stratum_1
 			AND num.stratum_3 = denom.stratum_2
