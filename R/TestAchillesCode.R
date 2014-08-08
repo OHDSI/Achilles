@@ -12,9 +12,9 @@ testAchillesCode <- function(){
   #achillesResultsSqlServer <- achilles(connectionDetailsSqlServer, cdmSchema="cdm4_sim", resultsSchema="scratch", analysisIds=c(606),createTable=FALSE)
 
   #Test on PostgreSQL
-  #setwd("c:/temp")
-  #connectionDetailsPostgreSql <- createConnectionDetails(dbms="postgresql", server="localhost/ohdsi", user="postgres",password=pw)
-  #achillesResultsPostgreSql <- achilles(connectionDetailsPostgreSql, cdmSchema="cdm4_sim", resultsSchema="scratch")
+  setwd("c:/temp")
+  connectionDetailsPostgreSql <- createConnectionDetails(dbms="postgresql", server="localhost/ohdsi", user="postgres",password=pw)
+  achillesResultsPostgreSql <- achilles(connectionDetailsPostgreSql, cdmSchema="cdm4_sim", resultsSchema="scratch")
  
   #achillesResultsPostgreSql <- achilles(connectionDetailsPostgreSql, cdmSchema="cdm4_sim", resultsSchema="scratch",analysisIds=c(600:620),createTable = FALSE)
   
