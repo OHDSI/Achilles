@@ -74,7 +74,7 @@ querySql <- function(conn, dbms, sql){
   tryCatch ({   
     .jcall("java/lang/System",,"gc") #Calling garbage collection prevents crashes
     
-    if (dbms == "postgresql"){
+    if (dbms == "postgresql" | dbms == "redshift"){ #Use dbGetQueryBatchWise to prevent Java out of heap
       result <- dbGetQueryBatchWise(conn, sql)
       colnames(result) <- toupper(colnames(result))
       return(result)
