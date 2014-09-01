@@ -20,109 +20,6 @@
 # @author Martijn Schuemie
 # @author Patrick Ryan
 
-executeSql <- function(conn, dbms, sql){
-  sqlStatements = splitSql(sql)
-  progressBar <- txtProgressBar(style=3)
-  start <- Sys.time()
-  for (i in 1:length(sqlStatements)){
-    sqlStatement <- sqlStatements[i]
-    #sink(paste("c:/temp/statement_",i,".sql",sep=""))
-    #cat(sqlStatement)
-    #sink()
-    tryCatch ({   
-      #startQuery <- Sys.time()
-      
-      #Horrible hack for Redshift, which doesn't support DROP TABLE IF EXIST (or anything similar):
-      if (dbms == "redshift" & grepl("DROP TABLE IF EXISTS",sqlStatement)){
-        nameStart = regexpr("DROP TABLE IF EXISTS", sqlStatement) + nchar("DROP TABLE IF EXISTS") + 1
-        tableName = tolower(gsub("(^ +)|( +$)", "", substr(sqlStatement,nameStart,nchar(sqlStatement))))
-        tableCount = dbGetQuery(conn,paste("SELECT COUNT(*) FROM pg_table_def WHERE tablename = '",tableName,"'",sep=""))
-        if (tableCount != 0)
-          dbSendUpdate(conn, paste("DROP TABLE",tableName))
-      } else
-        dbSendUpdate(conn, sqlStatement)
-      #delta <- Sys.time() - startQuery
-      #writeLines(paste("Statement ",i,"took", delta, attr(delta,"units")))
-    } , error = function(err) {
-      writeLines(paste("Error executing SQL:",err))
-      
-      #Write error report:
-      filename <- paste(getwd(),"/errorReport.txt",sep="")
-      sink(filename)
-      error <<- err
-      cat("DBMS:\n")
-      cat(dbms)
-      cat("\n\n")
-      cat("Error:\n")
-      cat(err$message)
-      cat("\n\n")
-      cat("SQL:\n")
-      cat(sqlStatement)
-      sink()
-      
-      writeLines(paste("An error report has been created at ", filename))
-      break
-    })
-    setTxtProgressBar(progressBar, i/length(sqlStatements))
-  }
-  close(progressBar)
-  delta <- Sys.time() - start
-  writeLines(paste("Analysis took", signif(delta,3), attr(delta,"units")))
-}
-
-querySql <- function(conn, dbms, sql){
-  tryCatch ({   
-    .jcall("java/lang/System",,"gc") #Calling garbage collection prevents crashes
-    
-    if (dbms == "postgresql" | dbms == "redshift"){ #Use dbGetQueryBatchWise to prevent Java out of heap
-      result <- dbGetQueryBatchWise(conn, sql)
-      colnames(result) <- toupper(colnames(result))
-      return(result)
-    } else {
-      result <- dbGetQuery(conn, sql)
-      colnames(result) <- toupper(colnames(result))
-      return(result)
-    }
-    
-  } , error = function(err) {
-    writeLines(paste("Error executing SQL:",err))
-    
-    #Write error report:
-    filename <- paste(getwd(),"/errorReport.txt",sep="")
-    sink(filename)
-    error <<- err
-    cat("DBMS:\n")
-    cat(dbms)
-    cat("\n\n")
-    cat("Error:\n")
-    cat(err$message)
-    cat("\n\n")
-    cat("SQL:\n")
-    cat(sql)
-    sink()
-    
-    writeLines(paste("An error report has been created at ", filename))
-    break
-  })
-}
-
-#' @export
-renderAndTranslate <- function(sqlFilename, packageName, dbms, ...){
-  pathToSql <- system.file(paste("sql/",gsub(" ","_",dbms),sep=""), sqlFilename, package=packageName)
-  mustTranslate <- !file.exists(pathToSql)
-  if (mustTranslate) # If DBMS-specific code does not exists, load SQL Server code and translate after rendering
-    pathToSql <- system.file(paste("sql/","sql_server",sep=""), sqlFilename, package=packageName)      
-  parameterizedSql <- readChar(pathToSql,file.info(pathToSql)$size)  
-  
-  renderedSql <- renderSql(parameterizedSql[1], ...)$sql
-  
-  if (mustTranslate)
-    renderedSql <- translateSql(renderedSql, "sql server", dbms)$sql
-  
-  renderedSql
-}
-
-
 #' The main Achilles analysis
 #'
 #' @description
@@ -155,7 +52,7 @@ achilles <- function (connectionDetails, cdmSchema, resultsSchema, sourceName = 
   if (missing(resultsSchema))
     resultsSchema <- cdmSchema
   
-  renderedSql <- renderAndTranslate(sqlFilename = "Achilles.sql",
+  renderedSql <- loadRenderTranslateSql(sqlFilename = "Achilles.sql",
                                     packageName = "Achilles",
                                     dbms = connectionDetails$dbms,
                                     CDM_schema = cdmSchema, 

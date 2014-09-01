@@ -1467,23 +1467,29 @@ where vo1.care_site_id is not null
 -- 211	Distribution of length of stay by visit_concept_id
 insert into @results_schema.dbo.ACHILLES_results_dist (analysis_id, stratum_1, count_value, min_value, max_value, avg_value, stdev_value, median_value, p10_value, p25_value, p75_value, p90_value)
 select 211 as analysis_id,
-	place_of_service_concept_id as stratum_1,
-	COUNT_BIG(count_value) as count_value,
-	min(count_value) as min_value,
-	max(count_value) as max_value,
-	avg(1.0*count_value) as avg_value,
-	stdev(count_value) as stdev_value,
-	max(case when p1<=0.50 then count_value else -9999 end) as median_value,
-	max(case when p1<=0.10 then count_value else -9999 end) as p10_value,
-	max(case when p1<=0.25 then count_value else -9999 end) as p25_value,
-	max(case when p1<=0.75 then count_value else -9999 end) as p75_value,
-	max(case when p1<=0.90 then count_value else -9999 end) as p90_value
+       place_of_service_concept_id as stratum_1,
+       COUNT_BIG(count_value) as count_value,
+       min(count_value) as min_value,
+       max(count_value) as max_value,
+       avg(1.0*count_value) as avg_value,
+       stdev(count_value) as stdev_value,
+       max(case when p1<=0.50 then count_value else -9999 end) as median_value,
+       max(case when p1<=0.10 then count_value else -9999 end) as p10_value,
+       max(case when p1<=0.25 then count_value else -9999 end) as p25_value,
+       max(case when p1<=0.75 then count_value else -9999 end) as p75_value,
+       max(case when p1<=0.90 then count_value else -9999 end) as p90_value
 from
 (
-select vo1.place_of_service_concept_id,
-	datediff(dd,visit_start_date,visit_end_date) as count_value,
-	1.0*(row_number() over (partition by vo1.place_of_service_concept_id order by datediff(dd,visit_start_date,visit_end_date)))/(COUNT_BIG(datediff(dd,visit_start_date,visit_end_date)) over (partition by vo1.place_of_service_concept_id)+1) as p1
-from visit_occurrence vo1
+       select place_of_service_concept_id, count_value, (1.0 * (row_number() over (partition by place_of_service_concept_id order by count_value)) / (Q.total +1)) as p1
+       from 
+       (
+              select vo1.place_of_service_concept_id, datediff(dd,visit_start_date,visit_end_date) as count_value, pc.total
+              from visit_occurrence vo1
+              JOIN 
+              (
+                     select place_of_service_concept_id, COUNT_BIG(*) as total from visit_occurrence group by PLACE_OF_SERVICE_CONCEPT_ID
+              ) pc on pc.PLACE_OF_SERVICE_CONCEPT_ID = vo1.PLACE_OF_SERVICE_CONCEPT_ID
+       ) Q
 ) t1
 group by place_of_service_concept_id
 ;
