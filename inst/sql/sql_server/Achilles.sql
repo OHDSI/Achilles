@@ -4593,7 +4593,7 @@ INSERT INTO ACHILLES_HEEL_results (
 	ACHILLES_HEEL_warning
 	)
 SELECT DISTINCT ord1.analysis_id,
-	'ERROR: ' + cast(ord1.analysis_id as VARCHAR) + '-' + oa1.analysis_name + '; min (value=' + cast(ord1.min_value as VARCHAR) + ') should not be negative' AS ACHILLES_HEEL_warning
+  'ERROR: ' + cast(ord1.analysis_id as VARCHAR) + ' - ' + oa1.analysis_name + ' (count = ' + cast(COUNT_BIG(ord1.min_value) as VARCHAR) + '); value should not be negative' AS ACHILLES_HEEL_warning
 FROM ACHILLES_results_dist ord1
 INNER JOIN ACHILLES_analysis oa1
 	ON ord1.analysis_id = oa1.analysis_id
@@ -4631,7 +4631,8 @@ WHERE ord1.analysis_id IN (
 		1607,
 		1608
 		)
-	AND ord1.min_value < 0;
+	AND ord1.min_value < 0
+	GROUP BY ord1.analysis_id,  oa1.analysis_name;
 
 --death distributions where max should not be positive
 INSERT INTO ACHILLES_HEEL_results (
@@ -4639,7 +4640,7 @@ INSERT INTO ACHILLES_HEEL_results (
 	ACHILLES_HEEL_warning
 	)
 SELECT DISTINCT ord1.analysis_id,
-	'WARNING: ' + cast(ord1.analysis_id as VARCHAR) + '-' + oa1.analysis_name + '; max (value=' + cast(ord1.max_value as VARCHAR) + ') should not be positive, otherwise its a zombie with data >1mo after death ' AS ACHILLES_HEEL_warning
+  'WARNING: ' + cast(ord1.analysis_id as VARCHAR) + '-' + oa1.analysis_name + ' (count = ' + cast(COUNT_BIG(ord1.max_value) as VARCHAR) + '); value should not be positive, otherwise its a zombie with data >1mo after death ' AS ACHILLES_HEEL_warning
 FROM ACHILLES_results_dist ord1
 INNER JOIN ACHILLES_analysis oa1
 	ON ord1.analysis_id = oa1.analysis_id
@@ -4650,7 +4651,8 @@ WHERE ord1.analysis_id IN (
 		514,
 		515
 		)
-	AND ord1.max_value > 30;
+	AND ord1.max_value > 30
+GROUP BY ord1.analysis_id, oa1.analysis_name;
 
 --invalid concept_id
 INSERT INTO ACHILLES_HEEL_results (
@@ -5111,12 +5113,13 @@ INSERT INTO ACHILLES_HEEL_results (
 	ACHILLES_HEEL_warning
 	)
 SELECT DISTINCT ord1.analysis_id,
-	'ERROR: ' + cast(ord1.analysis_id as VARCHAR) + '-' + oa1.analysis_name + '; max (value=' + cast(ord1.max_value as VARCHAR) + ' should not be > 180' AS ACHILLES_HEEL_warning
+  'ERROR: ' + cast(ord1.analysis_id as VARCHAR) + '-' + oa1.analysis_name + ' (count = ' + cast(COUNT_BIG(ord1.max_value) as VARCHAR) + '); value should not be > 180' AS ACHILLES_HEEL_warning
 FROM ACHILLES_results_dist ord1
 INNER JOIN ACHILLES_analysis oa1
 	ON ord1.analysis_id = oa1.analysis_id
 WHERE ord1.analysis_id IN (715)
-	AND ord1.max_value > 180;
+	AND ord1.max_value > 180
+GROUP BY ord1.analysis_id, oa1.analysis_name;
 
 --WARNING:  refills > 10
 INSERT INTO ACHILLES_HEEL_results (
@@ -5124,12 +5127,13 @@ INSERT INTO ACHILLES_HEEL_results (
 	ACHILLES_HEEL_warning
 	)
 SELECT DISTINCT ord1.analysis_id,
-	'ERROR: ' + cast(ord1.analysis_id as VARCHAR) + '-' + oa1.analysis_name + '; max (value=' + cast(ord1.max_value as VARCHAR) + ' should not be > 10' AS ACHILLES_HEEL_warning
+  'ERROR: ' + cast(ord1.analysis_id as VARCHAR) + '-' + oa1.analysis_name + ' (count = ' + cast(COUNT_BIG(ord1.max_value) as VARCHAR) + '); value should not be > 10' AS ACHILLES_HEEL_warning
 FROM ACHILLES_results_dist ord1
 INNER JOIN ACHILLES_analysis oa1
 	ON ord1.analysis_id = oa1.analysis_id
 WHERE ord1.analysis_id IN (716)
-	AND ord1.max_value > 10;
+	AND ord1.max_value > 10
+GROUP BY ord1.analysis_id, oa1.analysis_name;
 
 --WARNING: quantity > 600
 INSERT INTO ACHILLES_HEEL_results (
@@ -5137,10 +5141,11 @@ INSERT INTO ACHILLES_HEEL_results (
 	ACHILLES_HEEL_warning
 	)
 SELECT DISTINCT ord1.analysis_id,
-	'ERROR: ' + cast(ord1.analysis_id as VARCHAR) + '-' + oa1.analysis_name + '; max (value=' + cast(ord1.max_value as VARCHAR) + ' should not be > 600' AS ACHILLES_HEEL_warning
+  'ERROR: ' + cast(ord1.analysis_id as VARCHAR) + '-' + oa1.analysis_name + ' (count = ' + cast(count(ord1.max_value) as VARCHAR) + '); value should not be > 600' AS ACHILLES_HEEL_warning
 FROM ACHILLES_results_dist ord1
 INNER JOIN ACHILLES_analysis oa1
 	ON ord1.analysis_id = oa1.analysis_id
 WHERE ord1.analysis_id IN (717)
-	AND ord1.max_value > 600;
+	AND ord1.max_value > 600
+GROUP BY ord1.analysis_id, oa1.analysis_name;
 
