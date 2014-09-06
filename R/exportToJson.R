@@ -509,7 +509,7 @@ generateAchillesHeelReport <- function(conn, dbms, cdmSchema, outputPath) {
                                                cdmSchema = cdmSchema
   )  
 
-  output$MESSAGES <- querySql(conn,dbms,queryAchillesHeel)
+  output$MESSAGES <- querySql(conn,queryAchillesHeel)
   jsonOutput = toJSON(output)
   write(jsonOutput, file=paste(outputPath, "/achillesheel.json", sep=""))  
 }
@@ -525,7 +525,7 @@ generateDrugEraTreemap <- function(conn, dbms,cdmSchema, outputPath) {
                                          cdmSchema = cdmSchema
   )  
   
-  dataDrugEraTreemap <- querySql(conn,dbms,queryDrugEraTreemap) 
+  dataDrugEraTreemap <- querySql(conn,queryDrugEraTreemap) 
   
   write(toJSON(dataDrugEraTreemap,method="C"),paste(outputPath, "/drugera_treemap.json", sep=''))
   progress = progress + 1
@@ -545,7 +545,7 @@ generateDrugTreemap <- function(conn, dbms,cdmSchema, outputPath) {
                                               cdmSchema = cdmSchema
   )  
   
-  dataDrugTreemap <- querySql(conn,dbms,queryDrugTreemap) 
+  dataDrugTreemap <- querySql(conn,queryDrugTreemap) 
   
   write(toJSON(dataDrugTreemap,method="C"),paste(outputPath, "/drug_treemap.json", sep=''))
   progress = progress + 1
@@ -565,7 +565,7 @@ generateConditionTreemap <- function(conn, dbms, cdmSchema, outputPath) {
                                               cdmSchema = cdmSchema
   )  
   
-  dataConditionTreemap <- querySql(conn,dbms,queryConditionTreemap) 
+  dataConditionTreemap <- querySql(conn,queryConditionTreemap) 
   
   write(toJSON(dataConditionTreemap,method="C"),paste(outputPath, "/condition_treemap.json", sep=''))
   progress = progress + 1
@@ -585,7 +585,7 @@ generateConditionEraTreemap <- function(conn, dbms, cdmSchema, outputPath) {
                                               cdmSchema = cdmSchema
   )  
   
-  dataConditionEraTreemap <- querySql(conn,dbms,queryConditionEraTreemap) 
+  dataConditionEraTreemap <- querySql(conn,queryConditionEraTreemap) 
   
   write(toJSON(dataConditionEraTreemap,method="C"),paste(outputPath, "/conditionera_treemap.json", sep=''))
   progress = progress + 1
@@ -643,10 +643,10 @@ generateConditionReports <- function(conn, dbms, cdmSchema, outputPath) {
                                                  cdmSchema = cdmSchema
   )
   
-  dataPrevalenceByGenderAgeYear <- querySql(conn,dbms,queryPrevalenceByGenderAgeYear) 
-  dataPrevalenceByMonth <- querySql(conn,dbms,queryPrevalenceByMonth)  
-  dataConditionsByType <- querySql(conn,dbms,queryConditionsByType)    
-  dataAgeAtFirstDiagnosis <- querySql(conn,dbms,queryAgeAtFirstDiagnosis)    
+  dataPrevalenceByGenderAgeYear <- querySql(conn,queryPrevalenceByGenderAgeYear) 
+  dataPrevalenceByMonth <- querySql(conn,queryPrevalenceByMonth)  
+  dataConditionsByType <- querySql(conn,queryConditionsByType)    
+  dataAgeAtFirstDiagnosis <- querySql(conn,queryAgeAtFirstDiagnosis)    
   
   
   buildConditionReport <- function(concept_id) {
@@ -720,10 +720,10 @@ generateConditionEraReports <- function(conn, dbms, cdmSchema, outputPath) {
                                                  cdmSchema = cdmSchema
   )  
   
-  dataPrevalenceByGenderAgeYear <- querySql(conn,dbms,queryPrevalenceByGenderAgeYear) 
-  dataPrevalenceByMonth <- querySql(conn,dbms,queryPrevalenceByMonth)  
-  dataLengthOfEra <- querySql(conn,dbms,queryLengthOfEra)    
-  dataAgeAtFirstDiagnosis <- querySql(conn,dbms,queryAgeAtFirstDiagnosis)    
+  dataPrevalenceByGenderAgeYear <- querySql(conn,queryPrevalenceByGenderAgeYear) 
+  dataPrevalenceByMonth <- querySql(conn,queryPrevalenceByMonth)  
+  dataLengthOfEra <- querySql(conn,queryLengthOfEra)    
+  dataAgeAtFirstDiagnosis <- querySql(conn,queryAgeAtFirstDiagnosis)    
   
 
   buildConditionEraReport <- function(concept_id) {
@@ -798,10 +798,10 @@ generateDrugEraReports <- function(conn, dbms, cdmSchema, outputPath) {
                                          cdmSchema = cdmSchema
   )
   
-  dataAgeAtFirstExposure <- querySql(conn,dbms,queryAgeAtFirstExposure) 
-  dataPrevalenceByGenderAgeYear <- querySql(conn,dbms,queryPrevalenceByGenderAgeYear) 
-  dataPrevalenceByMonth <- querySql(conn,dbms,queryPrevalenceByMonth)
-  dataLengthOfEra <- querySql(conn,dbms,queryLengthOfEra)
+  dataAgeAtFirstExposure <- querySql(conn,queryAgeAtFirstExposure) 
+  dataPrevalenceByGenderAgeYear <- querySql(conn,queryPrevalenceByGenderAgeYear) 
+  dataPrevalenceByMonth <- querySql(conn,queryPrevalenceByMonth)
+  dataLengthOfEra <- querySql(conn,queryLengthOfEra)
   
   buildDrugEraReport <- function(concept_id) {
     report <- {}
@@ -892,13 +892,13 @@ generateDrugReports <- function(conn, dbms, cdmSchema, outputPath) {
                                                        cdmSchema = cdmSchema
   )
 
-  dataAgeAtFirstExposure <- querySql(conn,dbms,queryAgeAtFirstExposure) 
-  dataDaysSupplyDistribution <- querySql(conn,dbms,queryDaysSupplyDistribution) 
-  dataDrugsByType <- querySql(conn,dbms,queryDrugsByType) 
-  dataPrevalenceByGenderAgeYear <- querySql(conn,dbms,queryPrevalenceByGenderAgeYear) 
-  dataPrevalenceByMonth <- querySql(conn,dbms,queryPrevalenceByMonth)
-  dataQuantityDistribution <- querySql(conn,dbms,queryQuantityDistribution) 
-  dataRefillsDistribution <- querySql(conn,dbms,queryRefillsDistribution) 
+  dataAgeAtFirstExposure <- querySql(conn,queryAgeAtFirstExposure) 
+  dataDaysSupplyDistribution <- querySql(conn,queryDaysSupplyDistribution) 
+  dataDrugsByType <- querySql(conn,queryDrugsByType) 
+  dataPrevalenceByGenderAgeYear <- querySql(conn,queryPrevalenceByGenderAgeYear) 
+  dataPrevalenceByMonth <- querySql(conn,queryPrevalenceByMonth)
+  dataQuantityDistribution <- querySql(conn,queryQuantityDistribution) 
+  dataRefillsDistribution <- querySql(conn,queryRefillsDistribution) 
   
   buildDrugReport <- function(concept_id) {
     report <- {}
@@ -938,7 +938,7 @@ generateProcedureTreemap <- function(conn, dbms, cdmSchema, outputPath) {
                                               cdmSchema = cdmSchema
   )  
   
-  dataProcedureTreemap <- querySql(conn,dbms,queryProcedureTreemap) 
+  dataProcedureTreemap <- querySql(conn,queryProcedureTreemap) 
   
   write(toJSON(dataProcedureTreemap,method="C"),paste(outputPath, "/procedure_treemap.json", sep=''))
   progress = progress + 1
@@ -995,10 +995,10 @@ generateProcedureReports <- function(conn, dbms, cdmSchema, outputPath) {
                                                  cdmSchema = cdmSchema
   )
   
-  dataPrevalenceByGenderAgeYear <- querySql(conn,dbms,queryPrevalenceByGenderAgeYear) 
-  dataPrevalenceByMonth <- querySql(conn,dbms,queryPrevalenceByMonth)  
-  dataProceduresByType <- querySql(conn,dbms,queryProceduresByType)    
-  dataAgeAtFirstOccurrence <- querySql(conn,dbms,queryAgeAtFirstOccurrence)    
+  dataPrevalenceByGenderAgeYear <- querySql(conn,queryPrevalenceByGenderAgeYear) 
+  dataPrevalenceByMonth <- querySql(conn,queryPrevalenceByMonth)  
+  dataProceduresByType <- querySql(conn,queryProceduresByType)    
+  dataAgeAtFirstOccurrence <- querySql(conn,queryAgeAtFirstOccurrence)    
   
   buildProcedureReport <- function(concept_id) {
     report <- {}
@@ -1042,7 +1042,7 @@ generatePersonReport <- function(conn, dbms, cdmSchema, outputPath)
                                     cdmSchema = cdmSchema
   )
   
-  personSummaryData <- querySql(conn,dbms,renderedSql)
+  personSummaryData <- querySql(conn,renderedSql)
   progress = progress + 1
   setTxtProgressBar(progressBar, progress)
   
@@ -1057,7 +1057,7 @@ generatePersonReport <- function(conn, dbms, cdmSchema, outputPath)
                                     dbms = dbms,
                                     cdmSchema = cdmSchema
   )
-  genderData <- querySql(conn,dbms,renderedSql)
+  genderData <- querySql(conn,renderedSql)
   progress = progress + 1
   setTxtProgressBar(progressBar, progress)
   
@@ -1072,7 +1072,7 @@ generatePersonReport <- function(conn, dbms, cdmSchema, outputPath)
                                     dbms = dbms,
                                     cdmSchema = cdmSchema
   )
-  raceData <- querySql(conn,dbms,renderedSql)
+  raceData <- querySql(conn,renderedSql)
   progress = progress + 1
   setTxtProgressBar(progressBar, progress)
   
@@ -1087,7 +1087,7 @@ generatePersonReport <- function(conn, dbms, cdmSchema, outputPath)
                                     dbms = dbms,
                                     cdmSchema = cdmSchema
   )
-  ethnicityData <- querySql(conn,dbms,renderedSql)
+  ethnicityData <- querySql(conn,renderedSql)
   progress = progress + 1
   setTxtProgressBar(progressBar, progress)
   
@@ -1104,7 +1104,7 @@ generatePersonReport <- function(conn, dbms, cdmSchema, outputPath)
                                     dbms = dbms,
                                     cdmSchema = cdmSchema
   )
-  birthYearStats <- querySql(conn,dbms,renderedSql)
+  birthYearStats <- querySql(conn,renderedSql)
   progress = progress + 1
   setTxtProgressBar(progressBar, progress)
   
@@ -1118,7 +1118,7 @@ generatePersonReport <- function(conn, dbms, cdmSchema, outputPath)
                                     dbms = dbms,
                                     cdmSchema = cdmSchema
   )
-  birthYearData <- querySql(conn,dbms,renderedSql)
+  birthYearData <- querySql(conn,renderedSql)
   progress = progress + 1
   setTxtProgressBar(progressBar, progress)
   
@@ -1160,7 +1160,7 @@ generateObservationPeriodReport <- function(conn, dbms, cdmSchema, outputPath)
                                     dbms = dbms,
                                     cdmSchema = cdmSchema
   )
-  ageAtFirstObservationData <- querySql(conn,dbms,renderedSql)
+  ageAtFirstObservationData <- querySql(conn,renderedSql)
   progress = progress + 1
   setTxtProgressBar(progressBar, progress)
   ageAtFirstObservationHist$DATA = ageAtFirstObservationData
@@ -1176,7 +1176,7 @@ generateObservationPeriodReport <- function(conn, dbms, cdmSchema, outputPath)
                                     dbms = dbms,
                                     cdmSchema = cdmSchema
   )
-  ageByGenderData <- querySql(conn,dbms,renderedSql)
+  ageByGenderData <- querySql(conn,renderedSql)
   progress = progress + 1
   setTxtProgressBar(progressBar, progress)
   output$AGE_BY_GENDER = ageByGenderData
@@ -1194,7 +1194,7 @@ generateObservationPeriodReport <- function(conn, dbms, cdmSchema, outputPath)
                                     cdmSchema = cdmSchema
   )
   
-  observationLengthStats <- querySql(conn,dbms,renderedSql)
+  observationLengthStats <- querySql(conn,renderedSql)
   progress = progress + 1
   setTxtProgressBar(progressBar, progress)
   observationLengthHist$MIN = observationLengthStats$MIN_VALUE
@@ -1207,7 +1207,7 @@ generateObservationPeriodReport <- function(conn, dbms, cdmSchema, outputPath)
                                     dbms = dbms,
                                     cdmSchema = cdmSchema
   )
-  observationLengthData <- querySql(conn,dbms,renderedSql)
+  observationLengthData <- querySql(conn,renderedSql)
   progress = progress + 1
   setTxtProgressBar(progressBar, progress)
   observationLengthHist$DATA <- observationLengthData
@@ -1227,7 +1227,7 @@ generateObservationPeriodReport <- function(conn, dbms, cdmSchema, outputPath)
                                     cdmSchema = cdmSchema
   )  
   
-  cumulativeDurationData <- querySql(conn,dbms,renderedSql)
+  cumulativeDurationData <- querySql(conn,renderedSql)
   progress = progress + 1
   setTxtProgressBar(progressBar, progress)
   output$CUMULATIVE_DURATION = cumulativeDurationData
@@ -1242,7 +1242,7 @@ generateObservationPeriodReport <- function(conn, dbms, cdmSchema, outputPath)
                                     dbms = dbms,
                                     cdmSchema = cdmSchema
   )
-  opLengthByGenderData <- querySql(conn,dbms,renderedSql)
+  opLengthByGenderData <- querySql(conn,renderedSql)
   progress = progress + 1
   setTxtProgressBar(progressBar, progress)
   output$OBSERVATION_PERIOD_LENGTH_BY_GENDER = opLengthByGenderData
@@ -1257,7 +1257,7 @@ generateObservationPeriodReport <- function(conn, dbms, cdmSchema, outputPath)
                                     dbms = dbms,
                                     cdmSchema = cdmSchema
   )
-  opLengthByAgeData <- querySql(conn,dbms,renderedSql)
+  opLengthByAgeData <- querySql(conn,renderedSql)
   progress = progress + 1
   setTxtProgressBar(progressBar, progress)
   output$OBSERVATION_PERIOD_LENGTH_BY_AGE = opLengthByAgeData
@@ -1273,7 +1273,7 @@ generateObservationPeriodReport <- function(conn, dbms, cdmSchema, outputPath)
                                     dbms = dbms,
                                     cdmSchema = cdmSchema
   )
-  observedByYearStats <- querySql(conn,dbms,renderedSql)
+  observedByYearStats <- querySql(conn,renderedSql)
   progress = progress + 1
   setTxtProgressBar(progressBar, progress)
   observedByYearHist$MIN = observedByYearStats$MIN_VALUE
@@ -1287,7 +1287,7 @@ generateObservationPeriodReport <- function(conn, dbms, cdmSchema, outputPath)
                                     cdmSchema = cdmSchema
   )
   
-  observedByYearData <- querySql(conn,dbms,renderedSql)
+  observedByYearData <- querySql(conn,renderedSql)
   progress = progress + 1
   setTxtProgressBar(progressBar, progress)
   observedByYearHist$DATA <- observedByYearData
@@ -1306,7 +1306,7 @@ generateObservationPeriodReport <- function(conn, dbms, cdmSchema, outputPath)
                                     dbms = dbms,
                                     cdmSchema = cdmSchema
   )
-  observedByMonth <- querySql(conn,dbms,renderedSql)
+  observedByMonth <- querySql(conn,renderedSql)
   progress = progress + 1
   setTxtProgressBar(progressBar, progress)
   
@@ -1322,7 +1322,7 @@ generateObservationPeriodReport <- function(conn, dbms, cdmSchema, outputPath)
                                     dbms = dbms,
                                     cdmSchema = cdmSchema
   )
-  personPeriodsData <- querySql(conn,dbms,renderedSql)
+  personPeriodsData <- querySql(conn,renderedSql)
   progress = progress + 1
   setTxtProgressBar(progressBar, progress)
   output$PERSON_PERIODS_DATA = personPeriodsData
@@ -1387,7 +1387,7 @@ generateDataDensityReport <- function(conn, dbms,cdmSchema, outputPath)
                                     cdmSchema = cdmSchema
   )  
   
-  totalRecordsData <- querySql(conn,dbms,renderedSql)
+  totalRecordsData <- querySql(conn,renderedSql)
   progress = progress + 1
   setTxtProgressBar(progressBar, progress)
   output$TOTAL_RECORDS = totalRecordsData
@@ -1404,7 +1404,7 @@ generateDataDensityReport <- function(conn, dbms,cdmSchema, outputPath)
                                     cdmSchema = cdmSchema
   )  
   
-  recordsPerPerson <- querySql(conn,dbms,renderedSql)
+  recordsPerPerson <- querySql(conn,renderedSql)
   progress = progress + 1
   setTxtProgressBar(progressBar, progress)
   output$RECORDS_PER_PERSON = recordsPerPerson
@@ -1420,7 +1420,7 @@ generateDataDensityReport <- function(conn, dbms,cdmSchema, outputPath)
                                     cdmSchema = cdmSchema
   )  
 
-  conceptsPerPerson <- querySql(conn,dbms,renderedSql)
+  conceptsPerPerson <- querySql(conn,renderedSql)
   progress = progress + 1
   setTxtProgressBar(progressBar, progress)
   output$CONCEPTS_PER_PERSON = conceptsPerPerson
@@ -1443,7 +1443,7 @@ generateObservationTreemap <- function(conn, dbms, cdmSchema, outputPath) {
                                               cdmSchema = cdmSchema
   )
   
-  dataObservationTreemap <- querySql(conn,dbms,queryObservationTreemap) 
+  dataObservationTreemap <- querySql(conn,queryObservationTreemap) 
   
   write(toJSON(dataObservationTreemap,method="C"),paste(outputPath, "/observation_treemap.json", sep=''))
   progress = progress + 1
@@ -1532,15 +1532,15 @@ generateObservationReports <- function(conn, dbms, cdmSchema, outputPath)
                                                     cdmSchema = cdmSchema
   )
   
-  dataPrevalenceByGenderAgeYear <- querySql(conn,dbms,queryPrevalenceByGenderAgeYear) 
-  dataPrevalenceByMonth <- querySql(conn,dbms,queryPrevalenceByMonth)  
-  dataObservationsByType <- querySql(conn,dbms,queryObservationsByType)    
-  dataAgeAtFirstOccurrence <- querySql(conn,dbms,queryAgeAtFirstOccurrence)
-  dataRecordsByUnit <- querySql(conn,dbms,queryRecordsByUnit)
-  dataObservationValueDistribution <- querySql(conn,dbms,queryObservationValueDistribution)
-  dataLowerLimitDistribution <- querySql(conn,dbms,queryLowerLimitDistribution)
-  dataUpperLimitDistribution <- querySql(conn,dbms,queryUpperLimitDistribution)
-  dataValuesRelativeToNorm <- querySql(conn,dbms,queryValuesRelativeToNorm)
+  dataPrevalenceByGenderAgeYear <- querySql(conn,queryPrevalenceByGenderAgeYear) 
+  dataPrevalenceByMonth <- querySql(conn,queryPrevalenceByMonth)  
+  dataObservationsByType <- querySql(conn,queryObservationsByType)    
+  dataAgeAtFirstOccurrence <- querySql(conn,queryAgeAtFirstOccurrence)
+  dataRecordsByUnit <- querySql(conn,queryRecordsByUnit)
+  dataObservationValueDistribution <- querySql(conn,queryObservationValueDistribution)
+  dataLowerLimitDistribution <- querySql(conn,queryLowerLimitDistribution)
+  dataUpperLimitDistribution <- querySql(conn,queryUpperLimitDistribution)
+  dataValuesRelativeToNorm <- querySql(conn,queryValuesRelativeToNorm)
   
   buildObservationReport <- function(concept_id) {
     report <- {}
@@ -1584,7 +1584,7 @@ generateVisitTreemap <- function(conn, dbms, cdmSchema, outputPath){
                                                 cdmSchema = cdmSchema
   )
   
-  dataVisitTreemap <- querySql(conn,dbms,queryVisitTreemap) 
+  dataVisitTreemap <- querySql(conn,queryVisitTreemap) 
   
   write(toJSON(dataVisitTreemap,method="C"),paste(outputPath, "/visit_treemap.json", sep=''))
   progress = progress + 1
@@ -1641,10 +1641,10 @@ generateVisitReports <- function(conn, dbms, cdmSchema, outputPath){
                                                   cdmSchema = cdmSchema
   )
   
-  dataPrevalenceByGenderAgeYear <- querySql(conn,dbms,queryPrevalenceByGenderAgeYear) 
-  dataPrevalenceByMonth <- querySql(conn,dbms,queryPrevalenceByMonth)  
-  dataVisitDurationByType <- querySql(conn,dbms,queryVisitDurationByType)    
-  dataAgeAtFirstOccurrence <- querySql(conn,dbms,queryAgeAtFirstOccurrence)    
+  dataPrevalenceByGenderAgeYear <- querySql(conn,queryPrevalenceByGenderAgeYear) 
+  dataPrevalenceByMonth <- querySql(conn,queryPrevalenceByMonth)  
+  dataVisitDurationByType <- querySql(conn,queryVisitDurationByType)    
+  dataAgeAtFirstOccurrence <- querySql(conn,queryAgeAtFirstOccurrence)    
   
   buildVisitReport <- function(concept_id) {
     report <- {}
@@ -1688,7 +1688,7 @@ generateDeathReports <- function(conn, dbms, cdmSchema, outputPath){
                                     cdmSchema = cdmSchema
   )  
   
-  prevalenceByGenderAgeYearData <- querySql(conn,dbms,renderedSql)
+  prevalenceByGenderAgeYearData <- querySql(conn,renderedSql)
   progress = progress + 1
   setTxtProgressBar(progressBar, progress)
   output$PREVALENCE_BY_GENDER_AGE_YEAR = prevalenceByGenderAgeYearData
@@ -1705,7 +1705,7 @@ generateDeathReports <- function(conn, dbms, cdmSchema, outputPath){
                                     cdmSchema = cdmSchema
   )  
   
-  prevalenceByMonthData <- querySql(conn,dbms,renderedSql)
+  prevalenceByMonthData <- querySql(conn,renderedSql)
   progress = progress + 1
   setTxtProgressBar(progressBar, progress)
   output$PREVALENCE_BY_MONTH = prevalenceByMonthData
@@ -1721,7 +1721,7 @@ generateDeathReports <- function(conn, dbms, cdmSchema, outputPath){
                                     cdmSchema = cdmSchema
   )  
   
-  deathByTypeData <- querySql(conn,dbms,renderedSql)
+  deathByTypeData <- querySql(conn,renderedSql)
   progress = progress + 1
   setTxtProgressBar(progressBar, progress)
   output$DEATH_BY_TYPE = deathByTypeData
@@ -1737,7 +1737,7 @@ generateDeathReports <- function(conn, dbms, cdmSchema, outputPath){
                                     cdmSchema = cdmSchema
   )  
   
-  ageAtDeathData <- querySql(conn,dbms,renderedSql)
+  ageAtDeathData <- querySql(conn,renderedSql)
   progress = progress + 1
   setTxtProgressBar(progressBar, progress)
   output$AGE_AT_DEATH = ageAtDeathData

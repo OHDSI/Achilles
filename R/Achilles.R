@@ -66,7 +66,7 @@ achilles <- function (connectionDetails, cdmSchema, resultsSchema, sourceName = 
   conn <- connect(connectionDetails)
   
   writeLines("Executing multiple queries. This could take a while")
-  executeSql(conn,connectionDetails$dbms,renderedSql)
+  executeSql(conn,renderedSql)
   writeLines(paste("Done. Results can now be found in",resultsSchema))
   
   dummy <- dbDisconnect(conn)
