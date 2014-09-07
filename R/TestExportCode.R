@@ -24,7 +24,7 @@ testExportCode <- function(){
   
   #Test on Oracle sample
   setwd("c:/temp")
-  connectionDetails <- createConnectionDetails(dbms="oracle", server="xe", user="system",password=pw)
+  connectionDetails <- createConnectionDetails(dbms="oracle", server="xe", user="system",password="OHDSI")
   exportToJson(connectionDetails, cdmSchema = "cdm4_sim", resultsSchema = "scratch",outputPath = "c:/temp/Oracle")  
   #exportToJson(connectionDetails, cdmSchema = "cdm4_sim", resultsSchema = "scratch",outputPath = "c:/temp/Oracle", report = c("CONDITION_ERA")) 
   
