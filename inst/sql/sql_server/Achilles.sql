@@ -1452,7 +1452,7 @@ where vo1.care_site_id is not null
 
 --{211 IN (@list_of_analysis_ids)}?{
 -- 211	Distribution of length of stay by visit_concept_id
-insert into CDM_TRUVEN_CCAE.dbo.ACHILLES_results_dist (analysis_id, stratum_1, count_value, min_value, max_value, avg_value, stdev_value, median_value, p10_value, p25_value, p75_value, p90_value)
+insert into @results_schema.dbo.ACHILLES_results_dist (analysis_id, stratum_1, count_value, min_value, max_value, avg_value, stdev_value, median_value, p10_value, p25_value, p75_value, p90_value)
 select 211 as analysis_id,
        place_of_service_concept_id as stratum_1,
        COUNT_BIG(count_value) as count_value,
