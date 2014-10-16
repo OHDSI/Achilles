@@ -850,7 +850,7 @@ group by p1.gender_concept_id, year(op1.index_date) - p1.YEAR_OF_BIRTH;
 -- 103	Distribution of age at first observation period
 insert into @results_schema.dbo.ACHILLES_results_dist (analysis_id, count_value, min_value, max_value, avg_value, stdev_value, median_value, p10_value, p25_value, p75_value, p90_value)
 select 103 as analysis_id,
-	COUNT_BIG(count_value) as count_value,
+  COUNT_BIG(count_value) as count_value,
 	min(count_value) as min_value,
 	max(count_value) as max_value,
 	avg(1.0*count_value) as avg_value,
@@ -862,12 +862,13 @@ select 103 as analysis_id,
 	max(case when p1<=0.90 then count_value else -9999 end) as p90_value
 from
 (
-select year(op1.index_date) - p1.YEAR_OF_BIRTH as count_value,
-	1.0*(row_number() over (order by year(op1.index_date) - p1.YEAR_OF_BIRTH))/(COUNT_BIG(year(op1.index_date) - p1.YEAR_OF_BIRTH) over ()+1) as p1
-from
-	PERSON p1
-	inner join (select person_id, MIN(observation_period_start_date) as index_date from OBSERVATION_PERIOD group by PERSON_ID) op1
-	on p1.PERSON_ID = op1.PERSON_ID
+	select year(op1.index_date) - p1.YEAR_OF_BIRTH as count_value,
+		1.0*(row_number() over (order by year(op1.index_date) - p1.YEAR_OF_BIRTH))/(COUNT_BIG(*) over () + 1) as p1
+	from PERSON p1
+		join 
+		(
+			select person_id, MIN(observation_period_start_date) as index_date from OBSERVATION_PERIOD group by PERSON_ID
+		)  op1 on p1.PERSON_ID = op1.PERSON_ID
 ) t1
 ;
 --}
@@ -879,7 +880,7 @@ from
 -- 104	Distribution of age at first observation period by gender
 insert into @results_schema.dbo.ACHILLES_results_dist (analysis_id, stratum_1, count_value, min_value, max_value, avg_value, stdev_value, median_value, p10_value, p25_value, p75_value, p90_value)
 select 104 as analysis_id,
-	gender_concept_id,
+  gender_concept_id,
 	COUNT_BIG(count_value) as count_value,
 	min(count_value) as min_value,
 	max(count_value) as max_value,
@@ -892,26 +893,22 @@ select 104 as analysis_id,
 	max(case when p1<=0.90 then count_value else -9999 end) as p90_value
 from
 (
-select p1.gender_concept_id,
-	year(op1.index_date) - p1.YEAR_OF_BIRTH as count_value,
-	1.0*(row_number() over (partition by p1.gender_concept_id order by year(op1.index_date) - p1.YEAR_OF_BIRTH))/(COUNT_BIG(year(op1.index_date) - p1.YEAR_OF_BIRTH) over (partition by p1.gender_concept_id)+1) as p1
-from
-	PERSON p1
-	inner join (select person_id, MIN(observation_period_start_date) as index_date from OBSERVATION_PERIOD group by PERSON_ID) op1
-	on p1.PERSON_ID = op1.PERSON_ID
+	select p1.gender_concept_id,
+		year(op1.index_date) - p1.YEAR_OF_BIRTH as count_value,
+		1.0*(row_number() over (partition by p1.gender_concept_id order by year(op1.index_date) - p1.YEAR_OF_BIRTH))/(COUNT_BIG(*) over (partition by p1.gender_concept_id)+1) as p1
+	from
+		PERSON p1
+		inner join (select person_id, MIN(observation_period_start_date) as index_date from OBSERVATION_PERIOD group by PERSON_ID) op1 on p1.PERSON_ID = op1.PERSON_ID
 ) t1
 group by gender_concept_id
 ;
 --}
 
-
-
-
 --{105 IN (@list_of_analysis_ids)}?{
 -- 105	Length of observation (days) of first observation period
 insert into @results_schema.dbo.ACHILLES_results_dist (analysis_id, count_value, min_value, max_value, avg_value, stdev_value, median_value, p10_value, p25_value, p75_value, p90_value)
 select 105 as analysis_id,
-	COUNT_BIG(count_value) as count_value,
+  COUNT_BIG(count_value) as count_value,
 	min(count_value) as min_value,
 	max(count_value) as max_value,
 	avg(1.0*count_value) as avg_value,
@@ -924,7 +921,7 @@ select 105 as analysis_id,
 from
 (
 select DATEDIFF(dd,op1.observation_period_start_date, op1.observation_period_end_date) as count_value,
-	1.0*(row_number() over (order by DATEDIFF(dd,op1.observation_period_start_date, op1.observation_period_end_date)))/(COUNT_BIG(DATEDIFF(dd,op1.observation_period_start_date, op1.observation_period_end_date)) over ()+1) as p1
+	1.0*(row_number() over (order by DATEDIFF(dd,op1.observation_period_start_date, op1.observation_period_end_date)))/(COUNT_BIG(*) over() + 1) as p1
 from PERSON p1
 	inner join 
 	(select person_id, 
@@ -932,8 +929,7 @@ from PERSON p1
 		OBSERVATION_PERIOD_END_DATE, 
 		ROW_NUMBER() over (PARTITION by person_id order by observation_period_start_date asc) as rn1
 		 from OBSERVATION_PERIOD
-	) op1
-	on p1.PERSON_ID = op1.PERSON_ID
+	) op1 on p1.PERSON_ID = op1.PERSON_ID
 	where op1.rn1 = 1
 ) t1
 ;
@@ -944,7 +940,7 @@ from PERSON p1
 -- 106	Length of observation (days) of first observation period by gender
 insert into @results_schema.dbo.ACHILLES_results_dist (analysis_id, stratum_1, count_value, min_value, max_value, avg_value, stdev_value, median_value, p10_value, p25_value, p75_value, p90_value)
 select 106 as analysis_id,
-	gender_concept_id as stratum_1,
+  gender_concept_id as stratum_1,
 	COUNT_BIG(count_value) as count_value,
 	min(count_value) as min_value,
 	max(count_value) as max_value,
@@ -959,7 +955,7 @@ from
 (
 select p1.gender_concept_id,
 	DATEDIFF(dd,op1.observation_period_start_date, op1.observation_period_end_date) as count_value,
-	1.0*(row_number() over (partition by p1.gender_concept_id order by DATEDIFF(dd,op1.observation_period_start_date, op1.observation_period_end_date)))/(COUNT_BIG(DATEDIFF(dd,op1.observation_period_start_date, op1.observation_period_end_date)) over (partition by p1.gender_concept_id)+1) as p1
+	1.0*(row_number() over (partition by p1.gender_concept_id order by DATEDIFF(dd,op1.observation_period_start_date, op1.observation_period_end_date)))/(COUNT_BIG(*) over (partition by p1.gender_concept_id) + 1) as p1
 from PERSON p1
 	inner join 
 	(select person_id, 
@@ -967,8 +963,7 @@ from PERSON p1
 		OBSERVATION_PERIOD_END_DATE, 
 		ROW_NUMBER() over (PARTITION by person_id order by observation_period_start_date asc) as rn1
 		 from OBSERVATION_PERIOD
-	) op1
-	on p1.PERSON_ID = op1.PERSON_ID
+	) op1 on p1.PERSON_ID = op1.PERSON_ID
 	where op1.rn1 = 1
 ) t1
 group by gender_concept_id
@@ -981,7 +976,7 @@ group by gender_concept_id
 -- 107	Length of observation (days) of first observation period by age decile
 insert into @results_schema.dbo.ACHILLES_results_dist (analysis_id, stratum_1, count_value, min_value, max_value, avg_value, stdev_value, median_value, p10_value, p25_value, p75_value, p90_value)
 select 107 as analysis_id,
-	age_decile as stratum_1,
+  age_decile as stratum_1,
 	COUNT_BIG(count_value) as count_value,
 	min(count_value) as min_value,
 	max(count_value) as max_value,
@@ -996,7 +991,7 @@ from
 (
 select floor((year(op1.OBSERVATION_PERIOD_START_DATE) - p1.YEAR_OF_BIRTH)/10) as age_decile,
 	DATEDIFF(dd,op1.observation_period_start_date, op1.observation_period_end_date) as count_value,
-	1.0*(row_number() over (partition by floor((year(op1.OBSERVATION_PERIOD_START_DATE) - p1.YEAR_OF_BIRTH)/10) order by DATEDIFF(dd,op1.observation_period_start_date, op1.observation_period_end_date)))/(COUNT_BIG(DATEDIFF(dd,op1.observation_period_start_date, op1.observation_period_end_date)) over (partition by floor((year(op1.OBSERVATION_PERIOD_START_DATE) - p1.YEAR_OF_BIRTH)/10))+1) as p1
+	1.0*(row_number() over (partition by floor((year(op1.OBSERVATION_PERIOD_START_DATE) - p1.YEAR_OF_BIRTH)/10) order by DATEDIFF(dd,op1.observation_period_start_date, op1.observation_period_end_date)))/(COUNT_BIG(*) over (partition by floor((year(op1.OBSERVATION_PERIOD_START_DATE) - p1.YEAR_OF_BIRTH)/10))+1) as p1
 from PERSON p1
 	inner join 
 	(select person_id, 
@@ -1004,17 +999,12 @@ from PERSON p1
 		OBSERVATION_PERIOD_END_DATE, 
 		ROW_NUMBER() over (PARTITION by person_id order by observation_period_start_date asc) as rn1
 		 from OBSERVATION_PERIOD
-	) op1
-	on p1.PERSON_ID = op1.PERSON_ID
-	where op1.rn1 = 1
+	) op1 on p1.PERSON_ID = op1.PERSON_ID
+where op1.rn1 = 1
 ) t1
 group by age_decile
 ;
 --}
-
-
-
-
 
 
 --{108 IN (@list_of_analysis_ids)}?{
@@ -1322,7 +1312,7 @@ group by vo1.place_of_service_concept_id,
 -- 203	Number of distinct visit occurrence concepts per person
 insert into @results_schema.dbo.ACHILLES_results_dist (analysis_id, count_value, min_value, max_value, avg_value, stdev_value, median_value, p10_value, p25_value, p75_value, p90_value)
 select 203 as analysis_id,
-	COUNT_BIG(count_value) as count_value,
+  COUNT_BIG(count_value) as count_value,
 	min(count_value) as min_value,
 	max(count_value) as max_value,
 	avg(1.0*count_value) as avg_value,
@@ -1334,14 +1324,12 @@ select 203 as analysis_id,
 	max(case when p1<=0.90 then count_value else -9999 end) as p90_value
 from
 (
-select num_visits as count_value,
-	1.0*(row_number() over (order by num_visits))/(COUNT_BIG(num_visits) over ()+1) as p1
-from
-	(
-	select vo1.person_id, COUNT_BIG(distinct vo1.place_of_service_concept_id) as num_visits
-	from
-	visit_occurrence vo1
-	group by vo1.person_id
+	select num_visits as count_value,
+		1.0*(row_number() over (order by num_visits))/(COUNT_BIG(*) over ()+1) as p1
+	from (
+		select vo1.person_id, COUNT_BIG(distinct vo1.place_of_service_concept_id) as num_visits
+		from visit_occurrence vo1
+		group by vo1.person_id
 	) t0
 ) t1
 ;
@@ -1377,7 +1365,7 @@ group by vo1.place_of_service_concept_id,
 -- 206	Distribution of age by visit_concept_id
 insert into @results_schema.dbo.ACHILLES_results_dist (analysis_id, stratum_1, stratum_2, count_value, min_value, max_value, avg_value, stdev_value, median_value, p10_value, p25_value, p75_value, p90_value)
 select 206 as analysis_id,
-	place_of_service_concept_id as stratum_1,
+  place_of_service_concept_id as stratum_1,
 	gender_concept_id as stratum_2,
 	COUNT_BIG(count_value) as count_value,
 	min(count_value) as min_value,
@@ -1391,17 +1379,16 @@ select 206 as analysis_id,
 	max(case when p1<=0.90 then count_value else -9999 end) as p90_value
 from
 (
-select vo1.place_of_service_concept_id,
-	p1.gender_concept_id,
-	vo1.visit_start_year - p1.year_of_birth as count_value,
-	1.0*(row_number() over (partition by vo1.place_of_service_concept_id, p1.gender_concept_id order by vo1.visit_start_year - p1.year_of_birth))/(COUNT_BIG(vo1.visit_start_year - p1.year_of_birth) over (partition by vo1.place_of_service_concept_id, p1.gender_concept_id)+1) as p1
-from person p1
-inner join
-(select person_id, place_of_service_concept_id, min(year(visit_start_date)) as visit_start_year
-from visit_occurrence
-group by person_id, place_of_service_concept_id
-) vo1
-on p1.person_id = vo1.person_id
+	select vo1.place_of_service_concept_id,
+		p1.gender_concept_id,
+		vo1.visit_start_year - p1.year_of_birth as count_value,
+		1.0*(row_number() over (partition by vo1.place_of_service_concept_id, p1.gender_concept_id order by vo1.visit_start_year - p1.year_of_birth))/(COUNT_BIG(*) over (partition by vo1.place_of_service_concept_id, p1.gender_concept_id)+1) as p1
+	from person p1
+		inner join (
+			select person_id, place_of_service_concept_id, min(year(visit_start_date)) as visit_start_year
+			from visit_occurrence
+			group by person_id, place_of_service_concept_id
+		) vo1 on p1.person_id = vo1.person_id
 ) t1
 group by place_of_service_concept_id, gender_concept_id
 ;
@@ -1492,7 +1479,6 @@ from
        ) Q
 ) t1
 group by place_of_service_concept_id
-;
 --}
 
 
@@ -1599,7 +1585,7 @@ group by co1.condition_concept_id,
 -- 403	Number of distinct condition occurrence concepts per person
 insert into @results_schema.dbo.ACHILLES_results_dist (analysis_id, count_value, min_value, max_value, avg_value, stdev_value, median_value, p10_value, p25_value, p75_value, p90_value)
 select 403 as analysis_id,
-	COUNT_BIG(count_value) as count_value,
+  COUNT_BIG(count_value) as count_value,
 	min(count_value) as min_value,
 	max(count_value) as max_value,
 	avg(1.0*count_value) as avg_value,
@@ -1612,7 +1598,7 @@ select 403 as analysis_id,
 from
 (
 select num_conditions as count_value,
-	1.0*(row_number() over (order by num_conditions))/(COUNT_BIG(num_conditions) over ()+1) as p1
+	1.0*(row_number() over (order by num_conditions))/(COUNT_BIG(*) over ()+1) as p1
 from
 	(
 	select co1.person_id, COUNT_BIG(distinct co1.condition_concept_id) as num_conditions
@@ -1666,7 +1652,7 @@ group by co1.condition_CONCEPT_ID,
 -- 406	Distribution of age by condition_concept_id
 insert into @results_schema.dbo.ACHILLES_results_dist (analysis_id, stratum_1, stratum_2, count_value, min_value, max_value, avg_value, stdev_value, median_value, p10_value, p25_value, p75_value, p90_value)
 select 406 as analysis_id,
-	condition_concept_id as stratum_1,
+  condition_concept_id as stratum_1,
 	gender_concept_id as stratum_2,
 	COUNT_BIG(count_value) as count_value,
 	min(count_value) as min_value,
@@ -1680,25 +1666,20 @@ select 406 as analysis_id,
 	max(case when p1<=0.90 then count_value else -9999 end) as p90_value
 from
 (
-select co1.condition_concept_id,
-	p1.gender_concept_id,
-	co1.condition_start_year - p1.year_of_birth as count_value,
-	1.0*(row_number() over (partition by co1.condition_concept_id, p1.gender_concept_id order by co1.condition_start_year - p1.year_of_birth))/(COUNT_BIG(co1.condition_start_year - p1.year_of_birth) over (partition by co1.condition_concept_id, p1.gender_concept_id)+1) as p1
-from person p1
-inner join
-(select person_id, condition_concept_id, min(year(condition_start_date)) as condition_start_year
-from condition_occurrence
-group by person_id, condition_concept_id
-) co1
-on p1.person_id = co1.person_id
+	select co1.condition_concept_id,
+		p1.gender_concept_id,
+		co1.condition_start_year - p1.year_of_birth as count_value,
+		1.0*(row_number() over (partition by co1.condition_concept_id, p1.gender_concept_id order by co1.condition_start_year - p1.year_of_birth))/(COUNT_BIG(*) over (partition by co1.condition_concept_id, p1.gender_concept_id)+1) as p1
+	from person p1
+	inner join (
+		select person_id, condition_concept_id, min(year(condition_start_date)) as condition_start_year
+		from condition_occurrence
+		group by person_id, condition_concept_id
+	) co1 on p1.person_id = co1.person_id
 ) t1
 group by condition_concept_id, gender_concept_id
 ;
 --}
-
-
-
-
 
 
 --{409 IN (@list_of_analysis_ids)}?{
@@ -1885,7 +1866,7 @@ from
 (
 select p1.gender_concept_id,
 	d1.death_year - p1.year_of_birth as count_value,
-	1.0*(row_number() over (partition by p1.gender_concept_id order by d1.death_year - p1.year_of_birth))/(COUNT_BIG(d1.death_year - p1.year_of_birth) over (partition by p1.gender_concept_id)+1) as p1
+	1.0*(row_number() over (partition by p1.gender_concept_id order by d1.death_year - p1.year_of_birth))/(COUNT_BIG(*) over (partition by p1.gender_concept_id)+1) as p1
 from person p1
 inner join
 (select person_id, min(year(death_date)) as death_year
@@ -1935,7 +1916,7 @@ where op1.person_id is null
 -- 511	Distribution of time from death to last condition
 insert into @results_schema.dbo.ACHILLES_results_dist (analysis_id, count_value, min_value, max_value, avg_value, stdev_value, median_value, p10_value, p25_value, p75_value, p90_value)
 select 511 as analysis_id,
-	COUNT_BIG(count_value) as count_value,
+  COUNT_BIG(count_value) as count_value,
 	min(count_value) as min_value,
 	max(count_value) as max_value,
 	avg(1.0*count_value) as avg_value,
@@ -1948,15 +1929,14 @@ select 511 as analysis_id,
 from
 (
 select datediff(dd,d1.death_date, t0.max_date) as count_value,
-	1.0*(row_number() over (order by datediff(dd,d1.death_date, t0.max_date)))/(COUNT_BIG(datediff(dd,d1.death_date, t0.max_date)) over ()+1) as p1
+	1.0*(row_number() over (order by datediff(dd,d1.death_date, t0.max_date)))/(COUNT_BIG(*) over () + 1) as p1
 from death d1
 	inner join
 	(
 		select person_id, max(condition_start_date) as max_date
 		from condition_occurrence
 		group by person_id
-	) t0
-	on d1.person_id = t0.person_id
+	) t0 on d1.person_id = t0.person_id
 ) t1
 ;
 --}
@@ -1979,7 +1959,7 @@ select 512 as analysis_id,
 from
 (
 select datediff(dd,d1.death_date, t0.max_date) as count_value,
-	1.0*(row_number() over (order by datediff(dd,d1.death_date, t0.max_date)))/(COUNT_BIG(datediff(dd,d1.death_date, t0.max_date)) over ()+1) as p1
+	1.0*(row_number() over (order by datediff(dd,d1.death_date, t0.max_date)))/(COUNT_BIG(*) over ()+1) as p1
 from death d1
 	inner join
 	(
@@ -2010,7 +1990,7 @@ select 513 as analysis_id,
 from
 (
 select datediff(dd,d1.death_date, t0.max_date) as count_value,
-	1.0*(row_number() over (order by datediff(dd,d1.death_date, t0.max_date)))/(COUNT_BIG(datediff(dd,d1.death_date, t0.max_date)) over ()+1) as p1
+	1.0*(row_number() over (order by datediff(dd,d1.death_date, t0.max_date)))/(COUNT_BIG(*) over ()+1) as p1
 from death d1
 	inner join
 	(
@@ -2041,7 +2021,7 @@ select 514 as analysis_id,
 from
 (
 select datediff(dd,d1.death_date, t0.max_date) as count_value,
-	1.0*(row_number() over (order by datediff(dd,d1.death_date, t0.max_date)))/(COUNT_BIG(datediff(dd,d1.death_date, t0.max_date)) over ()+1) as p1
+	1.0*(row_number() over (order by datediff(dd,d1.death_date, t0.max_date)))/(COUNT_BIG(*) over ()+1) as p1
 from death d1
 	inner join
 	(
@@ -2072,7 +2052,7 @@ select 515 as analysis_id,
 from
 (
 select datediff(dd,d1.death_date, t0.max_date) as count_value,
-	1.0*(row_number() over (order by datediff(dd,d1.death_date, t0.max_date)))/(COUNT_BIG(datediff(dd,d1.death_date, t0.max_date)) over ()+1) as p1
+	1.0*(row_number() over (order by datediff(dd,d1.death_date, t0.max_date)))/(COUNT_BIG(*) over ()+1) as p1
 from death d1
 	inner join
 	(
@@ -2155,7 +2135,7 @@ select 603 as analysis_id,
 from
 (
 select num_procedures as count_value,
-	1.0*(row_number() over (order by num_procedures))/(COUNT_BIG(num_procedures) over ()+1) as p1
+	1.0*(row_number() over (order by num_procedures))/(COUNT_BIG(*) over ()+1) as p1
 from
 	(
 	select po1.person_id, COUNT_BIG(distinct po1.procedure_concept_id) as num_procedures
@@ -2226,7 +2206,7 @@ from
 select po1.procedure_concept_id,
 	p1.gender_concept_id,
 	po1.procedure_start_year - p1.year_of_birth as count_value,
-	1.0*(row_number() over (partition by po1.procedure_concept_id, p1.gender_concept_id order by po1.procedure_start_year - p1.year_of_birth))/(COUNT_BIG(po1.procedure_start_year - p1.year_of_birth) over (partition by po1.procedure_concept_id, p1.gender_concept_id)+1) as p1
+	1.0*(row_number() over (partition by po1.procedure_concept_id, p1.gender_concept_id order by po1.procedure_start_year - p1.year_of_birth))/(COUNT_BIG(*) over (partition by po1.procedure_concept_id, p1.gender_concept_id)+1) as p1
 from person p1
 inner join
 (select person_id, procedure_concept_id, min(year(procedure_date)) as procedure_start_year
@@ -2387,7 +2367,7 @@ select 703 as analysis_id,
 from
 (
 select num_drugs as count_value,
-	1.0*(row_number() over (order by num_drugs))/(COUNT_BIG(num_drugs) over ()+1) as p1
+	1.0*(row_number() over (order by num_drugs))/(COUNT_BIG(*) over ()+1) as p1
 from
 	(
 	select de1.person_id, COUNT_BIG(distinct de1.drug_concept_id) as num_drugs
@@ -2458,7 +2438,7 @@ from
 select de1.drug_concept_id,
 	p1.gender_concept_id,
 	de1.drug_start_year - p1.year_of_birth as count_value,
-	1.0*(row_number() over (partition by de1.drug_concept_id, p1.gender_concept_id order by de1.drug_start_year - p1.year_of_birth))/(COUNT_BIG(de1.drug_start_year - p1.year_of_birth) over (partition by de1.drug_concept_id, p1.gender_concept_id)+1) as p1
+	1.0*(row_number() over (partition by de1.drug_concept_id, p1.gender_concept_id order by de1.drug_start_year - p1.year_of_birth))/(COUNT_BIG(*) over (partition by de1.drug_concept_id, p1.gender_concept_id)+1) as p1
 from person p1
 inner join
 (select person_id, drug_concept_id, min(year(drug_exposure_start_date)) as drug_start_year
@@ -2565,7 +2545,7 @@ from
 (
 select drug_concept_id,
 	days_supply as count_value,
-	1.0*(row_number() over (partition by drug_concept_id order by days_supply))/(COUNT_BIG(days_supply) over (partition by drug_concept_id)+1) as p1
+	1.0*(row_number() over (partition by drug_concept_id order by days_supply))/(COUNT_BIG(*) over (partition by drug_concept_id)+1) as p1
 from drug_exposure de1
 
 ) t1
@@ -2594,7 +2574,7 @@ from
 (
 select drug_concept_id,
 	refills as count_value,
-	1.0*(row_number() over (partition by drug_concept_id order by refills))/(COUNT_BIG(refills) over (partition by drug_concept_id)+1) as p1
+	1.0*(row_number() over (partition by drug_concept_id order by refills))/(COUNT_BIG(*) over (partition by drug_concept_id)+1) as p1
 from drug_exposure de1
 ) t1
 group by drug_concept_id
@@ -2624,7 +2604,7 @@ from
 (
 select drug_concept_id,
 	quantity as count_value,
-	1.0*(row_number() over (partition by drug_concept_id order by quantity))/(COUNT_BIG(quantity) over (partition by drug_concept_id)+1) as p1
+	1.0*(row_number() over (partition by drug_concept_id order by quantity))/(COUNT_BIG(*) over (partition by drug_concept_id)+1) as p1
 from drug_exposure de1
 ) t1
 group by drug_concept_id
@@ -2712,7 +2692,7 @@ select 803 as analysis_id,
 from
 (
 select num_observations as count_value,
-	1.0*(row_number() over (order by num_observations))/(COUNT_BIG(num_observations) over ()+1) as p1
+	1.0*(row_number() over (order by num_observations))/(COUNT_BIG(*) over ()+1) as p1
 from
 	(
 	select o1.person_id, COUNT_BIG(distinct o1.observation_concept_id) as num_observations
@@ -2783,7 +2763,7 @@ from
 select o1.observation_concept_id,
 	p1.gender_concept_id,
 	o1.observation_start_year - p1.year_of_birth as count_value,
-	1.0*(row_number() over (partition by o1.observation_concept_id, p1.gender_concept_id order by o1.observation_start_year - p1.year_of_birth))/(COUNT_BIG(o1.observation_start_year - p1.year_of_birth) over (partition by o1.observation_concept_id, p1.gender_concept_id)+1) as p1
+	1.0*(row_number() over (partition by o1.observation_concept_id, p1.gender_concept_id order by o1.observation_start_year - p1.year_of_birth))/(COUNT_BIG(*) over (partition by o1.observation_concept_id, p1.gender_concept_id)+1) as p1
 from person p1
 inner join
 (select person_id, observation_concept_id, min(year(observation_date)) as observation_start_year
@@ -2908,7 +2888,7 @@ from
 (
 select observation_concept_id, unit_concept_id,
 	value_as_number as count_value,
-	1.0*(row_number() over (partition by observation_concept_id, unit_concept_id order by value_as_number))/(COUNT_BIG(value_as_number) over (partition by observation_concept_id, unit_concept_id)+1) as p1
+	1.0*(row_number() over (partition by observation_concept_id, unit_concept_id order by value_as_number))/(COUNT_BIG(*) over (partition by observation_concept_id, unit_concept_id)+1) as p1
 from observation o1
 where o1.unit_concept_id is not null
 	and o1.value_as_number is not null
@@ -2938,7 +2918,7 @@ from
 (
 select observation_concept_id, unit_concept_id,
 	range_low as count_value,
-	1.0*(row_number() over (partition by observation_concept_id, unit_concept_id order by range_low))/(COUNT_BIG(range_low) over (partition by observation_concept_id, unit_concept_id)+1) as p1
+	1.0*(row_number() over (partition by observation_concept_id, unit_concept_id order by range_low))/(COUNT_BIG(*) over (partition by observation_concept_id, unit_concept_id)+1) as p1
 from observation o1
 where o1.unit_concept_id is not null
 	and o1.value_as_number is not null
@@ -2970,7 +2950,7 @@ from
 (
 select observation_concept_id, unit_concept_id,
 	range_high as count_value,
-	1.0*(row_number() over (partition by observation_concept_id, unit_concept_id order by range_high))/(COUNT_BIG(range_high) over (partition by observation_concept_id, unit_concept_id)+1) as p1
+	1.0*(row_number() over (partition by observation_concept_id, unit_concept_id order by range_high))/(COUNT_BIG(*) over (partition by observation_concept_id, unit_concept_id)+1) as p1
 from observation o1
 where o1.unit_concept_id is not null
 	and o1.value_as_number is not null
@@ -3093,7 +3073,7 @@ select 903 as analysis_id,
 from
 (
 select num_drugs as count_value,
-	1.0*(row_number() over (order by num_drugs))/(COUNT_BIG(num_drugs) over ()+1) as p1
+	1.0*(row_number() over (order by num_drugs))/(COUNT_BIG(*) over ()+1) as p1
 from
 	(
 	select de1.person_id, COUNT_BIG(distinct de1.drug_concept_id) as num_drugs
@@ -3151,7 +3131,7 @@ from
 select de1.drug_concept_id,
 	p1.gender_concept_id,
 	de1.drug_start_year - p1.year_of_birth as count_value,
-	1.0*(row_number() over (partition by de1.drug_concept_id, p1.gender_concept_id order by de1.drug_start_year - p1.year_of_birth))/(COUNT_BIG(de1.drug_start_year - p1.year_of_birth) over (partition by de1.drug_concept_id, p1.gender_concept_id)+1) as p1
+	1.0*(row_number() over (partition by de1.drug_concept_id, p1.gender_concept_id order by de1.drug_start_year - p1.year_of_birth))/(COUNT_BIG(*) over (partition by de1.drug_concept_id, p1.gender_concept_id)+1) as p1
 from person p1
 inner join
 (select person_id, drug_concept_id, min(year(drug_era_start_date)) as drug_start_year
@@ -3187,7 +3167,7 @@ from
 (
 select drug_concept_id,
 	datediff(dd,drug_era_start_date, drug_era_end_date) as count_value,
-	1.0*(row_number() over (partition by drug_concept_id order by datediff(dd,drug_era_start_date, drug_era_end_date)))/(COUNT_BIG(datediff(dd,drug_era_start_date, drug_era_end_date)) over (partition by drug_concept_id)+1) as p1
+	1.0*(row_number() over (partition by drug_concept_id order by datediff(dd,drug_era_start_date, drug_era_end_date)))/(COUNT_BIG(*) over (partition by drug_concept_id)+1) as p1
 from  drug_era de1
 
 ) t1
@@ -3323,7 +3303,7 @@ select 1003 as analysis_id,
 from
 (
 select num_conditions as count_value,
-	1.0*(row_number() over (order by num_conditions))/(COUNT_BIG(num_conditions) over ()+1) as p1
+	1.0*(row_number() over (order by num_conditions))/(COUNT_BIG(*) over ()+1) as p1
 from
 	(
 	select ce1.person_id, COUNT_BIG(distinct ce1.condition_concept_id) as num_conditions
@@ -3381,7 +3361,7 @@ from
 select ce1.condition_concept_id,
 	p1.gender_concept_id,
 	ce1.condition_start_year - p1.year_of_birth as count_value,
-	1.0*(row_number() over (partition by ce1.condition_concept_id, p1.gender_concept_id order by ce1.condition_start_year - p1.year_of_birth))/(COUNT_BIG(ce1.condition_start_year - p1.year_of_birth) over (partition by ce1.condition_concept_id, p1.gender_concept_id)+1) as p1
+	1.0*(row_number() over (partition by ce1.condition_concept_id, p1.gender_concept_id order by ce1.condition_start_year - p1.year_of_birth))/(COUNT_BIG(*) over (partition by ce1.condition_concept_id, p1.gender_concept_id)+1) as p1
 from person p1
 inner join
 (select person_id, condition_concept_id, min(year(condition_era_start_date)) as condition_start_year
@@ -3417,7 +3397,7 @@ from
 (
 select condition_concept_id,
 	datediff(dd,condition_era_start_date, condition_era_end_date) as count_value,
-	1.0*(row_number() over (partition by condition_concept_id order by datediff(dd,condition_era_start_date, condition_era_end_date)))/(COUNT_BIG(datediff(dd,condition_era_start_date, condition_era_end_date)) over (partition by condition_concept_id)+1) as p1
+	1.0*(row_number() over (partition by condition_concept_id order by datediff(dd,condition_era_start_date, condition_era_end_date)))/(COUNT_BIG(*) over (partition by condition_concept_id)+1) as p1
 from  condition_era ce1
 
 ) t1
@@ -3640,7 +3620,7 @@ from
 (
 select p1.gender_concept_id,
 	DATEDIFF(dd,ppp1.payer_plan_period_start_date, ppp1.payer_plan_period_end_date) as count_value,
-	1.0*(row_number() over (partition by p1.gender_concept_id order by DATEDIFF(dd,ppp1.payer_plan_period_start_date, ppp1.payer_plan_period_end_date)))/(COUNT_BIG(DATEDIFF(dd,ppp1.payer_plan_period_start_date, ppp1.payer_plan_period_end_date)) over (partition by p1.gender_concept_id)+1) as p1
+	1.0*(row_number() over (partition by p1.gender_concept_id order by DATEDIFF(dd,ppp1.payer_plan_period_start_date, ppp1.payer_plan_period_end_date)))/(COUNT_BIG(*) over (partition by p1.gender_concept_id)+1) as p1
 from PERSON p1
 	inner join 
 	(select person_id, 
@@ -3677,7 +3657,7 @@ from
 (
 select floor((year(ppp1.payer_plan_period_START_DATE) - p1.YEAR_OF_BIRTH)/140) as age_decile,
 	DATEDIFF(dd,ppp1.payer_plan_period_start_date, ppp1.payer_plan_period_end_date) as count_value,
-	1.0*(row_number() over (partition by floor((year(ppp1.payer_plan_period_START_DATE) - p1.YEAR_OF_BIRTH)/140) order by DATEDIFF(dd,ppp1.payer_plan_period_start_date, ppp1.payer_plan_period_end_date)))/(COUNT_BIG(DATEDIFF(dd,ppp1.payer_plan_period_start_date, ppp1.payer_plan_period_end_date)) over (partition by floor((year(ppp1.payer_plan_period_START_DATE) - p1.YEAR_OF_BIRTH)/140))+1) as p1
+	1.0*(row_number() over (partition by floor((year(ppp1.payer_plan_period_START_DATE) - p1.YEAR_OF_BIRTH)/140) order by DATEDIFF(dd,ppp1.payer_plan_period_start_date, ppp1.payer_plan_period_end_date)))/(COUNT_BIG(*) over (partition by floor((year(ppp1.payer_plan_period_START_DATE) - p1.YEAR_OF_BIRTH)/140))+1) as p1
 from PERSON p1
 	inner join 
 	(select person_id, 
@@ -3929,7 +3909,7 @@ from
 (
 select drug_concept_id,
 	paid_copay as count_value,
-	1.0*(row_number() over (partition by drug_concept_id order by paid_copay))/(COUNT_BIG(paid_copay) over (partition by drug_concept_id)+1) as p1
+	1.0*(row_number() over (partition by drug_concept_id order by paid_copay))/(COUNT_BIG(*) over (partition by drug_concept_id)+1) as p1
 from drug_exposure de1
 	inner join
 	drug_cost dc1
@@ -3960,7 +3940,7 @@ from
 (
 select drug_concept_id,
 	paid_coinsurance as count_value,
-	1.0*(row_number() over (partition by drug_concept_id order by paid_coinsurance))/(COUNT_BIG(paid_coinsurance) over (partition by drug_concept_id)+1) as p1
+	1.0*(row_number() over (partition by drug_concept_id order by paid_coinsurance))/(COUNT_BIG(*) over (partition by drug_concept_id)+1) as p1
 from drug_exposure de1
 	inner join
 	drug_cost dc1
@@ -3990,7 +3970,7 @@ from
 (
 select drug_concept_id,
 	paid_toward_deductible as count_value,
-	1.0*(row_number() over (partition by drug_concept_id order by paid_toward_deductible))/(COUNT_BIG(paid_toward_deductible) over (partition by drug_concept_id)+1) as p1
+	1.0*(row_number() over (partition by drug_concept_id order by paid_toward_deductible))/(COUNT_BIG(*) over (partition by drug_concept_id)+1) as p1
 from drug_exposure de1
 	inner join
 	drug_cost dc1
@@ -4020,7 +4000,7 @@ from
 (
 select drug_concept_id,
 	paid_by_payer as count_value,
-	1.0*(row_number() over (partition by drug_concept_id order by paid_by_payer))/(COUNT_BIG(paid_by_payer) over (partition by drug_concept_id)+1) as p1
+	1.0*(row_number() over (partition by drug_concept_id order by paid_by_payer))/(COUNT_BIG(*) over (partition by drug_concept_id)+1) as p1
 from drug_exposure de1
 	inner join
 	drug_cost dc1
@@ -4050,7 +4030,7 @@ from
 (
 select drug_concept_id,
 	paid_by_coordination_benefits as count_value,
-	1.0*(row_number() over (partition by drug_concept_id order by paid_by_coordination_benefits))/(COUNT_BIG(paid_by_coordination_benefits) over (partition by drug_concept_id)+1) as p1
+	1.0*(row_number() over (partition by drug_concept_id order by paid_by_coordination_benefits))/(COUNT_BIG(*) over (partition by drug_concept_id)+1) as p1
 from drug_exposure de1
 	inner join
 	drug_cost dc1
@@ -4080,7 +4060,7 @@ from
 (
 select drug_concept_id,
 	total_out_of_pocket as count_value,
-	1.0*(row_number() over (partition by drug_concept_id order by total_out_of_pocket))/(COUNT_BIG(total_out_of_pocket) over (partition by drug_concept_id)+1) as p1
+	1.0*(row_number() over (partition by drug_concept_id order by total_out_of_pocket))/(COUNT_BIG(*) over (partition by drug_concept_id)+1) as p1
 from drug_exposure de1
 	inner join
 	drug_cost dc1
@@ -4111,7 +4091,7 @@ from
 (
 select drug_concept_id,
 	total_paid as count_value,
-	1.0*(row_number() over (partition by drug_concept_id order by total_paid))/(COUNT_BIG(total_paid) over (partition by drug_concept_id)+1) as p1
+	1.0*(row_number() over (partition by drug_concept_id order by total_paid))/(COUNT_BIG(*) over (partition by drug_concept_id)+1) as p1
 from drug_exposure de1
 	inner join
 	drug_cost dc1
@@ -4142,7 +4122,7 @@ from
 (
 select drug_concept_id,
 	ingredient_cost as count_value,
-	1.0*(row_number() over (partition by drug_concept_id order by ingredient_cost))/(COUNT_BIG(ingredient_cost) over (partition by drug_concept_id)+1) as p1
+	1.0*(row_number() over (partition by drug_concept_id order by ingredient_cost))/(COUNT_BIG(*) over (partition by drug_concept_id)+1) as p1
 from drug_exposure de1
 	inner join
 	drug_cost dc1
@@ -4172,7 +4152,7 @@ from
 (
 select drug_concept_id,
 	dispensing_fee as count_value,
-	1.0*(row_number() over (partition by drug_concept_id order by dispensing_fee))/(COUNT_BIG(dispensing_fee) over (partition by drug_concept_id)+1) as p1
+	1.0*(row_number() over (partition by drug_concept_id order by dispensing_fee))/(COUNT_BIG(*) over (partition by drug_concept_id)+1) as p1
 from drug_exposure de1
 	inner join
 	drug_cost dc1
@@ -4202,7 +4182,7 @@ from
 (
 select drug_concept_id,
 	average_wholesale_price as count_value,
-	1.0*(row_number() over (partition by drug_concept_id order by average_wholesale_price))/(COUNT_BIG(average_wholesale_price) over (partition by drug_concept_id)+1) as p1
+	1.0*(row_number() over (partition by drug_concept_id order by average_wholesale_price))/(COUNT_BIG(*) over (partition by drug_concept_id)+1) as p1
 from drug_exposure de1
 	inner join
 	drug_cost dc1
@@ -4267,7 +4247,7 @@ from
 (
 select procedure_concept_id,
 	paid_copay as count_value,
-	1.0*(row_number() over (partition by procedure_concept_id order by paid_copay))/(COUNT_BIG(paid_copay) over (partition by procedure_concept_id)+1) as p1
+	1.0*(row_number() over (partition by procedure_concept_id order by paid_copay))/(COUNT_BIG(*) over (partition by procedure_concept_id)+1) as p1
 from procedure_occurrence po1
 	inner join
 	procedure_cost pc1
@@ -4298,7 +4278,7 @@ from
 (
 select procedure_concept_id,
 	paid_coinsurance as count_value,
-	1.0*(row_number() over (partition by procedure_concept_id order by paid_coinsurance))/(COUNT_BIG(paid_coinsurance) over (partition by procedure_concept_id)+1) as p1
+	1.0*(row_number() over (partition by procedure_concept_id order by paid_coinsurance))/(COUNT_BIG(*) over (partition by procedure_concept_id)+1) as p1
 from procedure_occurrence po1
 	inner join
 	procedure_cost pc1
@@ -4328,7 +4308,7 @@ from
 (
 select procedure_concept_id,
 	paid_toward_deductible as count_value,
-	1.0*(row_number() over (partition by procedure_concept_id order by paid_toward_deductible))/(COUNT_BIG(paid_toward_deductible) over (partition by procedure_concept_id)+1) as p1
+	1.0*(row_number() over (partition by procedure_concept_id order by paid_toward_deductible))/(COUNT_BIG(*) over (partition by procedure_concept_id)+1) as p1
 from procedure_occurrence po1
 	inner join
 	procedure_cost pc1
@@ -4358,7 +4338,7 @@ from
 (
 select procedure_concept_id,
 	paid_by_payer as count_value,
-	1.0*(row_number() over (partition by procedure_concept_id order by paid_by_payer))/(COUNT_BIG(paid_by_payer) over (partition by procedure_concept_id)+1) as p1
+	1.0*(row_number() over (partition by procedure_concept_id order by paid_by_payer))/(COUNT_BIG(*) over (partition by procedure_concept_id)+1) as p1
 from procedure_occurrence po1
 	inner join
 	procedure_cost pc1
@@ -4388,7 +4368,7 @@ from
 (
 select procedure_concept_id,
 	paid_by_coordination_benefits as count_value,
-	1.0*(row_number() over (partition by procedure_concept_id order by paid_by_coordination_benefits))/(COUNT_BIG(paid_by_coordination_benefits) over (partition by procedure_concept_id)+1) as p1
+	1.0*(row_number() over (partition by procedure_concept_id order by paid_by_coordination_benefits))/(COUNT_BIG(*) over (partition by procedure_concept_id)+1) as p1
 from procedure_occurrence po1
 	inner join
 	procedure_cost pc1
@@ -4418,7 +4398,7 @@ from
 (
 select procedure_concept_id,
 	total_out_of_pocket as count_value,
-	1.0*(row_number() over (partition by procedure_concept_id order by total_out_of_pocket))/(COUNT_BIG(total_out_of_pocket) over (partition by procedure_concept_id)+1) as p1
+	1.0*(row_number() over (partition by procedure_concept_id order by total_out_of_pocket))/(COUNT_BIG(*) over (partition by procedure_concept_id)+1) as p1
 from procedure_occurrence po1
 	inner join
 	procedure_cost pc1
@@ -4449,7 +4429,7 @@ from
 (
 select procedure_concept_id,
 	total_paid as count_value,
-	1.0*(row_number() over (partition by procedure_concept_id order by total_paid))/(COUNT_BIG(total_paid) over (partition by procedure_concept_id)+1) as p1
+	1.0*(row_number() over (partition by procedure_concept_id order by total_paid))/(COUNT_BIG(*) over (partition by procedure_concept_id)+1) as p1
 from procedure_occurrence po1
 	inner join
 	procedure_cost pc1
@@ -4599,7 +4579,7 @@ INSERT INTO ACHILLES_HEEL_results (
 	ACHILLES_HEEL_warning
 	)
 SELECT DISTINCT ord1.analysis_id,
-	'ERROR: ' + cast(ord1.analysis_id as VARCHAR) + '-' + oa1.analysis_name + '; min (value=' + cast(ord1.min_value as VARCHAR) + ') should not be negative' AS ACHILLES_HEEL_warning
+  'ERROR: ' + cast(ord1.analysis_id as VARCHAR) + ' - ' + oa1.analysis_name + ' (count = ' + cast(COUNT_BIG(ord1.min_value) as VARCHAR) + '); min value should not be negative' AS ACHILLES_HEEL_warning
 FROM ACHILLES_results_dist ord1
 INNER JOIN ACHILLES_analysis oa1
 	ON ord1.analysis_id = oa1.analysis_id
@@ -4637,7 +4617,8 @@ WHERE ord1.analysis_id IN (
 		1607,
 		1608
 		)
-	AND ord1.min_value < 0;
+	AND ord1.min_value < 0
+	GROUP BY ord1.analysis_id,  oa1.analysis_name;
 
 --death distributions where max should not be positive
 INSERT INTO ACHILLES_HEEL_results (
@@ -4645,7 +4626,7 @@ INSERT INTO ACHILLES_HEEL_results (
 	ACHILLES_HEEL_warning
 	)
 SELECT DISTINCT ord1.analysis_id,
-	'WARNING: ' + cast(ord1.analysis_id as VARCHAR) + '-' + oa1.analysis_name + '; max (value=' + cast(ord1.max_value as VARCHAR) + ') should not be positive, otherwise its a zombie with data >1mo after death ' AS ACHILLES_HEEL_warning
+  'WARNING: ' + cast(ord1.analysis_id as VARCHAR) + '-' + oa1.analysis_name + ' (count = ' + cast(COUNT_BIG(ord1.max_value) as VARCHAR) + '); max value should not be positive, otherwise its a zombie with data >1mo after death ' AS ACHILLES_HEEL_warning
 FROM ACHILLES_results_dist ord1
 INNER JOIN ACHILLES_analysis oa1
 	ON ord1.analysis_id = oa1.analysis_id
@@ -4656,7 +4637,8 @@ WHERE ord1.analysis_id IN (
 		514,
 		515
 		)
-	AND ord1.max_value > 30;
+	AND ord1.max_value > 30
+GROUP BY ord1.analysis_id, oa1.analysis_name;
 
 --invalid concept_id
 INSERT INTO ACHILLES_HEEL_results (
@@ -5117,12 +5099,13 @@ INSERT INTO ACHILLES_HEEL_results (
 	ACHILLES_HEEL_warning
 	)
 SELECT DISTINCT ord1.analysis_id,
-	'ERROR: ' + cast(ord1.analysis_id as VARCHAR) + '-' + oa1.analysis_name + '; max (value=' + cast(ord1.max_value as VARCHAR) + ' should not be > 180' AS ACHILLES_HEEL_warning
+  'ERROR: ' + cast(ord1.analysis_id as VARCHAR) + '-' + oa1.analysis_name + ' (count = ' + cast(COUNT_BIG(ord1.max_value) as VARCHAR) + '); max value should not be > 180' AS ACHILLES_HEEL_warning
 FROM ACHILLES_results_dist ord1
 INNER JOIN ACHILLES_analysis oa1
 	ON ord1.analysis_id = oa1.analysis_id
 WHERE ord1.analysis_id IN (715)
-	AND ord1.max_value > 180;
+	AND ord1.max_value > 180
+GROUP BY ord1.analysis_id, oa1.analysis_name;
 
 --WARNING:  refills > 10
 INSERT INTO ACHILLES_HEEL_results (
@@ -5130,12 +5113,13 @@ INSERT INTO ACHILLES_HEEL_results (
 	ACHILLES_HEEL_warning
 	)
 SELECT DISTINCT ord1.analysis_id,
-	'ERROR: ' + cast(ord1.analysis_id as VARCHAR) + '-' + oa1.analysis_name + '; max (value=' + cast(ord1.max_value as VARCHAR) + ' should not be > 10' AS ACHILLES_HEEL_warning
+  'ERROR: ' + cast(ord1.analysis_id as VARCHAR) + '-' + oa1.analysis_name + ' (count = ' + cast(COUNT_BIG(ord1.max_value) as VARCHAR) + '); max value should not be > 10' AS ACHILLES_HEEL_warning
 FROM ACHILLES_results_dist ord1
 INNER JOIN ACHILLES_analysis oa1
 	ON ord1.analysis_id = oa1.analysis_id
 WHERE ord1.analysis_id IN (716)
-	AND ord1.max_value > 10;
+	AND ord1.max_value > 10
+GROUP BY ord1.analysis_id, oa1.analysis_name;
 
 --WARNING: quantity > 600
 INSERT INTO ACHILLES_HEEL_results (
@@ -5143,10 +5127,11 @@ INSERT INTO ACHILLES_HEEL_results (
 	ACHILLES_HEEL_warning
 	)
 SELECT DISTINCT ord1.analysis_id,
-	'ERROR: ' + cast(ord1.analysis_id as VARCHAR) + '-' + oa1.analysis_name + '; max (value=' + cast(ord1.max_value as VARCHAR) + ' should not be > 600' AS ACHILLES_HEEL_warning
+  'ERROR: ' + cast(ord1.analysis_id as VARCHAR) + '-' + oa1.analysis_name + ' (count = ' + cast(count(ord1.max_value) as VARCHAR) + '); max value should not be > 600' AS ACHILLES_HEEL_warning
 FROM ACHILLES_results_dist ord1
 INNER JOIN ACHILLES_analysis oa1
 	ON ord1.analysis_id = oa1.analysis_id
 WHERE ord1.analysis_id IN (717)
-	AND ord1.max_value > 600;
+	AND ord1.max_value > 600
+GROUP BY ord1.analysis_id, oa1.analysis_name;
 
