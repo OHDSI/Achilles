@@ -107,8 +107,339 @@ create table ACHILLES_results_dist
 );
 
 
+-- RSD - 2014-10-27
+-- Execute a series of quick select statements to verify that the CDM schema
+-- has all the proper tables and columns
+-- The point is to catch any missing tables/columns here before we spend hours
+-- generating results before bombing out
+
+use @CDM_schema;
+
+SELECT
+		care_site_id,
+		location_id,
+		organization_id,
+		place_of_service_concept_id,
+		care_site_source_value,
+		place_of_service_source_value
+INTO
+	#temp
+FROM
+		care_site
+LIMIT 1;
+TRUNCATE TABLE #temp;
+DROP TABLE #temp;
+SELECT
+		cohort_id,
+		cohort_concept_id,
+		cohort_start_date,
+		cohort_end_date,
+		subject_id,
+		stop_reason
+INTO
+	#temp
+FROM
+		cohort
+LIMIT 1;
+TRUNCATE TABLE #temp;
+DROP TABLE #temp;
+SELECT
+		condition_era_id,
+		person_id,
+		condition_concept_id,
+		condition_era_start_date,
+		condition_era_end_date,
+		condition_type_concept_id,
+		condition_occurrence_count
+INTO
+	#temp
+FROM
+		condition_era
+LIMIT 1;
+TRUNCATE TABLE #temp;
+DROP TABLE #temp;
+SELECT
+		condition_occurrence_id,
+		person_id,
+		condition_concept_id,
+		condition_start_date,
+		condition_end_date,
+		condition_type_concept_id,
+		stop_reason,
+		associated_provider_id,
+		visit_occurrence_id,
+		condition_source_value
+INTO
+	#temp
+FROM
+		condition_occurrence
+LIMIT 1;
+TRUNCATE TABLE #temp;
+DROP TABLE #temp;
+SELECT
+		person_id,
+		death_date,
+		death_type_concept_id,
+		cause_of_death_concept_id,
+		cause_of_death_source_value
+INTO
+	#temp
+FROM
+		death
+LIMIT 1;
+TRUNCATE TABLE #temp;
+DROP TABLE #temp;
+SELECT
+		drug_cost_id,
+		drug_exposure_id,
+		paid_copay,
+		paid_coinsurance,
+		paid_toward_deductible,
+		paid_by_payer,
+		paid_by_coordination_benefits,
+		total_out_of_pocket,
+		total_paid,
+		ingredient_cost,
+		dispensing_fee,
+		average_wholesale_price,
+		payer_plan_period_id
+INTO
+	#temp
+FROM
+		drug_cost
+LIMIT 1;
+TRUNCATE TABLE #temp;
+DROP TABLE #temp;
+SELECT
+		drug_era_id,
+		person_id,
+		drug_concept_id,
+		drug_era_start_date,
+		drug_era_end_date,
+		drug_type_concept_id,
+		drug_exposure_count
+INTO
+	#temp
+FROM
+		drug_era
+LIMIT 1;
+TRUNCATE TABLE #temp;
+DROP TABLE #temp;
+SELECT
+		drug_exposure_id,
+		person_id,
+		drug_concept_id,
+		drug_exposure_start_date,
+		drug_exposure_end_date,
+		drug_type_concept_id,
+		stop_reason,
+		refills,
+		quantity,
+		days_supply,
+		sig,
+		prescribing_provider_id,
+		visit_occurrence_id,
+		relevant_condition_concept_id,
+		drug_source_value
+INTO
+	#temp
+FROM
+		drug_exposure
+LIMIT 1;
+TRUNCATE TABLE #temp;
+DROP TABLE #temp;
+SELECT
+		location_id,
+		address_1,
+		address_2,
+		city,
+		STATE,
+		zip,
+		county,
+		location_source_value
+INTO
+	#temp
+FROM
+		location
+LIMIT 1;
+TRUNCATE TABLE #temp;
+DROP TABLE #temp;
+SELECT
+		observation_id,
+		person_id,
+		observation_concept_id,
+		observation_date,
+		observation_time,
+		value_as_number,
+		value_as_string,
+		value_as_concept_id,
+		unit_concept_id,
+		range_low,
+		range_high,
+		observation_type_concept_id,
+		associated_provider_id,
+		visit_occurrence_id,
+		relevant_condition_concept_id,
+		observation_source_value,
+		units_source_value
+INTO
+	#temp
+FROM
+		observation
+LIMIT 1;
+TRUNCATE TABLE #temp;
+DROP TABLE #temp;
+SELECT
+		observation_period_id,
+		person_id,
+		observation_period_start_date,
+		observation_period_end_date
+INTO
+	#temp
+FROM
+		observation_period
+LIMIT 1;
+TRUNCATE TABLE #temp;
+DROP TABLE #temp;
+SELECT
+		organization_id,
+		place_of_service_concept_id,
+		location_id,
+		organization_source_value,
+		place_of_service_source_value
+INTO
+	#temp
+FROM
+		organization
+LIMIT 1;
+TRUNCATE TABLE #temp;
+DROP TABLE #temp;
+SELECT
+		payer_plan_period_id,
+		person_id,
+		payer_plan_period_start_date,
+		payer_plan_period_end_date,
+		payer_source_value,
+		plan_source_value,
+		family_source_value
+INTO
+	#temp
+FROM
+		payer_plan_period
+LIMIT 1;
+TRUNCATE TABLE #temp;
+DROP TABLE #temp;
+SELECT
+		person_id,
+		gender_concept_id,
+		year_of_birth,
+		month_of_birth,
+		day_of_birth,
+		race_concept_id,
+		ethnicity_concept_id,
+		location_id,
+		provider_id,
+		care_site_id,
+		person_source_value,
+		gender_source_value,
+		race_source_value,
+		ethnicity_source_value
+INTO
+	#temp
+FROM
+		person
+LIMIT 1;
+TRUNCATE TABLE #temp;
+DROP TABLE #temp;
+SELECT
+		procedure_cost_id,
+		procedure_occurrence_id,
+		paid_copay,
+		paid_coinsurance,
+		paid_toward_deductible,
+		paid_by_payer,
+		paid_by_coordination_benefits,
+		total_out_of_pocket,
+		total_paid,
+		disease_class_concept_id,
+		revenue_code_concept_id,
+		payer_plan_period_id,
+		disease_class_source_value,
+		revenue_code_source_value
+INTO
+	#temp
+FROM
+		procedure_cost
+LIMIT 1;
+TRUNCATE TABLE #temp;
+DROP TABLE #temp;
+SELECT
+		procedure_occurrence_id,
+		person_id,
+		procedure_concept_id,
+		procedure_date,
+		procedure_type_concept_id,
+		associated_provider_id,
+		visit_occurrence_id,
+		relevant_condition_concept_id,
+		procedure_source_value
+INTO
+	#temp
+FROM
+		procedure_occurrence
+LIMIT 1;
+TRUNCATE TABLE #temp;
+DROP TABLE #temp;
+SELECT
+		provider_id,
+		NPI,
+		DEA,
+		specialty_concept_id,
+		care_site_id,
+		provider_source_value,
+		specialty_source_value
+INTO
+	#temp
+FROM
+		provider
+LIMIT 1;
+TRUNCATE TABLE #temp;
+DROP TABLE #temp;
+SELECT
+		visit_occurrence_id,
+		person_id,
+		visit_start_date,
+		visit_end_date,
+		place_of_service_concept_id,
+		care_site_id,
+		place_of_service_source_value
+INTO
+	#temp
+FROM
+		visit_occurrence
+LIMIT 1;
+TRUNCATE TABLE #temp;
+DROP TABLE #temp;
+SELECT
+		concept_id,
+		concept_name,
+		concept_level,
+		concept_class,
+		vocabulary_id,
+		concept_code,
+		valid_start_date,
+		valid_end_date,
+		invalid_reason
+INTO
+	#temp
+FROM
+	concept
+LIMIT 1 ;
+TRUNCATE TABLE #temp;
+DROP TABLE #temp;
 
 
+use @results_schema;
 
 insert into ACHILLES_analysis (analysis_id, analysis_name)
 	values (0, 'Source name');
