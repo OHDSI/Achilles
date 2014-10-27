@@ -269,7 +269,7 @@ insert into ACHILLES_analysis (analysis_id, analysis_name, stratum_1_name, strat
 	values (405, 'Number of condition occurrence records, by condition_concept_id by condition_type_concept_id', 'condition_concept_id', 'condition_type_concept_id');
 
 insert into ACHILLES_analysis (analysis_id, analysis_name, stratum_1_name, stratum_2_name)
-	values (406, 'Distribution of age by condition_concept_id', 'condition_concept_id', 'gender_concept_id');
+	values (406, 'Distribution of condition occurrence age by condition_concept_id', 'condition_concept_id', 'gender_concept_id');
 
 insert into ACHILLES_analysis (analysis_id, analysis_name)
 	values (409, 'Number of condition occurrence records with invalid person_id');
@@ -398,7 +398,7 @@ insert into ACHILLES_analysis (analysis_id, analysis_name, stratum_1_name, strat
 	values (705, 'Number of drug exposure records, by drug_concept_id by drug_type_concept_id', 'drug_concept_id', 'drug_type_concept_id');
 
 insert into ACHILLES_analysis (analysis_id, analysis_name, stratum_1_name, stratum_2_name)
-	values (706, 'Distribution of age by drug_concept_id', 'drug_concept_id', 'gender_concept_id');
+	values (706, 'Distribution of drug exposure age by drug_concept_id', 'drug_concept_id', 'gender_concept_id');
 
 
 
@@ -512,8 +512,7 @@ insert into ACHILLES_analysis (analysis_id, analysis_name, stratum_1_name, strat
 	values (904, 'Number of persons with at least one drug era, by drug_concept_id by calendar year by gender by age decile', 'drug_concept_id', 'calendar year', 'gender_concept_id', 'age decile');
 
 insert into ACHILLES_analysis (analysis_id, analysis_name, stratum_1_name, stratum_2_name)
-	values (906, 'Distribution of age by drug_concept_id', 'drug_concept_id', 'gender_concept_id');
-	
+	values (906, 'Distribution of drug era age by drug_concept_id', 'drug_concept_id', 'gender_concept_id');
 insert into ACHILLES_analysis (analysis_id, analysis_name, stratum_1_name)
 	values (907, 'Distribution of drug era length, by drug_concept_id', 'drug_concept_id');	
 
@@ -548,8 +547,8 @@ insert into ACHILLES_analysis (analysis_id, analysis_name, stratum_1_name, strat
 	values (1004, 'Number of persons with at least one condition era, by condition_concept_id by calendar year by gender by age decile', 'condition_concept_id', 'calendar year', 'gender_concept_id', 'age decile');
 
 insert into ACHILLES_analysis (analysis_id, analysis_name, stratum_1_name, stratum_2_name)
-	values (1006, 'Distribution of age by condition_concept_id', 'condition_concept_id', 'gender_concept_id');
-	
+	values (1006, 'Distribution of condition era age by condition_concept_id', 'condition_concept_id', 'gender_concept_id');
+
 insert into ACHILLES_analysis (analysis_id, analysis_name, stratum_1_name)
 	values (1007, 'Distribution of condition era length, by condition_concept_id', 'condition_concept_id');
 
