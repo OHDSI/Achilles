@@ -148,14 +148,19 @@ renderAndTranslate <- function(sqlFilename, packageName, dbms, ...){
 #'   fetchAchillesAnalysisResults(connectionDetails, "scratch", 106)
 #' }
 #' @export
-achilles <- function (connectionDetails, cdmSchema, resultsSchema, sourceName = "", analysisIds, createTable = TRUE, smallcellcount = 5){
+achilles <- function (connectionDetails, cdmSchema, resultsSchema, sourceName = "", analysisIds, createTable = TRUE, smallcellcount = 5, CDMVersion = "4", runHeel = TRUE){
+  achillesFile <- "Achilles_v4.sql"
+  if (CDMVersion == "5")
+    achillesFile <- "Achilles_v5.sql"
+    
+  
   if (missing(analysisIds))
     analysisIds = analysesDetails$ANALYSIS_ID
   
   if (missing(resultsSchema))
     resultsSchema <- cdmSchema
   
-  renderedSql <- renderAndTranslate(sqlFilename = "Achilles.sql",
+  achillesSql <- renderAndTranslate(sqlFilename = achillesFile,
                                     packageName = "Achilles",
                                     dbms = connectionDetails$dbms,
                                     CDM_schema = cdmSchema, 
@@ -169,8 +174,27 @@ achilles <- function (connectionDetails, cdmSchema, resultsSchema, sourceName = 
   conn <- connect(connectionDetails)
   
   writeLines("Executing multiple queries. This could take a while")
-  executeSql(conn,connectionDetails$dbms,renderedSql)
+  executeSql(conn,connectionDetails$dbms,achillesSql)
   writeLines(paste("Done. Results can now be found in",resultsSchema))
+  
+  if (runHeel)
+  {
+    heelSql <- renderAndTranslate(sqlFilename = "AchillesHeel.sql",
+                                      packageName = "Achilles",
+                                      dbms = connectionDetails$dbms,
+                                      CDM_schema = cdmSchema, 
+                                      results_schema = resultsSchema, 
+                                      source_name = sourceName, 
+                                      list_of_analysis_ids = analysisIds,
+                                      createTable = createTable,
+                                      smallcellcount = smallcellcount
+    )
+    
+    writeLines("Executing Achilles Heel. This could take a while")
+    executeSql(conn,connectionDetails$dbms,heelSql)
+    writeLines(paste("Done. Results can now be found in",resultsSchema))    
+    
+  }
   
   dummy <- dbDisconnect(conn)
   
@@ -182,7 +206,8 @@ achilles <- function (connectionDetails, cdmSchema, resultsSchema, sourceName = 
                  analysis_table = "ACHILLES_analysis",
                  sourceName = sourceName,
                  analysisIds = analysisIds,
-                 sql = renderedSql,
+                 AchillesSql = achillesSql,
+                 HeelSql = heelSql,
                  call = match.call())
   class(result) <- "achillesResults"
   result
