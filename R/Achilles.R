@@ -129,9 +129,6 @@ renderAndTranslate <- function(sqlFilename, packageName, dbms, ...){
 #' \code{achilles} creates descriptive statistics summary for an entire OMOP CDM instance.
 #'
 #' @details
-#' PATRICK HOMEWORK:   complete details
-#' 
-#' 
 #' @param connectionDetails	An R object of type ConnectionDetail (details for the function that contains server info, database type, optionally username/password, port)
 #' @param cdmSchema			string name of database schema that contains OMOP CDM and vocabulary
 #' @param resultsSchema		string name of database schema that we can write results to. Default is cdmSchema
@@ -140,11 +137,8 @@ renderAndTranslate <- function(sqlFilename, packageName, dbms, ...){
 #' If not specified, all analyses will be executed. See \code{data(analysesDetails)} for a list of all Achilles analyses and their Ids.
 #' @param createTable     If true, new results tables will be created in the results schema. If not, the tables are assumed to already exists, and analysis results will be added
 #' @param smallcellcount     To avoid patient identifiability, cells with small counts (<= smallcellcount) are deleted.
-#' 
-#' Patrick to do tongiht:  document
-#' 
-#' @param cdmVersion     To avoid patient identifiability, cells with small counts (<= smallcellcount) are deleted.
-#' @param runHeel     To avoid patient identifiability, cells with small counts (<= smallcellcount) are deleted.
+#' @param cdmVersion     Define the OMOP CDM version used:  currently support "4" and "5".  Default = "4"
+#' @param runHeel     Boolean to determine if Achilles Heel data quality reporting will be produced based on the summary statistics.  Default = TRUE
 #' 
 #' @return An object of type \code{achillesResults} containing details for connecting to the database containing the results 
 #' @examples \dontrun{
