@@ -1,6 +1,11 @@
 # some more test-code
 
 testExportCode <- function(){
+  #Test on SQL Server: 
+  setwd("c:/temp")
+  connectionDetailsSqlServer <- createConnectionDetails(dbms="sql server", server="RNDUSRDHIT09.jnj.com")
+  exportToJson(connectionDetailsSqlServer, cdmSchema="CDM_TRUVEN_CCAE_6k", resultsSchema="CDM_TRUVEN_CCAE_6k",outputPath = "c:/temp/CCAE_6K")
+  
   
   pw <- ""
   

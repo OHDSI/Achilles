@@ -1,6 +1,13 @@
 #Requires that Achilles has been run first
 
 testAchillesViestResultsCode <- function(){
+  #Test on SQL Server: 
+  setwd("c:/temp")
+  connectionDetailsSqlServer <- createConnectionDetails(dbms="sql server", server="RNDUSRDHIT09.jnj.com")
+  fetchAchillesHeelResults(connectionDetailsSqlServer, resultsSchema="CDM_TRUVEN_CCAE_6k")
+  fetchAchillesAnalysisResults(connectionDetailsSqlServer, resultsSchema = "CDM_TRUVEN_CCAE_6k", analysisId = 106)
+  
+  
   pw <- ""
   
   ### Test Achilles heel part ###

@@ -20,117 +20,16 @@
 # @author Martijn Schuemie
 # @author Patrick Ryan
 
-executeSql <- function(conn, dbms, sql){
-  sqlStatements = splitSql(sql)
-  progressBar <- txtProgressBar(style=3)
-  start <- Sys.time()
-  for (i in 1:length(sqlStatements)){
-    sqlStatement <- sqlStatements[i]
-    #sink(paste("c:/temp/statement_",i,".sql",sep=""))
-    #cat(sqlStatement)
-    #sink()
-    tryCatch ({   
-      #startQuery <- Sys.time()
-      
-      #Horrible hack for Redshift, which doesn't support DROP TABLE IF EXIST (or anything similar):
-      if (dbms == "redshift" & grepl("DROP TABLE IF EXISTS",sqlStatement)){
-        nameStart = regexpr("DROP TABLE IF EXISTS", sqlStatement) + nchar("DROP TABLE IF EXISTS") + 1
-        tableName = tolower(gsub("(^ +)|( +$)", "", substr(sqlStatement,nameStart,nchar(sqlStatement))))
-        tableCount = dbGetQuery(conn,paste("SELECT COUNT(*) FROM pg_table_def WHERE tablename = '",tableName,"'",sep=""))
-        if (tableCount != 0)
-          dbSendUpdate(conn, paste("DROP TABLE",tableName))
-      } else
-        dbSendUpdate(conn, sqlStatement)
-      #delta <- Sys.time() - startQuery
-      #writeLines(paste("Statement ",i,"took", delta, attr(delta,"units")))
-    } , error = function(err) {
-      writeLines(paste("Error executing SQL:",err))
-      
-      #Write error report:
-      filename <- paste(getwd(),"/errorReport.txt",sep="")
-      sink(filename)
-      error <<- err
-      cat("DBMS:\n")
-      cat(dbms)
-      cat("\n\n")
-      cat("Error:\n")
-      cat(err$message)
-      cat("\n\n")
-      cat("SQL:\n")
-      cat(sqlStatement)
-      sink()
-      
-      writeLines(paste("An error report has been created at ", filename))
-      break
-    })
-    setTxtProgressBar(progressBar, i/length(sqlStatements))
-  }
-  close(progressBar)
-  delta <- Sys.time() - start
-  writeLines(paste("Analysis took", signif(delta,3), attr(delta,"units")))
-}
-
-querySql <- function(conn, dbms, sql){
-  tryCatch ({   
-    .jcall("java/lang/System",,"gc") #Calling garbage collection prevents crashes
-    
-    if (dbms == "postgresql" | dbms == "redshift"){ #Use dbGetQueryBatchWise to prevent Java out of heap
-      result <- dbGetQueryBatchWise(conn, sql)
-      colnames(result) <- toupper(colnames(result))
-      return(result)
-    } else {
-      result <- dbGetQuery(conn, sql)
-      colnames(result) <- toupper(colnames(result))
-      return(result)
-    }
-    
-  } , error = function(err) {
-    writeLines(paste("Error executing SQL:",err))
-    
-    #Write error report:
-    filename <- paste(getwd(),"/errorReport.txt",sep="")
-    sink(filename)
-    error <<- err
-    cat("DBMS:\n")
-    cat(dbms)
-    cat("\n\n")
-    cat("Error:\n")
-    cat(err$message)
-    cat("\n\n")
-    cat("SQL:\n")
-    cat(sql)
-    sink()
-    
-    writeLines(paste("An error report has been created at ", filename))
-    break
-  })
-}
-
-#' @export
-renderAndTranslate <- function(sqlFilename, packageName, dbms, ...){
-  pathToSql <- system.file(paste("sql/",gsub(" ","_",dbms),sep=""), sqlFilename, package=packageName)
-  mustTranslate <- !file.exists(pathToSql)
-  if (mustTranslate) # If DBMS-specific code does not exists, load SQL Server code and translate after rendering
-    pathToSql <- system.file(paste("sql/","sql_server",sep=""), sqlFilename, package=packageName)      
-  parameterizedSql <- readChar(pathToSql,file.info(pathToSql)$size)  
-  
-  renderedSql <- renderSql(parameterizedSql[1], ...)$sql
-  
-  if (mustTranslate)
-    renderedSql <- translateSql(renderedSql, "sql server", dbms)$sql
-  
-  renderedSql
-}
-
-
 #' The main Achilles analysis
 #'
 #' @description
 #' \code{achilles} creates descriptive statistics summary for an entire OMOP CDM instance.
 #'
 #' @details
-#' @param connectionDetails	An R object of type ConnectionDetail (details for the function that contains server info, database type, optionally username/password, port)
-#' @param cdmSchema			string name of database schema that contains OMOP CDM and vocabulary
+#' \code{achilles} creates descriptive statistics summary for an entire OMOP CDM instance.
+#' 
+#' @param connectionDetails  An R object of type ConnectionDetail (details for the function that contains server info, database type, optionally username/password, port)
+#' @param cdmSchema    	string name of database schema that contains OMOP CDM and vocabulary
 #' @param resultsSchema		string name of database schema that we can write results to. Default is cdmSchema
 #' @param sourceName		string name of the database, as recorded in results
 #' @param analysisIds		(optional) a vector containing the set of Achilles analysisIds for which results will be generated.
@@ -149,22 +48,15 @@ renderAndTranslate <- function(sqlFilename, packageName, dbms, ...){
 #' @export
 achilles <- function (connectionDetails, cdmSchema, resultsSchema, sourceName = "", analysisIds, createTable = TRUE, smallcellcount = 5, cdmVersion = "4", runHeel = TRUE){
   
-  if (cdmVersion == "4")
-  {
+  if (cdmVersion == "4")  {
     achillesFile <- "Achilles_v4.sql"
     heelFile <- "AchillesHeel_v4.sql"
-  }
-  else if (cdmVersion == "5")
-  {
+  } else if (cdmVersion == "5") {
     achillesFile <- "Achilles_v5.sql"
     heelFile <- "AchillesHeel_v5.sql"
-  }
-  else
-  {
+  } else  {
     stop("Error: Invalid CDM Version number, use 4 or 5")
   }
-    
-    
   
   if (missing(analysisIds))
     analysisIds = analysesDetails$ANALYSIS_ID
@@ -172,26 +64,25 @@ achilles <- function (connectionDetails, cdmSchema, resultsSchema, sourceName = 
   if (missing(resultsSchema))
     resultsSchema <- cdmSchema
   
-  achillesSql <- renderAndTranslate(sqlFilename = achillesFile,
-                                    packageName = "Achilles",
-                                    dbms = connectionDetails$dbms,
-                                    CDM_schema = cdmSchema, 
-                                    results_schema = resultsSchema, 
-                                    source_name = sourceName, 
-                                    list_of_analysis_ids = analysisIds,
-                                    createTable = createTable,
-                                    smallcellcount = smallcellcount
+  achillesSql <- loadRenderTranslateSql(sqlFilename = achillesFile,
+                                        packageName = "Achilles",
+                                        dbms = connectionDetails$dbms,
+                                        CDM_schema = cdmSchema, 
+                                        results_schema = resultsSchema, 
+                                        source_name = sourceName, 
+                                        list_of_analysis_ids = analysisIds,
+                                        createTable = createTable,
+                                        smallcellcount = smallcellcount
   )
   
   conn <- connect(connectionDetails)
   
   writeLines("Executing multiple queries. This could take a while")
-  executeSql(conn,connectionDetails$dbms,achillesSql)
+  executeSql(conn,achillesSql)
   writeLines(paste("Done. Achilles results can now be found in",resultsSchema))
   
-  if (runHeel)
-  {
-    heelSql <- renderAndTranslate(sqlFilename = heelFile,
+  if (runHeel) {
+    heelSql <- loadRenderTranslateSql(sqlFilename = heelFile,
                                       packageName = "Achilles",
                                       dbms = connectionDetails$dbms,
                                       CDM_schema = cdmSchema, 
@@ -203,7 +94,7 @@ achilles <- function (connectionDetails, cdmSchema, resultsSchema, sourceName = 
     )
     
     writeLines("Executing Achilles Heel. This could take a while")
-    executeSql(conn,connectionDetails$dbms,heelSql)
+    executeSql(conn,heelSql)
     writeLines(paste("Done. Achilles Heel results can now be found in",resultsSchema))    
     
   }

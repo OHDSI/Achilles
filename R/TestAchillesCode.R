@@ -1,6 +1,10 @@
 # some test-code
 
 testAchillesCode <- function(){
+ #Test on SQL Server: 
+  setwd("c:/temp")
+  connectionDetailsSqlServer <- createConnectionDetails(dbms="sql server", server="RNDUSRDHIT09.jnj.com")
+  achillesResultsSqlServer <- achilles(connectionDetailsSqlServer, cdmSchema="CDM_TRUVEN_CCAE_6k", resultsSchema="CDM_TRUVEN_CCAE_6k")
 
   pw <- ""
   
