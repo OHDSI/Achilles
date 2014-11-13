@@ -1513,7 +1513,7 @@ from
               ) pc on pc.visit_concept_id = vo1.visit_concept_id
        ) Q
 ) t1
-group by visit_concept_id
+group by visit_concept_id;
 --}
 
 

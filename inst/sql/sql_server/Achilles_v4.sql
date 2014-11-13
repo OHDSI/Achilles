@@ -1508,7 +1508,7 @@ from
               ) pc on pc.PLACE_OF_SERVICE_CONCEPT_ID = vo1.PLACE_OF_SERVICE_CONCEPT_ID
        ) Q
 ) t1
-group by place_of_service_concept_id
+group by place_of_service_concept_id;
 --}
 
 
