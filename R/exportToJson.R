@@ -85,7 +85,7 @@ showReportTypes <- function()
 #'   exportToJson(connectionDetails, cdmSchema="cdm4_sim", outputPath="your/output/path")
 #' }
 #' @export
-exportToJson <- function (connectionDetails, cdmSchema, resultsSchema, outputPath = getwd(), reports = allReports)
+exportToJson <- function (connectionDetails, cdmSchema, resultsSchema, outputPath = getwd(), reports = allReports, cdmVersion = "4")
 {
   start <- Sys.time()
   if (missing(resultsSchema))
@@ -101,63 +101,63 @@ exportToJson <- function (connectionDetails, cdmSchema, resultsSchema, outputPat
   
   if ("CONDITION" %in% reports)
   {
-    generateConditionTreemap(conn, connectionDetails$dbms, cdmSchema, outputPath)  
-    generateConditionReports(conn, connectionDetails$dbms, cdmSchema, outputPath)
+    generateConditionTreemap(conn, connectionDetails$dbms, cdmSchema, outputPath, cdmVersion)  
+    generateConditionReports(conn, connectionDetails$dbms, cdmSchema, outputPath, cdmVersion)
   }
   
   if ("CONDITION_ERA" %in% reports)
   {
-    generateConditionEraTreemap(conn, connectionDetails$dbms, cdmSchema, outputPath)
-    generateConditionEraReports(conn, connectionDetails$dbms, cdmSchema, outputPath)
+    generateConditionEraTreemap(conn, connectionDetails$dbms, cdmSchema, outputPath, cdmVersion)
+    generateConditionEraReports(conn, connectionDetails$dbms, cdmSchema, outputPath, cdmVersion)
   }
   
   if ("DATA_DENSITY" %in% reports)
-    generateDataDensityReport(conn, connectionDetails$dbms, cdmSchema, outputPath)
+    generateDataDensityReport(conn, connectionDetails$dbms, cdmSchema, outputPath, cdmVersion)
        
   if ("DEATH" %in% reports)
   {
-    generateDeathReports(conn, connectionDetails$dbms, cdmSchema, outputPath)
+    generateDeathReports(conn, connectionDetails$dbms, cdmSchema, outputPath, cdmVersion)
   }
   
   if ("DRUG_ERA" %in% reports)
   {
-    generateDrugEraTreemap(conn,connectionDetails$dbms, cdmSchema, outputPath)
-    generateDrugEraReports(conn,connectionDetails$dbms,cdmSchema,outputPath)
+    generateDrugEraTreemap(conn,connectionDetails$dbms, cdmSchema, outputPath, cdmVersion)
+    generateDrugEraReports(conn,connectionDetails$dbms,cdmSchema,outputPath, cdmVersion)
   }
 
   if ("DRUG" %in% reports)
   {
-    generateDrugTreemap(conn, connectionDetails$dbms, cdmSchema, outputPath)  
-    generateDrugReports(conn, connectionDetails$dbms, cdmSchema, outputPath)
+    generateDrugTreemap(conn, connectionDetails$dbms, cdmSchema, outputPath, cdmVersion)  
+    generateDrugReports(conn, connectionDetails$dbms, cdmSchema, outputPath, cdmVersion)
   }
   
   if ("HEEL" %in% reports)
   {
-    generateAchillesHeelReport(conn, connectionDetails$dbms, cdmSchema, outputPath)
+    generateAchillesHeelReport(conn, connectionDetails$dbms, cdmSchema, outputPath, cdmVersion)
   }
   
   if ("OBSERVATION" %in% reports)
   {  
-    generateObservationTreemap(conn, connectionDetails$dbms, cdmSchema, outputPath)
-    generateObservationReports(conn, connectionDetails$dbms, cdmSchema, outputPath)
+    generateObservationTreemap(conn, connectionDetails$dbms, cdmSchema, outputPath, cdmVersion)
+    generateObservationReports(conn, connectionDetails$dbms, cdmSchema, outputPath, cdmVersion)
   }
   
   if ("OBSERVATION_PERIOD" %in% reports)  
-    generateObservationPeriodReport(conn, connectionDetails$dbms, cdmSchema, outputPath)
+    generateObservationPeriodReport(conn, connectionDetails$dbms, cdmSchema, outputPath, cdmVersion)
   
   if ("PERSON" %in% reports)    
-    generatePersonReport(conn, connectionDetails$dbms, cdmSchema, outputPath)
+    generatePersonReport(conn, connectionDetails$dbms, cdmSchema, outputPath, cdmVersion)
     
   if ("PROCEDURE" %in% reports)
   {
-    generateProcedureTreemap(conn, connectionDetails$dbms, cdmSchema, outputPath)
-    generateProcedureReports(conn, connectionDetails$dbms, cdmSchema, outputPath)
+    generateProcedureTreemap(conn, connectionDetails$dbms, cdmSchema, outputPath, cdmVersion)
+    generateProcedureReports(conn, connectionDetails$dbms, cdmSchema, outputPath, cdmVersion)
   }
   
   if ("VISIT" %in% reports)
   {  
-    generateVisitTreemap(conn, connectionDetails$dbms, cdmSchema, outputPath)
-    generateVisitReports(conn, connectionDetails$dbms, cdmSchema, outputPath)
+    generateVisitTreemap(conn, connectionDetails$dbms, cdmSchema, outputPath, cdmVersion)
+    generateVisitReports(conn, connectionDetails$dbms, cdmSchema, outputPath, cdmVersion)
   }
   
   # dashboard is always last
@@ -193,9 +193,9 @@ exportToJson <- function (connectionDetails, cdmSchema, resultsSchema, outputPat
 #'   exportConditionToJson(connectionDetails, cdmSchema="cdm4_sim", outputPath="your/output/path")
 #' }
 #' @export
-exportConditionToJson <- function (connectionDetails, cdmSchema, resultsSchema, outputPath = getwd())
+exportConditionToJson <- function (connectionDetails, cdmSchema, resultsSchema, outputPath = getwd(), cdmVersion="4")
 {
-  exportToJson(connectionDetails, cdmSchema, resultsSchema, outputPath, reports = c("CONDITION"))  
+  exportToJson(connectionDetails, cdmSchema, resultsSchema, outputPath, reports = c("CONDITION"), cdmVersion)  
 }
 
 #' @title exportConditionEraToJson
@@ -218,9 +218,9 @@ exportConditionToJson <- function (connectionDetails, cdmSchema, resultsSchema, 
 #'   exportConditionEraToJson(connectionDetails, cdmSchema="cdm4_sim", outputPath="your/output/path")
 #' }
 #' @export
-exportConditionEraToJson <- function (connectionDetails, cdmSchema, resultsSchema, outputPath = getwd())
+exportConditionEraToJson <- function (connectionDetails, cdmSchema, resultsSchema, outputPath = getwd(), cdmVersion="4")
 {
-  exportToJson(connectionDetails, cdmSchema, resultsSchema, outputPath, reports = c("CONDITION_ERA"))  
+  exportToJson(connectionDetails, cdmSchema, resultsSchema, outputPath, reports = c("CONDITION_ERA"), cdmVersion)  
 }
 
 #' @title exportDashboardToJson
@@ -244,9 +244,9 @@ exportConditionEraToJson <- function (connectionDetails, cdmSchema, resultsSchem
 #'   exportDashboardToJson(connectionDetails, cdmSchema="cdm4_sim", outputPath="your/output/path")
 #' }
 #' @export
-exportDashboardToJson <- function (connectionDetails, cdmSchema, resultsSchema, outputPath = getwd())
+exportDashboardToJson <- function (connectionDetails, cdmSchema, resultsSchema, outputPath = getwd(), cdmVersion="4")
 {
-  exportToJson(connectionDetails, cdmSchema, resultsSchema, outputPath, reports = c("DASHBOARD"))  
+  exportToJson(connectionDetails, cdmSchema, resultsSchema, outputPath, reports = c("DASHBOARD"), cdmVersion)  
 }
 
 #' @title exportDataDensityToJson
@@ -269,9 +269,9 @@ exportDashboardToJson <- function (connectionDetails, cdmSchema, resultsSchema, 
 #'   exportDataDensityToJson(connectionDetails, cdmSchema="cdm4_sim", outputPath="your/output/path")
 #' }
 #' @export
-exportDataDensityToJson <- function (connectionDetails, cdmSchema, resultsSchema, outputPath = getwd())
+exportDataDensityToJson <- function (connectionDetails, cdmSchema, resultsSchema, outputPath = getwd(), cdmVersion="4")
 {
-  exportToJson(connectionDetails, cdmSchema, resultsSchema, outputPath, reports = c("DATA_DENSITY"))  
+  exportToJson(connectionDetails, cdmSchema, resultsSchema, outputPath, reports = c("DATA_DENSITY"), cdmVersion)  
 }
 
 #' @title exportDeathToJson
@@ -294,9 +294,9 @@ exportDataDensityToJson <- function (connectionDetails, cdmSchema, resultsSchema
 #'   exportDeathToJson(connectionDetails, cdmSchema="cdm4_sim", outputPath="your/output/path")
 #' }
 #' @export
-exportDeathToJson <- function (connectionDetails, cdmSchema, resultsSchema, outputPath = getwd())
+exportDeathToJson <- function (connectionDetails, cdmSchema, resultsSchema, outputPath = getwd(), cdmVersion="4")
 {
-  exportToJson(connectionDetails, cdmSchema, resultsSchema, outputPath, reports = c("DEATH"))  
+  exportToJson(connectionDetails, cdmSchema, resultsSchema, outputPath, reports = c("DEATH"), cdmVersion)  
 }
 
 #' @title exportDrugToJson
@@ -319,9 +319,9 @@ exportDeathToJson <- function (connectionDetails, cdmSchema, resultsSchema, outp
 #'   exportDrugToJson(connectionDetails, cdmSchema="cdm4_sim", outputPath="your/output/path")
 #' }
 #' @export
-exportDrugToJson <- function (connectionDetails, cdmSchema, resultsSchema, outputPath = getwd())
+exportDrugToJson <- function (connectionDetails, cdmSchema, resultsSchema, outputPath = getwd(), cdmVersion="4")
 {
-  exportToJson(connectionDetails, cdmSchema, resultsSchema, outputPath, reports = c("DRUG"))  
+  exportToJson(connectionDetails, cdmSchema, resultsSchema, outputPath, reports = c("DRUG"), cdmVersion)  
 }
 
 #' @title exportDrugEraToJson
@@ -344,9 +344,9 @@ exportDrugToJson <- function (connectionDetails, cdmSchema, resultsSchema, outpu
 #'   exportDrugEraToJson(connectionDetails, cdmSchema="cdm4_sim", outputPath="your/output/path")
 #' }
 #' @export
-exportDrugEraToJson <- function (connectionDetails, cdmSchema, resultsSchema, outputPath = getwd())
+exportDrugEraToJson <- function (connectionDetails, cdmSchema, resultsSchema, outputPath = getwd(), cdmVersion="4")
 {
-  exportToJson(connectionDetails, cdmSchema, resultsSchema, outputPath, reports = c("DRUG_ERA"))  
+  exportToJson(connectionDetails, cdmSchema, resultsSchema, outputPath, reports = c("DRUG_ERA"), cdmVersion)  
 }
 
 #' @title exportHeelToJson
@@ -369,9 +369,9 @@ exportDrugEraToJson <- function (connectionDetails, cdmSchema, resultsSchema, ou
 #'   exportHeelToJson(connectionDetails, cdmSchema="cdm4_sim", outputPath="your/output/path")
 #' }
 #' @export
-exportHeelToJson <- function (connectionDetails, cdmSchema, resultsSchema, outputPath = getwd())
+exportHeelToJson <- function (connectionDetails, cdmSchema, resultsSchema, outputPath = getwd(), cdmVersion="4")
 {
-  exportToJson(connectionDetails, cdmSchema, resultsSchema, outputPath, reports = c("HEEL"))  
+  exportToJson(connectionDetails, cdmSchema, resultsSchema, outputPath, reports = c("HEEL"), cdmVersion)  
 }
 
 #' @title exportObservationToJson
@@ -394,9 +394,9 @@ exportHeelToJson <- function (connectionDetails, cdmSchema, resultsSchema, outpu
 #'   exportObservationToJson(connectionDetails, cdmSchema="cdm4_sim", outputPath="your/output/path")
 #' }
 #' @export
-exportObservationToJson <- function (connectionDetails, cdmSchema, resultsSchema, outputPath = getwd())
+exportObservationToJson <- function (connectionDetails, cdmSchema, resultsSchema, outputPath = getwd(), cdmVersion="4")
 {
-  exportToJson(connectionDetails, cdmSchema, resultsSchema, outputPath, reports = c("OBSERVATION"))  
+  exportToJson(connectionDetails, cdmSchema, resultsSchema, outputPath, reports = c("OBSERVATION"), cdmVersion)  
 }
 
 #' @title exportObservationPeriodToJson
@@ -419,9 +419,9 @@ exportObservationToJson <- function (connectionDetails, cdmSchema, resultsSchema
 #'   exportObservationPeriodToJson(connectionDetails, cdmSchema="cdm4_sim", outputPath="your/output/path")
 #' }
 #' @export
-exportObservationPeriodToJson <- function (connectionDetails, cdmSchema, resultsSchema, outputPath = getwd())
+exportObservationPeriodToJson <- function (connectionDetails, cdmSchema, resultsSchema, outputPath = getwd(), cdmVersion="4")
 {
-  exportToJson(connectionDetails, cdmSchema, resultsSchema, outputPath, reports = c("OBSERVATION_PERIOD"))  
+  exportToJson(connectionDetails, cdmSchema, resultsSchema, outputPath, reports = c("OBSERVATION_PERIOD"), cdmVersion)  
 }
 
 #' @title exportPersonToJson
@@ -444,9 +444,9 @@ exportObservationPeriodToJson <- function (connectionDetails, cdmSchema, results
 #'   exportPersonToJson(connectionDetails, cdmSchema="cdm4_sim", outputPath="your/output/path")
 #' }
 #' @export
-exportPersonToJson <- function (connectionDetails, cdmSchema, resultsSchema, outputPath = getwd())
+exportPersonToJson <- function (connectionDetails, cdmSchema, resultsSchema, outputPath = getwd(), cdmVersion="4")
 {
-  exportToJson(connectionDetails, cdmSchema, resultsSchema, outputPath, reports = c("PERSON"))  
+  exportToJson(connectionDetails, cdmSchema, resultsSchema, outputPath, reports = c("PERSON"), cdmVersion)  
 }
 
 #' @title exportProcedureToJson
@@ -469,9 +469,9 @@ exportPersonToJson <- function (connectionDetails, cdmSchema, resultsSchema, out
 #'   exportProcedureToJson(connectionDetails, cdmSchema="cdm4_sim", outputPath="your/output/path")
 #' }
 #' @export
-exportProcedureToJson <- function (connectionDetails, cdmSchema, resultsSchema, outputPath = getwd())
+exportProcedureToJson <- function (connectionDetails, cdmSchema, resultsSchema, outputPath = getwd(), cdmVersion="4")
 {
-  exportToJson(connectionDetails, cdmSchema, resultsSchema, outputPath, reports = c("PROCEDURE"))  
+  exportToJson(connectionDetails, cdmSchema, resultsSchema, outputPath, reports = c("PROCEDURE"), cdmVersion)  
 }
 
 #' @title exportVisitToJson
@@ -494,16 +494,31 @@ exportProcedureToJson <- function (connectionDetails, cdmSchema, resultsSchema, 
 #'   exportVisitToJson(connectionDetails, cdmSchema="cdm4_sim", outputPath="your/output/path")
 #' }
 #' @export
-exportVisitToJson <- function (connectionDetails, cdmSchema, resultsSchema, outputPath = getwd())
+exportVisitToJson <- function (connectionDetails, cdmSchema, resultsSchema, outputPath = getwd(), cdmVersion="4")
 {
-  exportToJson(connectionDetails, cdmSchema, resultsSchema, outputPath, reports = c("VISIT"))  
+  exportToJson(connectionDetails, cdmSchema, resultsSchema, outputPath, reports = c("VISIT"), cdmVersion)  
 }
 
-generateAchillesHeelReport <- function(conn, dbms, cdmSchema, outputPath) {
+generateAchillesHeelReport <- function(conn, dbms, cdmSchema, outputPath, cdmVersion = "4") {
   writeLines("Generating achilles heel report")
   output <- {}
   
-  queryAchillesHeel <- renderAndTranslate(sqlFilename = "export/achillesheel/sqlAchillesHeel.sql",
+  if (cdmVersion == "4")
+  {
+    sqlFolder <- "export_v4"
+  }
+  else if (cdmVersion == "5")
+  {
+    sqlFolder <- "export_v5"
+  }
+  else
+  {
+    stop("Error: Invalid CDM Version number, use 4 or 5")
+  }
+  
+  sqlFile <- paste(sqlFolder,"/achillesheel/sqlAchillesHeel.sql")
+  
+  queryAchillesHeel <- renderAndTranslate(sqlFilename = sqlFile,
                                                packageName = "Achilles",
                                                dbms = dbms,
                                                cdmSchema = cdmSchema
@@ -514,12 +529,27 @@ generateAchillesHeelReport <- function(conn, dbms, cdmSchema, outputPath) {
   write(jsonOutput, file=paste(outputPath, "/achillesheel.json", sep=""))  
 }
 
-generateDrugEraTreemap <- function(conn, dbms,cdmSchema, outputPath) {
+generateDrugEraTreemap <- function(conn, dbms,cdmSchema, outputPath, cdmVersion = "4") {
   writeLines("Generating drug era treemap")
   progressBar <- txtProgressBar(max=1,style=3)
   progress = 0
   
-  queryDrugEraTreemap <- renderAndTranslate(sqlFilename = "export/drugera/sqlDrugEraTreemap.sql",
+  if (cdmVersion == "4")
+  {
+    sqlFolder <- "export_v4"
+  }
+  else if (cdmVersion == "5")
+  {
+    sqlFolder <- "export_v5"
+  }
+  else
+  {
+    stop("Error: Invalid CDM Version number, use 4 or 5")
+  }
+  
+  sqlFile <- paste(sqlFolder,"/drugera/sqlDrugEraTreemap.sql")
+  
+  queryDrugEraTreemap <- renderAndTranslate(sqlFilename = sqlFile,
                                          packageName = "Achilles",
                                          dbms = dbms,
                                          cdmSchema = cdmSchema
@@ -534,12 +564,27 @@ generateDrugEraTreemap <- function(conn, dbms,cdmSchema, outputPath) {
   close(progressBar)  
 }
 
-generateDrugTreemap <- function(conn, dbms,cdmSchema, outputPath) {
+generateDrugTreemap <- function(conn, dbms,cdmSchema, outputPath, cdmVersion = "4") {
   writeLines("Generating drug treemap")
   progressBar <- txtProgressBar(max=1,style=3)
   progress = 0
   
-  queryDrugTreemap <- renderAndTranslate(sqlFilename = "export/drug/sqlDrugTreemap.sql",
+  if (cdmVersion == "4")
+  {
+    sqlFolder <- "export_v4"
+  }
+  else if (cdmVersion == "5")
+  {
+    sqlFolder <- "export_v5"
+  }
+  else
+  {
+    stop("Error: Invalid CDM Version number, use 4 or 5")
+  }
+  
+  sqlFile <- paste(sqlFolder,"/drug/sqlDrugTreemap.sql")
+  
+  queryDrugTreemap <- renderAndTranslate(sqlFilename = sqlFile,
                                               packageName = "Achilles",
                                               dbms = dbms,
                                               cdmSchema = cdmSchema
@@ -554,12 +599,27 @@ generateDrugTreemap <- function(conn, dbms,cdmSchema, outputPath) {
   close(progressBar)  
 }
 
-generateConditionTreemap <- function(conn, dbms, cdmSchema, outputPath) {
+generateConditionTreemap <- function(conn, dbms, cdmSchema, outputPath, cdmVersion = "4") {
   writeLines("Generating condition treemap")
   progressBar <- txtProgressBar(max=1,style=3)
   progress = 0
   
-  queryConditionTreemap <- renderAndTranslate(sqlFilename = "export/condition/sqlConditionTreemap.sql",
+  if (cdmVersion == "4")
+  {
+    sqlFolder <- "export_v4"
+  }
+  else if (cdmVersion == "5")
+  {
+    sqlFolder <- "export_v5"
+  }
+  else
+  {
+    stop("Error: Invalid CDM Version number, use 4 or 5")
+  }
+  
+  sqlFile <- paste(sqlFolder,"/condition/sqlConditionTreemap.sql")
+  
+  queryConditionTreemap <- renderAndTranslate(sqlFilename = sqlFile,
                                               packageName = "Achilles",
                                               dbms = dbms,
                                               cdmSchema = cdmSchema
@@ -574,12 +634,27 @@ generateConditionTreemap <- function(conn, dbms, cdmSchema, outputPath) {
   close(progressBar)
 }
 
-generateConditionEraTreemap <- function(conn, dbms, cdmSchema, outputPath) {
+generateConditionEraTreemap <- function(conn, dbms, cdmSchema, outputPath, cdmVersion = "4") {
   writeLines("Generating condition era treemap")
   progressBar <- txtProgressBar(max=1,style=3)
   progress = 0
   
-  queryConditionEraTreemap <- renderAndTranslate(sqlFilename = "export/conditionera/sqlConditionEraTreemap.sql",
+  if (cdmVersion == "4")
+  {
+    sqlFolder <- "export_v4"
+  }
+  else if (cdmVersion == "5")
+  {
+    sqlFolder <- "export_v5"
+  }
+  else
+  {
+    stop("Error: Invalid CDM Version number, use 4 or 5")
+  }
+  
+  sqlFile <- paste(sqlFolder,"/conditionera/sqlConditionEraTreemap.sql")
+  
+  queryConditionEraTreemap <- renderAndTranslate(sqlFilename = sqlFile,
                                               packageName = "Achilles",
                                               dbms = dbms,
                                               cdmSchema = cdmSchema
@@ -594,7 +669,7 @@ generateConditionEraTreemap <- function(conn, dbms, cdmSchema, outputPath) {
   close(progressBar)
 }
 
-generateConditionReports <- function(conn, dbms, cdmSchema, outputPath) {
+generateConditionReports <- function(conn, dbms, cdmSchema, outputPath, cdmVersion = "4") {
   writeLines("Generating condition reports")
   
   treemapFile <- file.path(outputPath,"condition_treemap.json")
@@ -619,25 +694,47 @@ generateConditionReports <- function(conn, dbms, cdmSchema, outputPath) {
   progressBar <- txtProgressBar(style=3)
   progress = 0
   
-  queryPrevalenceByGenderAgeYear <- renderAndTranslate(sqlFilename = "export/condition/sqlPrevalenceByGenderAgeYear.sql",
+  
+  if (cdmVersion == "4")
+  {
+    sqlFolder <- "export_v4"
+  }
+  else if (cdmVersion == "5")
+  {
+    sqlFolder <- "export_v5"
+  }
+  else
+  {
+    stop("Error: Invalid CDM Version number, use 4 or 5")
+  }
+  
+  sqlFile <- paste(sqlFolder,"/condition/sqlPrevalenceByGenderAgeYear.sql")
+  
+  queryPrevalenceByGenderAgeYear <- renderAndTranslate(sqlFilename = sqlFile,
                                                        packageName = "Achilles",
                                                        dbms = dbms,
                                                        cdmSchema = cdmSchema
   )
   
-  queryPrevalenceByMonth <- renderAndTranslate(sqlFilename = "export/condition/sqlPrevalenceByMonth.sql",
+  sqlFile <- paste(sqlFolder,"/condition/sqlPrevalenceByMonth.sql")
+  
+  queryPrevalenceByMonth <- renderAndTranslate(sqlFilename = sqlFile,
                                                packageName = "Achilles",
                                                dbms = dbms,
                                                cdmSchema = cdmSchema
   )
   
-  queryConditionsByType <- renderAndTranslate(sqlFilename = "export/condition/sqlConditionsByType.sql",
+  sqlFile <- paste(sqlFolder,"/condition/sqlConditionsByType.sql")
+  
+  queryConditionsByType <- renderAndTranslate(sqlFilename = sqlFile,
                                               packageName = "Achilles",
                                               dbms = dbms,
                                               cdmSchema = cdmSchema
   )
   
-  queryAgeAtFirstDiagnosis <- renderAndTranslate(sqlFilename = "export/condition/sqlAgeAtFirstDiagnosis.sql",
+  sqlFile <- paste(sqlFolder,"/condition/sqlAgeAtFirstDiagnosis.sql")
+  
+  queryAgeAtFirstDiagnosis <- renderAndTranslate(sqlFilename = sqlFile,
                                                  packageName = "Achilles",
                                                  dbms = dbms,
                                                  cdmSchema = cdmSchema
@@ -672,7 +769,7 @@ generateConditionReports <- function(conn, dbms, cdmSchema, outputPath) {
   close(progressBar)
 }
 
-generateConditionEraReports <- function(conn, dbms, cdmSchema, outputPath) {
+generateConditionEraReports <- function(conn, dbms, cdmSchema, outputPath, cdmVersion = "4") {
   writeLines("Generating condition era reports")
   
   treemapFile <- file.path(outputPath,"conditionera_treemap.json")
@@ -696,25 +793,47 @@ generateConditionEraReports <- function(conn, dbms, cdmSchema, outputPath) {
   progressBar <- txtProgressBar(style=3)
   progress = 0
   
-  queryPrevalenceByGenderAgeYear <- renderAndTranslate(sqlFilename = "export/conditionera/sqlPrevalenceByGenderAgeYear.sql",
+  
+  if (cdmVersion == "4")
+  {
+    sqlFolder <- "export_v4"
+  }
+  else if (cdmVersion == "5")
+  {
+    sqlFolder <- "export_v5"
+  }
+  else
+  {
+    stop("Error: Invalid CDM Version number, use 4 or 5")
+  }
+  
+  sqlFile <- paste(sqlFolder,"/conditionera/sqlPrevalenceByGenderAgeYear.sql")
+  
+  queryPrevalenceByGenderAgeYear <- renderAndTranslate(sqlFilename = sqlFile,
                                                        packageName = "Achilles",
                                                        dbms = dbms,
                                                        cdmSchema = cdmSchema
   )
   
-  queryPrevalenceByMonth <- renderAndTranslate(sqlFilename = "export/conditionera/sqlPrevalenceByMonth.sql",
+  sqlFile <- paste(sqlFolder,"/conditionera/sqlPrevalenceByMonth.sql")
+  
+  queryPrevalenceByMonth <- renderAndTranslate(sqlFilename = sqlFile,
                                                packageName = "Achilles",
                                                dbms = dbms,
                                                cdmSchema = cdmSchema
   )
   
-  queryAgeAtFirstDiagnosis <- renderAndTranslate(sqlFilename = "export/conditionera/sqlAgeAtFirstDiagnosis.sql",
+  sqlFile <- paste(sqlFolder,"/conditionera/sqlAgeAtFirstDiagnosis.sql")
+  
+  queryAgeAtFirstDiagnosis <- renderAndTranslate(sqlFilename = sqlFile,
                                                  packageName = "Achilles",
                                                  dbms = dbms,
                                                  cdmSchema = cdmSchema
   )
   
-  queryLengthOfEra <- renderAndTranslate(sqlFilename = "export/conditionera/sqlLengthOfEra.sql",
+  sqlFile <- paste(sqlFolder,"/conditionera/sqlLengthOfEra.sql")
+  
+  queryLengthOfEra <- renderAndTranslate(sqlFilename = sqlFile,
                                                  packageName = "Achilles",
                                                  dbms = dbms,
                                                  cdmSchema = cdmSchema
@@ -749,7 +868,7 @@ generateConditionEraReports <- function(conn, dbms, cdmSchema, outputPath) {
   close(progressBar)
 }
 
-generateDrugEraReports <- function(conn, dbms, cdmSchema, outputPath) {
+generateDrugEraReports <- function(conn, dbms, cdmSchema, outputPath, cdmVersion = "4") {
   writeLines("Generating drug era reports")
   
   
@@ -774,25 +893,47 @@ generateDrugEraReports <- function(conn, dbms, cdmSchema, outputPath) {
   progressBar <- txtProgressBar(style=3)
   progress = 0
   
-  queryAgeAtFirstExposure <- renderAndTranslate(sqlFilename = "export/drugera/sqlAgeAtFirstExposure.sql",
+  if (cdmVersion == "4")
+  {
+    sqlFolder <- "export_v4"
+  }
+  else if (cdmVersion == "5")
+  {
+    sqlFolder <- "export_v5"
+  }
+  else
+  {
+    stop("Error: Invalid CDM Version number, use 4 or 5")
+  }
+  
+  sqlFile <- paste(sqlFolder,"/drugera/sqlAgeAtFirstExposure.sql")
+  
+  queryAgeAtFirstExposure <- renderAndTranslate(sqlFilename = sqlFile,
                                                 packageName = "Achilles",
                                                 dbms = dbms,
                                                 cdmSchema = cdmSchema
   )
   
-  queryPrevalenceByGenderAgeYear <- renderAndTranslate(sqlFilename = "export/drugera/sqlPrevalenceByGenderAgeYear.sql",
+  
+  sqlFile <- paste(sqlFolder,"/drugera/sqlPrevalenceByGenderAgeYear.sql")
+  
+  queryPrevalenceByGenderAgeYear <- renderAndTranslate(sqlFilename = sqlFile,
                                                        packageName = "Achilles",
                                                        dbms = dbms,
                                                        cdmSchema = cdmSchema
   )
   
-  queryPrevalenceByMonth <- renderAndTranslate(sqlFilename = "export/drugera/sqlPrevalenceByMonth.sql",
+  sqlFile <- paste(sqlFolder,"/drugera/sqlPrevalenceByMonth.sql")
+  
+  queryPrevalenceByMonth <- renderAndTranslate(sqlFilename = sqlFile,
                                                packageName = "Achilles",
                                                dbms = dbms,
                                                cdmSchema = cdmSchema
   )
   
-  queryLengthOfEra <- renderAndTranslate(sqlFilename = "export/drugera/sqlLengthOfEra.sql",
+  sqlFile <- paste(sqlFolder,"/drugera/sqlLengthOfEra.sql")
+  
+  queryLengthOfEra <- renderAndTranslate(sqlFilename = sqlFile,
                                          packageName = "Achilles",
                                          dbms = dbms,
                                          cdmSchema = cdmSchema
@@ -827,7 +968,7 @@ generateDrugEraReports <- function(conn, dbms, cdmSchema, outputPath) {
   close(progressBar)
 }
 
-generateDrugReports <- function(conn, dbms, cdmSchema, outputPath) {
+generateDrugReports <- function(conn, dbms, cdmSchema, outputPath, cdmVersion = "4") {
   writeLines("Generating drug reports")
   
   treemapFile <- file.path(outputPath,"drug_treemap.json")
@@ -850,43 +991,71 @@ generateDrugReports <- function(conn, dbms, cdmSchema, outputPath) {
   progressBar <- txtProgressBar(style=3)
   progress = 0
   
-  queryAgeAtFirstExposure <- renderAndTranslate(sqlFilename = "export/drug/sqlAgeAtFirstExposure.sql",
+  
+  if (cdmVersion == "4")
+  {
+    sqlFolder <- "export_v4"
+  }
+  else if (cdmVersion == "5")
+  {
+    sqlFolder <- "export_v5"
+  }
+  else
+  {
+    stop("Error: Invalid CDM Version number, use 4 or 5")
+  }
+  
+  sqlFile <- paste(sqlFolder,"/drug/sqlAgeAtFirstExposure.sql")
+  
+  queryAgeAtFirstExposure <- renderAndTranslate(sqlFilename = sqlFile,
                                                        packageName = "Achilles",
                                                        dbms = dbms,
                                                        cdmSchema = cdmSchema
   )
   
-  queryDaysSupplyDistribution <- renderAndTranslate(sqlFilename = "export/drug/sqlDaysSupplyDistribution.sql",
+  sqlFile <- paste(sqlFolder,"/drug/sqlDaysSupplyDistribution.sql")
+  
+  queryDaysSupplyDistribution <- renderAndTranslate(sqlFilename = sqlFile,
                                                        packageName = "Achilles",
                                                        dbms = dbms,
                                                        cdmSchema = cdmSchema
   )
   
-  queryDrugsByType <- renderAndTranslate(sqlFilename = "export/drug/sqlDrugsByType.sql",
+  sqlFile <- paste(sqlFolder,"/drug/sqlDrugsByType.sql")
+  
+  queryDrugsByType <- renderAndTranslate(sqlFilename = sqlFile,
                                                        packageName = "Achilles",
                                                        dbms = dbms,
                                                        cdmSchema = cdmSchema
   )
   
-  queryPrevalenceByGenderAgeYear <- renderAndTranslate(sqlFilename = "export/drug/sqlPrevalenceByGenderAgeYear.sql",
+  sqlFile <- paste(sqlFolder,"/drug/sqlPrevalenceByGenderAgeYear.sql")
+  
+  queryPrevalenceByGenderAgeYear <- renderAndTranslate(sqlFilename = sqlFile,
                                                        packageName = "Achilles",
                                                        dbms = dbms,
                                                        cdmSchema = cdmSchema
   )
   
-  queryPrevalenceByMonth <- renderAndTranslate(sqlFilename = "export/drug/sqlPrevalenceByMonth.sql",
+  sqlFile <- paste(sqlFolder,"/drug/sqlPrevalenceByMonth.sql")
+  
+  queryPrevalenceByMonth <- renderAndTranslate(sqlFilename = sqlFile,
                                                        packageName = "Achilles",
                                                        dbms = dbms,
                                                        cdmSchema = cdmSchema
   )
   
-  queryQuantityDistribution <- renderAndTranslate(sqlFilename = "export/drug/sqlQuantityDistribution.sql",
+  sqlFile <- paste(sqlFolder,"/drug/sqlQuantityDistribution.sql")
+  
+  queryQuantityDistribution <- renderAndTranslate(sqlFilename = sqlFile,
                                                        packageName = "Achilles",
                                                        dbms = dbms,
                                                        cdmSchema = cdmSchema
   )
   
-  queryRefillsDistribution <- renderAndTranslate(sqlFilename = "export/drug/sqlRefillsDistribution.sql",
+  sqlFile <- paste(sqlFolder,"/drug/sqlRefillsDistribution.sql")
+  
+  queryRefillsDistribution <- renderAndTranslate(sqlFilename = sqlFile,
                                                        packageName = "Achilles",
                                                        dbms = dbms,
                                                        cdmSchema = cdmSchema
@@ -927,12 +1096,28 @@ generateDrugReports <- function(conn, dbms, cdmSchema, outputPath) {
   close(progressBar)
 }
 
-generateProcedureTreemap <- function(conn, dbms, cdmSchema, outputPath) {
+generateProcedureTreemap <- function(conn, dbms, cdmSchema, outputPath, cdmVersion = "4") {
   writeLines("Generating procedure treemap")
   progressBar <- txtProgressBar(max=1,style=3)
   progress = 0
   
-  queryProcedureTreemap <- renderAndTranslate(sqlFilename = "export/procedure/sqlProcedureTreemap.sql",
+  
+  if (cdmVersion == "4")
+  {
+    sqlFolder <- "export_v4"
+  }
+  else if (cdmVersion == "5")
+  {
+    sqlFolder <- "export_v5"
+  }
+  else
+  {
+    stop("Error: Invalid CDM Version number, use 4 or 5")
+  }
+  
+  sqlFile <- paste(sqlFolder,"/procedure/sqlProcedureTreemap.sql")
+  
+  queryProcedureTreemap <- renderAndTranslate(sqlFilename = sqlFile,
                                               packageName = "Achilles",
                                               dbms = dbms,
                                               cdmSchema = cdmSchema
@@ -947,7 +1132,7 @@ generateProcedureTreemap <- function(conn, dbms, cdmSchema, outputPath) {
   close(progressBar)
 }
 
-generateProcedureReports <- function(conn, dbms, cdmSchema, outputPath) {
+generateProcedureReports <- function(conn, dbms, cdmSchema, outputPath, cdmVersion = "4") {
   writeLines("Generating procedure reports")
   
   treemapFile <- file.path(outputPath,"procedure_treemap.json")
@@ -971,25 +1156,48 @@ generateProcedureReports <- function(conn, dbms, cdmSchema, outputPath) {
   progressBar <- txtProgressBar(style=3)
   progress = 0
   
-  queryPrevalenceByGenderAgeYear <- renderAndTranslate(sqlFilename = "export/procedure/sqlPrevalenceByGenderAgeYear.sql",
+  
+  if (cdmVersion == "4")
+  {
+    sqlFolder <- "export_v4"
+  }
+  else if (cdmVersion == "5")
+  {
+    sqlFolder <- "export_v5"
+  }
+  else
+  {
+    stop("Error: Invalid CDM Version number, use 4 or 5")
+  }
+  
+  sqlFile <- paste(sqlFolder,"/procedure/sqlPrevalenceByGenderAgeYear.sql")
+  
+  
+  queryPrevalenceByGenderAgeYear <- renderAndTranslate(sqlFilename = sqlFile,
                                                        packageName = "Achilles",
                                                        dbms = dbms,
                                                        cdmSchema = cdmSchema
   )
   
-  queryPrevalenceByMonth <- renderAndTranslate(sqlFilename = "export/procedure/sqlPrevalenceByMonth.sql",
+  sqlFile <- paste(sqlFolder,"/procedure/sqlPrevalenceByMonth.sql")
+  
+  queryPrevalenceByMonth <- renderAndTranslate(sqlFilename = sqlFile,
                                                packageName = "Achilles",
                                                dbms = dbms,
                                                cdmSchema = cdmSchema
   )
   
-  queryProceduresByType <- renderAndTranslate(sqlFilename = "export/procedure/sqlProceduresByType.sql",
+  sqlFile <- paste(sqlFolder,"/procedure/sqlProceduresByType.sql")
+  
+  queryProceduresByType <- renderAndTranslate(sqlFilename = sqlFile,
                                               packageName = "Achilles",
                                               dbms = dbms,
                                               cdmSchema = cdmSchema
   )
   
-  queryAgeAtFirstOccurrence <- renderAndTranslate(sqlFilename = "export/procedure/sqlAgeAtFirstOccurrence.sql",
+  sqlFile <- paste(sqlFolder,"/procedure/sqlAgeAtFirstOccurrence.sql")
+  
+  queryAgeAtFirstOccurrence <- renderAndTranslate(sqlFilename = sqlFile,
                                                  packageName = "Achilles",
                                                  dbms = dbms,
                                                  cdmSchema = cdmSchema
@@ -1023,7 +1231,7 @@ generateProcedureReports <- function(conn, dbms, cdmSchema, outputPath) {
   close(progressBar)
 }
 
-generatePersonReport <- function(conn, dbms, cdmSchema, outputPath)
+generatePersonReport <- function(conn, dbms, cdmSchema, outputPath, cdmVersion = "4")
 {
   writeLines("Generating person reports")
   progressBar <- txtProgressBar(max=7,style=3)
@@ -1031,12 +1239,29 @@ generatePersonReport <- function(conn, dbms, cdmSchema, outputPath)
   output = {}
   
   
+  if (cdmVersion == "4")
+  {
+    sqlFolder <- "export_v4"
+  }
+  else if (cdmVersion == "5")
+  {
+    sqlFolder <- "export_v5"
+  }
+  else
+  {
+    stop("Error: Invalid CDM Version number, use 4 or 5")
+  }
+  
+  sqlFile <- paste(sqlFolder,"/person/population.sql")
+  
+  
+  
   # 1.  Title:  Population
   # a.  Visualization: Table
   # b.	Row #1:  CDM source name
   # c.	Row #2:  # of persons
   
-  renderedSql <- renderAndTranslate(sqlFilename = "export/person/population.sql",
+  renderedSql <- renderAndTranslate(sqlFilename = sqlFile,
                                     packageName = "Achilles",
                                     dbms = dbms,
                                     cdmSchema = cdmSchema
@@ -1052,7 +1277,11 @@ generatePersonReport <- function(conn, dbms, cdmSchema, outputPath)
   # a.   Visualization: Pie
   # b.	Category:  Gender
   # c.	Value:  % of persons  
-  renderedSql <- renderAndTranslate(sqlFilename = "export/person/gender.sql",
+  
+  
+  sqlFile <- paste(sqlFolder,"/person/gender.sql")
+  
+  renderedSql <- renderAndTranslate(sqlFilename = sqlFile,
                                     packageName = "Achilles",
                                     dbms = dbms,
                                     cdmSchema = cdmSchema
@@ -1067,7 +1296,11 @@ generatePersonReport <- function(conn, dbms, cdmSchema, outputPath)
   # a.  Visualization: Pie
   # b.	Category: Race
   # c.	Value: % of persons
-  renderedSql <- renderAndTranslate(sqlFilename = "export/person/race.sql",
+  
+  
+  sqlFile <- paste(sqlFolder,"/person/race.sql")
+  
+  renderedSql <- renderAndTranslate(sqlFilename = sqlFile,
                                     packageName = "Achilles",
                                     dbms = dbms,
                                     cdmSchema = cdmSchema
@@ -1082,7 +1315,10 @@ generatePersonReport <- function(conn, dbms, cdmSchema, outputPath)
   # a.  Visualization: Pie
   # b.	Category: Ethnicity
   # c.	Value: % of persons
-  renderedSql <- renderAndTranslate(sqlFilename = "export/person/ethnicity.sql",
+  
+  sqlFile <- paste(sqlFolder,"/person/ethnicity.sql")
+  
+  renderedSql <- renderAndTranslate(sqlFilename = sqlFile,
                                     packageName = "Achilles",
                                     dbms = dbms,
                                     cdmSchema = cdmSchema
@@ -1099,7 +1335,10 @@ generatePersonReport <- function(conn, dbms, cdmSchema, outputPath)
   # c.	Value:  # of persons
   birthYearHist <- {}
   
-  renderedSql <- renderAndTranslate(sqlFilename = "export/person/yearofbirth_stats.sql",
+  
+  sqlFile <- paste(sqlFolder,"/person/yearofbirth_stats.sql")
+  
+  renderedSql <- renderAndTranslate(sqlFilename = sqlFile,
                                     packageName = "Achilles",
                                     dbms = dbms,
                                     cdmSchema = cdmSchema
@@ -1113,7 +1352,10 @@ generatePersonReport <- function(conn, dbms, cdmSchema, outputPath)
   birthYearHist$INTERVAL_SIZE = birthYearStats$INTERVAL_SIZE
   birthYearHist$INTERVALS = (birthYearStats$MAX_VALUE - birthYearStats$MIN_VALUE) / birthYearStats$INTERVAL_SIZE
   
-  renderedSql <- renderAndTranslate(sqlFilename = "export/person/yearofbirth_data.sql",
+  
+  sqlFile <- paste(sqlFolder,"/person/yearofbirth_data.sql")
+  
+  renderedSql <- renderAndTranslate(sqlFilename = sqlFile,
                                     packageName = "Achilles",
                                     dbms = dbms,
                                     cdmSchema = cdmSchema
@@ -1135,12 +1377,27 @@ generatePersonReport <- function(conn, dbms, cdmSchema, outputPath)
   close(progressBar)
 }
 
-generateObservationPeriodReport <- function(conn, dbms, cdmSchema, outputPath)
+generateObservationPeriodReport <- function(conn, dbms, cdmSchema, outputPath, cdmVersion = "4")
 {
   writeLines("Generating observation period reports")
   progressBar <- txtProgressBar(max=11,style=3)
   progress = 0
   output = {}
+  
+  
+  if (cdmVersion == "4")
+  {
+    sqlFolder <- "export_v4"
+  }
+  else if (cdmVersion == "5")
+  {
+    sqlFolder <- "export_v5"
+  }
+  else
+  {
+    stop("Error: Invalid CDM Version number, use 4 or 5")
+  }
+  
   
   # 1.  Title:  Age at time of first observation
   # a.  Visualization:  Histogram
@@ -1155,7 +1412,9 @@ generateObservationPeriodReport <- function(conn, dbms, cdmSchema, outputPath)
   ageAtFirstObservationHist$INTERVAL_SIZE = 1
   ageAtFirstObservationHist$INTERVALS = 100
   
-  renderedSql <- renderAndTranslate(sqlFilename = "export/observationperiod/ageatfirst.sql",
+  sqlFile <- paste(sqlFolder,"/observationperiod/ageatfirst.sql")
+  
+  renderedSql <- renderAndTranslate(sqlFilename = sqlFile,
                                     packageName = "Achilles",
                                     dbms = dbms,
                                     cdmSchema = cdmSchema
@@ -1171,7 +1430,9 @@ generateObservationPeriodReport <- function(conn, dbms, cdmSchema, outputPath)
   # b.	Category:  Gender
   # c.	Values:  Min/25%/Median/95%/Max  - age at time of first observation
   
-  renderedSql <- renderAndTranslate(sqlFilename = "export/observationperiod/agebygender.sql",
+  sqlFile <- paste(sqlFolder,"/observationperiod/agebygender.sql")
+  
+  renderedSql <- renderAndTranslate(sqlFilename = sqlFile,
                                     packageName = "Achilles",
                                     dbms = dbms,
                                     cdmSchema = cdmSchema
@@ -1188,7 +1449,9 @@ generateObservationPeriodReport <- function(conn, dbms, cdmSchema, outputPath)
   
   observationLengthHist <- {}
   
-  renderedSql <- renderAndTranslate(sqlFilename = "export/observationperiod/observationlength_stats.sql",
+  sqlFile <- paste(sqlFolder,"/observationperiod/observationlength_stats.sql")
+  
+  renderedSql <- renderAndTranslate(sqlFilename = sqlFile,
                                     packageName = "Achilles",
                                     dbms = dbms,
                                     cdmSchema = cdmSchema
@@ -1202,7 +1465,9 @@ generateObservationPeriodReport <- function(conn, dbms, cdmSchema, outputPath)
   observationLengthHist$INTERVAL_SIZE = observationLengthStats$INTERVAL_SIZE
   observationLengthHist$INTERVALS = (observationLengthStats$MAX_VALUE - observationLengthStats$MIN_VALUE) / observationLengthStats$INTERVAL_SIZE
   
-  renderedSql <- renderAndTranslate(sqlFilename = "export/observationperiod/observationlength_data.sql",
+  sqlFile <- paste(sqlFolder,"/observationperiod/observationlength_data.sql")
+  
+  renderedSql <- renderAndTranslate(sqlFilename = sqlFile,
                                     packageName = "Achilles",
                                     dbms = dbms,
                                     cdmSchema = cdmSchema
@@ -1221,7 +1486,9 @@ generateObservationPeriodReport <- function(conn, dbms, cdmSchema, outputPath)
   # c.	Y-axis:  % of population observed
   # d.	Note:  will look like a Kaplan-Meier âsurvivalâ plot, but information is the same as shown in âlength of observationâ barchart, just plotted as cumulative 
   
-  renderedSql <- renderAndTranslate(sqlFilename = "export/observationperiod/cumulativeduration.sql",
+  sqlFile <- paste(sqlFolder,"/observationperiod/cumulativeduration.sql")
+  
+  renderedSql <- renderAndTranslate(sqlFilename = sqlFile,
                                     packageName = "Achilles",
                                     dbms = dbms,
                                     cdmSchema = cdmSchema
@@ -1237,7 +1504,9 @@ generateObservationPeriodReport <- function(conn, dbms, cdmSchema, outputPath)
   # b.	Category: Gender
   # c.	Values: Min/25%/Median/95%/Max  length of observation period
   
-  renderedSql <- renderAndTranslate(sqlFilename = "export/observationperiod/observationlengthbygender.sql",
+  sqlFile <- paste(sqlFolder,"/observationperiod/observationlengthbygender.sql")
+  
+  renderedSql <- renderAndTranslate(sqlFilename = sqlFile,
                                     packageName = "Achilles",
                                     dbms = dbms,
                                     cdmSchema = cdmSchema
@@ -1252,7 +1521,9 @@ generateObservationPeriodReport <- function(conn, dbms, cdmSchema, outputPath)
   # b.	Category: Age decile
   # c.	Values: Min/25%/Median/95%/Max  length of observation period
   
-  renderedSql <- renderAndTranslate(sqlFilename = "export/observationperiod/observationlengthbyage.sql",
+  sqlFile <- paste(sqlFolder,"/observationperiod/observationlengthbyage.sql")
+  
+  renderedSql <- renderAndTranslate(sqlFilename = sqlFile,
                                     packageName = "Achilles",
                                     dbms = dbms,
                                     cdmSchema = cdmSchema
@@ -1267,8 +1538,10 @@ generateObservationPeriodReport <- function(conn, dbms, cdmSchema, outputPath)
   # b.	Category:  Year
   # c.	Values:  # of persons with continuous coverage
   
+  sqlFile <- paste(sqlFolder,"/observationperiod/observedbyyear_stats.sql")
+  
   observedByYearHist <- {}
-  renderedSql <- renderAndTranslate(sqlFilename = "export/observationperiod/observedbyyear_stats.sql",
+  renderedSql <- renderAndTranslate(sqlFilename = sqlFile,
                                     packageName = "Achilles",
                                     dbms = dbms,
                                     cdmSchema = cdmSchema
@@ -1281,7 +1554,9 @@ generateObservationPeriodReport <- function(conn, dbms, cdmSchema, outputPath)
   observedByYearHist$INTERVAL_SIZE = observedByYearStats$INTERVAL_SIZE
   observedByYearHist$INTERVALS = (observedByYearStats$MAX_VALUE - observedByYearStats$MIN_VALUE) / observedByYearStats$INTERVAL_SIZE
   
-  renderedSql <- renderAndTranslate(sqlFilename = "export/observationperiod/observedbyyear_data.sql",
+  sqlFile <- paste(sqlFolder,"/observationperiod/observedbyyear_data.sql")
+  
+  renderedSql <- renderAndTranslate(sqlFilename = sqlFile,
                                     packageName = "Achilles",
                                     dbms = dbms,
                                     cdmSchema = cdmSchema
@@ -1301,7 +1576,9 @@ generateObservationPeriodReport <- function(conn, dbms, cdmSchema, outputPath)
   
   observedByMonth <- {}
   
-  renderedSql <- renderAndTranslate(sqlFilename = "export/observationperiod/observedbymonth.sql",
+  sqlFile <- paste(sqlFolder,"/observationperiod/observedbymonth.sql")
+  
+  renderedSql <- renderAndTranslate(sqlFilename = sqlFile,
                                     packageName = "Achilles",
                                     dbms = dbms,
                                     cdmSchema = cdmSchema
@@ -1317,7 +1594,9 @@ generateObservationPeriodReport <- function(conn, dbms, cdmSchema, outputPath)
   # b.	Category:  Number of observation periods
   # c.	Values:  # of persons 
   
-  renderedSql <- renderAndTranslate(sqlFilename = "export/observationperiod/periodsperperson.sql",
+  sqlFile <- paste(sqlFolder,"/observationperiod/periodsperperson.sql")
+  
+  renderedSql <- renderAndTranslate(sqlFilename = sqlFile,
                                     packageName = "Achilles",
                                     dbms = dbms,
                                     cdmSchema = cdmSchema
@@ -1368,12 +1647,28 @@ generateDashboardReport <- function(outputPath)
   close(progressBar)
 }
 
-generateDataDensityReport <- function(conn, dbms,cdmSchema, outputPath)
+generateDataDensityReport <- function(conn, dbms,cdmSchema, outputPath, cdmVersion = "4")
 {
   writeLines("Generating data density reports")
   progressBar <- txtProgressBar(max=3,style=3)
   progress = 0
   output = {}
+  
+  
+  if (cdmVersion == "4")
+  {
+    sqlFolder <- "export_v4"
+  }
+  else if (cdmVersion == "5")
+  {
+    sqlFolder <- "export_v5"
+  }
+  else
+  {
+    stop("Error: Invalid CDM Version number, use 4 or 5")
+  }
+  
+  sqlFile <- paste(sqlFolder,"/datadensity/totalrecords.sql")
   
 #   1.  Title: Total records
 #   a.	Visualization: scatterplot
@@ -1381,7 +1676,7 @@ generateDataDensityReport <- function(conn, dbms,cdmSchema, outputPath)
 #   c.	y-axis:  records
 #   d.	series:  person, visit, condition, drug, procedure, observation
   
-  renderedSql <- renderAndTranslate(sqlFilename = "export/datadensity/totalrecords.sql",
+  renderedSql <- renderAndTranslate(sqlFilename = sqlFile,
                                     packageName = "Achilles",
                                     dbms = dbms,
                                     cdmSchema = cdmSchema
@@ -1397,8 +1692,10 @@ generateDataDensityReport <- function(conn, dbms,cdmSchema, outputPath)
 #   b.	X-axis:  month/year
 #   c.	y-axis:  records/person
 #   d.	series:  person, visit, condition, drug, procedure, observation
-  
-  renderedSql <- renderAndTranslate(sqlFilename = "export/datadensity/recordsperperson.sql",
+
+  sqlFile <- paste(sqlFolder,"/datadensity/recordsperperson.sql")
+
+  renderedSql <- renderAndTranslate(sqlFilename = sqlFile,
                                     packageName = "Achilles",
                                     dbms = dbms,
                                     cdmSchema = cdmSchema
@@ -1413,8 +1710,10 @@ generateDataDensityReport <- function(conn, dbms,cdmSchema, outputPath)
 #   a.	Visualization: side-by-side boxplot
 #   b.	Category: Condition/Drug/Procedure/Observation
 #   c.	Values: Min/25%/Median/95%/Max  number of distinct concepts per person
-  
-  renderedSql <- renderAndTranslate(sqlFilename = "export/datadensity/conceptsperperson.sql",
+
+  sqlFile <- paste(sqlFolder,"/datadensity/conceptsperperson.sql")
+
+  renderedSql <- renderAndTranslate(sqlFilename = sqlFile,
                                     packageName = "Achilles",
                                     dbms = dbms,
                                     cdmSchema = cdmSchema
@@ -1432,12 +1731,29 @@ generateDataDensityReport <- function(conn, dbms,cdmSchema, outputPath)
 
 }
 
-generateObservationTreemap <- function(conn, dbms, cdmSchema, outputPath) {
+generateObservationTreemap <- function(conn, dbms, cdmSchema, outputPath, cdmVersion = "4") {
   writeLines("Generating observation treemap")
   progressBar <- txtProgressBar(max=1,style=3)
   progress = 0
   
-  queryObservationTreemap <- renderAndTranslate(sqlFilename = "export/observation/sqlObservationTreemap.sql",
+  
+  if (cdmVersion == "4")
+  {
+    sqlFolder <- "export_v4"
+  }
+  else if (cdmVersion == "5")
+  {
+    sqlFolder <- "export_v5"
+  }
+  else
+  {
+    stop("Error: Invalid CDM Version number, use 4 or 5")
+  }
+  
+  sqlFile <- paste(sqlFolder,"/observation/sqlObservationTreemap.sql")
+  
+  
+  queryObservationTreemap <- renderAndTranslate(sqlFilename = sqlFile,
                                               packageName = "Achilles",
                                               dbms = dbms,
                                               cdmSchema = cdmSchema
@@ -1453,7 +1769,7 @@ generateObservationTreemap <- function(conn, dbms, cdmSchema, outputPath) {
   
 }
 
-generateObservationReports <- function(conn, dbms, cdmSchema, outputPath)
+generateObservationReports <- function(conn, dbms, cdmSchema, outputPath, cdmVersion = "4")
 {
   writeLines("Generating Observation reports")
   
@@ -1478,55 +1794,88 @@ generateObservationReports <- function(conn, dbms, cdmSchema, outputPath)
   progressBar <- txtProgressBar(style=3)
   progress = 0
   
-  queryPrevalenceByGenderAgeYear <- renderAndTranslate(sqlFilename = "export/observation/sqlPrevalenceByGenderAgeYear.sql",
+  
+  if (cdmVersion == "4")
+  {
+    sqlFolder <- "export_v4"
+  }
+  else if (cdmVersion == "5")
+  {
+    sqlFolder <- "export_v5"
+  }
+  else
+  {
+    stop("Error: Invalid CDM Version number, use 4 or 5")
+  }
+  
+  sqlFile <- paste(sqlFolder,"/observation/sqlPrevalenceByGenderAgeYear.sql")
+  
+  
+  queryPrevalenceByGenderAgeYear <- renderAndTranslate(sqlFilename = sqlFile,
                                                        packageName = "Achilles",
                                                        dbms = dbms,
                                                        cdmSchema = cdmSchema
   )
   
-  queryPrevalenceByMonth <- renderAndTranslate(sqlFilename = "export/observation/sqlPrevalenceByMonth.sql",
+  sqlFile <- paste(sqlFolder,"/observation/sqlPrevalenceByMonth.sql")
+  
+  queryPrevalenceByMonth <- renderAndTranslate(sqlFilename = sqlFile,
                                                packageName = "Achilles",
                                                dbms = dbms,
                                                cdmSchema = cdmSchema
   )
   
-  queryObservationsByType <- renderAndTranslate(sqlFilename = "export/observation/sqlObservationsByType.sql",
+  sqlFile <- paste(sqlFolder,"/observation/sqlObservationsByType.sql")
+  
+  queryObservationsByType <- renderAndTranslate(sqlFilename = sqlFile,
                                               packageName = "Achilles",
                                               dbms = dbms,
                                               cdmSchema = cdmSchema
   )
   
-  queryAgeAtFirstOccurrence <- renderAndTranslate(sqlFilename = "export/observation/sqlAgeAtFirstOccurrence.sql",
+  sqlFile <- paste(sqlFolder,"/observation/sqlAgeAtFirstOccurrence.sql")
+  
+  queryAgeAtFirstOccurrence <- renderAndTranslate(sqlFilename = sqlFile,
                                                   packageName = "Achilles",
                                                   dbms = dbms,
                                                   cdmSchema = cdmSchema
   )
   
-  queryRecordsByUnit <- renderAndTranslate(sqlFilename = "export/observation/sqlRecordsByUnit.sql",
+  sqlFile <- paste(sqlFolder,"/observation/sqlRecordsByUnit.sql")
+  
+  queryRecordsByUnit <- renderAndTranslate(sqlFilename = sqlFile,
                                                   packageName = "Achilles",
                                                   dbms = dbms,
                                                   cdmSchema = cdmSchema
   )
   
-  queryObservationValueDistribution <- renderAndTranslate(sqlFilename = "export/observation/sqlObservationValueDistribution.sql",
+  sqlFile <- paste(sqlFolder,"/observation/sqlObservationValueDistribution.sql")
+  
+  queryObservationValueDistribution <- renderAndTranslate(sqlFilename = sqlFile,
                                            packageName = "Achilles",
                                            dbms = dbms,
                                            cdmSchema = cdmSchema
   )
   
-  queryLowerLimitDistribution <- renderAndTranslate(sqlFilename = "export/observation/sqlLowerLimitDistribution.sql",
+  sqlFile <- paste(sqlFolder,"/observation/sqlLowerLimitDistribution.sql")
+  
+  queryLowerLimitDistribution <- renderAndTranslate(sqlFilename = sqlFile,
                                                           packageName = "Achilles",
                                                           dbms = dbms,
                                                           cdmSchema = cdmSchema
   )
   
-  queryUpperLimitDistribution <- renderAndTranslate(sqlFilename = "export/observation/sqlUpperLimitDistribution.sql",
+  sqlFile <- paste(sqlFolder,"/observation/sqlUpperLimitDistribution.sql")
+  
+  queryUpperLimitDistribution <- renderAndTranslate(sqlFilename = sqlFile,
                                                     packageName = "Achilles",
                                                     dbms = dbms,
                                                     cdmSchema = cdmSchema
   )
   
-  queryValuesRelativeToNorm <- renderAndTranslate(sqlFilename = "export/observation/sqlValuesRelativeToNorm.sql",
+  sqlFile <- paste(sqlFolder,"/observation/sqlValuesRelativeToNorm.sql")
+  
+  queryValuesRelativeToNorm <- renderAndTranslate(sqlFilename = sqlFile,
                                                     packageName = "Achilles",
                                                     dbms = dbms,
                                                     cdmSchema = cdmSchema
@@ -1573,12 +1922,29 @@ generateObservationReports <- function(conn, dbms, cdmSchema, outputPath)
   
 }
 
-generateVisitTreemap <- function(conn, dbms, cdmSchema, outputPath){
+generateVisitTreemap <- function(conn, dbms, cdmSchema, outputPath, cdmVersion = "4"){
   writeLines("Generating visit_occurrence treemap")
   progressBar <- txtProgressBar(max=1,style=3)
   progress = 0
   
-  queryVisitTreemap <- renderAndTranslate(sqlFilename = "export/visit/sqlVisitTreemap.sql",
+  
+  if (cdmVersion == "4")
+  {
+    sqlFolder <- "export_v4"
+  }
+  else if (cdmVersion == "5")
+  {
+    sqlFolder <- "export_v5"
+  }
+  else
+  {
+    stop("Error: Invalid CDM Version number, use 4 or 5")
+  }
+  
+  sqlFile <- paste(sqlFolder,"/visit/sqlVisitTreemap.sql")
+  
+  
+  queryVisitTreemap <- renderAndTranslate(sqlFilename = sqlFile,
                                                 packageName = "Achilles",
                                                 dbms = dbms,
                                                 cdmSchema = cdmSchema
@@ -1593,7 +1959,7 @@ generateVisitTreemap <- function(conn, dbms, cdmSchema, outputPath){
   close(progressBar)  
 }
 
-generateVisitReports <- function(conn, dbms, cdmSchema, outputPath){
+generateVisitReports <- function(conn, dbms, cdmSchema, outputPath, cdmVersion = "4"){
   writeLines("Generating visit reports")
   
   treemapFile <- file.path(outputPath,"visit_treemap.json")
@@ -1617,25 +1983,51 @@ generateVisitReports <- function(conn, dbms, cdmSchema, outputPath){
   progressBar <- txtProgressBar(style=3)
   progress = 0
   
-  queryPrevalenceByGenderAgeYear <- renderAndTranslate(sqlFilename = "export/visit/sqlPrevalenceByGenderAgeYear.sql",
+  
+  if (cdmVersion == "4")
+  {
+    sqlFolder <- "export_v4"
+  }
+  else if (cdmVersion == "5")
+  {
+    sqlFolder <- "export_v5"
+  }
+  else
+  {
+    stop("Error: Invalid CDM Version number, use 4 or 5")
+  }
+  
+  sqlFile <- paste(sqlFolder,"/visit/sqlPrevalenceByGenderAgeYear.sql")
+  
+  
+  queryPrevalenceByGenderAgeYear <- renderAndTranslate(sqlFilename = sqlFile,
                                                        packageName = "Achilles",
                                                        dbms = dbms,
                                                        cdmSchema = cdmSchema
   )
   
-  queryPrevalenceByMonth <- renderAndTranslate(sqlFilename = "export/visit/sqlPrevalenceByMonth.sql",
+  sqlFile <- paste(sqlFolder,"/visit/sqlPrevalenceByMonth.sql")
+  
+  
+  queryPrevalenceByMonth <- renderAndTranslate(sqlFilename = sqlFile,
                                                packageName = "Achilles",
                                                dbms = dbms,
                                                cdmSchema = cdmSchema
   )
   
-  queryVisitDurationByType <- renderAndTranslate(sqlFilename = "export/visit/sqlVisitDurationByType.sql",
+  sqlFile <- paste(sqlFolder,"/visit/sqlVisitDurationByType.sql")
+  
+  
+  queryVisitDurationByType <- renderAndTranslate(sqlFilename = sqlFile,
                                               packageName = "Achilles",
                                               dbms = dbms,
                                               cdmSchema = cdmSchema
   )
   
-  queryAgeAtFirstOccurrence <- renderAndTranslate(sqlFilename = "export/visit/sqlAgeAtFirstOccurrence.sql",
+  sqlFile <- paste(sqlFolder,"/visit/sqlAgeAtFirstOccurrence.sql")
+  
+  
+  queryAgeAtFirstOccurrence <- renderAndTranslate(sqlFilename = sqlFile,
                                                   packageName = "Achilles",
                                                   dbms = dbms,
                                                   cdmSchema = cdmSchema
@@ -1669,7 +2061,7 @@ generateVisitReports <- function(conn, dbms, cdmSchema, outputPath){
   close(progressBar)  
 }
 
-generateDeathReports <- function(conn, dbms, cdmSchema, outputPath){
+generateDeathReports <- function(conn, dbms, cdmSchema, outputPath, cdmVersion = "4"){
   writeLines("Generating death reports")
   progressBar <- txtProgressBar(max=4,style=3)
   progress = 0
@@ -1681,8 +2073,24 @@ generateDeathReports <- function(conn, dbms, cdmSchema, outputPath){
 #   c.	X-axis:  year
 #   d.	y-axis:  condition prevalence (% persons)
 #   e.	series:  male,  female
+
+  if (cdmVersion == "4")
+  {
+    sqlFolder <- "export_v4"
+  }
+  else if (cdmVersion == "5")
+  {
+    sqlFolder <- "export_v5"
+  }
+  else
+  {
+    stop("Error: Invalid CDM Version number, use 4 or 5")
+  }
   
-  renderedSql <- renderAndTranslate(sqlFilename = "export/death/sqlPrevalenceByGenderAgeYear.sql",
+  sqlFile <- paste(sqlFolder,"/death/sqlPrevalenceByGenderAgeYear.sql")
+  
+
+  renderedSql <- renderAndTranslate(sqlFilename = sqlFile,
                                     packageName = "Achilles",
                                     dbms = dbms,
                                     cdmSchema = cdmSchema
@@ -1698,8 +2106,11 @@ generateDeathReports <- function(conn, dbms, cdmSchema, outputPath){
 # b.	X-axis:  month/year
 # c.	y-axis:  % of persons
 # d.	Comment:  plot to show seasonality
-  
-  renderedSql <- renderAndTranslate(sqlFilename = "export/death/sqlPrevalenceByMonth.sql",
+
+  sqlFile <- paste(sqlFolder,"/death/sqlPrevalenceByMonth.sql")
+
+
+  renderedSql <- renderAndTranslate(sqlFilename = sqlFile,
                                     packageName = "Achilles",
                                     dbms = dbms,
                                     cdmSchema = cdmSchema
@@ -1714,8 +2125,10 @@ generateDeathReports <- function(conn, dbms, cdmSchema, outputPath){
 # a.	Visualization: pie
 # b.	Category: death type
 # c.	value:  % of records
-  
-  renderedSql <- renderAndTranslate(sqlFilename = "export/death/sqlDeathByType.sql",
+
+  sqlFile <- paste(sqlFolder,"/death/sqlDeathByType.sql")
+
+  renderedSql <- renderAndTranslate(sqlFilename = sqlFile,
                                     packageName = "Achilles",
                                     dbms = dbms,
                                     cdmSchema = cdmSchema
@@ -1731,7 +2144,9 @@ generateDeathReports <- function(conn, dbms, cdmSchema, outputPath){
 # b.	Category: gender
 # c.	Values: Min/25%/Median/95%/Max  as age at death
 
-  renderedSql <- renderAndTranslate(sqlFilename = "export/death/sqlAgeAtDeath.sql",
+  sqlFile <- paste(sqlFolder,"/death/sqlAgeAtDeath.sql")
+
+  renderedSql <- renderAndTranslate(sqlFilename = sqlFile,
                                     packageName = "Achilles",
                                     dbms = dbms,
                                     cdmSchema = cdmSchema
