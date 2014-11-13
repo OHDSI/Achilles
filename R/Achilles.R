@@ -141,6 +141,11 @@ renderAndTranslate <- function(sqlFilename, packageName, dbms, ...){
 #' @param createTable     If true, new results tables will be created in the results schema. If not, the tables are assumed to already exists, and analysis results will be added
 #' @param smallcellcount     To avoid patient identifiability, cells with small counts (<= smallcellcount) are deleted.
 #' 
+#' Patrick to do tongiht:  document
+#' 
+#' @param cdmVersion     To avoid patient identifiability, cells with small counts (<= smallcellcount) are deleted.
+#' @param runHeel     To avoid patient identifiability, cells with small counts (<= smallcellcount) are deleted.
+#' 
 #' @return An object of type \code{achillesResults} containing details for connecting to the database containing the results 
 #' @examples \dontrun{
 #'   connectionDetails <- createConnectionDetails(dbms="sql server", server="RNDUSRDHIT07.jnj.com")
@@ -148,10 +153,23 @@ renderAndTranslate <- function(sqlFilename, packageName, dbms, ...){
 #'   fetchAchillesAnalysisResults(connectionDetails, "scratch", 106)
 #' }
 #' @export
-achilles <- function (connectionDetails, cdmSchema, resultsSchema, sourceName = "", analysisIds, createTable = TRUE, smallcellcount = 5, CDMVersion = "4", runHeel = TRUE){
-  achillesFile <- "Achilles_v4.sql"
-  if (CDMVersion == "5")
+achilles <- function (connectionDetails, cdmSchema, resultsSchema, sourceName = "", analysisIds, createTable = TRUE, smallcellcount = 5, cdmVersion = "4", runHeel = TRUE){
+  
+  if (cdmVersion == "4")
+  {
+    achillesFile <- "Achilles_v4.sql"
+    heelFile <- "AchillesHeel_v4.sql"
+  }
+  else if (cdmVersion == "5")
+  {
     achillesFile <- "Achilles_v5.sql"
+    heelFile <- "AchillesHeel_v5.sql"
+  }
+  else
+  {
+    stop("Error: Invalid CDM Version number, use 4 or 5")
+  }
+    
     
   
   if (missing(analysisIds))
@@ -175,11 +193,11 @@ achilles <- function (connectionDetails, cdmSchema, resultsSchema, sourceName = 
   
   writeLines("Executing multiple queries. This could take a while")
   executeSql(conn,connectionDetails$dbms,achillesSql)
-  writeLines(paste("Done. Results can now be found in",resultsSchema))
+  writeLines(paste("Done. Achilles results can now be found in",resultsSchema))
   
   if (runHeel)
   {
-    heelSql <- renderAndTranslate(sqlFilename = "AchillesHeel.sql",
+    heelSql <- renderAndTranslate(sqlFilename = heelFile,
                                       packageName = "Achilles",
                                       dbms = connectionDetails$dbms,
                                       CDM_schema = cdmSchema, 
@@ -192,7 +210,7 @@ achilles <- function (connectionDetails, cdmSchema, resultsSchema, sourceName = 
     
     writeLines("Executing Achilles Heel. This could take a while")
     executeSql(conn,connectionDetails$dbms,heelSql)
-    writeLines(paste("Done. Results can now be found in",resultsSchema))    
+    writeLines(paste("Done. Achilles Heel results can now be found in",resultsSchema))    
     
   }
   

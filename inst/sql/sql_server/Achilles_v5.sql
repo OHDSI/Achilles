@@ -1,12 +1,43 @@
-/*****************
-Achilles
+/******************************************************************
 
-Patrick Ryan
-******************/
+# @file ACHILLES_v5.SQL
+#
+# Copyright 2014 Observational Health Data Sciences and Informatics
+#
+# This file is part of ACHILLES
+# 
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+# 
+#     http://www.apache.org/licenses/LICENSE-2.0
+# 
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+# @author Observational Health Data Sciences and Informatics
 
-{DEFAULT @CDM_schema = 'CDM_TRUVEN_MDCD'}
+
+
+
+*******************************************************************/
+
+
+/*******************************************************************
+
+Achilles - database profiling summary statistics generation
+
+SQL for OMOP CDM v5
+
+
+*******************************************************************/
+
+{DEFAULT @CDM_schema = 'CDM'}
 {DEFAULT @results_schema = 'scratch'}
-{DEFAULT @source_name = 'TRUVEN MDCD'}
+{DEFAULT @source_name = 'CDM NAME'}
 {DEFAULT @smallcellcount = 5}
 {DEFAULT @createTable = TRUE}
 
@@ -18,7 +49,6 @@ Patrick Ryan
 	*****/
 
 use @results_schema;
---use CDM_TRUVEN_MDCD;
 
 
 --{@createTable}?{
@@ -262,10 +292,10 @@ insert into ACHILLES_analysis (analysis_id, analysis_name, stratum_1_name)
 --500- DEATH
 
 insert into ACHILLES_analysis (analysis_id, analysis_name, stratum_1_name)
-	values (500, 'Number of persons with death, by cause_of_death_concept_id', 'cause_of_death_concept_id');
+	values (500, 'Number of persons with death, by cause_concept_id', 'cause_concept_id');
 
 insert into ACHILLES_analysis (analysis_id, analysis_name, stratum_1_name)
-	values (501, 'Number of records of death, by cause_of_death_concept_id', 'cause_of_death_concept_id');
+	values (501, 'Number of records of death, by cause_concept_id', 'cause_concept_id');
 
 insert into ACHILLES_analysis (analysis_id, analysis_name, stratum_1_name)
 	values (502, 'Number of persons by death month', 'calendar month');	
@@ -448,14 +478,17 @@ insert into ACHILLES_analysis (analysis_id, analysis_name)
 insert into ACHILLES_analysis (analysis_id, analysis_name)
 	values (815, 'Distribution of numeric values, by observation_concept_id and unit_concept_id');
 
-insert into ACHILLES_analysis (analysis_id, analysis_name)
-	values (816, 'Distribution of low range, by observation_concept_id and unit_concept_id');
+--NOT APPLICABLE FOR OMOP CDM v5
+--insert into ACHILLES_analysis (analysis_id, analysis_name)
+--	values (816, 'Distribution of low range, by observation_concept_id and unit_concept_id');
 
-insert into ACHILLES_analysis (analysis_id, analysis_name)
-	values (817, 'Distribution of high range, by observation_concept_id and unit_concept_id');
+--NOT APPLICABLE FOR OMOP CDM v5
+--insert into ACHILLES_analysis (analysis_id, analysis_name)
+--	values (817, 'Distribution of high range, by observation_concept_id and unit_concept_id');
 
-insert into ACHILLES_analysis (analysis_id, analysis_name)
-	values (818, 'Number of observation records below/within/above normal range, by observation_concept_id and unit_concept_id');
+--NOT APPLICABLE FOR OMOP CDM v5
+--insert into ACHILLES_analysis (analysis_id, analysis_name)
+--	values (818, 'Number of observation records below/within/above normal range, by observation_concept_id and unit_concept_id');
 
 
 insert into ACHILLES_analysis (analysis_id, analysis_name, stratum_1_name)
@@ -567,8 +600,9 @@ insert into ACHILLES_analysis (analysis_id, analysis_name, stratum_1_name)
 
 --1300- ORGANIZATION
 
-insert into ACHILLES_analysis (analysis_id, analysis_name, stratum_1_name)
-	values (1300, 'Number of organizations by place of service', 'place_of_service_concept_id');
+--NOT APPLICABLE IN CDMV5
+--insert into ACHILLES_analysis (analysis_id, analysis_name, stratum_1_name)
+--	values (1300, 'Number of organizations by place of service', 'place_of_service_concept_id');
 
 
 --1400- PAYOR_PLAN_PERIOD
@@ -675,8 +709,9 @@ insert into ACHILLES_analysis (analysis_id, analysis_name, stratum_1_name)
 insert into ACHILLES_analysis (analysis_id, analysis_name, stratum_1_name)
 	values (1608, 'Distribution of total paid, by procedure_concept_id', 'procedure_concept_id');
 
-insert into ACHILLES_analysis (analysis_id, analysis_name, stratum_1_name)
-	values (1609, 'Number of records by disease_class_concept_id', 'disease_class_concept_id');
+--NOT APPLICABLE FOR OMOP CDM v5
+--insert into ACHILLES_analysis (analysis_id, analysis_name, stratum_1_name)
+--	values (1609, 'Number of records by disease_class_concept_id', 'disease_class_concept_id');
 
 insert into ACHILLES_analysis (analysis_id, analysis_name, stratum_1_name)
 	values (1610, 'Number of records by revenue_code_concept_id', 'revenue_code_concept_id');
@@ -1269,11 +1304,11 @@ ACHILLES Analyses on VISIT_OCCURRENCE table
 -- 200	Number of persons with at least one visit occurrence, by visit_concept_id
 insert into @results_schema.dbo.ACHILLES_results (analysis_id, stratum_1, count_value)
 select 200 as analysis_id, 
-	vo1.place_of_service_CONCEPT_ID as stratum_1,
+	vo1.visit_concept_id as stratum_1,
 	COUNT_BIG(distinct vo1.PERSON_ID) as count_value
 from
 	visit_occurrence vo1
-group by vo1.place_of_service_CONCEPT_ID
+group by vo1.visit_concept_id
 ;
 --}
 
@@ -1282,11 +1317,11 @@ group by vo1.place_of_service_CONCEPT_ID
 -- 201	Number of visit occurrence records, by visit_concept_id
 insert into @results_schema.dbo.ACHILLES_results (analysis_id, stratum_1, count_value)
 select 201 as analysis_id, 
-	vo1.place_of_service_CONCEPT_ID as stratum_1,
+	vo1.visit_concept_id as stratum_1,
 	COUNT_BIG(vo1.PERSON_ID) as count_value
 from
 	visit_occurrence vo1
-group by vo1.place_of_service_CONCEPT_ID
+group by vo1.visit_concept_id
 ;
 --}
 
@@ -1296,12 +1331,12 @@ group by vo1.place_of_service_CONCEPT_ID
 -- 202	Number of persons by visit occurrence start month, by visit_concept_id
 insert into @results_schema.dbo.ACHILLES_results (analysis_id, stratum_1, stratum_2, count_value)
 select 202 as analysis_id,   
-	vo1.place_of_service_concept_id as stratum_1,
+	vo1.visit_concept_id as stratum_1,
 	YEAR(visit_start_date)*100 + month(visit_start_date) as stratum_2, 
 	COUNT_BIG(distinct PERSON_ID) as count_value
 from
 visit_occurrence vo1
-group by vo1.place_of_service_concept_id, 
+group by vo1.visit_concept_id, 
 	YEAR(visit_start_date)*100 + month(visit_start_date)
 ;
 --}
@@ -1327,7 +1362,7 @@ from
 	select num_visits as count_value,
 		1.0*(row_number() over (order by num_visits))/(COUNT_BIG(*) over ()+1) as p1
 	from (
-		select vo1.person_id, COUNT_BIG(distinct vo1.place_of_service_concept_id) as num_visits
+		select vo1.person_id, COUNT_BIG(distinct vo1.visit_concept_id) as num_visits
 		from visit_occurrence vo1
 		group by vo1.person_id
 	) t0
@@ -1341,7 +1376,7 @@ from
 -- 204	Number of persons with at least one visit occurrence, by visit_concept_id by calendar year by gender by age decile
 insert into @results_schema.dbo.ACHILLES_results (analysis_id, stratum_1, stratum_2, stratum_3, stratum_4, count_value)
 select 204 as analysis_id,   
-	vo1.place_of_service_concept_id as stratum_1,
+	vo1.visit_concept_id as stratum_1,
 	YEAR(visit_start_date) as stratum_2,
 	p1.gender_concept_id as stratum_3,
 	floor((year(visit_start_date) - p1.year_of_birth)/10) as stratum_4, 
@@ -1350,7 +1385,7 @@ from person p1
 inner join
 visit_occurrence vo1
 on p1.person_id = vo1.person_id
-group by vo1.place_of_service_concept_id, 
+group by vo1.visit_concept_id, 
 	YEAR(visit_start_date),
 	p1.gender_concept_id,
 	floor((year(visit_start_date) - p1.year_of_birth)/10)
@@ -1365,7 +1400,7 @@ group by vo1.place_of_service_concept_id,
 -- 206	Distribution of age by visit_concept_id
 insert into @results_schema.dbo.ACHILLES_results_dist (analysis_id, stratum_1, stratum_2, count_value, min_value, max_value, avg_value, stdev_value, median_value, p10_value, p25_value, p75_value, p90_value)
 select 206 as analysis_id,
-  place_of_service_concept_id as stratum_1,
+  visit_concept_id as stratum_1,
 	gender_concept_id as stratum_2,
 	COUNT_BIG(count_value) as count_value,
 	min(count_value) as min_value,
@@ -1379,18 +1414,18 @@ select 206 as analysis_id,
 	max(case when p1<=0.90 then count_value else -9999 end) as p90_value
 from
 (
-	select vo1.place_of_service_concept_id,
+	select vo1.visit_concept_id,
 		p1.gender_concept_id,
 		vo1.visit_start_year - p1.year_of_birth as count_value,
-		1.0*(row_number() over (partition by vo1.place_of_service_concept_id, p1.gender_concept_id order by vo1.visit_start_year - p1.year_of_birth))/(COUNT_BIG(*) over (partition by vo1.place_of_service_concept_id, p1.gender_concept_id)+1) as p1
+		1.0*(row_number() over (partition by vo1.visit_concept_id, p1.gender_concept_id order by vo1.visit_start_year - p1.year_of_birth))/(COUNT_BIG(*) over (partition by vo1.visit_concept_id, p1.gender_concept_id)+1) as p1
 	from person p1
 		inner join (
-			select person_id, place_of_service_concept_id, min(year(visit_start_date)) as visit_start_year
+			select person_id, visit_concept_id, min(year(visit_start_date)) as visit_start_year
 			from visit_occurrence
-			group by person_id, place_of_service_concept_id
+			group by person_id, visit_concept_id
 		) vo1 on p1.person_id = vo1.person_id
 ) t1
-group by place_of_service_concept_id, gender_concept_id
+group by visit_concept_id, gender_concept_id
 ;
 --}
 
@@ -1454,7 +1489,7 @@ where vo1.care_site_id is not null
 -- 211	Distribution of length of stay by visit_concept_id
 insert into @results_schema.dbo.ACHILLES_results_dist (analysis_id, stratum_1, count_value, min_value, max_value, avg_value, stdev_value, median_value, p10_value, p25_value, p75_value, p90_value)
 select 211 as analysis_id,
-       place_of_service_concept_id as stratum_1,
+       visit_concept_id as stratum_1,
        COUNT_BIG(count_value) as count_value,
        min(count_value) as min_value,
        max(count_value) as max_value,
@@ -1467,18 +1502,18 @@ select 211 as analysis_id,
        max(case when p1<=0.90 then count_value else -9999 end) as p90_value
 from
 (
-       select place_of_service_concept_id, count_value, (1.0 * (row_number() over (partition by place_of_service_concept_id order by count_value)) / (Q.total +1)) as p1
+       select visit_concept_id, count_value, (1.0 * (row_number() over (partition by visit_concept_id order by count_value)) / (Q.total +1)) as p1
        from 
        (
-              select vo1.place_of_service_concept_id, datediff(dd,visit_start_date,visit_end_date) as count_value, pc.total
+              select vo1.visit_concept_id, datediff(dd,visit_start_date,visit_end_date) as count_value, pc.total
               from visit_occurrence vo1
               JOIN 
               (
-                     select place_of_service_concept_id, COUNT_BIG(*) as total from visit_occurrence group by PLACE_OF_SERVICE_CONCEPT_ID
-              ) pc on pc.PLACE_OF_SERVICE_CONCEPT_ID = vo1.PLACE_OF_SERVICE_CONCEPT_ID
+                     select visit_concept_id, COUNT_BIG(*) as total from visit_occurrence group by visit_concept_id
+              ) pc on pc.visit_concept_id = vo1.visit_concept_id
        ) Q
 ) t1
-group by place_of_service_concept_id
+group by visit_concept_id
 --}
 
 
@@ -1732,8 +1767,8 @@ select 412 as analysis_id,
 from
 	condition_occurrence co1
 	left join provider p1
-	on p1.provider_id = co1.associated_provider_id
-where co1.associated_provider_id is not null
+	on p1.provider_id = co1.provider_id
+where co1.provider_id is not null
 	and p1.provider_id is null
 ;
 --}
@@ -1775,27 +1810,27 @@ ACHILLES Analyses on DEATH table
 
 
 --{500 IN (@list_of_analysis_ids)}?{
--- 500	Number of persons with death, by cause_of_death_concept_id
+-- 500	Number of persons with death, by cause_concept_id
 insert into @results_schema.dbo.ACHILLES_results (analysis_id, stratum_1, count_value)
 select 500 as analysis_id, 
-	d1.cause_of_death_concept_id as stratum_1,
+	d1.cause_concept_id as stratum_1,
 	COUNT_BIG(distinct d1.PERSON_ID) as count_value
 from
 	death d1
-group by d1.cause_of_death_CONCEPT_ID
+group by d1.cause_concept_id
 ;
 --}
 
 
 --{501 IN (@list_of_analysis_ids)}?{
--- 501	Number of records of death, by cause_of_death_concept_id
+-- 501	Number of records of death, by cause_concept_id
 insert into @results_schema.dbo.ACHILLES_results (analysis_id, stratum_1, count_value)
 select 501 as analysis_id, 
-	d1.cause_of_death_concept_id as stratum_1,
+	d1.cause_concept_id as stratum_1,
 	COUNT_BIG(d1.PERSON_ID) as count_value
 from
 	death d1
-group by d1.cause_of_death_CONCEPT_ID
+group by d1.cause_concept_id
 ;
 --}
 
@@ -2264,8 +2299,8 @@ select 612 as analysis_id,
 from
 	procedure_occurrence po1
 	left join provider p1
-	on p1.provider_id = po1.associated_provider_id
-where po1.associated_provider_id is not null
+	on p1.provider_id = po1.provider_id
+where po1.provider_id is not null
 	and p1.provider_id is null
 ;
 --}
@@ -2504,8 +2539,8 @@ select 712 as analysis_id,
 from
 	drug_exposure de1
 	left join provider p1
-	on p1.provider_id = de1.prescribing_provider_id
-where de1.prescribing_provider_id is not null
+	on p1.provider_id = de1.provider_id
+where de1.provider_id is not null
 	and p1.provider_id is null
 ;
 --}
@@ -2833,8 +2868,8 @@ select 812 as analysis_id,
 from
 	observation o1
 	left join provider p1
-	on p1.provider_id = o1.associated_provider_id
-where o1.associated_provider_id is not null
+	on p1.provider_id = o1.provider_id
+where o1.provider_id is not null
 	and p1.provider_id is null
 ;
 --}
@@ -2900,93 +2935,26 @@ group by observation_concept_id, unit_concept_id
 
 --{816 IN (@list_of_analysis_ids)}?{
 -- 816	Distribution of low range, by observation_concept_id and unit_concept_id
-insert into @results_schema.dbo.ACHILLES_results_dist (analysis_id, stratum_1, stratum_2, count_value, min_value, max_value, avg_value, stdev_value, median_value, p10_value, p25_value, p75_value, p90_value)
-select 816 as analysis_id,
-	observation_concept_id as stratum_1,
-	unit_concept_id as stratum_2,
-	COUNT_BIG(count_value) as count_value,
-	min(count_value) as min_value,
-	max(count_value) as max_value,
-	avg(1.0*count_value) as avg_value,
-	stdev(count_value) as stdev_value,
-	max(case when p1<=0.50 then count_value else -9999 end) as median_value,
-	max(case when p1<=0.10 then count_value else -9999 end) as p10_value,
-	max(case when p1<=0.25 then count_value else -9999 end) as p25_value,
-	max(case when p1<=0.75 then count_value else -9999 end) as p75_value,
-	max(case when p1<=0.90 then count_value else -9999 end) as p90_value
-from
-(
-select observation_concept_id, unit_concept_id,
-	range_low as count_value,
-	1.0*(row_number() over (partition by observation_concept_id, unit_concept_id order by range_low))/(COUNT_BIG(*) over (partition by observation_concept_id, unit_concept_id)+1) as p1
-from observation o1
-where o1.unit_concept_id is not null
-	and o1.value_as_number is not null
-	and o1.range_low is not null
-	and o1.range_high is not null
-) t1
-group by observation_concept_id, unit_concept_id
-;
+
+--NOT APPLICABLE FOR OMOP CDM v5
+
 --}
 
 
 --{817 IN (@list_of_analysis_ids)}?{
 -- 817	Distribution of high range, by observation_concept_id and unit_concept_id
-insert into @results_schema.dbo.ACHILLES_results_dist (analysis_id, stratum_1, stratum_2, count_value, min_value, max_value, avg_value, stdev_value, median_value, p10_value, p25_value, p75_value, p90_value)
-select 817 as analysis_id,
-	observation_concept_id as stratum_1,
-	unit_concept_id as stratum_2,
-	COUNT_BIG(count_value) as count_value,
-	min(count_value) as min_value,
-	max(count_value) as max_value,
-	avg(1.0*count_value) as avg_value,
-	stdev(count_value) as stdev_value,
-	max(case when p1<=0.50 then count_value else -9999 end) as median_value,
-	max(case when p1<=0.10 then count_value else -9999 end) as p10_value,
-	max(case when p1<=0.25 then count_value else -9999 end) as p25_value,
-	max(case when p1<=0.75 then count_value else -9999 end) as p75_value,
-	max(case when p1<=0.90 then count_value else -9999 end) as p90_value
-from
-(
-select observation_concept_id, unit_concept_id,
-	range_high as count_value,
-	1.0*(row_number() over (partition by observation_concept_id, unit_concept_id order by range_high))/(COUNT_BIG(*) over (partition by observation_concept_id, unit_concept_id)+1) as p1
-from observation o1
-where o1.unit_concept_id is not null
-	and o1.value_as_number is not null
-	and o1.range_low is not null
-	and o1.range_high is not null
-) t1
-group by observation_concept_id, unit_concept_id
-;
+
+--NOT APPLICABLE FOR OMOP CDM v5
+
 --}
 
 
 
 --{818 IN (@list_of_analysis_ids)}?{
 -- 818	Number of observation records below/within/above normal range, by observation_concept_id and unit_concept_id
-insert into @results_schema.dbo.ACHILLES_results (analysis_id, stratum_1, stratum_2, stratum_3, count_value)
-select 818 as analysis_id,  
-	observation_concept_id as stratum_1,
-	unit_concept_id as stratum_2,
-	case when o1.value_as_number < o1.range_low then 'Below Range Low'
-		when o1.value_as_number >= o1.range_low and o1.value_as_number <= o1.range_high then 'Within Range'
-		when o1.value_as_number > o1.range_high then 'Above Range High'
-		else 'Other' end as stratum_3,
-	COUNT_BIG(o1.PERSON_ID) as count_value
-from
-	observation o1
-where o1.value_as_number is not null
-	and o1.unit_concept_id is not null
-	and o1.range_low is not null
-	and o1.range_high is not null
-group by observation_concept_id,
-	unit_concept_id,
-	  case when o1.value_as_number < o1.range_low then 'Below Range Low'
-		when o1.value_as_number >= o1.range_low and o1.value_as_number <= o1.range_high then 'Within Range'
-		when o1.value_as_number > o1.range_high then 'Above Range High'
-		else 'Other' end
-;
+
+--NOT APPLICABLE FOR OMOP CDM v5
+
 --}
 
 
@@ -3581,13 +3549,9 @@ ACHILLES Analyses on ORGANIZATION table
 
 --{1300 IN (@list_of_analysis_ids)}?{
 -- 1300	Number of organizations by place of service
-insert into @results_schema.dbo.ACHILLES_results (analysis_id, stratum_1, count_value)
-select 1300 as analysis_id,  
-	place_of_service_concept_id as stratum_1, 
-	COUNT_BIG(organization_id) as count_value
-from organization o1
-where place_of_service_concept_id is not null
-group by place_of_service_concept_id;
+
+--NOT APPLICABLE IN CDMv5
+
 --}
 
 
@@ -4443,15 +4407,9 @@ group by procedure_concept_id
 
 --{1609 IN (@list_of_analysis_ids)}?{
 -- 1609	Number of records by disease_class_concept_id
-insert into @results_schema.dbo.ACHILLES_results (analysis_id, stratum_1, count_value)
-select 1609 as analysis_id, 
-	disease_class_concept_id as stratum_1, 
-	COUNT_BIG(pc1.procedure_cost_ID) as count_value
-from
-	procedure_cost pc1
-where disease_class_concept_id is not null
-group by disease_class_concept_id
-;
+
+--not applicable for OMOP CDMv5
+
 --}
 
 
@@ -4480,11 +4438,11 @@ ACHILLES Analyses on COHORT table
 -- 1700	Number of records by cohort_concept_id
 insert into @results_schema.dbo.ACHILLES_results (analysis_id, stratum_1, count_value)
 select 1700 as analysis_id, 
-	cohort_concept_id as stratum_1, 
+	cohort_definition_id as stratum_1, 
 	COUNT_BIG(subject_ID) as count_value
 from
 	cohort c1
-group by cohort_concept_id
+group by cohort_definition_id
 ;
 --}
 
@@ -4503,635 +4461,4 @@ where c1.cohort_end_date < c1.cohort_start_date
 
 delete from @results_schema.dbo.ACHILLES_results where count_value <= @smallcellcount;
 delete from @results_schema.dbo.ACHILLES_results_dist where count_value <= @smallcellcount;
-
-
---Achilles_Heel part:
-USE @results_schema;
-
-IF OBJECT_ID('ACHILLES_HEEL_results', 'U') IS NOT NULL
-  DROP TABLE ACHILLES_HEEL_results;
-
-CREATE TABLE ACHILLES_HEEL_results (
-  analysis_id INT,
-	ACHILLES_HEEL_warning VARCHAR(255)
-	);
-
---check for non-zero counts from checks of improper data (invalid ids, out-of-bound data, inconsistent dates)
-INSERT INTO ACHILLES_HEEL_results (
-	analysis_id,
-	ACHILLES_HEEL_warning
-	)
-SELECT DISTINCT or1.analysis_id,
-	'ERROR: ' + cast(or1.analysis_id as VARCHAR) + '-' + oa1.analysis_name + '; count (n=' + cast(or1.count_value as VARCHAR) + ') should not be > 0' AS ACHILLES_HEEL_warning
-FROM ACHILLES_results or1
-INNER JOIN ACHILLES_analysis oa1
-	ON or1.analysis_id = oa1.analysis_id
-WHERE or1.analysis_id IN (
-		7,
-		8,
-		9,
-		114,
-		115,
-		207,
-		208,
-		209,
-		210,
-		302,
-		409,
-		410,
-		411,
-		412,
-		413,
-		509,
-		510,
-		609,
-		610,
-		612,
-		613,
-		709,
-		710,
-		711,
-		712,
-		713,
-		809,
-		810,
-		812,
-		813,
-		814,
-		908,
-		909,
-		910,
-		1008,
-		1009,
-		1010,
-		1415,
-		1500,
-		1501,
-		1600,
-		1601,
-		1701
-		) --all explicit counts of data anamolies
-	AND or1.count_value > 0;
-
---distributions where min should not be negative
-INSERT INTO ACHILLES_HEEL_results (
-	analysis_id,
-	ACHILLES_HEEL_warning
-	)
-SELECT DISTINCT ord1.analysis_id,
-  'ERROR: ' + cast(ord1.analysis_id as VARCHAR) + ' - ' + oa1.analysis_name + ' (count = ' + cast(COUNT_BIG(ord1.min_value) as VARCHAR) + '); min value should not be negative' AS ACHILLES_HEEL_warning
-FROM ACHILLES_results_dist ord1
-INNER JOIN ACHILLES_analysis oa1
-	ON ord1.analysis_id = oa1.analysis_id
-WHERE ord1.analysis_id IN (
-		103,
-		105,
-		206,
-		406,
-		506,
-		606,
-		706,
-		715,
-		716,
-		717,
-		806,
-		906,
-		907,
-		1006,
-		1007,
-		1502,
-		1503,
-		1504,
-		1505,
-		1506,
-		1507,
-		1508,
-		1509,
-		1510,
-		1511,
-		1602,
-		1603,
-		1604,
-		1605,
-		1606,
-		1607,
-		1608
-		)
-	AND ord1.min_value < 0
-	GROUP BY ord1.analysis_id,  oa1.analysis_name;
-
---death distributions where max should not be positive
-INSERT INTO ACHILLES_HEEL_results (
-	analysis_id,
-	ACHILLES_HEEL_warning
-	)
-SELECT DISTINCT ord1.analysis_id,
-  'WARNING: ' + cast(ord1.analysis_id as VARCHAR) + '-' + oa1.analysis_name + ' (count = ' + cast(COUNT_BIG(ord1.max_value) as VARCHAR) + '); max value should not be positive, otherwise its a zombie with data >1mo after death ' AS ACHILLES_HEEL_warning
-FROM ACHILLES_results_dist ord1
-INNER JOIN ACHILLES_analysis oa1
-	ON ord1.analysis_id = oa1.analysis_id
-WHERE ord1.analysis_id IN (
-		511,
-		512,
-		513,
-		514,
-		515
-		)
-	AND ord1.max_value > 30
-GROUP BY ord1.analysis_id, oa1.analysis_name;
-
---invalid concept_id
-INSERT INTO ACHILLES_HEEL_results (
-	analysis_id,
-	ACHILLES_HEEL_warning
-	)
-SELECT or1.analysis_id,
-	'ERROR: ' + cast(or1.analysis_id as VARCHAR) + '-' + oa1.analysis_name + '; ' + cast(COUNT_BIG(DISTINCT stratum_1) AS VARCHAR) + ' concepts in data are not in vocabulary' AS ACHILLES_HEEL_warning
-FROM ACHILLES_results or1
-INNER JOIN ACHILLES_analysis oa1
-	ON or1.analysis_id = oa1.analysis_id
-LEFT JOIN @CDM_schema.dbo.concept c1
-	ON or1.stratum_1 = CAST(c1.concept_id AS VARCHAR)
-WHERE or1.analysis_id IN (
-		2,
-		4,
-		5,
-		200,
-		301,
-		400,
-		500,
-		505,
-		600,
-		700,
-		800,
-		900,
-		1000,
-		1609,
-		1610
-		)
-	AND or1.stratum_1 IS NOT NULL
-	AND c1.concept_id IS NULL
-GROUP BY or1.analysis_id,
-	oa1.analysis_name;
-
---invalid type concept_id
-INSERT INTO ACHILLES_HEEL_results (
-	analysis_id,
-	ACHILLES_HEEL_warning
-	)
-SELECT or1.analysis_id,
-	'ERROR: ' + cast(or1.analysis_id as VARCHAR) + '-' + oa1.analysis_name + '; ' + cast(COUNT_BIG(DISTINCT stratum_2) AS VARCHAR) + ' concepts in data are not in vocabulary' AS ACHILLES_HEEL_warning
-FROM ACHILLES_results or1
-INNER JOIN ACHILLES_analysis oa1
-	ON or1.analysis_id = oa1.analysis_id
-LEFT JOIN @CDM_schema.dbo.concept c1
-	ON or1.stratum_2 = CAST(c1.concept_id AS VARCHAR)
-WHERE or1.analysis_id IN (
-		405,
-		605,
-		705,
-		805
-		)
-	AND or1.stratum_2 IS NOT NULL
-	AND c1.concept_id IS NULL
-GROUP BY or1.analysis_id,
-	oa1.analysis_name;
-
---invalid concept_id
-INSERT INTO ACHILLES_HEEL_results (
-	analysis_id,
-	ACHILLES_HEEL_warning
-	)
-SELECT or1.analysis_id,
-	'WARNING: ' + cast(or1.analysis_id as VARCHAR) + '-' + oa1.analysis_name + '; data with unmapped concepts' AS ACHILLES_HEEL_warning
-FROM ACHILLES_results or1
-INNER JOIN ACHILLES_analysis oa1
-	ON or1.analysis_id = oa1.analysis_id
-WHERE or1.analysis_id IN (
-		2,
-		4,
-		5,
-		200,
-		301,
-		400,
-		500,
-		505,
-		600,
-		700,
-		800,
-		900,
-		1000,
-		1609,
-		1610
-		)
-	AND or1.stratum_1 = '0'
-GROUP BY or1.analysis_id,
-	oa1.analysis_name;
-
---concept from the wrong vocabulary
---gender  - 12 HL7
-INSERT INTO ACHILLES_HEEL_results (
-	analysis_id,
-	ACHILLES_HEEL_warning
-	)
-SELECT or1.analysis_id,
-	'ERROR: ' + cast(or1.analysis_id as VARCHAR) + '-' + oa1.analysis_name + '; ' + cast(COUNT_BIG(DISTINCT stratum_1) AS VARCHAR) + ' concepts in data are not in correct vocabulary (HL7 Sex)' AS ACHILLES_HEEL_warning
-FROM ACHILLES_results or1
-INNER JOIN ACHILLES_analysis oa1
-	ON or1.analysis_id = oa1.analysis_id
-INNER JOIN @CDM_schema.dbo.concept c1
-	ON or1.stratum_1 = CAST(c1.concept_id AS VARCHAR)
-WHERE or1.analysis_id IN (2)
-	AND or1.stratum_1 IS NOT NULL
-	AND c1.vocabulary_id NOT IN (
-		0,
-		12
-		)
-GROUP BY or1.analysis_id,
-	oa1.analysis_name;
-
---race  - 13 CDC Race
-INSERT INTO ACHILLES_HEEL_results (
-	analysis_id,
-	ACHILLES_HEEL_warning
-	)
-SELECT or1.analysis_id,
-	'ERROR: ' + cast(or1.analysis_id as VARCHAR) + '-' + oa1.analysis_name + '; ' + cast(COUNT_BIG(DISTINCT stratum_1) AS VARCHAR) + ' concepts in data are not in correct vocabulary (CDC Race)' AS ACHILLES_HEEL_warning
-FROM ACHILLES_results or1
-INNER JOIN ACHILLES_analysis oa1
-	ON or1.analysis_id = oa1.analysis_id
-INNER JOIN @CDM_schema.dbo.concept c1
-	ON or1.stratum_1 = CAST(c1.concept_id AS VARCHAR)
-WHERE or1.analysis_id IN (4)
-	AND or1.stratum_1 IS NOT NULL
-	AND c1.vocabulary_id NOT IN (
-		0,
-		13
-		)
-GROUP BY or1.analysis_id,
-	oa1.analysis_name;
-
---ethnicity - 44 ethnicity
-INSERT INTO ACHILLES_HEEL_results (
-	analysis_id,
-	ACHILLES_HEEL_warning
-	)
-SELECT or1.analysis_id,
-	'ERROR: ' + cast(or1.analysis_id as VARCHAR) + '-' + oa1.analysis_name + '; ' + cast(COUNT_BIG(DISTINCT stratum_1) AS VARCHAR) + ' concepts in data are not in correct vocabulary (CMS Ethnicity)' AS ACHILLES_HEEL_warning
-FROM ACHILLES_results or1
-INNER JOIN ACHILLES_analysis oa1
-	ON or1.analysis_id = oa1.analysis_id
-INNER JOIN @CDM_schema.dbo.concept c1
-	ON or1.stratum_1 = CAST(c1.concept_id AS VARCHAR)
-WHERE or1.analysis_id IN (5)
-	AND or1.stratum_1 IS NOT NULL
-	AND c1.vocabulary_id NOT IN (
-		0,
-		44
-		)
-GROUP BY or1.analysis_id,
-	oa1.analysis_name;
-
---place of service - 14 CMS place of service, 24 OMOP visit
-INSERT INTO ACHILLES_HEEL_results (
-	analysis_id,
-	ACHILLES_HEEL_warning
-	)
-SELECT or1.analysis_id,
-	'ERROR: ' + cast(or1.analysis_id as VARCHAR) + '-' + oa1.analysis_name + '; ' + cast(COUNT_BIG(DISTINCT stratum_1) AS VARCHAR) + ' concepts in data are not in correct vocabulary (CMS place of service or OMOP visit)' AS ACHILLES_HEEL_warning
-FROM ACHILLES_results or1
-INNER JOIN ACHILLES_analysis oa1
-	ON or1.analysis_id = oa1.analysis_id
-INNER JOIN @CDM_schema.dbo.concept c1
-	ON or1.stratum_1 = CAST(c1.concept_id AS VARCHAR)
-WHERE or1.analysis_id IN (202)
-	AND or1.stratum_1 IS NOT NULL
-	AND c1.vocabulary_id NOT IN (
-		0,
-		14,
-		24
-		)
-GROUP BY or1.analysis_id,
-	oa1.analysis_name;
-
---specialty - 48 specialty
-INSERT INTO ACHILLES_HEEL_results (
-	analysis_id,
-	ACHILLES_HEEL_warning
-	)
-SELECT or1.analysis_id,
-	'ERROR: ' + cast(or1.analysis_id as VARCHAR) + '-' + oa1.analysis_name + '; ' + cast(COUNT_BIG(DISTINCT stratum_1) AS VARCHAR) + ' concepts in data are not in correct vocabulary (Specialty)' AS ACHILLES_HEEL_warning
-FROM ACHILLES_results or1
-INNER JOIN ACHILLES_analysis oa1
-	ON or1.analysis_id = oa1.analysis_id
-INNER JOIN @CDM_schema.dbo.concept c1
-	ON or1.stratum_1 = CAST(c1.concept_id AS VARCHAR)
-WHERE or1.analysis_id IN (301)
-	AND or1.stratum_1 IS NOT NULL
-	AND c1.vocabulary_id NOT IN (
-		0,
-		48
-		)
-GROUP BY or1.analysis_id,
-	oa1.analysis_name;
-
---condition occurrence, era - 1 SNOMED
-INSERT INTO ACHILLES_HEEL_results (
-	analysis_id,
-	ACHILLES_HEEL_warning
-	)
-SELECT or1.analysis_id,
-	'ERROR: ' + cast(or1.analysis_id as VARCHAR) + '-' + oa1.analysis_name + '; ' + cast(COUNT_BIG(DISTINCT stratum_1) AS VARCHAR) + ' concepts in data are not in correct vocabulary (SNOMED)' AS ACHILLES_HEEL_warning
-FROM ACHILLES_results or1
-INNER JOIN ACHILLES_analysis oa1
-	ON or1.analysis_id = oa1.analysis_id
-INNER JOIN @CDM_schema.dbo.concept c1
-	ON or1.stratum_1 = CAST(c1.concept_id AS VARCHAR)
-WHERE or1.analysis_id IN (
-		400,
-		1000
-		)
-	AND or1.stratum_1 IS NOT NULL
-	AND c1.vocabulary_id NOT IN (
-		0,
-		1
-		)
-GROUP BY or1.analysis_id,
-	oa1.analysis_name;
-
---drug exposure - 8 RxNorm
-INSERT INTO ACHILLES_HEEL_results (
-	analysis_id,
-	ACHILLES_HEEL_warning
-	)
-SELECT or1.analysis_id,
-	'ERROR: ' + cast(or1.analysis_id as VARCHAR) + '-' + oa1.analysis_name + '; ' + cast(COUNT_BIG(DISTINCT stratum_1) AS VARCHAR) + ' concepts in data are not in correct vocabulary (RxNorm)' AS ACHILLES_HEEL_warning
-FROM ACHILLES_results or1
-INNER JOIN ACHILLES_analysis oa1
-	ON or1.analysis_id = oa1.analysis_id
-INNER JOIN @CDM_schema.dbo.concept c1
-	ON or1.stratum_1 = CAST(c1.concept_id AS VARCHAR)
-WHERE or1.analysis_id IN (
-		700,
-		900
-		)
-	AND or1.stratum_1 IS NOT NULL
-	AND c1.vocabulary_id NOT IN (
-		0,
-		8
-		)
-GROUP BY or1.analysis_id,
-	oa1.analysis_name;
-
---procedure - 4 CPT4/5 HCPCS/3 ICD9P
-INSERT INTO ACHILLES_HEEL_results (
-	analysis_id,
-	ACHILLES_HEEL_warning
-	)
-SELECT or1.analysis_id,
-	'ERROR: ' + cast(or1.analysis_id as VARCHAR) + '-' + oa1.analysis_name + '; ' + cast(COUNT_BIG(DISTINCT stratum_1) AS VARCHAR) + ' concepts in data are not in correct vocabulary (CPT4/HCPCS/ICD9P)' AS ACHILLES_HEEL_warning
-FROM ACHILLES_results or1
-INNER JOIN ACHILLES_analysis oa1
-	ON or1.analysis_id = oa1.analysis_id
-INNER JOIN @CDM_schema.dbo.concept c1
-	ON or1.stratum_1 = CAST(c1.concept_id AS VARCHAR)
-WHERE or1.analysis_id IN (600)
-	AND or1.stratum_1 IS NOT NULL
-	AND c1.vocabulary_id NOT IN (
-		0,
-		3,
-		4,
-		5
-		)
-GROUP BY or1.analysis_id,
-	oa1.analysis_name;
-
---observation  - 6 LOINC
-INSERT INTO ACHILLES_HEEL_results (
-	analysis_id,
-	ACHILLES_HEEL_warning
-	)
-SELECT or1.analysis_id,
-	'ERROR: ' + cast(or1.analysis_id as VARCHAR) + '-' + oa1.analysis_name + '; ' + cast(COUNT_BIG(DISTINCT stratum_1) AS VARCHAR) + ' concepts in data are not in correct vocabulary (LOINC)' AS ACHILLES_HEEL_warning
-FROM ACHILLES_results or1
-INNER JOIN ACHILLES_analysis oa1
-	ON or1.analysis_id = oa1.analysis_id
-INNER JOIN @CDM_schema.dbo.concept c1
-	ON or1.stratum_1 = CAST(c1.concept_id AS VARCHAR)
-WHERE or1.analysis_id IN (800)
-	AND or1.stratum_1 IS NOT NULL
-	AND c1.vocabulary_id NOT IN (
-		0,
-		6
-		)
-GROUP BY or1.analysis_id,
-	oa1.analysis_name;
-
-
---disease class - 40 DRG
-INSERT INTO ACHILLES_HEEL_results (
-  analysis_id,
-	ACHILLES_HEEL_warning
-	)
-SELECT or1.analysis_id,
-	'ERROR: ' + cast(or1.analysis_id as VARCHAR) + '-' + oa1.analysis_name + '; ' + cast(COUNT_BIG(DISTINCT stratum_1) AS VARCHAR) + ' concepts in data are not in correct vocabulary (DRG)' AS ACHILLES_HEEL_warning
-FROM ACHILLES_results or1
-INNER JOIN ACHILLES_analysis oa1
-	ON or1.analysis_id = oa1.analysis_id
-INNER JOIN @CDM_schema.dbo.concept c1
-	ON or1.stratum_1 = CAST(c1.concept_id AS VARCHAR)
-WHERE or1.analysis_id IN (1609)
-	AND or1.stratum_1 IS NOT NULL
-	AND c1.vocabulary_id NOT IN (
-		0,
-		40
-		)
-GROUP BY or1.analysis_id,
-	oa1.analysis_name;
-
---revenue code - 43 revenue code
-INSERT INTO ACHILLES_HEEL_results (
-	analysis_id,
-	ACHILLES_HEEL_warning
-	)
-SELECT or1.analysis_id,
-	'ERROR: ' + cast(or1.analysis_id as VARCHAR) + '-' + oa1.analysis_name + '; ' + cast(COUNT_BIG(DISTINCT stratum_1) AS VARCHAR) + ' concepts in data are not in correct vocabulary (revenue code)' AS ACHILLES_HEEL_warning
-FROM ACHILLES_results or1
-INNER JOIN ACHILLES_analysis oa1
-	ON or1.analysis_id = oa1.analysis_id
-INNER JOIN @CDM_schema.dbo.concept c1
-	ON or1.stratum_1 = CAST(c1.concept_id AS VARCHAR)
-WHERE or1.analysis_id IN (1610)
-	AND or1.stratum_1 IS NOT NULL
-	AND c1.vocabulary_id NOT IN (
-		0,
-		43
-		)
-GROUP BY or1.analysis_id,
-	oa1.analysis_name;
-
-
---ERROR:  year of birth in the future
-INSERT INTO ACHILLES_HEEL_results (
-	analysis_id,
-	ACHILLES_HEEL_warning
-	)
-SELECT DISTINCT or1.analysis_id,
-	'ERROR: ' + cast(or1.analysis_id as VARCHAR) + '-' + oa1.analysis_name + '; should not have year of birth in the future, (n=' + cast(sum(or1.count_value) as VARCHAR) + ')' AS ACHILLES_HEEL_warning
-FROM ACHILLES_results or1
-INNER JOIN ACHILLES_analysis oa1
-	ON or1.analysis_id = oa1.analysis_id
-WHERE or1.analysis_id IN (3)
-	AND CAST(or1.stratum_1 AS INT) > year(getdate())
-	AND or1.count_value > 0
-GROUP BY or1.analysis_id,
-  oa1.analysis_name;
-
-
---WARNING:  year of birth < 1900
-INSERT INTO ACHILLES_HEEL_results (
-	analysis_id,
-	ACHILLES_HEEL_warning
-	)
-SELECT or1.analysis_id,
-	'ERROR: ' + cast(or1.analysis_id as VARCHAR) + '-' + oa1.analysis_name + '; should not have year of birth < 1900, (n=' + cast(sum(or1.count_value) as VARCHAR) + ')' AS ACHILLES_HEEL_warning
-FROM ACHILLES_results or1
-INNER JOIN ACHILLES_analysis oa1
-	ON or1.analysis_id = oa1.analysis_id
-WHERE or1.analysis_id IN (3)
-	AND cAST(or1.stratum_1 AS INT) < 1900
-	AND or1.count_value > 0
-GROUP BY or1.analysis_id,
-  oa1.analysis_name;
-
---ERROR:  age < 0
-INSERT INTO ACHILLES_HEEL_results (
-	analysis_id,
-	ACHILLES_HEEL_warning
-	)
-SELECT or1.analysis_id,
-	'ERROR: ' + cast(or1.analysis_id as VARCHAR) + '-' + oa1.analysis_name + '; should not have age < 0, (n=' + cast(sum(or1.count_value) as VARCHAR) + ')' AS ACHILLES_HEEL_warning
-FROM ACHILLES_results or1
-INNER JOIN ACHILLES_analysis oa1
-	ON or1.analysis_id = oa1.analysis_id
-WHERE or1.analysis_id IN (101)
-	AND CAST(or1.stratum_1 AS INT) < 0
-	AND or1.count_value > 0
-GROUP BY or1.analysis_id,
-  oa1.analysis_name;
-
---ERROR: age > 100
-INSERT INTO ACHILLES_HEEL_results (
-	analysis_id,
-	ACHILLES_HEEL_warning
-	)
-SELECT or1.analysis_id,
-	'ERROR: ' + cast(or1.analysis_id as VARCHAR) + '-' + oa1.analysis_name + '; should not have age > 100, (n=' + cast(sum(or1.count_value) as VARCHAR) + ')' AS ACHILLES_HEEL_warning
-FROM ACHILLES_results or1
-INNER JOIN ACHILLES_analysis oa1
-	ON or1.analysis_id = oa1.analysis_id
-WHERE or1.analysis_id IN (101)
-	AND CAST(or1.stratum_1 AS INT) > 100
-	AND or1.count_value > 0
-GROUP BY or1.analysis_id,
-  oa1.analysis_name;
-
---WARNING:  monthly change > 100%
-INSERT INTO ACHILLES_HEEL_results (
-	analysis_id,
-	ACHILLES_HEEL_warning
-	)
-SELECT DISTINCT ar1.analysis_id,
-	'WARNING: ' + cast(ar1.analysis_id as VARCHAR) + '-' + aa1.analysis_name + '; theres a 100% change in monthly count of events' AS ACHILLES_HEEL_warning
-FROM ACHILLES_analysis aa1
-INNER JOIN ACHILLES_results ar1
-	ON aa1.analysis_id = ar1.analysis_id
-INNER JOIN ACHILLES_results ar2
-	ON ar1.analysis_id = ar2.analysis_id
-		AND ar1.analysis_id IN (
-			420,
-			620,
-			720,
-			820,
-			920,
-			1020
-			)
-WHERE (
-		CAST(ar1.stratum_1 AS INT) + 1 = CAST(ar2.stratum_1 AS INT)
-		OR CAST(ar1.stratum_1 AS INT) + 89 = CAST(ar2.stratum_1 AS INT)
-		)
-	AND 1.0 * abs(ar2.count_value - ar1.count_value) / ar1.count_value > 1
-	AND ar1.count_value > 10;
-
---WARNING:  monthly change > 100% at concept level
-INSERT INTO ACHILLES_HEEL_results (
-	analysis_id,
-	ACHILLES_HEEL_warning
-	)
-SELECT ar1.analysis_id,
-	'WARNING: ' + cast(ar1.analysis_id as VARCHAR) + '-' + aa1.analysis_name + '; ' + cast(COUNT_BIG(DISTINCT ar1.stratum_1) AS VARCHAR) + ' concepts have a 100% change in monthly count of events' AS ACHILLES_HEEL_warning
-FROM ACHILLES_analysis aa1
-INNER JOIN ACHILLES_results ar1
-	ON aa1.analysis_id = ar1.analysis_id
-INNER JOIN ACHILLES_results ar2
-	ON ar1.analysis_id = ar2.analysis_id
-		AND ar1.stratum_1 = ar2.stratum_1
-		AND ar1.analysis_id IN (
-			402,
-			602,
-			702,
-			802,
-			902,
-			1002
-			)
-WHERE (
-		CAST(ar1.stratum_2 AS INT) + 1 = CAST(ar2.stratum_2 AS INT)
-		OR CAST(ar1.stratum_2 AS INT) + 89 = CAST(ar2.stratum_2 AS INT)
-		)
-	AND 1.0 * abs(ar2.count_value - ar1.count_value) / ar1.count_value > 1
-	AND ar1.count_value > 10
-GROUP BY ar1.analysis_id,
-	aa1.analysis_name;
-
---WARNING: days_supply > 180 
-INSERT INTO ACHILLES_HEEL_results (
-	analysis_id,
-	ACHILLES_HEEL_warning
-	)
-SELECT DISTINCT ord1.analysis_id,
-  'ERROR: ' + cast(ord1.analysis_id as VARCHAR) + '-' + oa1.analysis_name + ' (count = ' + cast(COUNT_BIG(ord1.max_value) as VARCHAR) + '); max value should not be > 180' AS ACHILLES_HEEL_warning
-FROM ACHILLES_results_dist ord1
-INNER JOIN ACHILLES_analysis oa1
-	ON ord1.analysis_id = oa1.analysis_id
-WHERE ord1.analysis_id IN (715)
-	AND ord1.max_value > 180
-GROUP BY ord1.analysis_id, oa1.analysis_name;
-
---WARNING:  refills > 10
-INSERT INTO ACHILLES_HEEL_results (
-	analysis_id,
-	ACHILLES_HEEL_warning
-	)
-SELECT DISTINCT ord1.analysis_id,
-  'ERROR: ' + cast(ord1.analysis_id as VARCHAR) + '-' + oa1.analysis_name + ' (count = ' + cast(COUNT_BIG(ord1.max_value) as VARCHAR) + '); max value should not be > 10' AS ACHILLES_HEEL_warning
-FROM ACHILLES_results_dist ord1
-INNER JOIN ACHILLES_analysis oa1
-	ON ord1.analysis_id = oa1.analysis_id
-WHERE ord1.analysis_id IN (716)
-	AND ord1.max_value > 10
-GROUP BY ord1.analysis_id, oa1.analysis_name;
-
---WARNING: quantity > 600
-INSERT INTO ACHILLES_HEEL_results (
-	analysis_id,
-	ACHILLES_HEEL_warning
-	)
-SELECT DISTINCT ord1.analysis_id,
-  'ERROR: ' + cast(ord1.analysis_id as VARCHAR) + '-' + oa1.analysis_name + ' (count = ' + cast(count(ord1.max_value) as VARCHAR) + '); max value should not be > 600' AS ACHILLES_HEEL_warning
-FROM ACHILLES_results_dist ord1
-INNER JOIN ACHILLES_analysis oa1
-	ON ord1.analysis_id = oa1.analysis_id
-WHERE ord1.analysis_id IN (717)
-	AND ord1.max_value > 600
-GROUP BY ord1.analysis_id, oa1.analysis_name;
 
