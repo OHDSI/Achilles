@@ -4,7 +4,8 @@
 \title{The main Achilles analysis}
 \usage{
 achilles(connectionDetails, cdmSchema, resultsSchema, sourceName = "",
-  analysisIds, createTable = TRUE, smallcellcount = 5)
+  analysisIds, createTable = TRUE, smallcellcount = 5, cdmVersion = "4",
+  runHeel = TRUE)
 }
 \arguments{
   \item{connectionDetails}{An R object of type
@@ -34,6 +35,13 @@ achilles(connectionDetails, cdmSchema, resultsSchema, sourceName = "",
 
   \item{smallcellcount}{To avoid patient identifiability,
   cells with small counts (<= smallcellcount) are deleted.}
+
+  \item{cdmVersion}{Define the OMOP CDM version used:
+  currently support "4" and "5".  Default = "4"}
+
+  \item{runHeel}{Boolean to determine if Achilles Heel data
+  quality reporting will be produced based on the summary
+  statistics.  Default = TRUE}
 }
 \value{
 An object of type \code{achillesResults} containing details
@@ -44,7 +52,8 @@ for connecting to the database containing the results
 an entire OMOP CDM instance.
 }
 \details{
-PATRICK HOMEWORK: complete details
+\code{achilles} creates descriptive statistics summary for
+an entire OMOP CDM instance.
 }
 \examples{
 \dontrun{
