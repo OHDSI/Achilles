@@ -3,8 +3,10 @@
 testAchillesCode <- function(){
  #Test on SQL Server: 
   setwd("c:/temp")
-  connectionDetailsSqlServer <- createConnectionDetails(dbms="sql server", server="RNDUSRDHIT09.jnj.com")
-  achillesResultsSqlServer <- achilles(connectionDetailsSqlServer, cdmSchema="CDM_TRUVEN_CCAE_6k", resultsSchema="CDM_TRUVEN_CCAE_6k")
+  #connectionDetails <- createConnectionDetails(dbms="sql server", server="RNDUSRDHIT09.jnj.com")
+  connectionDetails <- createConnectionDetails(dbms="postgresql", server="localhost/ohdsi", user="postgres",password=pw)
+  
+  achillesResults <- achilles(connectionDetails, cdmSchema="cdm_truven_ccae_6k_v5", resultsSchema="cdm_truven_ccae_6k_v5", cdmVersion="5")
 
   pw <- ""
   

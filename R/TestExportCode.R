@@ -3,9 +3,10 @@
 testExportCode <- function(){
   #Test on SQL Server: 
   setwd("c:/temp")
-  connectionDetailsSqlServer <- createConnectionDetails(dbms="sql server", server="RNDUSRDHIT09.jnj.com")
-  exportToJson(connectionDetailsSqlServer, cdmSchema="CDM_TRUVEN_CCAE_6k", resultsSchema="CDM_TRUVEN_CCAE_6k",outputPath = "c:/temp/CCAE_6K")
+  connectionDetails <- createConnectionDetails(dbms="sql server", server="RNDUSRDHIT09.jnj.com")
+  connectionDetails <- createConnectionDetails(dbms="postgresql", server="localhost/ohdsi", user="postgres",password=pw, schema="CDM_TRUVEN_CCAE_6k_V5")
   
+  exportToJson(connectionDetails, cdmSchema="CDM_TRUVEN_CCAE_6k_V5", resultsSchema="CDM_TRUVEN_CCAE_6k",outputPath = "c:/temp/CCAE_6K_V5", cdmVersion="5")
   
   pw <- ""
   

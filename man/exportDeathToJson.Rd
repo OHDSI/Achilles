@@ -4,7 +4,7 @@
 \title{exportDeathToJson}
 \usage{
 exportDeathToJson(connectionDetails, cdmSchema, resultsSchema,
-  outputPath = getwd())
+  outputPath = getwd(), cdmVersion = "4")
 }
 \arguments{
   \item{connectionDetails}{An R object of type

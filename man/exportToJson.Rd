@@ -4,7 +4,7 @@
 \title{exportToJson}
 \usage{
 exportToJson(connectionDetails, cdmSchema, resultsSchema,
-  outputPath = getwd(), reports = allReports)
+  outputPath = getwd(), reports = allReports, cdmVersion = "4")
 }
 \arguments{
   \item{connectionDetails}{An R object of type
