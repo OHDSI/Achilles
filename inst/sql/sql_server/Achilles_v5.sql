@@ -2581,7 +2581,7 @@ from
 select drug_concept_id,
 	days_supply as count_value,
 	1.0*(row_number() over (partition by drug_concept_id order by days_supply))/(COUNT_BIG(*) over (partition by drug_concept_id)+1) as p1
-from drug_exposure de1
+from (select * from drug_exposure where days_supply is not null) de1
 
 ) t1
 group by drug_concept_id
@@ -2610,7 +2610,7 @@ from
 select drug_concept_id,
 	refills as count_value,
 	1.0*(row_number() over (partition by drug_concept_id order by refills))/(COUNT_BIG(*) over (partition by drug_concept_id)+1) as p1
-from drug_exposure de1
+from (select * from drug_exposure where refills is not null) de1
 ) t1
 group by drug_concept_id
 ;
@@ -2640,7 +2640,7 @@ from
 select drug_concept_id,
 	quantity as count_value,
 	1.0*(row_number() over (partition by drug_concept_id order by quantity))/(COUNT_BIG(*) over (partition by drug_concept_id)+1) as p1
-from drug_exposure de1
+from (select * from drug_exposure where quantity is not null) de1
 ) t1
 group by drug_concept_id
 ;
