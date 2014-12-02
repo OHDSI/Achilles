@@ -1,38 +1,35 @@
 # some more test-code
 
 testExportCode <- function(){
-  #Test on SQL Server: 
-  setwd("c:/temp")
-  connectionDetails <- createConnectionDetails(dbms="sql server", server="RNDUSRDHIT09.jnj.com")
-  connectionDetails <- createConnectionDetails(dbms="postgresql", server="localhost/ohdsi", user="postgres",password=pw, schema="CDM_TRUVEN_CCAE_6k_V5")
-  
-  exportToJson(connectionDetails, cdmSchema="CDM_TRUVEN_CCAE_6k_V5", resultsSchema="CDM_TRUVEN_CCAE_6k",outputPath = "c:/temp/CCAE_6K_V5", cdmVersion="5")
-  
   pw <- ""
+  #sqlServerServer <- "RNDUSRDHIT07.jnj.com"
+  #sqlServerResultsSchema <- "scratch"
+  #schema <- "cdm4_sim"
+  
+  sqlServerServer <- "RNDUSRDHIT09.jnj.com"
+  
+  sqlServerResultsSchema <- "cdm_truven_ccae_6k"
+  schema <- "cdm_truven_ccae_6k"
+  cdmVersion <- "4"
+  
+  sqlServerResultsSchema <- "cdm_truven_ccae_6k_v5"
+  schema <- "cdm_truven_ccae_6k_v5"
+  cdmVersion <- "5"
   
   #Test on SQL Server
   setwd("c:/temp")
-  connectionDetails <- createConnectionDetails(dbms="sql server", server="RNDUSRDHIT07.jnj.com")
-  exportToJson(connectionDetails, cdmSchema = "cdm4_sim", resultsSchema = "scratch",outputPath = "c:/temp/SqlServer")
-  #exportToJson(connectionDetails, cdmSchema = "cdm4_sim", resultsSchema = "scratch",outputPath = "c:/temp/SqlServer",reports = c("CONDITION_ERA"))
+  connectionDetails <- createConnectionDetails(dbms="sql server", server=sqlServerServer)
+  exportToJson(connectionDetails, cdmSchema = schema, resultsSchema = sqlServerResultsSchema,outputPath = "c:/temp/SqlServer",cdmVersion=cdmVersion)
   
   #Test on PostgreSQL
   setwd("c:/temp")
   connectionDetails <- createConnectionDetails(dbms="postgresql", server="localhost/ohdsi", user="postgres",password=pw)
-  exportToJson(connectionDetails, cdmSchema = "cdm4_sim", resultsSchema = "scratch",outputPath = "c:/temp/PostgreSQL")
-  #exportToJson(connectionDetails, cdmSchema = "cdm4_sim", resultsSchema = "scratch",outputPath = "c:/temp/PostgreSQL", reports = c("CONDITION_ERA"))
-  
-  #Test on PostgreSQL sample
+  exportToJson(connectionDetails, cdmSchema = schema, resultsSchema = "scratch",outputPath = "c:/temp/PostgreSQL",cdmVersion=cdmVersion)
+
+  #Test on Oracle
   setwd("c:/temp")
-  connectionDetails <- createConnectionDetails(dbms="postgresql", server="localhost/ohdsi", user="postgres",password=pw)
-  exportToJson(connectionDetails, cdmSchema = "cdm4_sim_sample", resultsSchema = "scratch_sample",outputPath = "c:/temp/PostgreSQL_sample")
-  #exportToJson(connectionDetails, cdmSchema = "cdm4_sim_sample", resultsSchema = "scratch_sample",outputPath = "c:/temp/PostgreSQL_sample", report = c("CONDITION_ERA"))
-  
-  #Test on Oracle sample
-  setwd("c:/temp")
-  connectionDetails <- createConnectionDetails(dbms="oracle", server="xe", user="system",password=pw)
-  exportToJson(connectionDetails, cdmSchema = "cdm4_sim", resultsSchema = "scratch",outputPath = "c:/temp/Oracle")  
-  #exportToJson(connectionDetails, cdmSchema = "cdm4_sim", resultsSchema = "scratch",outputPath = "c:/temp/Oracle", report = c("CONDITION_ERA")) 
+  connectionDetails <- createConnectionDetails(dbms="oracle", server="xe", user="system",password="OHDSI")
+  exportToJson(connectionDetails, cdmSchema = schema, resultsSchema = "scratch",outputPath = "c:/temp/Oracle",cdmVersion=cdmVersion)  
   
   #Compare JSON files:
   loadTextFile <- function(fileName){
@@ -56,7 +53,7 @@ testExportCode <- function(){
     writeLines(paste("Finished comparing",count,"files"))
   }
   
-  compareJSONFiles("c:/temp/oracle","c:/temp/postgresql_sample")
+  compareJSONFiles("c:/temp/oracle","c:/temp/postgresql")
   
   compareJSONFiles("c:/temp/postgresql","c:/temp/sqlserver")
   

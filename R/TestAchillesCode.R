@@ -1,49 +1,37 @@
 # some test-code
 
 testAchillesCode <- function(){
- #Test on SQL Server: 
-  setwd("c:/temp")
-  #connectionDetails <- createConnectionDetails(dbms="sql server", server="RNDUSRDHIT09.jnj.com")
-  connectionDetails <- createConnectionDetails(dbms="postgresql", server="localhost/ohdsi", user="postgres",password=pw)
-  
-  achillesResults <- achilles(connectionDetails, cdmSchema="cdm_truven_ccae_6k_v5", resultsSchema="cdm_truven_ccae_6k_v5", cdmVersion="5")
-
   pw <- ""
+  #sqlServerServer <- "RNDUSRDHIT07.jnj.com"
+  #sqlServerResultsSchema <- "scratch"
+  #schema <- "cdm4_sim"
+  
+  sqlServerServer <- "RNDUSRDHIT09.jnj.com"
+  
+  sqlServerResultsSchema <- "cdm_truven_ccae_6k"
+  schema <- "cdm_truven_ccae_6k"
+  cdmVersion <- "4"
+  
+  sqlServerResultsSchema <- "cdm_truven_ccae_6k_v5"
+  schema <- "cdm_truven_ccae_6k_v5"
+  cdmVersion <- "5"
   
   #Test on SQL Server:
   setwd("c:/temp")
-  connectionDetailsSqlServer <- createConnectionDetails(dbms="sql server", server="RNDUSRDHIT07.jnj.com")
-  achillesResultsSqlServer <- achilles(connectionDetailsSqlServer, cdmSchema="cdm4_sim", resultsSchema="scratch")
-  
-  #achillesResultsSqlServer <- achilles(connectionDetailsSqlServer, cdmSchema="cdm4_sim", resultsSchema="scratch", analysisIds=c(606),createTable=FALSE)
+  connectionDetailsSqlServer <- createConnectionDetails(dbms="sql server", server=sqlServerServer)
+  achillesResultsSqlServer <- achilles(connectionDetailsSqlServer, cdmSchema=schema, resultsSchema=sqlServerResultsSchema,cdmVersion=cdmVersion)
 
   #Test on PostgreSQL
   setwd("c:/temp")
   connectionDetailsPostgreSql <- createConnectionDetails(dbms="postgresql", server="localhost/ohdsi", user="postgres",password=pw)
-  achillesResultsPostgreSql <- achilles(connectionDetailsPostgreSql, cdmSchema="cdm4_sim", resultsSchema="scratch")
- 
-  #achillesResultsPostgreSql <- achilles(connectionDetailsPostgreSql, cdmSchema="cdm4_sim", resultsSchema="scratch",analysisIds=c(600:620),createTable = FALSE)
+  achillesResultsPostgreSql <- achilles(connectionDetailsPostgreSql, cdmSchema=schema, resultsSchema="scratch",cdmVersion=cdmVersion)
   
-  #fetchAchillesAnalysisResults(connectionDetailsPostgreSql, "scratch", 606)
-  
-  #Test on PostgreSQL using sample
+  #Test on Oracle
   setwd("c:/temp")
-  connectionDetailsPostgreSql <- createConnectionDetails(dbms="postgresql", server="localhost/ohdsi", user="postgres",password=pw)
-  achillesResultsPostgreSql <- achilles(connectionDetailsPostgreSql, cdmSchema="cdm4_sim_sample", resultsSchema="scratch_sample")
+  connectionDetailsOracle <- createConnectionDetails(dbms="oracle", server="xe", user="system",password="OHDSI")
+  achillesResultsOracle <- achilles(connectionDetailsOracle, cdmSchema=schema, resultsSchema="scratch",cdmVersion=cdmVersion)
   
-  #achillesResultsPostgreSql <- achilles(connectionDetailsPostgreSql, cdmSchema="cdm4_sim_sample", resultsSchema="scratch_sample", analysisIds=c(116),createTable=FALSE)
-  
-  
-  #Test on Oracle using sample:
-  setwd("c:/temp")
-  connectionDetailsOracle <- createConnectionDetails(dbms="oracle", server="xe", user="system",password=pw)
-  achillesResultsOracle <- achilles(connectionDetailsOracle, cdmSchema="cdm4_sim", resultsSchema="scratch")
-  
-  #achillesResultsOracle <- achilles(connectionDetailsOracle, cdmSchema="cdm4_sim", resultsSchema="scratch", analysisIds=c(116),createTable=FALSE)
-  
-  #fetchAchillesAnalysisResults(connectionDetailsPostgreSql, "scratch", 606)
-  
-  
+
   #Compare results:
   compareResults <- function(connection1, connection2){
     data(analysesDetails)
@@ -62,12 +50,29 @@ testAchillesCode <- function(){
         y[is.na(y)] <- ""
       }
       if (!(nrow(x) == 0 && nrow(y) == 0)){
+        x <- round(signif(x[sapply(x,FUN=is.numeric)],5),5)
+        y <- round(signif(y[sapply(y,FUN=is.numeric)],5),5)
         if (nrow(x) != nrow(y)){
           writeLines(paste("Difference detected for analysisId",analysis_id))
-        } else if (min(round(signif(x[sapply(x,FUN=is.numeric)],5),5) == round(signif(y[sapply(y,FUN=is.numeric)],5),5)) == 0){
+        } else if (min(x==y) == 0){
           writeLines(paste("Difference detected for analysisId",analysis_id))
-          #break
-        }
+          if (analysis_id %in% c(818)){
+            writeLines("(This was expected)")
+          }else {
+            count = 0
+            for (r in 1:nrow(x)){
+              if (min(x[r,] == y[r,]) == 0){
+                col <- which(x[r,] != y[r,])
+                writeLines(paste("Difference in",colnames(x)[col],":",x[r,col],"versus",y[r,col]))
+                count = count + 1
+                if (count == 10){
+                  writeLines("...")
+                  break;
+                }
+              }
+            }
+          }
+        }        
       }  
     }
     
@@ -87,18 +92,33 @@ testAchillesCode <- function(){
         y[is.na(y)] <- ""
       }
       if (!(nrow(x) == 0 && nrow(y) == 0)){
+        #STRATUM_1 <- y$STRATUM_1
+        x <- round(signif(x[sapply(x,FUN=is.numeric)],5),5)
+        y <- round(signif(y[sapply(y,FUN=is.numeric)],5),5)
         if (nrow(x) != nrow(y)){
           writeLines(paste("Difference detected for analysisId",analysis_id))
-        } else if (min(round(signif(x[sapply(x,FUN=is.numeric)],5),5) == round(signif(y[sapply(y,FUN=is.numeric)],5),5)) == 0){
+        } else if (min(x==y) == 0){
           writeLines(paste("Difference detected for analysisId",analysis_id))
-          #break
+          count = 0
+          for (r in 1:nrow(x)){
+            if (min(x[r,] == y[r,]) == 0){
+              col <- which(x[r,] != y[r,])
+              #writeLines(paste("Difference in",colnames(x)[col],":",x[r,col],"versus",y[r,col]," (STRATUM_1:",STRATUM_1[r],")"))
+              writeLines(paste("Difference in",colnames(x)[col],":",x[r,col],"versus",y[r,col]))
+              count = count + 1
+              if (count == 10){
+                writeLines("...")
+                break;
+              }
+            }
+          }        
         }
       }
     }  
   }
   
-  #Compare on full set:
-  connectionDetailsSqlServer$schema = "scratch"
+  #Compare Sql Server and Postgres:
+  connectionDetailsSqlServer$schema = sqlServerResultsSchema
   connSqlServer <- connect(connectionDetailsSqlServer)
   
   connectionDetailsPostgreSql$schema = "scratch"
@@ -106,76 +126,13 @@ testAchillesCode <- function(){
   
   compareResults(connSqlServer,connPostgreSql)
   
-  x1 <- fetchAchillesAnalysisResults(connectionDetailsSqlServer, resultsSchema = "scratch", analysisId = 1510)
-  x2 <- fetchAchillesAnalysisResults(connectionDetailsPostgreSql, resultsSchema = "scratch", analysisId = 1510)
+  #Compare Sql Server and Oracle:
+  connectionDetailsSqlServer$schema = sqlServerResultsSchema
+  connSqlServer <- connect(connectionDetailsSqlServer)
   
-  x1 <- dbGetQuery(connSqlServer,"SELECT * FROM achilles_results WHERE analysis_id = 1411")
-  x2 <- dbGetQuery(connPostgreSql,"SELECT * FROM achilles_results WHERE analysis_id = 1411")
-  colnames(x1) <- toupper(colnames(x1))
-  x1 <- x1[with(x1,order(STRATUM_1,STRATUM_2,STRATUM_3,STRATUM_4,STRATUM_5)),]
-  colnames(x2) <- toupper(colnames(x2))
-  x2 <- x2[with(x2,order(STRATUM_1,STRATUM_2,STRATUM_3,STRATUM_4,STRATUM_5)),]
-  head(x1)
-  head(x2)
-  xn1 <- round(signif(x1[sapply(x1,FUN=is.numeric)],3),3)
-  xn2 <- round(signif(x2[sapply(x2,FUN=is.numeric)],3),3)
-  sum(xn1 != xn2)
-  for (r in 1:nrow(xn1)){
-    if (min(xn1[r,] == xn2[r,]) == 0){
-      print(r)
-    }
-  }
-
-  xn1[2904,]
-  xn2[2904,]
-  xn1[2382,] == xn2[2382,]
-  is.numeric(xn1[2095,5])
-  is.numeric(xn2[2095,5])
-  write.csv(x1,"c:/temp/x1.csv",row.names=FALSE)
-  write.csv(x2,"c:/temp/x2.csv",row.names=FALSE)
-  
-  #Compare on sample set:
   connectionDetailsOracle$schema = "scratch"
   connOracle <- connect(connectionDetailsOracle)
   
-  connectionDetailsPostgreSql$schema = "scratch_sample"
-  connPostgreSql <- connect(connectionDetailsPostgreSql)
-  
-  compareResults(connOracle,connPostgreSql)
-  
-  x1 <- dbGetQuery(connOracle,"SELECT * FROM achilles_results WHERE analysis_id = 1411")
-  x2 <- dbGetQuery(connPostgreSql,"SELECT * FROM achilles_results WHERE analysis_id = 1411")
-  colnames(x1) <- toupper(colnames(x1))
-  x1 <- x1[with(x1,order(STRATUM_1,STRATUM_2,STRATUM_3,STRATUM_4,STRATUM_5)),]
-  colnames(x2) <- toupper(colnames(x2))
-  x2 <- x2[with(x2,order(STRATUM_1,STRATUM_2,STRATUM_3,STRATUM_4,STRATUM_5)),]
-  head(x1)
-  head(x2)
-  xn1 <- round(signif(x1[sapply(x1,FUN=is.numeric)],3),3)
-  xn2 <- round(signif(x2[sapply(x2,FUN=is.numeric)],3),3)
-  sum(xn1 != xn2)
-  for (r in 1:nrow(xn1)){
-    if (min(xn1[r,] == xn2[r,]) == 0){
-      print(r)
-    }
-  }
-  
-  xn1[2904,]
-  xn2[2904,]
-  xn1[2382,] == xn2[2382,]
-  is.numeric(xn1[2095,5])
-  is.numeric(xn2[2095,5])
-  write.csv(x1,"c:/temp/x1.csv",row.names=FALSE)
-  write.csv(x2,"c:/temp/x2.csv",row.names=FALSE)
-  
-  
-  
-  for (i in 1:nrow(x)){
-    p <- x[i,]
-    q <- y[i,]
-    if (min(signif(as.numeric(p[sapply(p,FUN=is.numeric) & !is.na(p)]),3) ==signif(as.numeric(q[sapply(q,FUN=is.numeric) & !is.na(q)]),3)) == 0){
-      writeLines(paste("Difference detected for analysisId",analysis_id))
-      break
-    }
-  }
+  compareResults(connOracle,connSqlServer)
+  #Note: differences will be found for 1411,1412 because of reverse sorting of dates due to different formats
 }
