@@ -1,6 +1,6 @@
 Achilles
 ========
-
+ 
 Automated Characterization of Health Information at Large-scale Longitudinal Evidence Systems (ACHILLES) - descriptive statistics about a OMOP CDM v4 database
 
 Getting Started
@@ -9,11 +9,9 @@ Getting Started
 
 1. Make sure you have your data in the [OMOP CDM v4 format](http://omop.org/cdm).
 
-2. Make sure that you have Java installed. If you don't have Java already intalled on your computed (on most computers it already is installed), go to [java.com](http://java.com) to get the latest version.
+2. Make sure that you have Java installed. If you don't have Java already intalled on your computed (on most computers it already is installed), go to [java.com](http://java.com) to get the latest version.  (If you have trouble building with rJava below, be sure on Windows that your Path variable includes the path to jvm.dll (Windows Button --> type "path" --> Edit Environmental Variables --> Edit PATH variable, add to end ;C:/Program Files/Java/jre/bin/server) or wherever it is on your system.)
 
-3. If you're using Windows, make sure you install [RTools](http://cran.r-project.org/bin/windows/Rtools/).
-
-4. in R, use the following commands to install Achilles:
+3. in R, use the following commands to install Achilles:
 
   ```r
   install.packages("devtools")
@@ -23,7 +21,7 @@ Getting Started
   install_github("ohdsi/Achilles")
   ```
   
-5. To run the Achilles analysis, use the following commands in R:
+4. To run the Achilles analysis, use the following commands in R:
 
   ```r
   library(Achilles)
@@ -36,7 +34,7 @@ Getting Started
   ```
   Currently "sql server", "oracle", "postgresql", and "redshift" are supported as dbms.
 
-6. To use [AchillesWeb](https://github.com/OHDSI/AchillesWeb) to explore the Achilles statistics, you must first export the statistics to JSON files:
+5. To use [AchillesWeb](https://github.com/OHDSI/AchillesWeb) to explore the Achilles statistics, you must first export the statistics to JSON files:
   ```r
   exportToJson(connectionDetails, "cdm4_inst", "results", "c:/myPath/AchillesExport")
   ```
