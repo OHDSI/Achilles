@@ -1213,6 +1213,7 @@ generateObservationPeriodReport <- function(conn, dbms, cdmSchema, outputPath, c
   observationLengthHist$MIN = observationLengthStats$MIN_VALUE
   observationLengthHist$MAX = observationLengthStats$MAX_VALUE
   observationLengthHist$INTERVAL_SIZE = observationLengthStats$INTERVAL_SIZE
+  observationLengthHist$INTERVALS = (observationLengthStats$MAX_VALUE - observationLengthStats$MIN_VALUE) / observationLengthStats$INTERVAL_SIZE
   
   renderedSql <- loadRenderTranslateSql(sqlFilename = addCdmVersionPath("/observationperiod/observationlength_data.sql",cdmVersion),
                                         packageName = "Achilles",
