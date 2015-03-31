@@ -115,34 +115,49 @@ create table ACHILLES_results_dist
 
 use @CDM_schema;
 
+create table #TableCheck
+(
+  tablename varchar(50)
+)
+;
+
+insert into #TableCheck (tablename)
+select 'care_site'
+from (
 SELECT
-		care_site_id,
+  	care_site_id,
 		location_id,
 		organization_id,
 		place_of_service_concept_id,
 		care_site_source_value,
-		place_of_service_source_value
-INTO
-	#temp
+		place_of_service_source_value,
+    row_number() over (order by care_site_id) rn
 FROM
 		care_site
-LIMIT 1;
-TRUNCATE TABLE #temp;
-DROP TABLE #temp;
+) CARE_SITE
+WHERE rn = 1;
+
+
+insert into #TableCheck (tablename)
+select 'cohort'
+from (
 SELECT
 		cohort_id,
 		cohort_concept_id,
 		cohort_start_date,
 		cohort_end_date,
 		subject_id,
-		stop_reason
-INTO
-	#temp
+		stop_reason,
+    row_number() over (order by cohort_concept_id) rn
+
 FROM
 		cohort
-LIMIT 1;
-TRUNCATE TABLE #temp;
-DROP TABLE #temp;
+) COHORT
+WHERE rn = 1;
+
+insert into #TableCheck (tablename)
+select 'condition_era'
+from (
 SELECT
 		condition_era_id,
 		person_id,
@@ -150,14 +165,16 @@ SELECT
 		condition_era_start_date,
 		condition_era_end_date,
 		condition_type_concept_id,
-		condition_occurrence_count
-INTO
-	#temp
+		condition_occurrence_count,
+    row_number() over (order by person_id) rn
 FROM
 		condition_era
-LIMIT 1;
-TRUNCATE TABLE #temp;
-DROP TABLE #temp;
+) CONDITION_ERA
+WHERE rn = 1;
+
+insert into #TableCheck (tablename)
+select 'condition_occurrence'
+from (
 SELECT
 		condition_occurrence_id,
 		person_id,
@@ -168,27 +185,31 @@ SELECT
 		stop_reason,
 		associated_provider_id,
 		visit_occurrence_id,
-		condition_source_value
-INTO
-	#temp
+		condition_source_value,
+    row_number() over (order by person_id) rn
 FROM
 		condition_occurrence
-LIMIT 1;
-TRUNCATE TABLE #temp;
-DROP TABLE #temp;
+) condition_occurrence
+WHERE rn = 1;
+
+insert into #TableCheck (tablename)
+select 'death'
+from (
 SELECT
 		person_id,
 		death_date,
 		death_type_concept_id,
 		cause_of_death_concept_id,
-		cause_of_death_source_value
-INTO
-	#temp
+		cause_of_death_source_value,
+    row_number() over (order by person_id) rn
 FROM
-		death
-LIMIT 1;
-TRUNCATE TABLE #temp;
-DROP TABLE #temp;
+  death
+) death
+WHERE rn = 1;
+
+insert into #TableCheck (tablename)
+select 'drug_cost'
+from (
 SELECT
 		drug_cost_id,
 		drug_exposure_id,
@@ -202,14 +223,16 @@ SELECT
 		ingredient_cost,
 		dispensing_fee,
 		average_wholesale_price,
-		payer_plan_period_id
-INTO
-	#temp
+		payer_plan_period_id,
+    row_number() over (order by drug_cost_id) rn
 FROM
 		drug_cost
-LIMIT 1;
-TRUNCATE TABLE #temp;
-DROP TABLE #temp;
+) drug_cost
+WHERE rn = 1;
+
+insert into #TableCheck (tablename)
+select 'drug_era'
+from (
 SELECT
 		drug_era_id,
 		person_id,
@@ -217,14 +240,16 @@ SELECT
 		drug_era_start_date,
 		drug_era_end_date,
 		drug_type_concept_id,
-		drug_exposure_count
-INTO
-	#temp
+		drug_exposure_count,
+    row_number() over (order by person_id) rn
 FROM
 		drug_era
-LIMIT 1;
-TRUNCATE TABLE #temp;
-DROP TABLE #temp;
+) drug_era
+WHERE rn = 1;
+
+insert into #TableCheck (tablename)
+select 'drug_exposure'
+from (
 SELECT
 		drug_exposure_id,
 		person_id,
@@ -240,14 +265,16 @@ SELECT
 		prescribing_provider_id,
 		visit_occurrence_id,
 		relevant_condition_concept_id,
-		drug_source_value
-INTO
-	#temp
+		drug_source_value,
+    row_number() over (order by person_id) rn
 FROM
 		drug_exposure
-LIMIT 1;
-TRUNCATE TABLE #temp;
-DROP TABLE #temp;
+) drug_exposure
+WHERE rn = 1;
+
+insert into #TableCheck (tablename)
+select 'location'
+from (
 SELECT
 		location_id,
 		address_1,
@@ -256,14 +283,16 @@ SELECT
 		STATE,
 		zip,
 		county,
-		location_source_value
-INTO
-	#temp
+		location_source_value,
+    row_number() over (order by location_id) rn
 FROM
 		location
-LIMIT 1;
-TRUNCATE TABLE #temp;
-DROP TABLE #temp;
+) location
+WHERE rn = 1;
+
+insert into #TableCheck (tablename)
+select 'observation'
+from (
 SELECT
 		observation_id,
 		person_id,
@@ -281,39 +310,45 @@ SELECT
 		visit_occurrence_id,
 		relevant_condition_concept_id,
 		observation_source_value,
-		units_source_value
-INTO
-	#temp
+		unit_source_value,
+    row_number() over (order by person_id) rn
 FROM
 		observation
-LIMIT 1;
-TRUNCATE TABLE #temp;
-DROP TABLE #temp;
+) location
+WHERE rn = 1;
+
+insert into #TableCheck (tablename)
+select 'observation_period'
+from (
 SELECT
 		observation_period_id,
 		person_id,
 		observation_period_start_date,
-		observation_period_end_date
-INTO
-	#temp
+		observation_period_end_date,
+    row_number() over (order by person_id) rn
 FROM
 		observation_period
-LIMIT 1;
-TRUNCATE TABLE #temp;
-DROP TABLE #temp;
+) observation_period
+WHERE rn = 1;
+
+insert into #TableCheck (tablename)
+select 'organization'
+from (
 SELECT
 		organization_id,
 		place_of_service_concept_id,
 		location_id,
 		organization_source_value,
-		place_of_service_source_value
-INTO
-	#temp
+		place_of_service_source_value,
+    row_number() over (order by organization_id) rn
 FROM
 		organization
-LIMIT 1;
-TRUNCATE TABLE #temp;
-DROP TABLE #temp;
+) organization
+WHERE rn = 1;
+
+insert into #TableCheck (tablename)
+select 'payer_plan_period'
+from (
 SELECT
 		payer_plan_period_id,
 		person_id,
@@ -321,14 +356,16 @@ SELECT
 		payer_plan_period_end_date,
 		payer_source_value,
 		plan_source_value,
-		family_source_value
-INTO
-	#temp
+		family_source_value,
+    row_number() over (order by person_id) rn
 FROM
 		payer_plan_period
-LIMIT 1;
-TRUNCATE TABLE #temp;
-DROP TABLE #temp;
+) payer_plan_period
+WHERE rn = 1;
+
+insert into #TableCheck (tablename)
+select 'person'
+from (
 SELECT
 		person_id,
 		gender_concept_id,
@@ -343,14 +380,16 @@ SELECT
 		person_source_value,
 		gender_source_value,
 		race_source_value,
-		ethnicity_source_value
-INTO
-	#temp
+		ethnicity_source_value,
+    row_number() over (order by person_id) rn
 FROM
 		person
-LIMIT 1;
-TRUNCATE TABLE #temp;
-DROP TABLE #temp;
+) person
+WHERE rn = 1;
+
+insert into #TableCheck (tablename)
+select 'procedure_cost'
+from (
 SELECT
 		procedure_cost_id,
 		procedure_occurrence_id,
@@ -365,14 +404,16 @@ SELECT
 		revenue_code_concept_id,
 		payer_plan_period_id,
 		disease_class_source_value,
-		revenue_code_source_value
-INTO
-	#temp
+		revenue_code_source_value,
+    row_number() over (order by procedure_cost_id) rn
 FROM
 		procedure_cost
-LIMIT 1;
-TRUNCATE TABLE #temp;
-DROP TABLE #temp;
+) procedure_cost
+WHERE rn = 1;
+
+insert into #TableCheck (tablename)
+select 'procedure_occurrence'
+from (
 SELECT
 		procedure_occurrence_id,
 		person_id,
@@ -382,14 +423,16 @@ SELECT
 		associated_provider_id,
 		visit_occurrence_id,
 		relevant_condition_concept_id,
-		procedure_source_value
-INTO
-	#temp
+		procedure_source_value,
+    row_number() over (order by person_id) rn
 FROM
 		procedure_occurrence
-LIMIT 1;
-TRUNCATE TABLE #temp;
-DROP TABLE #temp;
+) procedure_occurrence
+WHERE rn = 1;
+
+insert into #TableCheck (tablename)
+select 'provider'
+from (
 SELECT
 		provider_id,
 		NPI,
@@ -397,14 +440,16 @@ SELECT
 		specialty_concept_id,
 		care_site_id,
 		provider_source_value,
-		specialty_source_value
-INTO
-	#temp
+		specialty_source_value,
+    row_number() over (order by provider_id) rn
 FROM
 		provider
-LIMIT 1;
-TRUNCATE TABLE #temp;
-DROP TABLE #temp;
+) provider
+WHERE rn = 1;
+
+insert into #TableCheck (tablename)
+select 'visit_occurrence'
+from (
 SELECT
 		visit_occurrence_id,
 		person_id,
@@ -412,32 +457,15 @@ SELECT
 		visit_end_date,
 		place_of_service_concept_id,
 		care_site_id,
-		place_of_service_source_value
-INTO
-	#temp
+		place_of_service_source_value,
+    row_number() over (order by person_id) rn
 FROM
 		visit_occurrence
-LIMIT 1;
-TRUNCATE TABLE #temp;
-DROP TABLE #temp;
-SELECT
-		concept_id,
-		concept_name,
-		concept_level,
-		concept_class,
-		vocabulary_id,
-		concept_code,
-		valid_start_date,
-		valid_end_date,
-		invalid_reason
-INTO
-	#temp
-FROM
-	concept
-LIMIT 1 ;
-TRUNCATE TABLE #temp;
-DROP TABLE #temp;
+) visit_occurrence
+WHERE rn = 1;
 
+TRUNCATE TABLE #TableCheck;
+DROP TABLE #TableCheck;
 
 use @results_schema;
 

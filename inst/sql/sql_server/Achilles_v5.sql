@@ -106,9 +106,417 @@ create table ACHILLES_results_dist
 	p90_value float
 );
 
+-- RSD - 2014-10-27
+-- Execute a series of quick select statements to verify that the CDM schema
+-- has all the proper tables and columns
+-- The point is to catch any missing tables/columns here before we spend hours
+-- generating results before bombing out
+
+create table #TableCheck
+(
+  tablename varchar(50)
+)
+;
+
+insert into #TableCheck (tablename)
+select 'care_site'
+from (
+SELECT
+  	care_site_id,
+		location_id,
+		place_of_service_concept_id,
+		care_site_source_value,
+		place_of_service_source_value,
+    row_number() over (order by care_site_id) rn
+FROM
+		care_site
+) CARE_SITE
+WHERE rn = 1;
 
 
+insert into #TableCheck (tablename)
+select 'cohort'
+from (
+SELECT
+		cohort_definition_id,
+		cohort_start_date,
+		cohort_end_date,
+		subject_id,
+    row_number() over (order by cohort_definition_id) rn
+FROM
+		cohort
+) COHORT
+WHERE rn = 1;
 
+insert into #TableCheck (tablename)
+select 'condition_era'
+from (
+SELECT
+		condition_era_id,
+		person_id,
+		condition_concept_id,
+		condition_era_start_date,
+		condition_era_end_date,
+		condition_occurrence_count,
+    row_number() over (order by person_id) rn
+FROM
+		condition_era
+) CONDITION_ERA
+WHERE rn = 1;
+
+insert into #TableCheck (tablename)
+select 'condition_occurrence'
+from (
+SELECT
+		condition_occurrence_id,
+		person_id,
+		condition_concept_id,
+		condition_start_date,
+		condition_end_date,
+		condition_type_concept_id,
+		provider_id,
+		visit_occurrence_id,
+		condition_source_value,
+		condition_source_concept_id,
+    row_number() over (order by person_id) rn
+FROM
+		condition_occurrence
+) condition_occurrence
+WHERE rn = 1;
+
+insert into #TableCheck (tablename)
+select 'death'
+from (
+SELECT
+		person_id,
+		death_date,
+		death_type_concept_id,
+		cause_concept_id,
+		cause_source_value,
+		cause_source_concept_id,
+    row_number() over (order by person_id) rn
+FROM
+  death
+) death
+WHERE rn = 1;
+
+insert into #TableCheck (tablename)
+select 'drug_cost'
+from (
+SELECT
+		drug_cost_id,
+		drug_exposure_id,
+		paid_copay,
+		paid_coinsurance,
+		paid_toward_deductible,
+		paid_by_payer,
+		paid_by_coordination_benefits,
+		total_out_of_pocket,
+		total_paid,
+		ingredient_cost,
+		dispensing_fee,
+		average_wholesale_price,
+		payer_plan_period_id,
+    row_number() over (order by drug_cost_id) rn
+FROM
+		drug_cost
+) drug_cost
+WHERE rn = 1;
+
+insert into #TableCheck (tablename)
+select 'device_exposure'
+from (
+SELECT
+		device_exposure_id, 
+		person_id, 
+		device_concept_id, 
+		device_exposure_start_date, 
+		device_exposure_end_date, 
+		device_type_concept_id, 
+		unique_device_id, 
+		quantity, 
+		provider_id, 
+		visit_occurrence_id, 
+		device_source_value, 
+		device_source_concept_id,
+    row_number() over (order by person_id) rn
+FROM
+		device_exposure
+) device_exposure
+WHERE rn = 1;
+
+insert into #TableCheck (tablename)
+select 'dose_era'
+from (
+SELECT
+		dose_era_id, 
+		person_id, 
+		drug_concept_id, 
+		unit_concept_id, 
+		dose_value, 
+		dose_era_start_date, 
+		dose_era_end_date,
+    row_number() over (order by person_id) rn
+FROM
+		dose_era
+) dose_era
+WHERE rn = 1;
+
+insert into #TableCheck (tablename)
+select 'drug_cost'
+from (
+SELECT
+		drug_cost_id, 
+		drug_exposure_id, 
+		currency_concept_id, 
+		paid_copay, 
+		paid_coinsurance, 
+		paid_toward_deductible, 
+		paid_by_payer, 
+		paid_by_coordination_benefits, 
+		total_out_of_pocket, 
+		total_paid, 
+		ingredient_cost, 
+		dispensing_fee, 
+		average_wholesale_price, 
+		payer_plan_period_id,
+    row_number() over (order by drug_cost_id) rn
+FROM
+		drug_cost
+) drug_cost
+WHERE rn = 1;
+
+insert into #TableCheck (tablename)
+select 'drug_era'
+from (
+SELECT
+		drug_era_id,
+		person_id,
+		drug_concept_id,
+		drug_era_start_date,
+		drug_era_end_date,
+		drug_exposure_count,
+    row_number() over (order by person_id) rn
+FROM
+		drug_era
+) drug_era
+WHERE rn = 1;
+
+insert into #TableCheck (tablename)
+select 'drug_exposure'
+from (
+SELECT
+		drug_exposure_id,
+		person_id,
+		drug_concept_id,
+		drug_exposure_start_date,
+		drug_exposure_end_date,
+		drug_type_concept_id,
+		stop_reason,
+		refills,
+		quantity,
+		days_supply,
+		sig,
+		route_concept_id,
+		effective_drug_dose,
+		dose_unit_concept_id,
+		lot_number,
+		provider_id,
+		visit_occurrence_id,
+		drug_source_value,
+		drug_source_concept_id,
+		route_source_value,
+		dose_unit_source_value,
+    row_number() over (order by person_id) rn
+FROM
+		drug_exposure
+) drug_exposure
+WHERE rn = 1;
+
+insert into #TableCheck (tablename)
+select 'location'
+from (
+SELECT
+		location_id,
+		address_1,
+		address_2,
+		city,
+		STATE,
+		zip,
+		county,
+		location_source_value,
+    row_number() over (order by location_id) rn
+FROM
+		location
+) location
+WHERE rn = 1;
+
+insert into #TableCheck (tablename)
+select 'observation'
+from (
+SELECT
+		observation_id,
+		person_id,
+		observation_concept_id,
+		observation_date,
+		observation_time,
+		value_as_number,
+		value_as_string,
+		value_as_concept_id,
+		qualifier_concept_id,
+		unit_concept_id,
+		observation_type_concept_id,
+		provider_id,
+		visit_occurrence_id,
+		observation_source_value,
+		observation_source_concept_id,
+		unit_source_value,
+		qualifier_source_value,
+    row_number() over (order by person_id) rn
+FROM
+		observation
+) location
+WHERE rn = 1;
+
+insert into #TableCheck (tablename)
+select 'observation_period'
+from (
+SELECT
+		observation_period_id,
+		person_id,
+		observation_period_start_date,
+		observation_period_end_date,
+    row_number() over (order by person_id) rn
+FROM
+		observation_period
+) observation_period
+WHERE rn = 1;
+
+
+insert into #TableCheck (tablename)
+select 'payer_plan_period'
+from (
+SELECT
+		payer_plan_period_id,
+		person_id,
+		payer_plan_period_start_date,
+		payer_plan_period_end_date,
+		payer_source_value,
+		plan_source_value,
+		family_source_value,
+    row_number() over (order by person_id) rn
+FROM
+		payer_plan_period
+) payer_plan_period
+WHERE rn = 1;
+
+insert into #TableCheck (tablename)
+select 'person'
+from (
+SELECT
+		person_id,
+		gender_concept_id,
+		year_of_birth,
+		month_of_birth,
+		day_of_birth,
+		race_concept_id,
+		ethnicity_concept_id,
+		location_id,
+		provider_id,
+		care_site_id,
+		person_source_value,
+		gender_source_value,
+		race_source_value,
+		ethnicity_source_value,
+    row_number() over (order by person_id) rn
+FROM
+		person
+) person
+WHERE rn = 1;
+
+insert into #TableCheck (tablename)
+select 'procedure_cost'
+from (
+SELECT
+		procedure_cost_id,
+		procedure_occurrence_id,
+		currency_concept_id,
+		paid_copay,
+		paid_coinsurance,
+		paid_toward_deductible,
+		paid_by_payer,
+		paid_by_coordination_benefits,
+		total_out_of_pocket,
+		total_paid,
+		revenue_code_concept_id,
+		payer_plan_period_id,
+		revenue_code_source_value,
+    row_number() over (order by procedure_cost_id) rn
+FROM
+		procedure_cost
+) procedure_cost
+WHERE rn = 1;
+
+insert into #TableCheck (tablename)
+select 'procedure_occurrence'
+from (
+SELECT
+		procedure_occurrence_id,
+		person_id,
+		procedure_concept_id,
+		procedure_date,
+		procedure_type_concept_id,
+		modifier_concept_id,
+		quantity,
+		provider_id,
+		visit_occurrence_id,
+		procedure_source_value,
+		procedure_source_concept_id,
+		qualifier_source_value,
+    row_number() over (order by person_id) rn
+FROM
+		procedure_occurrence
+) procedure_occurrence
+WHERE rn = 1;
+
+insert into #TableCheck (tablename)
+select 'provider'
+from (
+SELECT
+		provider_id,
+		NPI,
+		DEA,
+		specialty_concept_id,
+		care_site_id,
+		provider_source_value,
+		specialty_source_value,
+    row_number() over (order by provider_id) rn
+FROM
+		provider
+) provider
+WHERE rn = 1;
+
+insert into #TableCheck (tablename)
+select 'visit_occurrence'
+from (
+SELECT
+		visit_occurrence_id,
+		person_id,
+		visit_start_date,
+		visit_end_date,
+		visit_type_concept_id,
+		provider_id,
+		care_site_id,
+		visit_source_value,
+		visit_source_concept_id,
+    row_number() over (order by person_id) rn
+FROM
+		visit_occurrence
+) visit_occurrence
+WHERE rn = 1;
+
+TRUNCATE TABLE #TableCheck;
+DROP TABLE #TableCheck;
 
 insert into ACHILLES_analysis (analysis_id, analysis_name)
 	values (0, 'Source name');
