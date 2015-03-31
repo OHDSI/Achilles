@@ -601,6 +601,9 @@ insert into ACHILLES_analysis (analysis_id, analysis_name, stratum_1_name, strat
 insert into ACHILLES_analysis (analysis_id, analysis_name, stratum_1_name)
 	values (117, 'Number of persons with at least one day of observation in each month', 'calendar month');
 
+insert into ACHILLES_analysis (analysis_id, analysis_name)
+  values (118, 'Number of observation periods with invalid person_id');
+
 
 
 --200- VISIT_OCCURRENCE
@@ -1698,6 +1701,20 @@ TRUNCATE TABLE #temp_dates;
 DROP TABLE #temp_dates;
 
 USE @CDM_schema;
+--}
+
+
+--{118 IN (@list_of_analysis_ids)}?{
+-- 118  Number of observation period records with invalid person_id
+insert into @results_schema.dbo.ACHILLES_results (analysis_id, count_value)
+select 118 as analysis_id,
+  COUNT_BIG(op1.PERSON_ID) as count_value
+from
+  observation_period op1
+  left join PERSON p1
+  on p1.person_id = op1.person_id
+where p1.person_id is null
+;
 --}
 
 
