@@ -7,4 +7,4 @@ from
 	(select * from ACHILLES_results where analysis_id = 117) denom
 	on num.stratum_2 = denom.stratum_1  --calendar year
 	inner join
-	@cdmSchema.dbo.concept c1 on CAST(num.stratum_1 as INT) = c1.concept_id
+	@cdm_database_schema.concept c1 on CAST(num.stratum_1 as INT) = c1.concept_id

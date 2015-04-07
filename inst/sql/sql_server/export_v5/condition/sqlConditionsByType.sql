@@ -5,7 +5,7 @@ select c1.concept_id as condition_concept_id,
        sum(ar1.count_value) as count_value
 from ACHILLES_results ar1
        inner join
-       @cdmSchema.dbo.concept c1
+       @cdm_database_schema.concept c1
        on CAST(ar1.stratum_1 AS INT) = c1.concept_id
        inner join
        (
@@ -26,7 +26,7 @@ from ACHILLES_results ar1
                     case when (concept_name like 'Inpatient%' or concept_name like 'Outpatient%' ) and (concept_name like '%primary%' or concept_name like '%1st position%') then 'Primary diagnosis'
                     when (concept_name like 'Inpatient%' or concept_name like 'Outpatient%' ) and (concept_name not like '%primary%' and concept_name not like '%1st position%') then 'Secondary diagnosis'
                     else '' end as concept_group_name
-       from @cdmSchema.dbo.concept
+       from @cdm_database_schema.concept
        where lower(domain_id) = 'condition type' 
        
        ) c2

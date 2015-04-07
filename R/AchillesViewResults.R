@@ -8,7 +8,7 @@
 #' that should really be fixed) and warnings (things that should at least be investigated).
 #'
 #' @param connectionDetails  An R object of type ConnectionDetail (details for the function that contains server info, database type, optionally username/password, port)
-#' @param resultsSchema		Name of database schema containing the Achilles descriptive statistics. 
+#' @param resultsDatabase		Name of database containing the Achilles descriptive statistics. 
 #' 
 #' @return A table listing all identified issues 
 #' @examples \dontrun{
@@ -17,8 +17,8 @@
 #'   fetchAchillesHeelResults(connectionDetails, "scratch")
 #' }
 #' @export
-fetchAchillesHeelResults <- function (connectionDetails, resultsSchema){
-  connectionDetails$schema = resultsSchema
+fetchAchillesHeelResults <- function (connectionDetails, resultsDatabase){
+  connectionDetails$schema = resultsDatabase
   conn <- connect(connectionDetails)
   
   sql <- "SELECT * FROM ACHILLES_HEEL_results"
@@ -38,7 +38,7 @@ fetchAchillesHeelResults <- function (connectionDetails, resultsSchema){
 #' See \code{data(analysesDetails)} for a list of all Achilles analyses and their Ids.
 #'
 #' @param connectionDetails  An R object of type ConnectionDetail (details for the function that contains server info, database type, optionally username/password, port)
-#' @param resultsSchema  	Name of database schema containing the Achilles descriptive statistics. 
+#' @param resultsDatabase  	Name of database containing the Achilles descriptive statistics. 
 #' @param analysisId   A single analysisId
 #' 
 #' @return An object of type \code{achillesAnalysisResults}
@@ -48,8 +48,8 @@ fetchAchillesHeelResults <- function (connectionDetails, resultsSchema){
 #'   fetchAchillesAnalysisResults(connectionDetails, "scratch",106)
 #' }
 #' @export
-fetchAchillesAnalysisResults <- function (connectionDetails, resultsSchema, analysisId){
-  connectionDetails$schema = resultsSchema
+fetchAchillesAnalysisResults <- function (connectionDetails, resultsDatabase, analysisId){
+  connectionDetails$schema = resultsDatabase
   conn <- connect(connectionDetails)
   
   sql <- "SELECT * FROM ACHILLES_analysis WHERE analysis_id = @analysisId"

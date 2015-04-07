@@ -16,14 +16,14 @@ from (select * from ACHILLES_results where analysis_id = 800) ar1
 		from
 		(
 		select concept_id, concept_name
-		from @cdmSchema.dbo.concept
+		from @cdm_database_schema.concept
 		where vocabulary_id = 'LOINC'
-		) obs left join @cdmSchema.dbo.concept_ancestor ca1 on obs.concept_id = ca1.DESCENDANT_CONCEPT_ID and ca1.min_levels_of_separation = 1
-		left join @cdmSchema.dbo.concept c1 on ca1.ANCESTOR_CONCEPT_ID = c1.concept_id
-		left join @cdmSchema.dbo.concept_ancestor ca2 on c1.concept_id = ca2.DESCENDANT_CONCEPT_ID and ca2.min_levels_of_separation = 1
-		left join @cdmSchema.dbo.concept c2 on ca2.ANCESTOR_CONCEPT_ID = c2.concept_id
-		left join @cdmSchema.dbo.concept_ancestor ca3 on c2.concept_id = ca3.DESCENDANT_CONCEPT_ID and ca3.min_levels_of_separation = 1
-		left join @cdmSchema.dbo.concept c3 on ca3.ANCESTOR_CONCEPT_ID = c3.concept_id
+		) obs left join @cdm_database_schema.concept_ancestor ca1 on obs.concept_id = ca1.DESCENDANT_CONCEPT_ID and ca1.min_levels_of_separation = 1
+		left join @cdm_database_schema.concept c1 on ca1.ANCESTOR_CONCEPT_ID = c1.concept_id
+		left join @cdm_database_schema.concept_ancestor ca2 on c1.concept_id = ca2.DESCENDANT_CONCEPT_ID and ca2.min_levels_of_separation = 1
+		left join @cdm_database_schema.concept c2 on ca2.ANCESTOR_CONCEPT_ID = c2.concept_id
+		left join @cdm_database_schema.concept_ancestor ca3 on c2.concept_id = ca3.DESCENDANT_CONCEPT_ID and ca3.min_levels_of_separation = 1
+		left join @cdm_database_schema.concept c3 on ca3.ANCESTOR_CONCEPT_ID = c3.concept_id
 		group by obs.concept_id, obs.concept_name
 	) concept_hierarchy on ar1.stratum_1 = CAST(concept_hierarchy.concept_id as VARCHAR),
 	(select count_value from ACHILLES_results where analysis_id = 1) denom

@@ -35,15 +35,15 @@ SQL for ACHILLES results (for either OMOP CDM v4 or OMOP CDM v5)
 
 *******************************************************************/
 
-{DEFAULT @CDM_schema = 'CDM'}
-{DEFAULT @results_schema = 'scratch'}
+{DEFAULT @cdm_database_schema = 'CDM.dbo'}
+{DEFAULT @results_database = 'scratch'}
 {DEFAULT @source_name = 'CDM NAME'}
 {DEFAULT @smallcellcount = 5}
 {DEFAULT @createTable = TRUE}
 
  
 --Achilles_Heel part:
-USE @results_schema;
+USE @results_database;
 
 IF OBJECT_ID('ACHILLES_HEEL_results', 'U') IS NOT NULL
   DROP TABLE ACHILLES_HEEL_results;
@@ -188,7 +188,7 @@ SELECT or1.analysis_id,
 FROM ACHILLES_results or1
 INNER JOIN ACHILLES_analysis oa1
 	ON or1.analysis_id = oa1.analysis_id
-LEFT JOIN @CDM_schema.dbo.concept c1
+LEFT JOIN @cdm_database_schema.concept c1
 	ON or1.stratum_1 = CAST(c1.concept_id AS VARCHAR)
 WHERE or1.analysis_id IN (
 		2,
@@ -222,7 +222,7 @@ SELECT or1.analysis_id,
 FROM ACHILLES_results or1
 INNER JOIN ACHILLES_analysis oa1
 	ON or1.analysis_id = oa1.analysis_id
-LEFT JOIN @CDM_schema.dbo.concept c1
+LEFT JOIN @cdm_database_schema.concept c1
 	ON or1.stratum_2 = CAST(c1.concept_id AS VARCHAR)
 WHERE or1.analysis_id IN (
 		405,
@@ -277,7 +277,7 @@ SELECT or1.analysis_id,
 FROM ACHILLES_results or1
 INNER JOIN ACHILLES_analysis oa1
 	ON or1.analysis_id = oa1.analysis_id
-INNER JOIN @CDM_schema.dbo.concept c1
+INNER JOIN @cdm_database_schema.concept c1
 	ON or1.stratum_1 = CAST(c1.concept_id AS VARCHAR)
 WHERE or1.analysis_id IN (2)
 	AND or1.stratum_1 IS NOT NULL
@@ -296,7 +296,7 @@ SELECT or1.analysis_id,
 FROM ACHILLES_results or1
 INNER JOIN ACHILLES_analysis oa1
 	ON or1.analysis_id = oa1.analysis_id
-INNER JOIN @CDM_schema.dbo.concept c1
+INNER JOIN @cdm_database_schema.concept c1
 	ON or1.stratum_1 = CAST(c1.concept_id AS VARCHAR)
 WHERE or1.analysis_id IN (4)
 	AND or1.stratum_1 IS NOT NULL
@@ -315,7 +315,7 @@ SELECT or1.analysis_id,
 FROM ACHILLES_results or1
 INNER JOIN ACHILLES_analysis oa1
 	ON or1.analysis_id = oa1.analysis_id
-INNER JOIN @CDM_schema.dbo.concept c1
+INNER JOIN @cdm_database_schema.concept c1
 	ON or1.stratum_1 = CAST(c1.concept_id AS VARCHAR)
 WHERE or1.analysis_id IN (5)
 	AND or1.stratum_1 IS NOT NULL
@@ -334,7 +334,7 @@ SELECT or1.analysis_id,
 FROM ACHILLES_results or1
 INNER JOIN ACHILLES_analysis oa1
 	ON or1.analysis_id = oa1.analysis_id
-INNER JOIN @CDM_schema.dbo.concept c1
+INNER JOIN @cdm_database_schema.concept c1
 	ON or1.stratum_1 = CAST(c1.concept_id AS VARCHAR)
 WHERE or1.analysis_id IN (202)
 	AND or1.stratum_1 IS NOT NULL
@@ -353,7 +353,7 @@ SELECT or1.analysis_id,
 FROM ACHILLES_results or1
 INNER JOIN ACHILLES_analysis oa1
 	ON or1.analysis_id = oa1.analysis_id
-INNER JOIN @CDM_schema.dbo.concept c1
+INNER JOIN @cdm_database_schema.concept c1
 	ON or1.stratum_1 = CAST(c1.concept_id AS VARCHAR)
 WHERE or1.analysis_id IN (301)
 	AND or1.stratum_1 IS NOT NULL
@@ -372,7 +372,7 @@ SELECT or1.analysis_id,
 FROM ACHILLES_results or1
 INNER JOIN ACHILLES_analysis oa1
 	ON or1.analysis_id = oa1.analysis_id
-INNER JOIN @CDM_schema.dbo.concept c1
+INNER JOIN @cdm_database_schema.concept c1
 	ON or1.stratum_1 = CAST(c1.concept_id AS VARCHAR)
 WHERE or1.analysis_id IN (
 		400,
@@ -394,7 +394,7 @@ SELECT or1.analysis_id,
 FROM ACHILLES_results or1
 INNER JOIN ACHILLES_analysis oa1
 	ON or1.analysis_id = oa1.analysis_id
-INNER JOIN @CDM_schema.dbo.concept c1
+INNER JOIN @cdm_database_schema.concept c1
 	ON or1.stratum_1 = CAST(c1.concept_id AS VARCHAR)
 WHERE or1.analysis_id IN (
 		700,
@@ -416,7 +416,7 @@ SELECT or1.analysis_id,
 FROM ACHILLES_results or1
 INNER JOIN ACHILLES_analysis oa1
 	ON or1.analysis_id = oa1.analysis_id
-INNER JOIN @CDM_schema.dbo.concept c1
+INNER JOIN @cdm_database_schema.concept c1
 	ON or1.stratum_1 = CAST(c1.concept_id AS VARCHAR)
 WHERE or1.analysis_id IN (600)
 	AND or1.stratum_1 IS NOT NULL
@@ -444,7 +444,7 @@ SELECT or1.analysis_id,
 FROM ACHILLES_results or1
 INNER JOIN ACHILLES_analysis oa1
 	ON or1.analysis_id = oa1.analysis_id
-INNER JOIN @CDM_schema.dbo.concept c1
+INNER JOIN @cdm_database_schema.concept c1
 	ON or1.stratum_1 = CAST(c1.concept_id AS VARCHAR)
 WHERE or1.analysis_id IN (1610)
 	AND or1.stratum_1 IS NOT NULL

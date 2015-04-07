@@ -4,8 +4,8 @@
 \alias{exportConditionEraToJson}
 \title{exportConditionEraToJson}
 \usage{
-exportConditionEraToJson(connectionDetails, cdmSchema, resultsSchema,
-  outputPath = getwd(), cdmVersion = "4")
+exportConditionEraToJson(connectionDetails, cdmDatabaseSchema,
+  resultsDatabaseSchema, outputPath = getwd(), cdmVersion = "4")
 }
 \arguments{
   \item{connectionDetails}{An R object of type
@@ -13,12 +13,12 @@ exportConditionEraToJson(connectionDetails, cdmSchema, resultsSchema,
   server info, database type, optionally username/password,
   port)}
 
-  \item{cdmSchema}{Name of the database schema that
+  \item{cdmDatabaseSchema}{Name of the database schema that
   contains the vocabulary files}
 
-  \item{resultsSchema}{Name of the database schema that
-  contains the Achilles analysis files. Default is
-  cdmSchema}
+  \item{resultsDatabaseSchema}{Name of the database schema
+  that contains the Achilles analysis files. Default is
+  cdmDatabaseSchema}
 
   \item{outputPath}{A folder location to save the JSON
   files. Default is current working folder}
@@ -37,7 +37,7 @@ Achilles.Web
 \examples{
 \dontrun{
   connectionDetails <- createConnectionDetails(dbms="sql server", server="yourserver")
-  exportConditionEraToJson(connectionDetails, cdmSchema="cdm4_sim", outputPath="your/output/path")
+  exportConditionEraToJson(connectionDetails, cdmDatabaseSchema="cdm4_sim", outputPath="your/output/path")
 }
 }
 

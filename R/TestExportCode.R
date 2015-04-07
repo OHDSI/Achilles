@@ -3,33 +3,42 @@
 testExportCode <- function(){
   pw <- ""
   #sqlServerServer <- "RNDUSRDHIT07.jnj.com"
-  #sqlServerResultsSchema <- "scratch"
+  #sqlServerresultsDatabaseSchema <- "scratch"
   #schema <- "cdm4_sim"
   
   sqlServerServer <- "RNDUSRDHIT09.jnj.com"
   
-  sqlServerResultsSchema <- "cdm_truven_ccae_6k"
-  schema <- "cdm_truven_ccae_6k"
+  sqlServerresultsDatabaseSchema <- "cdm_truven_ccae_6k.dbo"
+  schema <- "cdm_truven_ccae_6k.dbo"
   cdmVersion <- "4"
   
-  sqlServerResultsSchema <- "cdm_truven_ccae_6k_v5"
-  schema <- "cdm_truven_ccae_6k_v5"
+  sqlServerresultsDatabaseSchema <- "cdm_truven_ccae_6k_v5.dbo"
+  schema <- "cdm_truven_ccae_6k_v5.dbo"
   cdmVersion <- "5"
   
   #Test on SQL Server
   setwd("c:/temp")
   connectionDetails <- createConnectionDetails(dbms="sql server", server=sqlServerServer)
-  exportToJson(connectionDetails, cdmSchema = schema, resultsSchema = sqlServerResultsSchema,outputPath = "c:/temp/SqlServer",cdmVersion=cdmVersion)
+  exportToJson(connectionDetails, cdmDatabaseSchema = schema, resultsDatabaseSchema = sqlServerresultsDatabaseSchema,outputPath = "c:/temp/SqlServer",cdmVersion=cdmVersion)
   
   #Test on PostgreSQL
+  
+  sqlServerresultsDatabaseSchema <- "cdm_truven_ccae_6k"
+  schema <- "cdm_truven_ccae_6k"
+  cdmVersion <- "4"
+  
+  sqlServerresultsDatabaseSchema <- "cdm_truven_ccae_6k_v5"
+  schema <- "cdm_truven_ccae_6k_v5"
+  cdmVersion <- "5"
+  
   setwd("c:/temp")
   connectionDetails <- createConnectionDetails(dbms="postgresql", server="localhost/ohdsi", user="postgres",password=pw)
-  exportToJson(connectionDetails, cdmSchema = schema, resultsSchema = "scratch",outputPath = "c:/temp/PostgreSQL",cdmVersion=cdmVersion)
+  exportToJson(connectionDetails, cdmDatabaseSchema = schema, resultsDatabaseSchema = "scratch",outputPath = "c:/temp/PostgreSQL",cdmVersion=cdmVersion)
 
   #Test on Oracle
   setwd("c:/temp")
   connectionDetails <- createConnectionDetails(dbms="oracle", server="xe", user="system",password="OHDSI")
-  exportToJson(connectionDetails, cdmSchema = schema, resultsSchema = "scratch",outputPath = "c:/temp/Oracle",cdmVersion=cdmVersion)  
+  exportToJson(connectionDetails, cdmDatabaseSchema = schema, resultsDatabaseSchema = "scratch",outputPath = "c:/temp/Oracle",cdmVersion=cdmVersion)  
   
   #Compare JSON files:
   loadTextFile <- function(fileName){

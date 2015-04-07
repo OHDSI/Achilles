@@ -4,7 +4,7 @@
 \alias{fetchAchillesHeelResults}
 \title{fetchAchillesHeelResults}
 \usage{
-fetchAchillesHeelResults(connectionDetails, resultsSchema)
+fetchAchillesHeelResults(connectionDetails, resultsDatabase)
 }
 \arguments{
   \item{connectionDetails}{An R object of type
@@ -12,8 +12,8 @@ fetchAchillesHeelResults(connectionDetails, resultsSchema)
   server info, database type, optionally username/password,
   port)}
 
-  \item{resultsSchema}{Name of database schema containing
-  the Achilles descriptive statistics.}
+  \item{resultsDatabase}{Name of database containing the
+  Achilles descriptive statistics.}
 }
 \value{
 A table listing all identified issues

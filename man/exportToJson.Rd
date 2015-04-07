@@ -4,7 +4,7 @@
 \alias{exportToJson}
 \title{exportToJson}
 \usage{
-exportToJson(connectionDetails, cdmSchema, resultsSchema,
+exportToJson(connectionDetails, cdmDatabaseSchema, resultsDatabaseSchema,
   outputPath = getwd(), reports = allReports, cdmVersion = "4")
 }
 \arguments{
@@ -13,12 +13,12 @@ exportToJson(connectionDetails, cdmSchema, resultsSchema,
   server info, database type, optionally username/password,
   port)}
 
-  \item{cdmSchema}{Name of the database schema that
+  \item{cdmDatabaseSchema}{Name of the database schema that
   contains the vocabulary files}
 
-  \item{resultsSchema}{Name of the database schema that
-  contains the Achilles analysis files. Default is
-  cdmSchema}
+  \item{resultsDatabaseSchema}{Name of the database schema
+  that contains the Achilles analysis files. Default is
+  cdmDatabaseSchema}
 
   \item{outputPath}{A folder location to save the JSON
   files. Default is current working folder}
@@ -41,7 +41,7 @@ Achilles.Web
 \examples{
 \dontrun{
   connectionDetails <- createConnectionDetails(dbms="sql server", server="yourserver")
-  exportToJson(connectionDetails, cdmSchema="cdm4_sim", outputPath="your/output/path")
+  exportToJson(connectionDetails, cdmDatabaseSchema="cdm4_sim", outputPath="your/output/path")
 }
 }
 

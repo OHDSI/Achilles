@@ -18,19 +18,19 @@ from (select * from ACHILLES_results where analysis_id = 1000) ar1
 		from	
 		(
 		select concept_id, concept_name
-		from @cdmSchema.dbo.concept
+		from @cdm_database_schema.concept
 		where vocabulary_id = 1
 		) snomed
 		left join
 			(select c1.concept_id as snomed_concept_id, max(c2.concept_id) as pt_concept_id
 			from
-			@cdmSchema.dbo.concept c1
+			@cdm_database_schema.concept c1
 			inner join 
-			@cdmSchema.dbo.concept_ancestor ca1
+			@cdm_database_schema.concept_ancestor ca1
 			on c1.concept_id = ca1.descendant_concept_id
 			and c1.vocabulary_id = 1
 			inner join 
-			@cdmSchema.dbo.concept c2
+			@cdm_database_schema.concept c2
 			on ca1.ancestor_concept_id = c2.concept_id
 			and c2.vocabulary_id = 15
 			and c2.concept_class = 'Preferred Term'
@@ -41,14 +41,14 @@ from (select * from ACHILLES_results where analysis_id = 1000) ar1
 		left join
 			(select c1.concept_id as pt_concept_id, c1.concept_name as pt_concept_name, max(c2.concept_id) as hlt_concept_id
 			from
-			@cdmSchema.dbo.concept c1
+			@cdm_database_schema.concept c1
 			inner join 
-			@cdmSchema.dbo.concept_ancestor ca1
+			@cdm_database_schema.concept_ancestor ca1
 			on c1.concept_id = ca1.descendant_concept_id
 			and c1.vocabulary_id = 15
 			and c1.concept_class = 'Preferred Term'
 			inner join 
-			@cdmSchema.dbo.concept c2
+			@cdm_database_schema.concept c2
 			on ca1.ancestor_concept_id = c2.concept_id
 			and c2.vocabulary_id = 15
 			and c2.concept_class = 'High Level Term'
@@ -59,14 +59,14 @@ from (select * from ACHILLES_results where analysis_id = 1000) ar1
 		left join
 			(select c1.concept_id as hlt_concept_id, c1.concept_name as hlt_concept_name, max(c2.concept_id) as hlgt_concept_id
 			from
-			@cdmSchema.dbo.concept c1
+			@cdm_database_schema.concept c1
 			inner join 
-			@cdmSchema.dbo.concept_ancestor ca1
+			@cdm_database_schema.concept_ancestor ca1
 			on c1.concept_id = ca1.descendant_concept_id
 			and c1.vocabulary_id = 15
 			and c1.concept_class = 'High Level Term'
 			inner join 
-			@cdmSchema.dbo.concept c2
+			@cdm_database_schema.concept c2
 			on ca1.ancestor_concept_id = c2.concept_id
 			and c2.vocabulary_id = 15
 			and c2.concept_class = 'High Level Group Term'
@@ -77,21 +77,21 @@ from (select * from ACHILLES_results where analysis_id = 1000) ar1
 		left join
 			(select c1.concept_id as hlgt_concept_id, c1.concept_name as hlgt_concept_name, max(c2.concept_id) as soc_concept_id
 			from
-			@cdmSchema.dbo.concept c1
+			@cdm_database_schema.concept c1
 			inner join 
-			@cdmSchema.dbo.concept_ancestor ca1
+			@cdm_database_schema.concept_ancestor ca1
 			on c1.concept_id = ca1.descendant_concept_id
 			and c1.vocabulary_id = 15
 			and c1.concept_class = 'High Level Group Term'
 			inner join 
-			@cdmSchema.dbo.concept c2
+			@cdm_database_schema.concept c2
 			on ca1.ancestor_concept_id = c2.concept_id
 			and c2.vocabulary_id = 15
 			and c2.concept_class = 'System Organ Class'
 			group by c1.concept_id, c1.concept_name
 			) hlgt_to_soc
 		on hlt_to_hlgt.hlgt_concept_id = hlgt_to_soc.hlgt_concept_id
-		left join @cdmSchema.dbo.concept soc
+		left join @cdm_database_schema.concept soc
 		 on hlgt_to_soc.soc_concept_id = soc.concept_id
 	) concept_hierarchy
 	on CAST(ar1.stratum_1 AS INT) = concept_hierarchy.concept_id

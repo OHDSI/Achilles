@@ -8,6 +8,21 @@ testAchillesCode <- function(){
   
   sqlServerServer <- "RNDUSRDHIT09.jnj.com"
   
+  sqlServerResultsSchema <- "cdm_truven_ccae_6k.dbo"
+  schema <- "cdm_truven_ccae_6k.dbo"
+  cdmVersion <- "4"
+  
+  sqlServerResultsSchema <- "cdm_truven_ccae_6k_v5.dbo"
+  schema <- "cdm_truven_ccae_6k_v5.dbo"
+  cdmVersion <- "5"
+  
+  #Test on SQL Server:
+  setwd("c:/temp")
+  connectionDetailsSqlServer <- createConnectionDetails(dbms="sql server", server=sqlServerServer)
+  achillesResultsSqlServer <- achilles(connectionDetailsSqlServer, cdmDatabaseSchema=schema, resultsDatabaseSchema=sqlServerResultsSchema,cdmVersion=cdmVersion)
+
+  
+  
   sqlServerResultsSchema <- "cdm_truven_ccae_6k"
   schema <- "cdm_truven_ccae_6k"
   cdmVersion <- "4"
@@ -16,20 +31,15 @@ testAchillesCode <- function(){
   schema <- "cdm_truven_ccae_6k_v5"
   cdmVersion <- "5"
   
-  #Test on SQL Server:
-  setwd("c:/temp")
-  connectionDetailsSqlServer <- createConnectionDetails(dbms="sql server", server=sqlServerServer)
-  achillesResultsSqlServer <- achilles(connectionDetailsSqlServer, cdmSchema=schema, resultsSchema=sqlServerResultsSchema,cdmVersion=cdmVersion)
-
   #Test on PostgreSQL
   setwd("c:/temp")
   connectionDetailsPostgreSql <- createConnectionDetails(dbms="postgresql", server="localhost/ohdsi", user="postgres",password=pw)
-  achillesResultsPostgreSql <- achilles(connectionDetailsPostgreSql, cdmSchema=schema, resultsSchema="scratch",cdmVersion=cdmVersion)
+  achillesResultsPostgreSql <- achilles(connectionDetailsPostgreSql, cdmDatabaseSchema=schema, resultsDatabaseSchema="scratch",cdmVersion=cdmVersion)
   
   #Test on Oracle
   setwd("c:/temp")
   connectionDetailsOracle <- createConnectionDetails(dbms="oracle", server="xe", user="system",password="OHDSI")
-  achillesResultsOracle <- achilles(connectionDetailsOracle, cdmSchema=schema, resultsSchema="scratch",cdmVersion=cdmVersion)
+  achillesResultsOracle <- achilles(connectionDetailsOracle, cdmDatabaseSchema=schema, resultsDatabaseSchema="scratch",cdmVersion=cdmVersion)
   
 
   #Compare results:

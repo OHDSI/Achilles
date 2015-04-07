@@ -29,8 +29,9 @@
 #' \code{achilles} creates descriptive statistics summary for an entire OMOP CDM instance.
 #' 
 #' @param connectionDetails  An R object of type ConnectionDetail (details for the function that contains server info, database type, optionally username/password, port)
-#' @param cdmSchema    	string name of database schema that contains OMOP CDM and vocabulary
-#' @param resultsSchema		string name of database schema that we can write results to. Default is cdmSchema
+#' @param cdmDatabaseSchema    	string name of database schema that contains OMOP CDM and vocabulary. On SQL Server, this should specifiy both the database and the schema, so for example 'cdm_instance.dbo'.
+#' @param oracleTempSchema    For Oracle only: the name of the database schema where you want all temporary tables to be managed. Requires create/insert permissions to this database. 
+#' @param resultsDatabaseSchema		string name of database schema that we can write results to. Default is cdmDatabaseSchema. On SQL Server, this should specifiy both the database and the schema, so for example 'results.dbo'.
 #' @param sourceName		string name of the database, as recorded in results
 #' @param analysisIds		(optional) a vector containing the set of Achilles analysisIds for which results will be generated.
 #' If not specified, all analyses will be executed. See \code{data(analysesDetails)} for a list of all Achilles analyses and their Ids.
@@ -46,7 +47,16 @@
 #'   fetchAchillesAnalysisResults(connectionDetails, "scratch", 106)
 #' }
 #' @export
-achilles <- function (connectionDetails, cdmSchema, resultsSchema, sourceName = "", analysisIds, createTable = TRUE, smallcellcount = 5, cdmVersion = "4", runHeel = TRUE){
+achilles <- function (connectionDetails, 
+                      cdmDatabaseSchema, 
+                      oracleTempSchema = cdmDatabaseSchema,
+                      resultsDatabaseSchema = cdmDatabaseSchema, 
+                      sourceName = "", 
+                      analysisIds, 
+                      createTable = TRUE, 
+                      smallcellcount = 5, 
+                      cdmVersion = "4", 
+                      runHeel = TRUE){
   
   if (cdmVersion == "4")  {
     achillesFile <- "Achilles_v4.sql"
@@ -61,14 +71,16 @@ achilles <- function (connectionDetails, cdmSchema, resultsSchema, sourceName = 
   if (missing(analysisIds))
     analysisIds = analysesDetails$ANALYSIS_ID
   
-  if (missing(resultsSchema))
-    resultsSchema <- cdmSchema
+  cdmDatabase <- strsplit(cdmDatabaseSchema ,"\\.")[[1]][1]
+  resultsDatabase <- strsplit(resultsDatabaseSchema ,"\\.")[[1]][1]
   
   achillesSql <- loadRenderTranslateSql(sqlFilename = achillesFile,
                                         packageName = "Achilles",
                                         dbms = connectionDetails$dbms,
-                                        CDM_schema = cdmSchema, 
-                                        results_schema = resultsSchema, 
+                                        oracleTempSchema = oracleTempSchema,
+                                        cdm_database = cdmDatabase, 
+                                        results_database = resultsDatabase, 
+                                        results_database_schema = resultsDatabaseSchema,
                                         source_name = sourceName, 
                                         list_of_analysis_ids = analysisIds,
                                         createTable = createTable,
@@ -79,14 +91,15 @@ achilles <- function (connectionDetails, cdmSchema, resultsSchema, sourceName = 
   
   writeLines("Executing multiple queries. This could take a while")
   executeSql(conn,achillesSql)
-  writeLines(paste("Done. Achilles results can now be found in",resultsSchema))
+  writeLines(paste("Done. Achilles results can now be found in",resultsDatabase))
   
   if (runHeel) {
     heelSql <- loadRenderTranslateSql(sqlFilename = heelFile,
                                       packageName = "Achilles",
                                       dbms = connectionDetails$dbms,
-                                      CDM_schema = cdmSchema, 
-                                      results_schema = resultsSchema, 
+                                      oracleTempSchema = oracleTempSchema,
+                                      cdm_database_schema = cdmDatabaseSchema,
+                                      results_database = resultsDatabase, 
                                       source_name = sourceName, 
                                       list_of_analysis_ids = analysisIds,
                                       createTable = createTable,
@@ -95,14 +108,14 @@ achilles <- function (connectionDetails, cdmSchema, resultsSchema, sourceName = 
     
     writeLines("Executing Achilles Heel. This could take a while")
     executeSql(conn,heelSql)
-    writeLines(paste("Done. Achilles Heel results can now be found in",resultsSchema))    
+    writeLines(paste("Done. Achilles Heel results can now be found in",resultsDatabase))    
     
   }
   
   dummy <- dbDisconnect(conn)
   
   resultsConnectionDetails <- connectionDetails
-  resultsConnectionDetails$schema = resultsSchema
+  resultsConnectionDetails$schema = resultsDatabaseSchema
   result <- list(resultsConnectionDetails = resultsConnectionDetails, 
                  resultsTable = "ACHILLES_results",
                  resultsDistributionTable ="ACHILLES_results_dist",

@@ -8,5 +8,5 @@ select c2.concept_name as category,
 	ard1.max_value as max_value
 from ACHILLES_results_dist ard1
 	inner join
-	@cdmSchema.dbo.concept c2 on CAST(ard1.stratum_1 as INT) = c2.concept_id
+	@cdm_database_schema.concept c2 on CAST(ard1.stratum_1 as INT) = c2.concept_id
 where ard1.analysis_id = 506

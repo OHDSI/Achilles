@@ -9,7 +9,7 @@ select c1.concept_id as concept_id,
 	ard1.max_value as max_value
 from ACHILLES_results_dist ard1
 	inner join
-	@cdmSchema.dbo.concept c1
+	@cdm_database_schema.concept c1
 	on ard1.stratum_1 = CAST(c1.concept_id as VARCHAR)
 where ard1.analysis_id = 907
 and ard1.count_value > 0

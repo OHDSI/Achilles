@@ -9,10 +9,10 @@ select c1.concept_id as drug_concept_id,
 	ard1.max_value as max_value
 from ACHILLES_results_dist ard1
 	inner join
-	@cdmSchema.dbo.concept c1
+	@cdm_database_schema.concept c1
 	on ard1.stratum_1 = CAST(c1.concept_id AS VARCHAR)
 	inner join
-	@cdmSchema.dbo.concept c2
+	@cdm_database_schema.concept c2
 	on ard1.stratum_2 = CAST(c2.concept_id AS VARCHAR)
 where ard1.analysis_id = 706
 and ard1.count_value > 0

@@ -4,8 +4,10 @@
 \alias{achilles}
 \title{The main Achilles analysis}
 \usage{
-achilles(connectionDetails, cdmSchema, resultsSchema, sourceName = "",
-  analysisIds, createTable = TRUE, smallcellcount = 5, cdmVersion = "4",
+achilles(connectionDetails, cdmDatabaseSchema,
+  oracleTempSchema = cdmDatabaseSchema,
+  resultsDatabaseSchema = cdmDatabaseSchema, sourceName = "", analysisIds,
+  createTable = TRUE, smallcellcount = 5, cdmVersion = "4",
   runHeel = TRUE)
 }
 \arguments{
@@ -14,11 +16,21 @@ achilles(connectionDetails, cdmSchema, resultsSchema, sourceName = "",
   server info, database type, optionally username/password,
   port)}
 
-  \item{cdmSchema}{string name of database schema that
-  contains OMOP CDM and vocabulary}
+  \item{cdmDatabaseSchema}{string name of database schema
+  that contains OMOP CDM and vocabulary. On SQL Server,
+  this should specifiy both the database and the schema, so
+  for example 'cdm_instance.dbo'.}
 
-  \item{resultsSchema}{string name of database schema that
-  we can write results to. Default is cdmSchema}
+  \item{oracleTempSchema}{For Oracle only: the name of the
+  database schema where you want all temporary tables to be
+  managed. Requires create/insert permissions to this
+  database.}
+
+  \item{resultsDatabaseSchema}{string name of database
+  schema that we can write results to. Default is
+  cdmDatabaseSchema. On SQL Server, this should specifiy
+  both the database and the schema, so for example
+  'results.dbo'.}
 
   \item{sourceName}{string name of the database, as
   recorded in results}

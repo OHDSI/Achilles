@@ -4,7 +4,7 @@
 \alias{fetchAchillesAnalysisResults}
 \title{fetchAchillesAnalysisResults}
 \usage{
-fetchAchillesAnalysisResults(connectionDetails, resultsSchema, analysisId)
+fetchAchillesAnalysisResults(connectionDetails, resultsDatabase, analysisId)
 }
 \arguments{
   \item{connectionDetails}{An R object of type
@@ -12,8 +12,8 @@ fetchAchillesAnalysisResults(connectionDetails, resultsSchema, analysisId)
   server info, database type, optionally username/password,
   port)}
 
-  \item{resultsSchema}{Name of database schema containing
-  the Achilles descriptive statistics.}
+  \item{resultsDatabase}{Name of database containing the
+  Achilles descriptive statistics.}
 
   \item{analysisId}{A single analysisId}
 }
