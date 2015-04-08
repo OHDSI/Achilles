@@ -23,14 +23,10 @@ testAchillesViestResultsCode <- function(){
   fetchAchillesHeelResults(connectionDetails, resultsDatabase = "scratch")
 
   
-  #Test on PostgreSQL sample
+
+  #Test on Oracle 
   setwd("c:/temp")
-  connectionDetails <- createConnectionDetails(dbms="postgresql", server="localhost/ohdsi", user="postgres",password=pw)
-  fetchAchillesHeelResults(connectionDetails, resultsDatabase = "scratch_sample")
-  
-  #Test on Oracle sample
-  setwd("c:/temp")
-  connectionDetails <- createConnectionDetails(dbms="oracle", server="xe", user="system",password=pw)
+  connectionDetails <- createConnectionDetails(dbms="oracle", server="xe", user="system",password="OHDSI2")
   fetchAchillesHeelResults(connectionDetails, resultsDatabase = "scratch")
 
   
@@ -46,14 +42,10 @@ testAchillesViestResultsCode <- function(){
   fetchAchillesAnalysisResults(connectionDetails, resultsDatabase = "scratch", analysisId = 106)
   
   
-  #Test on PostgreSQL sample
+
+  #Test on Oracle
   setwd("c:/temp")
-  connectionDetails <- createConnectionDetails(dbms="postgresql", server="localhost/ohdsi", user="postgres",password=pw)
-  fetchAchillesAnalysisResults(connectionDetails, resultsDatabase = "scratch_sample", analysisId = 106)
-  
-  #Test on Oracle sample
-  setwd("c:/temp")
-  connectionDetails <- createConnectionDetails(dbms="oracle", server="xe", user="system",password=pw)
+  connectionDetails <- createConnectionDetails(dbms="oracle", server="xe", user="system",password="OHDSI2")
   fetchAchillesAnalysisResults(connectionDetails, resultsDatabase = "scratch", analysisId = 106)
   
   

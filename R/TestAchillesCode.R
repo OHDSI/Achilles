@@ -38,8 +38,8 @@ testAchillesCode <- function(){
   
   #Test on Oracle
   setwd("c:/temp")
-  connectionDetailsOracle <- createConnectionDetails(dbms="oracle", server="xe", user="system",password="OHDSI")
-  achillesResultsOracle <- achilles(connectionDetailsOracle, cdmDatabaseSchema=schema, resultsDatabaseSchema="scratch",cdmVersion=cdmVersion)
+  connectionDetailsOracle <- createConnectionDetails(dbms="oracle", server="xe", user="system",password="OHDSI2")
+  achillesResultsOracle <- achilles(connectionDetailsOracle, cdmDatabaseSchema=schema, oracleTempSchema = "temp", resultsDatabaseSchema="scratch",cdmVersion=cdmVersion)
   
 
   #Compare results:
