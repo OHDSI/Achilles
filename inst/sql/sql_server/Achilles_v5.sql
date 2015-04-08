@@ -49,69 +49,14 @@ SQL for OMOP CDM v5
 		works for all prevalence calculations...does not work for any distribution statistics
 	*****/
 
-use @results_database;
-
-
---{@createTable}?{
-
-IF OBJECT_ID('ACHILLES_analysis', 'U') IS NOT NULL
-  drop table ACHILLES_analysis;
-
-create table ACHILLES_analysis
-(
-	analysis_id int,
-	analysis_name varchar(255),
-	stratum_1_name varchar(255),
-	stratum_2_name varchar(255),
-	stratum_3_name varchar(255),
-	stratum_4_name varchar(255),
-	stratum_5_name varchar(255)
-);
-
-
-IF OBJECT_ID('ACHILLES_results', 'U') IS NOT NULL
-  drop table ACHILLES_results;
-
-create table ACHILLES_results
-(
-	analysis_id int,
-	stratum_1 varchar(255),
-	stratum_2 varchar(255),
-	stratum_3 varchar(255),
-	stratum_4 varchar(255),
-	stratum_5 varchar(255),
-	count_value bigint
-);
-
-
-IF OBJECT_ID('ACHILLES_results_dist', 'U') IS NOT NULL
-  drop table ACHILLES_results_dist;
-
-create table ACHILLES_results_dist
-(
-	analysis_id int,
-	stratum_1 varchar(255),
-	stratum_2 varchar(255),
-	stratum_3 varchar(255),
-	stratum_4 varchar(255),
-	stratum_5 varchar(255),
-	count_value bigint,
-	min_value float,
-	max_value float,
-	avg_value float,
-	stdev_value float,
-	median_value float,
-	p10_value float,
-	p25_value float,
-	p75_value float,
-	p90_value float
-);
 
 -- RSD - 2014-10-27
 -- Execute a series of quick select statements to verify that the CDM schema
 -- has all the proper tables and columns
 -- The point is to catch any missing tables/columns here before we spend hours
 -- generating results before bombing out
+
+use @cdm_database;
 
 create table #TableCheck
 (
@@ -123,7 +68,7 @@ insert into #TableCheck (tablename)
 select 'care_site'
 from (
 SELECT
-  	care_site_id,
+    care_site_id,
 		location_id,
 		place_of_service_concept_id,
 		care_site_source_value,
@@ -518,6 +463,64 @@ WHERE rn = 1;
 
 TRUNCATE TABLE #TableCheck;
 DROP TABLE #TableCheck;
+
+use @results_database;
+
+
+--{@createTable}?{
+
+IF OBJECT_ID('ACHILLES_analysis', 'U') IS NOT NULL
+  drop table ACHILLES_analysis;
+
+create table ACHILLES_analysis
+(
+	analysis_id int,
+	analysis_name varchar(255),
+	stratum_1_name varchar(255),
+	stratum_2_name varchar(255),
+	stratum_3_name varchar(255),
+	stratum_4_name varchar(255),
+	stratum_5_name varchar(255)
+);
+
+
+IF OBJECT_ID('ACHILLES_results', 'U') IS NOT NULL
+  drop table ACHILLES_results;
+
+create table ACHILLES_results
+(
+	analysis_id int,
+	stratum_1 varchar(255),
+	stratum_2 varchar(255),
+	stratum_3 varchar(255),
+	stratum_4 varchar(255),
+	stratum_5 varchar(255),
+	count_value bigint
+);
+
+
+IF OBJECT_ID('ACHILLES_results_dist', 'U') IS NOT NULL
+  drop table ACHILLES_results_dist;
+
+create table ACHILLES_results_dist
+(
+	analysis_id int,
+	stratum_1 varchar(255),
+	stratum_2 varchar(255),
+	stratum_3 varchar(255),
+	stratum_4 varchar(255),
+	stratum_5 varchar(255),
+	count_value bigint,
+	min_value float,
+	max_value float,
+	avg_value float,
+	stdev_value float,
+	median_value float,
+	p10_value float,
+	p25_value float,
+	p75_value float,
+	p90_value float
+);
 
 insert into ACHILLES_analysis (analysis_id, analysis_name)
 	values (0, 'Source name');
