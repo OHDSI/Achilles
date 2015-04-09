@@ -1495,7 +1495,7 @@ FROM
   observation_period
 ;
 
-INSERT INTO ACHILLES_results (analysis_id, stratum_1, count_value)
+INSERT INTO @results_database_schema.ACHILLES_results (analysis_id, stratum_1, count_value)
 SELECT 
   109 AS analysis_id,  
 	obs_year AS stratum_1, 
@@ -1534,7 +1534,7 @@ FROM
 ;
 
 
-INSERT INTO ACHILLES_results (analysis_id, stratum_1, count_value)
+INSERT INTO @results_database_schema.ACHILLES_results (analysis_id, stratum_1, count_value)
 SELECT 
   110 AS analysis_id, 
 	obs_month AS stratum_1, 
@@ -1635,7 +1635,7 @@ from
   OBSERVATION_PERIOD
 ;
 
-insert into ACHILLES_results (analysis_id, stratum_1, stratum_2, stratum_3, count_value)
+insert into @results_database_schema.ACHILLES_results (analysis_id, stratum_1, stratum_2, stratum_3, count_value)
 select 116 as analysis_id,  
 	t1.obs_year as stratum_1, 
 	p1.gender_concept_id as stratum_2,
@@ -1675,7 +1675,7 @@ from
   OBSERVATION_PERIOD
 ;
 
-insert into ACHILLES_results (analysis_id, stratum_1, count_value)
+insert into @results_database_schema.ACHILLES_results (analysis_id, stratum_1, count_value)
 select 117 as analysis_id,  
 	t1.obs_month as stratum_1,
 	COUNT_BIG(distinct op1.PERSON_ID) as count_value
@@ -4091,7 +4091,7 @@ from
   payer_plan_period
 ;
 
-insert into ACHILLES_results (analysis_id, stratum_1, count_value)
+insert into @results_database_schema.ACHILLES_results (analysis_id, stratum_1, count_value)
 select 1409 as analysis_id,  
 	t1.obs_year as stratum_1, COUNT_BIG(distinct p1.PERSON_ID) as count_value
 from
@@ -4128,7 +4128,7 @@ FROM
   payer_plan_period
 ;
 
-insert into ACHILLES_results (analysis_id, stratum_1, count_value)
+insert into @results_database_schema.ACHILLES_results (analysis_id, stratum_1, count_value)
 select 
   1410 as analysis_id, 
 	obs_month as stratum_1, 

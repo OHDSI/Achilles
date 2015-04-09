@@ -27,7 +27,6 @@ testAchillesCode <- function(){
   schema <- "cdm_truven_ccae_6k"
   cdmVersion <- "4"
   
-  sqlServerResultsSchema <- "cdm_truven_ccae_6k_v5"
   schema <- "cdm_truven_ccae_6k_v5"
   cdmVersion <- "5"
   
