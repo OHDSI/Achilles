@@ -41,6 +41,7 @@ SQL for OMOP CDM v5
 {DEFAULT @source_name = 'CDM NAME'}
 {DEFAULT @smallcellcount = 5}
 {DEFAULT @createTable = TRUE}
+{DEFAULT @validateSchema = TRUE}
 
   /****
     developer comment about general ACHILLES calculation process:  
@@ -49,6 +50,7 @@ SQL for OMOP CDM v5
 		works for all prevalence calculations...does not work for any distribution statistics
 	*****/
 
+--{@validateSchema}?{
 
 -- RSD - 2014-10-27
 -- Execute a series of quick select statements to verify that the CDM schema
@@ -464,15 +466,17 @@ WHERE rn = 1;
 TRUNCATE TABLE #TableCheck;
 DROP TABLE #TableCheck;
 
+--}
+
 use @results_database;
 
 
 --{@createTable}?{
 
-IF OBJECT_ID('ACHILLES_analysis', 'U') IS NOT NULL
-  drop table ACHILLES_analysis;
+IF OBJECT_ID('@results_database_schema.ACHILLES_analysis', 'U') IS NOT NULL
+  drop table @results_database_schema.ACHILLES_analysis;
 
-create table ACHILLES_analysis
+create table @results_database_schema.ACHILLES_analysis
 (
 	analysis_id int,
 	analysis_name varchar(255),
@@ -484,10 +488,10 @@ create table ACHILLES_analysis
 );
 
 
-IF OBJECT_ID('ACHILLES_results', 'U') IS NOT NULL
-  drop table ACHILLES_results;
+IF OBJECT_ID('@results_database_schema.ACHILLES_results', 'U') IS NOT NULL
+  drop table @results_database_schema.ACHILLES_results;
 
-create table ACHILLES_results
+create table @results_database_schema.ACHILLES_results
 (
 	analysis_id int,
 	stratum_1 varchar(255),
@@ -499,10 +503,10 @@ create table ACHILLES_results
 );
 
 
-IF OBJECT_ID('ACHILLES_results_dist', 'U') IS NOT NULL
-  drop table ACHILLES_results_dist;
+IF OBJECT_ID('@results_database_schema.ACHILLES_results_dist', 'U') IS NOT NULL
+  drop table @results_database_schema.ACHILLES_results_dist;
 
-create table ACHILLES_results_dist
+create table @results_database_schema.ACHILLES_results_dist
 (
 	analysis_id int,
 	stratum_1 varchar(255),
@@ -522,90 +526,90 @@ create table ACHILLES_results_dist
 	p90_value float
 );
 
-insert into ACHILLES_analysis (analysis_id, analysis_name)
+insert into @results_database_schema.ACHILLES_analysis (analysis_id, analysis_name)
 	values (0, 'Source name');
 
 --000. PERSON statistics
 
-insert into ACHILLES_analysis (analysis_id, analysis_name)
+insert into @results_database_schema.ACHILLES_analysis (analysis_id, analysis_name)
 	values (1, 'Number of persons');
 
-insert into ACHILLES_analysis (analysis_id, analysis_name, stratum_1_name)
+insert into @results_database_schema.ACHILLES_analysis (analysis_id, analysis_name, stratum_1_name)
 	values (2, 'Number of persons by gender', 'gender_concept_id');
 
-insert into ACHILLES_analysis (analysis_id, analysis_name, stratum_1_name)
+insert into @results_database_schema.ACHILLES_analysis (analysis_id, analysis_name, stratum_1_name)
 	values (3, 'Number of persons by year of birth', 'year_of_birth');
 
-insert into ACHILLES_analysis (analysis_id, analysis_name, stratum_1_name)
+insert into @results_database_schema.ACHILLES_analysis (analysis_id, analysis_name, stratum_1_name)
 	values (4, 'Number of persons by race', 'race_concept_id');
 
-insert into ACHILLES_analysis (analysis_id, analysis_name, stratum_1_name)
+insert into @results_database_schema.ACHILLES_analysis (analysis_id, analysis_name, stratum_1_name)
 	values (5, 'Number of persons by ethnicity', 'ethnicity_concept_id');
 
-insert into ACHILLES_analysis (analysis_id, analysis_name)
+insert into @results_database_schema.ACHILLES_analysis (analysis_id, analysis_name)
 	values (7, 'Number of persons with invalid provider_id');
 
-insert into ACHILLES_analysis (analysis_id, analysis_name)
+insert into @results_database_schema.ACHILLES_analysis (analysis_id, analysis_name)
 	values (8, 'Number of persons with invalid location_id');
 
-insert into ACHILLES_analysis (analysis_id, analysis_name)
+insert into @results_database_schema.ACHILLES_analysis (analysis_id, analysis_name)
 	values (9, 'Number of persons with invalid care_site_id');
 
 
 --100. OBSERVATION_PERIOD (joined to PERSON)
 
-insert into ACHILLES_analysis (analysis_id, analysis_name, stratum_1_name)
+insert into @results_database_schema.ACHILLES_analysis (analysis_id, analysis_name, stratum_1_name)
 	values (101, 'Number of persons by age, with age at first observation period', 'age');
 
-insert into ACHILLES_analysis (analysis_id, analysis_name, stratum_1_name, stratum_2_name)
+insert into @results_database_schema.ACHILLES_analysis (analysis_id, analysis_name, stratum_1_name, stratum_2_name)
 	values (102, 'Number of persons by gender by age, with age at first observation period', 'gender_concept_id', 'age');
 
-insert into ACHILLES_analysis (analysis_id, analysis_name)
+insert into @results_database_schema.ACHILLES_analysis (analysis_id, analysis_name)
 	values (103, 'Distribution of age at first observation period');
 
-insert into ACHILLES_analysis (analysis_id, analysis_name, stratum_1_name)
+insert into @results_database_schema.ACHILLES_analysis (analysis_id, analysis_name, stratum_1_name)
 	values (104, 'Distribution of age at first observation period by gender', 'gender_concept_id');
 
-insert into ACHILLES_analysis (analysis_id, analysis_name)
+insert into @results_database_schema.ACHILLES_analysis (analysis_id, analysis_name)
 	values (105, 'Length of observation (days) of first observation period');
 
-insert into ACHILLES_analysis (analysis_id, analysis_name, stratum_1_name)
+insert into @results_database_schema.ACHILLES_analysis (analysis_id, analysis_name, stratum_1_name)
 	values (106, 'Length of observation (days) of first observation period by gender', 'gender_concept_id');
 
-insert into ACHILLES_analysis (analysis_id, analysis_name, stratum_1_name)
+insert into @results_database_schema.ACHILLES_analysis (analysis_id, analysis_name, stratum_1_name)
 	values (107, 'Length of observation (days) of first observation period by age decile', 'age decile');
 
-insert into ACHILLES_analysis (analysis_id, analysis_name, stratum_1_name)
+insert into @results_database_schema.ACHILLES_analysis (analysis_id, analysis_name, stratum_1_name)
 	values (108, 'Number of persons by length of observation period, in 30d increments', 'Observation period length 30d increments');
 
-insert into ACHILLES_analysis (analysis_id, analysis_name, stratum_1_name)
+insert into @results_database_schema.ACHILLES_analysis (analysis_id, analysis_name, stratum_1_name)
 	values (109, 'Number of persons with continuous observation in each year', 'calendar year');
 
-insert into ACHILLES_analysis (analysis_id, analysis_name, stratum_1_name)
+insert into @results_database_schema.ACHILLES_analysis (analysis_id, analysis_name, stratum_1_name)
 	values (110, 'Number of persons with continuous observation in each month', 'calendar month');
 
-insert into ACHILLES_analysis (analysis_id, analysis_name, stratum_1_name)
+insert into @results_database_schema.ACHILLES_analysis (analysis_id, analysis_name, stratum_1_name)
 	values (111, 'Number of persons by observation period start month', 'calendar month');
 
-insert into ACHILLES_analysis (analysis_id, analysis_name, stratum_1_name)
+insert into @results_database_schema.ACHILLES_analysis (analysis_id, analysis_name, stratum_1_name)
 	values (112, 'Number of persons by observation period end month', 'calendar month');
 
-insert into ACHILLES_analysis (analysis_id, analysis_name, stratum_1_name)
+insert into @results_database_schema.ACHILLES_analysis (analysis_id, analysis_name, stratum_1_name)
 	values (113, 'Number of persons by number of observation periods', 'number of observation periods');
 
-insert into ACHILLES_analysis (analysis_id, analysis_name)
+insert into @results_database_schema.ACHILLES_analysis (analysis_id, analysis_name)
 	values (114, 'Number of persons with observation period before year-of-birth');
 
-insert into ACHILLES_analysis (analysis_id, analysis_name)
+insert into @results_database_schema.ACHILLES_analysis (analysis_id, analysis_name)
 	values (115, 'Number of persons with observation period end < observation period start');
 
-insert into ACHILLES_analysis (analysis_id, analysis_name, stratum_1_name, stratum_2_name, stratum_3_name)
+insert into @results_database_schema.ACHILLES_analysis (analysis_id, analysis_name, stratum_1_name, stratum_2_name, stratum_3_name)
 	values (116, 'Number of persons with at least one day of observation in each year by gender and age decile', 'calendar year', 'gender_concept_id', 'age decile');
 
-insert into ACHILLES_analysis (analysis_id, analysis_name, stratum_1_name)
+insert into @results_database_schema.ACHILLES_analysis (analysis_id, analysis_name, stratum_1_name)
 	values (117, 'Number of persons with at least one day of observation in each month', 'calendar month');
 
-insert into ACHILLES_analysis (analysis_id, analysis_name)
+insert into @results_database_schema.ACHILLES_analysis (analysis_id, analysis_name)
   values (118, 'Number of observation periods with invalid person_id');
 
 
@@ -613,137 +617,137 @@ insert into ACHILLES_analysis (analysis_id, analysis_name)
 --200- VISIT_OCCURRENCE
 
 
-insert into ACHILLES_analysis (analysis_id, analysis_name, stratum_1_name)
+insert into @results_database_schema.ACHILLES_analysis (analysis_id, analysis_name, stratum_1_name)
 	values (200, 'Number of persons with at least one visit occurrence, by visit_concept_id', 'visit_concept_id');
 
-insert into ACHILLES_analysis (analysis_id, analysis_name, stratum_1_name)
+insert into @results_database_schema.ACHILLES_analysis (analysis_id, analysis_name, stratum_1_name)
 	values (201, 'Number of visit occurrence records, by visit_concept_id', 'visit_concept_id');
 
-insert into ACHILLES_analysis (analysis_id, analysis_name, stratum_1_name, stratum_2_name)
+insert into @results_database_schema.ACHILLES_analysis (analysis_id, analysis_name, stratum_1_name, stratum_2_name)
 	values (202, 'Number of persons by visit occurrence start month, by visit_concept_id', 'visit_concept_id', 'calendar month');	
 
-insert into ACHILLES_analysis (analysis_id, analysis_name)
+insert into @results_database_schema.ACHILLES_analysis (analysis_id, analysis_name)
 	values (203, 'Number of distinct visit occurrence concepts per person');
 
-insert into ACHILLES_analysis (analysis_id, analysis_name, stratum_1_name, stratum_2_name, stratum_3_name, stratum_4_name)
+insert into @results_database_schema.ACHILLES_analysis (analysis_id, analysis_name, stratum_1_name, stratum_2_name, stratum_3_name, stratum_4_name)
 	values (204, 'Number of persons with at least one visit occurrence, by visit_concept_id by calendar year by gender by age decile', 'visit_concept_id', 'calendar year', 'gender_concept_id', 'age decile');
 
-insert into ACHILLES_analysis (analysis_id, analysis_name, stratum_1_name, stratum_2_name)
+insert into @results_database_schema.ACHILLES_analysis (analysis_id, analysis_name, stratum_1_name, stratum_2_name)
 	values (206, 'Distribution of age by visit_concept_id', 'visit_concept_id', 'gender_concept_id');
 
-insert into ACHILLES_analysis (analysis_id, analysis_name)
+insert into @results_database_schema.ACHILLES_analysis (analysis_id, analysis_name)
 	values (207, 'Number of visit records with invalid person_id');
 
-insert into ACHILLES_analysis (analysis_id, analysis_name)
+insert into @results_database_schema.ACHILLES_analysis (analysis_id, analysis_name)
 	values (208, 'Number of visit records outside valid observation period');
 
-insert into ACHILLES_analysis (analysis_id, analysis_name)
+insert into @results_database_schema.ACHILLES_analysis (analysis_id, analysis_name)
 	values (209, 'Number of visit records with end date < start date');
 
-insert into ACHILLES_analysis (analysis_id, analysis_name)
+insert into @results_database_schema.ACHILLES_analysis (analysis_id, analysis_name)
 	values (210, 'Number of visit records with invalid care_site_id');
 
-insert into ACHILLES_analysis (analysis_id, analysis_name, stratum_1_name)
+insert into @results_database_schema.ACHILLES_analysis (analysis_id, analysis_name, stratum_1_name)
 	values (211, 'Distribution of length of stay by visit_concept_id', 'visit_concept_id');
 
-insert into ACHILLES_analysis (analysis_id, analysis_name, stratum_1_name)
+insert into @results_database_schema.ACHILLES_analysis (analysis_id, analysis_name, stratum_1_name)
 	values (220, 'Number of visit occurrence records by visit occurrence start month', 'calendar month');
 
 
 
 --300- PROVIDER
-insert into ACHILLES_analysis (analysis_id, analysis_name)
+insert into @results_database_schema.ACHILLES_analysis (analysis_id, analysis_name)
 	values (300, 'Number of providers');
 
-insert into ACHILLES_analysis (analysis_id, analysis_name, stratum_1_name)
+insert into @results_database_schema.ACHILLES_analysis (analysis_id, analysis_name, stratum_1_name)
 	values (301, 'Number of providers by specialty concept_id', 'specialty_concept_id');
 
-insert into ACHILLES_analysis (analysis_id, analysis_name)
+insert into @results_database_schema.ACHILLES_analysis (analysis_id, analysis_name)
 	values (302, 'Number of providers with invalid care site id');
 
 
 
 --400- CONDITION_OCCURRENCE
 
-insert into ACHILLES_analysis (analysis_id, analysis_name, stratum_1_name)
+insert into @results_database_schema.ACHILLES_analysis (analysis_id, analysis_name, stratum_1_name)
 	values (400, 'Number of persons with at least one condition occurrence, by condition_concept_id', 'condition_concept_id');
 
-insert into ACHILLES_analysis (analysis_id, analysis_name, stratum_1_name)
+insert into @results_database_schema.ACHILLES_analysis (analysis_id, analysis_name, stratum_1_name)
 	values (401, 'Number of condition occurrence records, by condition_concept_id', 'condition_concept_id');
 
-insert into ACHILLES_analysis (analysis_id, analysis_name, stratum_1_name, stratum_2_name)
+insert into @results_database_schema.ACHILLES_analysis (analysis_id, analysis_name, stratum_1_name, stratum_2_name)
 	values (402, 'Number of persons by condition occurrence start month, by condition_concept_id', 'condition_concept_id', 'calendar month');	
 
-insert into ACHILLES_analysis (analysis_id, analysis_name)
+insert into @results_database_schema.ACHILLES_analysis (analysis_id, analysis_name)
 	values (403, 'Number of distinct condition occurrence concepts per person');
 
-insert into ACHILLES_analysis (analysis_id, analysis_name, stratum_1_name, stratum_2_name, stratum_3_name, stratum_4_name)
+insert into @results_database_schema.ACHILLES_analysis (analysis_id, analysis_name, stratum_1_name, stratum_2_name, stratum_3_name, stratum_4_name)
 	values (404, 'Number of persons with at least one condition occurrence, by condition_concept_id by calendar year by gender by age decile', 'condition_concept_id', 'calendar year', 'gender_concept_id', 'age decile');
 
-insert into ACHILLES_analysis (analysis_id, analysis_name, stratum_1_name, stratum_2_name)
+insert into @results_database_schema.ACHILLES_analysis (analysis_id, analysis_name, stratum_1_name, stratum_2_name)
 	values (405, 'Number of condition occurrence records, by condition_concept_id by condition_type_concept_id', 'condition_concept_id', 'condition_type_concept_id');
 
-insert into ACHILLES_analysis (analysis_id, analysis_name, stratum_1_name, stratum_2_name)
+insert into @results_database_schema.ACHILLES_analysis (analysis_id, analysis_name, stratum_1_name, stratum_2_name)
 	values (406, 'Distribution of age by condition_concept_id', 'condition_concept_id', 'gender_concept_id');
 
-insert into ACHILLES_analysis (analysis_id, analysis_name)
+insert into @results_database_schema.ACHILLES_analysis (analysis_id, analysis_name)
 	values (409, 'Number of condition occurrence records with invalid person_id');
 
-insert into ACHILLES_analysis (analysis_id, analysis_name)
+insert into @results_database_schema.ACHILLES_analysis (analysis_id, analysis_name)
 	values (410, 'Number of condition occurrence records outside valid observation period');
 
-insert into ACHILLES_analysis (analysis_id, analysis_name)
+insert into @results_database_schema.ACHILLES_analysis (analysis_id, analysis_name)
 	values (411, 'Number of condition occurrence records with end date < start date');
 
-insert into ACHILLES_analysis (analysis_id, analysis_name)
+insert into @results_database_schema.ACHILLES_analysis (analysis_id, analysis_name)
 	values (412, 'Number of condition occurrence records with invalid provider_id');
 
-insert into ACHILLES_analysis (analysis_id, analysis_name)
+insert into @results_database_schema.ACHILLES_analysis (analysis_id, analysis_name)
 	values (413, 'Number of condition occurrence records with invalid visit_id');
 
-insert into ACHILLES_analysis (analysis_id, analysis_name, stratum_1_name)
+insert into @results_database_schema.ACHILLES_analysis (analysis_id, analysis_name, stratum_1_name)
 	values (420, 'Number of condition occurrence records by condition occurrence start month', 'calendar month');	
 
 --500- DEATH
 
-insert into ACHILLES_analysis (analysis_id, analysis_name, stratum_1_name)
+insert into @results_database_schema.ACHILLES_analysis (analysis_id, analysis_name, stratum_1_name)
 	values (500, 'Number of persons with death, by cause_concept_id', 'cause_concept_id');
 
-insert into ACHILLES_analysis (analysis_id, analysis_name, stratum_1_name)
+insert into @results_database_schema.ACHILLES_analysis (analysis_id, analysis_name, stratum_1_name)
 	values (501, 'Number of records of death, by cause_concept_id', 'cause_concept_id');
 
-insert into ACHILLES_analysis (analysis_id, analysis_name, stratum_1_name)
+insert into @results_database_schema.ACHILLES_analysis (analysis_id, analysis_name, stratum_1_name)
 	values (502, 'Number of persons by death month', 'calendar month');	
 
-insert into ACHILLES_analysis (analysis_id, analysis_name, stratum_1_name, stratum_2_name, stratum_3_name)
+insert into @results_database_schema.ACHILLES_analysis (analysis_id, analysis_name, stratum_1_name, stratum_2_name, stratum_3_name)
 	values (504, 'Number of persons with a death, by calendar year by gender by age decile', 'calendar year', 'gender_concept_id', 'age decile');
 
-insert into ACHILLES_analysis (analysis_id, analysis_name, stratum_1_name)
+insert into @results_database_schema.ACHILLES_analysis (analysis_id, analysis_name, stratum_1_name)
 	values (505, 'Number of death records, by death_type_concept_id', 'death_type_concept_id');
 
-insert into ACHILLES_analysis (analysis_id, analysis_name, stratum_1_name)
+insert into @results_database_schema.ACHILLES_analysis (analysis_id, analysis_name, stratum_1_name)
 	values (506, 'Distribution of age at death by gender', 'gender_concept_id');
 
 
-insert into ACHILLES_analysis (analysis_id, analysis_name)
+insert into @results_database_schema.ACHILLES_analysis (analysis_id, analysis_name)
 	values (509, 'Number of death records with invalid person_id');
 
-insert into ACHILLES_analysis (analysis_id, analysis_name)
+insert into @results_database_schema.ACHILLES_analysis (analysis_id, analysis_name)
 	values (510, 'Number of death records outside valid observation period');
 
-insert into ACHILLES_analysis (analysis_id, analysis_name)
+insert into @results_database_schema.ACHILLES_analysis (analysis_id, analysis_name)
 	values (511, 'Distribution of time from death to last condition');
 
-insert into ACHILLES_analysis (analysis_id, analysis_name)
+insert into @results_database_schema.ACHILLES_analysis (analysis_id, analysis_name)
 	values (512, 'Distribution of time from death to last drug');
 
-insert into ACHILLES_analysis (analysis_id, analysis_name)
+insert into @results_database_schema.ACHILLES_analysis (analysis_id, analysis_name)
 	values (513, 'Distribution of time from death to last visit');
 
-insert into ACHILLES_analysis (analysis_id, analysis_name)
+insert into @results_database_schema.ACHILLES_analysis (analysis_id, analysis_name)
 	values (514, 'Distribution of time from death to last procedure');
 
-insert into ACHILLES_analysis (analysis_id, analysis_name)
+insert into @results_database_schema.ACHILLES_analysis (analysis_id, analysis_name)
 	values (515, 'Distribution of time from death to last observation');
 
 
@@ -751,162 +755,162 @@ insert into ACHILLES_analysis (analysis_id, analysis_name)
 
 
 
-insert into ACHILLES_analysis (analysis_id, analysis_name, stratum_1_name)
+insert into @results_database_schema.ACHILLES_analysis (analysis_id, analysis_name, stratum_1_name)
 	values (600, 'Number of persons with at least one procedure occurrence, by procedure_concept_id', 'procedure_concept_id');
 
-insert into ACHILLES_analysis (analysis_id, analysis_name, stratum_1_name)
+insert into @results_database_schema.ACHILLES_analysis (analysis_id, analysis_name, stratum_1_name)
 	values (601, 'Number of procedure occurrence records, by procedure_concept_id', 'procedure_concept_id');
 
-insert into ACHILLES_analysis (analysis_id, analysis_name, stratum_1_name, stratum_2_name)
+insert into @results_database_schema.ACHILLES_analysis (analysis_id, analysis_name, stratum_1_name, stratum_2_name)
 	values (602, 'Number of persons by procedure occurrence start month, by procedure_concept_id', 'procedure_concept_id', 'calendar month');	
 
-insert into ACHILLES_analysis (analysis_id, analysis_name)
+insert into @results_database_schema.ACHILLES_analysis (analysis_id, analysis_name)
 	values (603, 'Number of distinct procedure occurrence concepts per person');
 
-insert into ACHILLES_analysis (analysis_id, analysis_name, stratum_1_name, stratum_2_name, stratum_3_name, stratum_4_name)
+insert into @results_database_schema.ACHILLES_analysis (analysis_id, analysis_name, stratum_1_name, stratum_2_name, stratum_3_name, stratum_4_name)
 	values (604, 'Number of persons with at least one procedure occurrence, by procedure_concept_id by calendar year by gender by age decile', 'procedure_concept_id', 'calendar year', 'gender_concept_id', 'age decile');
 
-insert into ACHILLES_analysis (analysis_id, analysis_name, stratum_1_name, stratum_2_name)
+insert into @results_database_schema.ACHILLES_analysis (analysis_id, analysis_name, stratum_1_name, stratum_2_name)
 	values (605, 'Number of procedure occurrence records, by procedure_concept_id by procedure_type_concept_id', 'procedure_concept_id', 'procedure_type_concept_id');
 
-insert into ACHILLES_analysis (analysis_id, analysis_name, stratum_1_name, stratum_2_name)
+insert into @results_database_schema.ACHILLES_analysis (analysis_id, analysis_name, stratum_1_name, stratum_2_name)
 	values (606, 'Distribution of age by procedure_concept_id', 'procedure_concept_id', 'gender_concept_id');
 
 
 
-insert into ACHILLES_analysis (analysis_id, analysis_name)
+insert into @results_database_schema.ACHILLES_analysis (analysis_id, analysis_name)
 	values (609, 'Number of procedure occurrence records with invalid person_id');
 
-insert into ACHILLES_analysis (analysis_id, analysis_name)
+insert into @results_database_schema.ACHILLES_analysis (analysis_id, analysis_name)
 	values (610, 'Number of procedure occurrence records outside valid observation period');
 
-insert into ACHILLES_analysis (analysis_id, analysis_name)
+insert into @results_database_schema.ACHILLES_analysis (analysis_id, analysis_name)
 	values (612, 'Number of procedure occurrence records with invalid provider_id');
 
-insert into ACHILLES_analysis (analysis_id, analysis_name)
+insert into @results_database_schema.ACHILLES_analysis (analysis_id, analysis_name)
 	values (613, 'Number of procedure occurrence records with invalid visit_id');
 
 
-insert into ACHILLES_analysis (analysis_id, analysis_name, stratum_1_name)
+insert into @results_database_schema.ACHILLES_analysis (analysis_id, analysis_name, stratum_1_name)
 	values (620, 'Number of procedure occurrence records  by procedure occurrence start month', 'calendar month');
 
 
 --700- DRUG_EXPOSURE
 
 
-insert into ACHILLES_analysis (analysis_id, analysis_name, stratum_1_name)
+insert into @results_database_schema.ACHILLES_analysis (analysis_id, analysis_name, stratum_1_name)
 	values (700, 'Number of persons with at least one drug exposure, by drug_concept_id', 'drug_concept_id');
 
-insert into ACHILLES_analysis (analysis_id, analysis_name, stratum_1_name)
+insert into @results_database_schema.ACHILLES_analysis (analysis_id, analysis_name, stratum_1_name)
 	values (701, 'Number of drug exposure records, by drug_concept_id', 'drug_concept_id');
 
-insert into ACHILLES_analysis (analysis_id, analysis_name, stratum_1_name, stratum_2_name)
+insert into @results_database_schema.ACHILLES_analysis (analysis_id, analysis_name, stratum_1_name, stratum_2_name)
 	values (702, 'Number of persons by drug exposure start month, by drug_concept_id', 'drug_concept_id', 'calendar month');	
 
-insert into ACHILLES_analysis (analysis_id, analysis_name)
+insert into @results_database_schema.ACHILLES_analysis (analysis_id, analysis_name)
 	values (703, 'Number of distinct drug exposure concepts per person');
 
-insert into ACHILLES_analysis (analysis_id, analysis_name, stratum_1_name, stratum_2_name, stratum_3_name, stratum_4_name)
+insert into @results_database_schema.ACHILLES_analysis (analysis_id, analysis_name, stratum_1_name, stratum_2_name, stratum_3_name, stratum_4_name)
 	values (704, 'Number of persons with at least one drug exposure, by drug_concept_id by calendar year by gender by age decile', 'drug_concept_id', 'calendar year', 'gender_concept_id', 'age decile');
 
-insert into ACHILLES_analysis (analysis_id, analysis_name, stratum_1_name, stratum_2_name)
+insert into @results_database_schema.ACHILLES_analysis (analysis_id, analysis_name, stratum_1_name, stratum_2_name)
 	values (705, 'Number of drug exposure records, by drug_concept_id by drug_type_concept_id', 'drug_concept_id', 'drug_type_concept_id');
 
-insert into ACHILLES_analysis (analysis_id, analysis_name, stratum_1_name, stratum_2_name)
+insert into @results_database_schema.ACHILLES_analysis (analysis_id, analysis_name, stratum_1_name, stratum_2_name)
 	values (706, 'Distribution of age by drug_concept_id', 'drug_concept_id', 'gender_concept_id');
 
 
 
-insert into ACHILLES_analysis (analysis_id, analysis_name)
+insert into @results_database_schema.ACHILLES_analysis (analysis_id, analysis_name)
 	values (709, 'Number of drug exposure records with invalid person_id');
 
-insert into ACHILLES_analysis (analysis_id, analysis_name)
+insert into @results_database_schema.ACHILLES_analysis (analysis_id, analysis_name)
 	values (710, 'Number of drug exposure records outside valid observation period');
 
-insert into ACHILLES_analysis (analysis_id, analysis_name)
+insert into @results_database_schema.ACHILLES_analysis (analysis_id, analysis_name)
 	values (711, 'Number of drug exposure records with end date < start date');
 
-insert into ACHILLES_analysis (analysis_id, analysis_name)
+insert into @results_database_schema.ACHILLES_analysis (analysis_id, analysis_name)
 	values (712, 'Number of drug exposure records with invalid provider_id');
 
-insert into ACHILLES_analysis (analysis_id, analysis_name)
+insert into @results_database_schema.ACHILLES_analysis (analysis_id, analysis_name)
 	values (713, 'Number of drug exposure records with invalid visit_id');
 
 
 
-insert into ACHILLES_analysis (analysis_id, analysis_name, stratum_1_name)
+insert into @results_database_schema.ACHILLES_analysis (analysis_id, analysis_name, stratum_1_name)
 	values (715, 'Distribution of days_supply by drug_concept_id', 'drug_concept_id');
 
-insert into ACHILLES_analysis (analysis_id, analysis_name, stratum_1_name)
+insert into @results_database_schema.ACHILLES_analysis (analysis_id, analysis_name, stratum_1_name)
 	values (716, 'Distribution of refills by drug_concept_id', 'drug_concept_id');
 
-insert into ACHILLES_analysis (analysis_id, analysis_name, stratum_1_name)
+insert into @results_database_schema.ACHILLES_analysis (analysis_id, analysis_name, stratum_1_name)
 	values (717, 'Distribution of quantity by drug_concept_id', 'drug_concept_id');
 
 
-insert into ACHILLES_analysis (analysis_id, analysis_name, stratum_1_name)
+insert into @results_database_schema.ACHILLES_analysis (analysis_id, analysis_name, stratum_1_name)
 	values (720, 'Number of drug exposure records  by drug exposure start month', 'calendar month');
 
 
 --800- OBSERVATION
 
 
-insert into ACHILLES_analysis (analysis_id, analysis_name, stratum_1_name)
+insert into @results_database_schema.ACHILLES_analysis (analysis_id, analysis_name, stratum_1_name)
 	values (800, 'Number of persons with at least one observation occurrence, by observation_concept_id', 'observation_concept_id');
 
-insert into ACHILLES_analysis (analysis_id, analysis_name, stratum_1_name)
+insert into @results_database_schema.ACHILLES_analysis (analysis_id, analysis_name, stratum_1_name)
 	values (801, 'Number of observation occurrence records, by observation_concept_id', 'observation_concept_id');
 
-insert into ACHILLES_analysis (analysis_id, analysis_name, stratum_1_name, stratum_2_name)
+insert into @results_database_schema.ACHILLES_analysis (analysis_id, analysis_name, stratum_1_name, stratum_2_name)
 	values (802, 'Number of persons by observation occurrence start month, by observation_concept_id', 'observation_concept_id', 'calendar month');	
 
-insert into ACHILLES_analysis (analysis_id, analysis_name)
+insert into @results_database_schema.ACHILLES_analysis (analysis_id, analysis_name)
 	values (803, 'Number of distinct observation occurrence concepts per person');
 
-insert into ACHILLES_analysis (analysis_id, analysis_name, stratum_1_name, stratum_2_name, stratum_3_name, stratum_4_name)
+insert into @results_database_schema.ACHILLES_analysis (analysis_id, analysis_name, stratum_1_name, stratum_2_name, stratum_3_name, stratum_4_name)
 	values (804, 'Number of persons with at least one observation occurrence, by observation_concept_id by calendar year by gender by age decile', 'observation_concept_id', 'calendar year', 'gender_concept_id', 'age decile');
 
-insert into ACHILLES_analysis (analysis_id, analysis_name, stratum_1_name, stratum_2_name)
+insert into @results_database_schema.ACHILLES_analysis (analysis_id, analysis_name, stratum_1_name, stratum_2_name)
 	values (805, 'Number of observation occurrence records, by observation_concept_id by observation_type_concept_id', 'observation_concept_id', 'observation_type_concept_id');
 
-insert into ACHILLES_analysis (analysis_id, analysis_name, stratum_1_name, stratum_2_name)
+insert into @results_database_schema.ACHILLES_analysis (analysis_id, analysis_name, stratum_1_name, stratum_2_name)
 	values (806, 'Distribution of age by observation_concept_id', 'observation_concept_id', 'gender_concept_id');
 
-insert into ACHILLES_analysis (analysis_id, analysis_name, stratum_1_name, stratum_2_name)
+insert into @results_database_schema.ACHILLES_analysis (analysis_id, analysis_name, stratum_1_name, stratum_2_name)
 	values (807, 'Number of observation occurrence records, by observation_concept_id and unit_concept_id', 'observation_concept_id', 'unit_concept_id');
 
-insert into ACHILLES_analysis (analysis_id, analysis_name)
+insert into @results_database_schema.ACHILLES_analysis (analysis_id, analysis_name)
 	values (809, 'Number of observation records with invalid person_id');
 
-insert into ACHILLES_analysis (analysis_id, analysis_name)
+insert into @results_database_schema.ACHILLES_analysis (analysis_id, analysis_name)
 	values (810, 'Number of observation records outside valid observation period');
 
-insert into ACHILLES_analysis (analysis_id, analysis_name)
+insert into @results_database_schema.ACHILLES_analysis (analysis_id, analysis_name)
 	values (812, 'Number of observation records with invalid provider_id');
 
-insert into ACHILLES_analysis (analysis_id, analysis_name)
+insert into @results_database_schema.ACHILLES_analysis (analysis_id, analysis_name)
 	values (813, 'Number of observation records with invalid visit_id');
 
-insert into ACHILLES_analysis (analysis_id, analysis_name)
+insert into @results_database_schema.ACHILLES_analysis (analysis_id, analysis_name)
 	values (814, 'Number of observation records with no value (numeric, string, or concept)');
 
-insert into ACHILLES_analysis (analysis_id, analysis_name)
+insert into @results_database_schema.ACHILLES_analysis (analysis_id, analysis_name)
 	values (815, 'Distribution of numeric values, by observation_concept_id and unit_concept_id');
 
 --NOT APPLICABLE FOR OMOP CDM v5
---insert into ACHILLES_analysis (analysis_id, analysis_name)
+--insert into @results_database_schema.ACHILLES_analysis (analysis_id, analysis_name)
 --	values (816, 'Distribution of low range, by observation_concept_id and unit_concept_id');
 
 --NOT APPLICABLE FOR OMOP CDM v5
---insert into ACHILLES_analysis (analysis_id, analysis_name)
+--insert into @results_database_schema.ACHILLES_analysis (analysis_id, analysis_name)
 --	values (817, 'Distribution of high range, by observation_concept_id and unit_concept_id');
 
 --NOT APPLICABLE FOR OMOP CDM v5
---insert into ACHILLES_analysis (analysis_id, analysis_name)
+--insert into @results_database_schema.ACHILLES_analysis (analysis_id, analysis_name)
 --	values (818, 'Number of observation records below/within/above normal range, by observation_concept_id and unit_concept_id');
 
 
-insert into ACHILLES_analysis (analysis_id, analysis_name, stratum_1_name)
+insert into @results_database_schema.ACHILLES_analysis (analysis_id, analysis_name, stratum_1_name)
 	values (820, 'Number of observation records  by observation start month', 'calendar month');
 
 
@@ -914,73 +918,73 @@ insert into ACHILLES_analysis (analysis_id, analysis_name, stratum_1_name)
 --900- DRUG_ERA
 
 
-insert into ACHILLES_analysis (analysis_id, analysis_name, stratum_1_name)
+insert into @results_database_schema.ACHILLES_analysis (analysis_id, analysis_name, stratum_1_name)
 	values (900, 'Number of persons with at least one drug era, by drug_concept_id', 'drug_concept_id');
 
-insert into ACHILLES_analysis (analysis_id, analysis_name, stratum_1_name)
+insert into @results_database_schema.ACHILLES_analysis (analysis_id, analysis_name, stratum_1_name)
 	values (901, 'Number of drug era records, by drug_concept_id', 'drug_concept_id');
 
-insert into ACHILLES_analysis (analysis_id, analysis_name, stratum_1_name, stratum_2_name)
+insert into @results_database_schema.ACHILLES_analysis (analysis_id, analysis_name, stratum_1_name, stratum_2_name)
 	values (902, 'Number of persons by drug era start month, by drug_concept_id', 'drug_concept_id', 'calendar month');	
 
-insert into ACHILLES_analysis (analysis_id, analysis_name)
+insert into @results_database_schema.ACHILLES_analysis (analysis_id, analysis_name)
 	values (903, 'Number of distinct drug era concepts per person');
 
-insert into ACHILLES_analysis (analysis_id, analysis_name, stratum_1_name, stratum_2_name, stratum_3_name, stratum_4_name)
+insert into @results_database_schema.ACHILLES_analysis (analysis_id, analysis_name, stratum_1_name, stratum_2_name, stratum_3_name, stratum_4_name)
 	values (904, 'Number of persons with at least one drug era, by drug_concept_id by calendar year by gender by age decile', 'drug_concept_id', 'calendar year', 'gender_concept_id', 'age decile');
 
-insert into ACHILLES_analysis (analysis_id, analysis_name, stratum_1_name, stratum_2_name)
+insert into @results_database_schema.ACHILLES_analysis (analysis_id, analysis_name, stratum_1_name, stratum_2_name)
 	values (906, 'Distribution of age by drug_concept_id', 'drug_concept_id', 'gender_concept_id');
 	
-insert into ACHILLES_analysis (analysis_id, analysis_name, stratum_1_name)
+insert into @results_database_schema.ACHILLES_analysis (analysis_id, analysis_name, stratum_1_name)
 	values (907, 'Distribution of drug era length, by drug_concept_id', 'drug_concept_id');	
 
-insert into ACHILLES_analysis (analysis_id, analysis_name)
+insert into @results_database_schema.ACHILLES_analysis (analysis_id, analysis_name)
 	values (908, 'Number of drug eras without valid person');
 
-insert into ACHILLES_analysis (analysis_id, analysis_name)
+insert into @results_database_schema.ACHILLES_analysis (analysis_id, analysis_name)
 	values (909, 'Number of drug eras outside valid observation period');
 
-insert into ACHILLES_analysis (analysis_id, analysis_name)
+insert into @results_database_schema.ACHILLES_analysis (analysis_id, analysis_name)
 	values (910, 'Number of drug eras with end date < start date');
 
-insert into ACHILLES_analysis (analysis_id, analysis_name, stratum_1_name)
+insert into @results_database_schema.ACHILLES_analysis (analysis_id, analysis_name, stratum_1_name)
 	values (920, 'Number of drug era records  by drug era start month', 'calendar month');
 
 --1000- CONDITION_ERA
 
 
-insert into ACHILLES_analysis (analysis_id, analysis_name, stratum_1_name)
+insert into @results_database_schema.ACHILLES_analysis (analysis_id, analysis_name, stratum_1_name)
 	values (1000, 'Number of persons with at least one condition era, by condition_concept_id', 'condition_concept_id');
 
-insert into ACHILLES_analysis (analysis_id, analysis_name, stratum_1_name)
+insert into @results_database_schema.ACHILLES_analysis (analysis_id, analysis_name, stratum_1_name)
 	values (1001, 'Number of condition era records, by condition_concept_id', 'condition_concept_id');
 
-insert into ACHILLES_analysis (analysis_id, analysis_name, stratum_1_name, stratum_2_name)
+insert into @results_database_schema.ACHILLES_analysis (analysis_id, analysis_name, stratum_1_name, stratum_2_name)
 	values (1002, 'Number of persons by condition era start month, by condition_concept_id', 'condition_concept_id', 'calendar month');	
 
-insert into ACHILLES_analysis (analysis_id, analysis_name)
+insert into @results_database_schema.ACHILLES_analysis (analysis_id, analysis_name)
 	values (1003, 'Number of distinct condition era concepts per person');
 
-insert into ACHILLES_analysis (analysis_id, analysis_name, stratum_1_name, stratum_2_name, stratum_3_name, stratum_4_name)
+insert into @results_database_schema.ACHILLES_analysis (analysis_id, analysis_name, stratum_1_name, stratum_2_name, stratum_3_name, stratum_4_name)
 	values (1004, 'Number of persons with at least one condition era, by condition_concept_id by calendar year by gender by age decile', 'condition_concept_id', 'calendar year', 'gender_concept_id', 'age decile');
 
-insert into ACHILLES_analysis (analysis_id, analysis_name, stratum_1_name, stratum_2_name)
+insert into @results_database_schema.ACHILLES_analysis (analysis_id, analysis_name, stratum_1_name, stratum_2_name)
 	values (1006, 'Distribution of age by condition_concept_id', 'condition_concept_id', 'gender_concept_id');
 	
-insert into ACHILLES_analysis (analysis_id, analysis_name, stratum_1_name)
+insert into @results_database_schema.ACHILLES_analysis (analysis_id, analysis_name, stratum_1_name)
 	values (1007, 'Distribution of condition era length, by condition_concept_id', 'condition_concept_id');
 
-insert into ACHILLES_analysis (analysis_id, analysis_name)
+insert into @results_database_schema.ACHILLES_analysis (analysis_id, analysis_name)
 	values (1008, 'Number of condition eras without valid person');
 
-insert into ACHILLES_analysis (analysis_id, analysis_name)
+insert into @results_database_schema.ACHILLES_analysis (analysis_id, analysis_name)
 	values (1009, 'Number of condition eras outside valid observation period');
 
-insert into ACHILLES_analysis (analysis_id, analysis_name)
+insert into @results_database_schema.ACHILLES_analysis (analysis_id, analysis_name)
 	values (1010, 'Number of condition eras with end date < start date');
 
-insert into ACHILLES_analysis (analysis_id, analysis_name, stratum_1_name)
+insert into @results_database_schema.ACHILLES_analysis (analysis_id, analysis_name, stratum_1_name)
 	values (1020, 'Number of condition era records by condition era start month', 'calendar month');
 
 
@@ -988,108 +992,108 @@ insert into ACHILLES_analysis (analysis_id, analysis_name, stratum_1_name)
 --1100- LOCATION
 
 
-insert into ACHILLES_analysis (analysis_id, analysis_name, stratum_1_name)
+insert into @results_database_schema.ACHILLES_analysis (analysis_id, analysis_name, stratum_1_name)
 	values (1100, 'Number of persons by location 3-digit zip', '3-digit zip');
 
-insert into ACHILLES_analysis (analysis_id, analysis_name, stratum_1_name)
+insert into @results_database_schema.ACHILLES_analysis (analysis_id, analysis_name, stratum_1_name)
 	values (1101, 'Number of persons by location state', 'state');
 
-insert into ACHILLES_analysis (analysis_id, analysis_name, stratum_1_name)
+insert into @results_database_schema.ACHILLES_analysis (analysis_id, analysis_name, stratum_1_name)
 	values (1102, 'Number of care sites by location 3-digit zip', '3-digit zip');
 
-insert into ACHILLES_analysis (analysis_id, analysis_name, stratum_1_name)
+insert into @results_database_schema.ACHILLES_analysis (analysis_id, analysis_name, stratum_1_name)
 	values (1103, 'Number of care sites by location state', 'state');
 
 
 --1200- CARE_SITE
 
-insert into ACHILLES_analysis (analysis_id, analysis_name, stratum_1_name)
+insert into @results_database_schema.ACHILLES_analysis (analysis_id, analysis_name, stratum_1_name)
 	values (1200, 'Number of persons by place of service', 'place_of_service_concept_id');
 
-insert into ACHILLES_analysis (analysis_id, analysis_name, stratum_1_name)
+insert into @results_database_schema.ACHILLES_analysis (analysis_id, analysis_name, stratum_1_name)
 	values (1201, 'Number of visits by place of service', 'place_of_service_concept_id');
 
-insert into ACHILLES_analysis (analysis_id, analysis_name, stratum_1_name)
+insert into @results_database_schema.ACHILLES_analysis (analysis_id, analysis_name, stratum_1_name)
 	values (1202, 'Number of care sites by place of service', 'place_of_service_concept_id');
 
 
 --1300- ORGANIZATION
 
 --NOT APPLICABLE IN CDMV5
---insert into ACHILLES_analysis (analysis_id, analysis_name, stratum_1_name)
+--insert into @results_database_schema.ACHILLES_analysis (analysis_id, analysis_name, stratum_1_name)
 --	values (1300, 'Number of organizations by place of service', 'place_of_service_concept_id');
 
 
 --1400- PAYOR_PLAN_PERIOD
 
-insert into ACHILLES_analysis (analysis_id, analysis_name, stratum_1_name)
+insert into @results_database_schema.ACHILLES_analysis (analysis_id, analysis_name, stratum_1_name)
 	values (1406, 'Length of payer plan (days) of first payer plan period by gender', 'gender_concept_id');
 
-insert into ACHILLES_analysis (analysis_id, analysis_name, stratum_1_name)
+insert into @results_database_schema.ACHILLES_analysis (analysis_id, analysis_name, stratum_1_name)
 	values (1407, 'Length of payer plan (days) of first payer plan period by age decile', 'age_decile');
 
-insert into ACHILLES_analysis (analysis_id, analysis_name, stratum_1_name)
+insert into @results_database_schema.ACHILLES_analysis (analysis_id, analysis_name, stratum_1_name)
 	values (1408, 'Number of persons by length of payer plan period, in 30d increments', 'payer plan period length 30d increments');
 
-insert into ACHILLES_analysis (analysis_id, analysis_name, stratum_1_name)
+insert into @results_database_schema.ACHILLES_analysis (analysis_id, analysis_name, stratum_1_name)
 	values (1409, 'Number of persons with continuous payer plan in each year', 'calendar year');
 
-insert into ACHILLES_analysis (analysis_id, analysis_name, stratum_1_name)
+insert into @results_database_schema.ACHILLES_analysis (analysis_id, analysis_name, stratum_1_name)
 	values (1410, 'Number of persons with continuous payer plan in each month', 'calendar month');
 
-insert into ACHILLES_analysis (analysis_id, analysis_name, stratum_1_name)
+insert into @results_database_schema.ACHILLES_analysis (analysis_id, analysis_name, stratum_1_name)
 	values (1411, 'Number of persons by payer plan period start month', 'calendar month');
 
-insert into ACHILLES_analysis (analysis_id, analysis_name, stratum_1_name)
+insert into @results_database_schema.ACHILLES_analysis (analysis_id, analysis_name, stratum_1_name)
 	values (1412, 'Number of persons by payer plan period end month', 'calendar month');
 
-insert into ACHILLES_analysis (analysis_id, analysis_name, stratum_1_name)
+insert into @results_database_schema.ACHILLES_analysis (analysis_id, analysis_name, stratum_1_name)
 	values (1413, 'Number of persons by number of payer plan periods', 'number of payer plan periods');
 
-insert into ACHILLES_analysis (analysis_id, analysis_name)
+insert into @results_database_schema.ACHILLES_analysis (analysis_id, analysis_name)
 	values (1414, 'Number of persons with payer plan period before year-of-birth');
 
-insert into ACHILLES_analysis (analysis_id, analysis_name)
+insert into @results_database_schema.ACHILLES_analysis (analysis_id, analysis_name)
 	values (1415, 'Number of persons with payer plan period end < payer plan period start');
 
 --1500- DRUG_COST
 
 
 
-insert into ACHILLES_analysis (analysis_id, analysis_name)
+insert into @results_database_schema.ACHILLES_analysis (analysis_id, analysis_name)
 	values (1500, 'Number of drug cost records with invalid drug exposure id');
 
-insert into ACHILLES_analysis (analysis_id, analysis_name)
+insert into @results_database_schema.ACHILLES_analysis (analysis_id, analysis_name)
 	values (1501, 'Number of drug cost records with invalid payer plan period id');
 
-insert into ACHILLES_analysis (analysis_id, analysis_name, stratum_1_name)
+insert into @results_database_schema.ACHILLES_analysis (analysis_id, analysis_name, stratum_1_name)
 	values (1502, 'Distribution of paid copay, by drug_concept_id', 'drug_concept_id');
 
-insert into ACHILLES_analysis (analysis_id, analysis_name, stratum_1_name)
+insert into @results_database_schema.ACHILLES_analysis (analysis_id, analysis_name, stratum_1_name)
 	values (1503, 'Distribution of paid coinsurance, by drug_concept_id', 'drug_concept_id');
 
-insert into ACHILLES_analysis (analysis_id, analysis_name, stratum_1_name)
+insert into @results_database_schema.ACHILLES_analysis (analysis_id, analysis_name, stratum_1_name)
 	values (1504, 'Distribution of paid toward deductible, by drug_concept_id', 'drug_concept_id');
 
-insert into ACHILLES_analysis (analysis_id, analysis_name, stratum_1_name)
+insert into @results_database_schema.ACHILLES_analysis (analysis_id, analysis_name, stratum_1_name)
 	values (1505, 'Distribution of paid by payer, by drug_concept_id', 'drug_concept_id');
 
-insert into ACHILLES_analysis (analysis_id, analysis_name, stratum_1_name)
+insert into @results_database_schema.ACHILLES_analysis (analysis_id, analysis_name, stratum_1_name)
 	values (1506, 'Distribution of paid by coordination of benefit, by drug_concept_id', 'drug_concept_id');
 
-insert into ACHILLES_analysis (analysis_id, analysis_name, stratum_1_name)
+insert into @results_database_schema.ACHILLES_analysis (analysis_id, analysis_name, stratum_1_name)
 	values (1507, 'Distribution of total out-of-pocket, by drug_concept_id', 'drug_concept_id');
 
-insert into ACHILLES_analysis (analysis_id, analysis_name, stratum_1_name)
+insert into @results_database_schema.ACHILLES_analysis (analysis_id, analysis_name, stratum_1_name)
 	values (1508, 'Distribution of total paid, by drug_concept_id', 'drug_concept_id');
 
-insert into ACHILLES_analysis (analysis_id, analysis_name, stratum_1_name)
+insert into @results_database_schema.ACHILLES_analysis (analysis_id, analysis_name, stratum_1_name)
 	values (1509, 'Distribution of ingredient_cost, by drug_concept_id', 'drug_concept_id');
 
-insert into ACHILLES_analysis (analysis_id, analysis_name, stratum_1_name)
+insert into @results_database_schema.ACHILLES_analysis (analysis_id, analysis_name, stratum_1_name)
 	values (1510, 'Distribution of dispensing fee, by drug_concept_id', 'drug_concept_id');
 
-insert into ACHILLES_analysis (analysis_id, analysis_name, stratum_1_name)
+insert into @results_database_schema.ACHILLES_analysis (analysis_id, analysis_name, stratum_1_name)
 	values (1511, 'Distribution of average wholesale price, by drug_concept_id', 'drug_concept_id');
 
 
@@ -1097,47 +1101,47 @@ insert into ACHILLES_analysis (analysis_id, analysis_name, stratum_1_name)
 
 
 
-insert into ACHILLES_analysis (analysis_id, analysis_name)
+insert into @results_database_schema.ACHILLES_analysis (analysis_id, analysis_name)
 	values (1600, 'Number of procedure cost records with invalid procedure occurrence id');
 
-insert into ACHILLES_analysis (analysis_id, analysis_name)
+insert into @results_database_schema.ACHILLES_analysis (analysis_id, analysis_name)
 	values (1601, 'Number of procedure cost records with invalid payer plan period id');
 
-insert into ACHILLES_analysis (analysis_id, analysis_name, stratum_1_name)
+insert into @results_database_schema.ACHILLES_analysis (analysis_id, analysis_name, stratum_1_name)
 	values (1602, 'Distribution of paid copay, by procedure_concept_id', 'procedure_concept_id');
 
-insert into ACHILLES_analysis (analysis_id, analysis_name, stratum_1_name)
+insert into @results_database_schema.ACHILLES_analysis (analysis_id, analysis_name, stratum_1_name)
 	values (1603, 'Distribution of paid coinsurance, by procedure_concept_id', 'procedure_concept_id');
 
-insert into ACHILLES_analysis (analysis_id, analysis_name, stratum_1_name)
+insert into @results_database_schema.ACHILLES_analysis (analysis_id, analysis_name, stratum_1_name)
 	values (1604, 'Distribution of paid toward deductible, by procedure_concept_id', 'procedure_concept_id');
 
-insert into ACHILLES_analysis (analysis_id, analysis_name, stratum_1_name)
+insert into @results_database_schema.ACHILLES_analysis (analysis_id, analysis_name, stratum_1_name)
 	values (1605, 'Distribution of paid by payer, by procedure_concept_id', 'procedure_concept_id');
 
-insert into ACHILLES_analysis (analysis_id, analysis_name, stratum_1_name)
+insert into @results_database_schema.ACHILLES_analysis (analysis_id, analysis_name, stratum_1_name)
 	values (1606, 'Distribution of paid by coordination of benefit, by procedure_concept_id', 'procedure_concept_id');
 
-insert into ACHILLES_analysis (analysis_id, analysis_name, stratum_1_name)
+insert into @results_database_schema.ACHILLES_analysis (analysis_id, analysis_name, stratum_1_name)
 	values (1607, 'Distribution of total out-of-pocket, by procedure_concept_id', 'procedure_concept_id');
 
-insert into ACHILLES_analysis (analysis_id, analysis_name, stratum_1_name)
+insert into @results_database_schema.ACHILLES_analysis (analysis_id, analysis_name, stratum_1_name)
 	values (1608, 'Distribution of total paid, by procedure_concept_id', 'procedure_concept_id');
 
 --NOT APPLICABLE FOR OMOP CDM v5
---insert into ACHILLES_analysis (analysis_id, analysis_name, stratum_1_name)
+--insert into @results_database_schema.ACHILLES_analysis (analysis_id, analysis_name, stratum_1_name)
 --	values (1609, 'Number of records by disease_class_concept_id', 'disease_class_concept_id');
 
-insert into ACHILLES_analysis (analysis_id, analysis_name, stratum_1_name)
+insert into @results_database_schema.ACHILLES_analysis (analysis_id, analysis_name, stratum_1_name)
 	values (1610, 'Number of records by revenue_code_concept_id', 'revenue_code_concept_id');
 
 
 --1700- COHORT
 
-insert into ACHILLES_analysis (analysis_id, analysis_name, stratum_1_name)
+insert into @results_database_schema.ACHILLES_analysis (analysis_id, analysis_name, stratum_1_name)
 	values (1700, 'Number of records by cohort_concept_id', 'cohort_concept_id');
 
-insert into ACHILLES_analysis (analysis_id, analysis_name)
+insert into @results_database_schema.ACHILLES_analysis (analysis_id, analysis_name)
 	values (1701, 'Number of records with cohort end date < cohort start date');
 
 --} : {else if not createTable

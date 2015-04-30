@@ -8,7 +8,7 @@ achilles(connectionDetails, cdmDatabaseSchema,
   oracleTempSchema = cdmDatabaseSchema,
   resultsDatabaseSchema = cdmDatabaseSchema, sourceName = "", analysisIds,
   createTable = TRUE, smallcellcount = 5, cdmVersion = "4",
-  runHeel = TRUE)
+  runHeel = TRUE, validateSchema = TRUE)
 }
 \arguments{
   \item{connectionDetails}{An R object of type
@@ -55,6 +55,10 @@ achilles(connectionDetails, cdmDatabaseSchema,
   \item{runHeel}{Boolean to determine if Achilles Heel data
   quality reporting will be produced based on the summary
   statistics.  Default = TRUE}
+
+  \item{validateSchema}{Boolean to determine if CDM Schema
+  Validation should be run. This could be very slow.
+  Default = TRUE}
 }
 \value{
 An object of type \code{achillesResults} containing details

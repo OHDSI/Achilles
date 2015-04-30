@@ -39,6 +39,7 @@
 #' @param smallcellcount     To avoid patient identifiability, cells with small counts (<= smallcellcount) are deleted.
 #' @param cdmVersion     Define the OMOP CDM version used:  currently support "4" and "5".  Default = "4"
 #' @param runHeel     Boolean to determine if Achilles Heel data quality reporting will be produced based on the summary statistics.  Default = TRUE
+#' @param validateSchema     Boolean to determine if CDM Schema Validation should be run. This could be very slow.  Default = TRUE
 #' 
 #' @return An object of type \code{achillesResults} containing details for connecting to the database containing the results 
 #' @examples \dontrun{
@@ -56,7 +57,8 @@ achilles <- function (connectionDetails,
                       createTable = TRUE, 
                       smallcellcount = 5, 
                       cdmVersion = "4", 
-                      runHeel = TRUE){
+                      runHeel = TRUE,
+                      validateSchema = TRUE){
   
   if (cdmVersion == "4")  {
     achillesFile <- "Achilles_v4.sql"
@@ -84,7 +86,8 @@ achilles <- function (connectionDetails,
                                         source_name = sourceName, 
                                         list_of_analysis_ids = analysisIds,
                                         createTable = createTable,
-                                        smallcellcount = smallcellcount
+                                        smallcellcount = smallcellcount,
+                                        validateSchema = validateSchema
   )
   
   conn <- connect(connectionDetails)
@@ -99,7 +102,8 @@ achilles <- function (connectionDetails,
                                       dbms = connectionDetails$dbms,
                                       oracleTempSchema = oracleTempSchema,
                                       cdm_database_schema = cdmDatabaseSchema,
-                                      results_database = resultsDatabase, 
+                                      results_database = resultsDatabase,
+                                      results_database_schema = resultsDatabaseSchema,
                                       source_name = sourceName, 
                                       list_of_analysis_ids = analysisIds,
                                       createTable = createTable,
@@ -127,4 +131,37 @@ achilles <- function (connectionDetails,
                  call = match.call())
   class(result) <- "achillesResults"
   result
+}
+
+#' @export
+achillesHeel <- function (connectionDetails, 
+                      cdmDatabaseSchema, 
+                      oracleTempSchema = cdmDatabaseSchema,
+                      resultsDatabaseSchema = cdmDatabaseSchema,
+                      cdmVersion = "4"){
+  
+  resultsDatabase <- strsplit(resultsDatabaseSchema ,"\\.")[[1]][1]
+  
+  if (cdmVersion == "4")  {
+    heelFile <- "AchillesHeel_v4.sql"
+  } else if (cdmVersion == "5") {
+    heelFile <- "AchillesHeel_v5.sql"
+  } else  {
+    stop("Error: Invalid CDM Version number, use 4 or 5")
+  }
+  
+  heelSql <- loadRenderTranslateSql(sqlFilename = heelFile,
+                                    packageName = "Achilles",
+                                    dbms = connectionDetails$dbms,
+                                    oracleTempSchema = oracleTempSchema,
+                                    cdm_database_schema = cdmDatabaseSchema,
+                                    results_database = resultsDatabase,
+                                    results_database_schema = resultsDatabaseSchema
+  );
+  
+  conn <- connect(connectionDetails);
+  writeLines("Executing Achilles Heel. This could take a while");
+  executeSql(conn,heelSql);
+  dummy <- dbDisconnect(conn);
+  writeLines(paste("Done. Achilles Heel results can now be found in",resultsDatabase))
 }
