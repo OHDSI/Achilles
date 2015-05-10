@@ -39,6 +39,23 @@ Getting Started
   exportToJson(connectionDetails, "cdm4_inst", "results", "c:/myPath/AchillesExport")
   ```
 
+Getting Started with Docker
+===========================
+This is an alternative method for running Achilles that does not require R and Java installations, using a Docker container instead.
+
+1. Install [Docker](https://docs.docker.com/installation/) and [Docker Compose](https://docs.docker.com/compose/install/).
+
+2. Clone this repository with git (`git clone https://github.com/OHDSI/Achilles.git`) and make it your working directory (`cd Achilles`).
+
+3. Copy `env_vars.sample` to `env_vars` and fill in the variable definitions. The `ACHILLES_DB_URI` should be formatted as `<dbms>://<username>:<password>@<host>/<schema>`.
+
+4. Copy `docker-compose.yml.sample` to `docker-compose.yml` and fill in the data output directory.
+
+5. Build the docker image with `docker-compose build`.
+
+6. Run Achilles in the background with `docker-compose run -d achilles`.
+
+
 License
 =======
 Achilles is licensed under Apache License 2.0
