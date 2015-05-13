@@ -7,11 +7,12 @@ MAINTAINER Aaron Browne <brownea@email.chop.edu>
 RUN echo '' > /etc/apt/apt.conf.d/default
 
 # Install java and clean up.
-ENV JAVA_DEBIAN_VERSION 6b34-1.13.6-1
 RUN apt-get update && \
     apt-get install -y \
+    libssl-dev \
     libcurl4-openssl-dev \
-    openjdk-6-jdk="$JAVA_DEBIAN_VERSION" \
+    libxml2-dev \
+    openjdk-6-jdk \
     && rm -rf /var/lib/apt/lists/* \
     && R CMD javareconf
 
@@ -19,6 +20,7 @@ RUN apt-get update && \
 RUN install2.r --error \
     devtools \
     httr \
+    rjson \
     && installGithub.r \
     OHDSI/SqlRender \
     OHDSI/DatabaseConnector \
@@ -34,7 +36,7 @@ COPY . /opt/app/
 RUN chmod +x /opt/app/docker-run
 
 # Install Achilles from source
-RUN R COMMAND INSTALL /opt/app \
+RUN R CMD INSTALL /opt/app \
     && rm -rf /tmp/downloaded_packages/ /tmp/*.rds
 
 # Define run script as default command
