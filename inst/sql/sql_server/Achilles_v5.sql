@@ -58,8 +58,6 @@ SQL for OMOP CDM v5
 -- The point is to catch any missing tables/columns here before we spend hours
 -- generating results before bombing out
 
-use @cdm_database;
-
 create table #TableCheck
 (
   tablename varchar(50)
@@ -77,7 +75,7 @@ SELECT
 		place_of_service_source_value,
     row_number() over (order by care_site_id) rn
 FROM
-		care_site
+		@cdm_database_schema.care_site
 ) CARE_SITE
 WHERE rn = 1;
 
@@ -92,7 +90,7 @@ SELECT
 		subject_id,
     row_number() over (order by cohort_definition_id) rn
 FROM
-		cohort
+		@cdm_database_schema.cohort
 ) COHORT
 WHERE rn = 1;
 
@@ -108,7 +106,7 @@ SELECT
 		condition_occurrence_count,
     row_number() over (order by person_id) rn
 FROM
-		condition_era
+		@cdm_database_schema.condition_era
 ) CONDITION_ERA
 WHERE rn = 1;
 
@@ -128,7 +126,7 @@ SELECT
 		condition_source_concept_id,
     row_number() over (order by person_id) rn
 FROM
-		condition_occurrence
+		@cdm_database_schema.condition_occurrence
 ) condition_occurrence
 WHERE rn = 1;
 
@@ -144,7 +142,7 @@ SELECT
 		cause_source_concept_id,
     row_number() over (order by person_id) rn
 FROM
-  death
+  @cdm_database_schema.death
 ) death
 WHERE rn = 1;
 
@@ -167,7 +165,7 @@ SELECT
 		payer_plan_period_id,
     row_number() over (order by drug_cost_id) rn
 FROM
-		drug_cost
+		@cdm_database_schema.drug_cost
 ) drug_cost
 WHERE rn = 1;
 
@@ -189,7 +187,7 @@ SELECT
 		device_source_concept_id,
     row_number() over (order by person_id) rn
 FROM
-		device_exposure
+		@cdm_database_schema.device_exposure
 ) device_exposure
 WHERE rn = 1;
 
@@ -206,7 +204,7 @@ SELECT
 		dose_era_end_date,
     row_number() over (order by person_id) rn
 FROM
-		dose_era
+		@cdm_database_schema.dose_era
 ) dose_era
 WHERE rn = 1;
 
@@ -230,7 +228,7 @@ SELECT
 		payer_plan_period_id,
     row_number() over (order by drug_cost_id) rn
 FROM
-		drug_cost
+		@cdm_database_schema.drug_cost
 ) drug_cost
 WHERE rn = 1;
 
@@ -246,7 +244,7 @@ SELECT
 		drug_exposure_count,
     row_number() over (order by person_id) rn
 FROM
-		drug_era
+		@cdm_database_schema.drug_era
 ) drug_era
 WHERE rn = 1;
 
@@ -277,7 +275,7 @@ SELECT
 		dose_unit_source_value,
     row_number() over (order by person_id) rn
 FROM
-		drug_exposure
+		@cdm_database_schema.drug_exposure
 ) drug_exposure
 WHERE rn = 1;
 
@@ -295,7 +293,7 @@ SELECT
 		location_source_value,
     row_number() over (order by location_id) rn
 FROM
-		location
+		@cdm_database_schema.location
 ) location
 WHERE rn = 1;
 
@@ -322,7 +320,7 @@ SELECT
 		qualifier_source_value,
     row_number() over (order by person_id) rn
 FROM
-		observation
+		@cdm_database_schema.observation
 ) location
 WHERE rn = 1;
 
@@ -336,7 +334,7 @@ SELECT
 		observation_period_end_date,
     row_number() over (order by person_id) rn
 FROM
-		observation_period
+		@cdm_database_schema.observation_period
 ) observation_period
 WHERE rn = 1;
 
@@ -354,7 +352,7 @@ SELECT
 		family_source_value,
     row_number() over (order by person_id) rn
 FROM
-		payer_plan_period
+		@cdm_database_schema.payer_plan_period
 ) payer_plan_period
 WHERE rn = 1;
 
@@ -378,7 +376,7 @@ SELECT
 		ethnicity_source_value,
     row_number() over (order by person_id) rn
 FROM
-		person
+		@cdm_database_schema.person
 ) person
 WHERE rn = 1;
 
@@ -401,7 +399,7 @@ SELECT
 		revenue_code_source_value,
     row_number() over (order by procedure_cost_id) rn
 FROM
-		procedure_cost
+		@cdm_database_schema.procedure_cost
 ) procedure_cost
 WHERE rn = 1;
 
@@ -423,7 +421,7 @@ SELECT
 		qualifier_source_value,
     row_number() over (order by person_id) rn
 FROM
-		procedure_occurrence
+		@cdm_database_schema.procedure_occurrence
 ) procedure_occurrence
 WHERE rn = 1;
 
@@ -440,7 +438,7 @@ SELECT
 		specialty_source_value,
     row_number() over (order by provider_id) rn
 FROM
-		provider
+		@cdm_database_schema.provider
 ) provider
 WHERE rn = 1;
 
@@ -459,7 +457,7 @@ SELECT
 		visit_source_concept_id,
     row_number() over (order by person_id) rn
 FROM
-		visit_occurrence
+		@cdm_database_schema.visit_occurrence
 ) visit_occurrence
 WHERE rn = 1;
 
@@ -467,8 +465,6 @@ TRUNCATE TABLE #TableCheck;
 DROP TABLE #TableCheck;
 
 --}
-
-use @results_database;
 
 
 --{@createTable}?{
@@ -1162,11 +1158,11 @@ use @cdm_database;
 -- 0	Number of persons
 insert into @results_database_schema.ACHILLES_results (analysis_id, stratum_1, count_value)
 select 0 as analysis_id,  '@source_name' as stratum_1, COUNT_BIG(distinct person_id) as count_value
-from PERSON;
+from @cdm_database_schema.PERSON;
 
 insert into @results_database_schema.ACHILLES_results_dist (analysis_id, stratum_1, count_value)
 select 0 as analysis_id, '@source_name' as stratum_1, COUNT_BIG(distinct person_id) as count_value
-from PERSON;
+from @cdm_database_schema.PERSON;
 
 --}
 
@@ -1181,7 +1177,7 @@ ACHILLES Analyses on PERSON table
 -- 1	Number of persons
 insert into @results_database_schema.ACHILLES_results (analysis_id, count_value)
 select 1 as analysis_id,  COUNT_BIG(distinct person_id) as count_value
-from PERSON;
+from @cdm_database_schema.PERSON;
 --}
 
 
@@ -1189,7 +1185,7 @@ from PERSON;
 -- 2	Number of persons by gender
 insert into @results_database_schema.ACHILLES_results (analysis_id, stratum_1, count_value)
 select 2 as analysis_id,  gender_concept_id as stratum_1, COUNT_BIG(distinct person_id) as count_value
-from PERSON
+from @cdm_database_schema.PERSON
 group by GENDER_CONCEPT_ID;
 --}
 
@@ -1199,7 +1195,7 @@ group by GENDER_CONCEPT_ID;
 -- 3	Number of persons by year of birth
 insert into @results_database_schema.ACHILLES_results (analysis_id, stratum_1, count_value)
 select 3 as analysis_id,  year_of_birth as stratum_1, COUNT_BIG(distinct person_id) as count_value
-from PERSON
+from @cdm_database_schema.PERSON
 group by YEAR_OF_BIRTH;
 --}
 
@@ -1208,7 +1204,7 @@ group by YEAR_OF_BIRTH;
 -- 4	Number of persons by race
 insert into @results_database_schema.ACHILLES_results (analysis_id, stratum_1, count_value)
 select 4 as analysis_id,  RACE_CONCEPT_ID as stratum_1, COUNT_BIG(distinct person_id) as count_value
-from PERSON
+from @cdm_database_schema.PERSON
 group by RACE_CONCEPT_ID;
 --}
 
@@ -1218,7 +1214,7 @@ group by RACE_CONCEPT_ID;
 -- 5	Number of persons by ethnicity
 insert into @results_database_schema.ACHILLES_results (analysis_id, stratum_1, count_value)
 select 5 as analysis_id,  ETHNICITY_CONCEPT_ID as stratum_1, COUNT_BIG(distinct person_id) as count_value
-from PERSON
+from @cdm_database_schema.PERSON
 group by ETHNICITY_CONCEPT_ID;
 --}
 
@@ -1230,8 +1226,8 @@ group by ETHNICITY_CONCEPT_ID;
 -- 7	Number of persons with invalid provider_id
 insert into @results_database_schema.ACHILLES_results (analysis_id, count_value)
 select 7 as analysis_id,  COUNT_BIG(p1.person_id) as count_value
-from PERSON p1
-	left join provider pr1
+from @cdm_database_schema.PERSON p1
+	left join @cdm_database_schema.provider pr1
 	on p1.provider_id = pr1.provider_id
 where p1.provider_id is not null
 	and pr1.provider_id is null
@@ -1244,8 +1240,8 @@ where p1.provider_id is not null
 -- 8	Number of persons with invalid location_id
 insert into @results_database_schema.ACHILLES_results (analysis_id, count_value)
 select 8 as analysis_id,  COUNT_BIG(p1.person_id) as count_value
-from PERSON p1
-	left join location l1
+from @cdm_database_schema.PERSON p1
+	left join @cdm_database_schema.location l1
 	on p1.location_id = l1.location_id
 where p1.location_id is not null
 	and l1.location_id is null
@@ -1257,8 +1253,8 @@ where p1.location_id is not null
 -- 9	Number of persons with invalid care_site_id
 insert into @results_database_schema.ACHILLES_results (analysis_id, count_value)
 select 9 as analysis_id,  COUNT_BIG(p1.person_id) as count_value
-from PERSON p1
-	left join care_site cs1
+from @cdm_database_schema.PERSON p1
+	left join @cdm_database_schema.care_site cs1
 	on p1.care_site_id = cs1.care_site_id
 where p1.care_site_id is not null
 	and cs1.care_site_id is null
@@ -1281,8 +1277,8 @@ ACHILLES Analyses on OBSERVATION_PERIOD table
 -- 101	Number of persons by age, with age at first observation period
 insert into @results_database_schema.ACHILLES_results (analysis_id, stratum_1, count_value)
 select 101 as analysis_id,   year(op1.index_date) - p1.YEAR_OF_BIRTH as stratum_1, COUNT_BIG(p1.person_id) as count_value
-from PERSON p1
-	inner join (select person_id, MIN(observation_period_start_date) as index_date from OBSERVATION_PERIOD group by PERSON_ID) op1
+from @cdm_database_schema.PERSON p1
+	inner join (select person_id, MIN(observation_period_start_date) as index_date from @cdm_database_schema.OBSERVATION_PERIOD group by PERSON_ID) op1
 	on p1.PERSON_ID = op1.PERSON_ID
 group by year(op1.index_date) - p1.YEAR_OF_BIRTH;
 --}
@@ -1293,8 +1289,8 @@ group by year(op1.index_date) - p1.YEAR_OF_BIRTH;
 -- 102	Number of persons by gender by age, with age at first observation period
 insert into @results_database_schema.ACHILLES_results (analysis_id, stratum_1, stratum_2, count_value)
 select 102 as analysis_id,  p1.gender_concept_id as stratum_1, year(op1.index_date) - p1.YEAR_OF_BIRTH as stratum_2, COUNT_BIG(p1.person_id) as count_value
-from PERSON p1
-	inner join (select person_id, MIN(observation_period_start_date) as index_date from OBSERVATION_PERIOD group by PERSON_ID) op1
+from @cdm_database_schema.PERSON p1
+	inner join (select person_id, MIN(observation_period_start_date) as index_date from @cdm_database_schema.OBSERVATION_PERIOD group by PERSON_ID) op1
 	on p1.PERSON_ID = op1.PERSON_ID
 group by p1.gender_concept_id, year(op1.index_date) - p1.YEAR_OF_BIRTH;
 --}
@@ -1318,10 +1314,10 @@ from
 (
 	select year(op1.index_date) - p1.YEAR_OF_BIRTH as count_value,
 		1.0*(row_number() over (order by year(op1.index_date) - p1.YEAR_OF_BIRTH))/(COUNT_BIG(*) over () + 1) as p1
-	from PERSON p1
+	from @cdm_database_schema.PERSON p1
 		join 
 		(
-			select person_id, MIN(observation_period_start_date) as index_date from OBSERVATION_PERIOD group by PERSON_ID
+			select person_id, MIN(observation_period_start_date) as index_date from @cdm_database_schema.OBSERVATION_PERIOD group by PERSON_ID
 		)  op1 on p1.PERSON_ID = op1.PERSON_ID
 ) t1
 ;
@@ -1351,8 +1347,8 @@ from
 		year(op1.index_date) - p1.YEAR_OF_BIRTH as count_value,
 		1.0*(row_number() over (partition by p1.gender_concept_id order by year(op1.index_date) - p1.YEAR_OF_BIRTH))/(COUNT_BIG(*) over (partition by p1.gender_concept_id)+1) as p1
 	from
-		PERSON p1
-		inner join (select person_id, MIN(observation_period_start_date) as index_date from OBSERVATION_PERIOD group by PERSON_ID) op1 on p1.PERSON_ID = op1.PERSON_ID
+		@cdm_database_schema.PERSON p1
+		inner join (select person_id, MIN(observation_period_start_date) as index_date from @cdm_database_schema.OBSERVATION_PERIOD group by PERSON_ID) op1 on p1.PERSON_ID = op1.PERSON_ID
 ) t1
 group by gender_concept_id
 ;
@@ -1376,13 +1372,13 @@ from
 (
 select DATEDIFF(dd,op1.observation_period_start_date, op1.observation_period_end_date) as count_value,
 	1.0*(row_number() over (order by DATEDIFF(dd,op1.observation_period_start_date, op1.observation_period_end_date)))/(COUNT_BIG(*) over() + 1) as p1
-from PERSON p1
+from @cdm_database_schema.PERSON p1
 	inner join 
 	(select person_id, 
 		OBSERVATION_PERIOD_START_DATE, 
 		OBSERVATION_PERIOD_END_DATE, 
 		ROW_NUMBER() over (PARTITION by person_id order by observation_period_start_date asc) as rn1
-		 from OBSERVATION_PERIOD
+		 from @cdm_database_schema.OBSERVATION_PERIOD
 	) op1 on p1.PERSON_ID = op1.PERSON_ID
 	where op1.rn1 = 1
 ) t1
@@ -1410,13 +1406,13 @@ from
 select p1.gender_concept_id,
 	DATEDIFF(dd,op1.observation_period_start_date, op1.observation_period_end_date) as count_value,
 	1.0*(row_number() over (partition by p1.gender_concept_id order by DATEDIFF(dd,op1.observation_period_start_date, op1.observation_period_end_date)))/(COUNT_BIG(*) over (partition by p1.gender_concept_id) + 1) as p1
-from PERSON p1
+from @cdm_database_schema.PERSON p1
 	inner join 
 	(select person_id, 
 		OBSERVATION_PERIOD_START_DATE, 
 		OBSERVATION_PERIOD_END_DATE, 
 		ROW_NUMBER() over (PARTITION by person_id order by observation_period_start_date asc) as rn1
-		 from OBSERVATION_PERIOD
+		 from @cdm_database_schema.OBSERVATION_PERIOD
 	) op1 on p1.PERSON_ID = op1.PERSON_ID
 	where op1.rn1 = 1
 ) t1
@@ -1446,13 +1442,13 @@ from
 select floor((year(op1.OBSERVATION_PERIOD_START_DATE) - p1.YEAR_OF_BIRTH)/10) as age_decile,
 	DATEDIFF(dd,op1.observation_period_start_date, op1.observation_period_end_date) as count_value,
 	1.0*(row_number() over (partition by floor((year(op1.OBSERVATION_PERIOD_START_DATE) - p1.YEAR_OF_BIRTH)/10) order by DATEDIFF(dd,op1.observation_period_start_date, op1.observation_period_end_date)))/(COUNT_BIG(*) over (partition by floor((year(op1.OBSERVATION_PERIOD_START_DATE) - p1.YEAR_OF_BIRTH)/10))+1) as p1
-from PERSON p1
+from @cdm_database_schema.PERSON p1
 	inner join 
 	(select person_id, 
 		OBSERVATION_PERIOD_START_DATE, 
 		OBSERVATION_PERIOD_END_DATE, 
 		ROW_NUMBER() over (PARTITION by person_id order by observation_period_start_date asc) as rn1
-		 from OBSERVATION_PERIOD
+		 from @cdm_database_schema.OBSERVATION_PERIOD
 	) op1 on p1.PERSON_ID = op1.PERSON_ID
 where op1.rn1 = 1
 ) t1
@@ -1465,13 +1461,13 @@ group by age_decile
 -- 108	Number of persons by length of observation period, in 30d increments
 insert into @results_database_schema.ACHILLES_results (analysis_id, stratum_1, count_value)
 select 108 as analysis_id,  floor(DATEDIFF(dd, op1.observation_period_start_date, op1.observation_period_end_date)/30) as stratum_1, COUNT_BIG(distinct p1.person_id) as count_value
-from PERSON p1
+from @cdm_database_schema.PERSON p1
 	inner join 
 	(select person_id, 
 		OBSERVATION_PERIOD_START_DATE, 
 		OBSERVATION_PERIOD_END_DATE, 
 		ROW_NUMBER() over (PARTITION by person_id order by observation_period_start_date asc) as rn1
-		 from OBSERVATION_PERIOD
+		 from @cdm_database_schema.OBSERVATION_PERIOD
 	) op1
 	on p1.PERSON_ID = op1.PERSON_ID
 	where op1.rn1 = 1
@@ -1495,8 +1491,7 @@ SELECT DISTINCT
   CAST(CAST(YEAR(observation_period_start_date) AS VARCHAR(4)) +  '12' + '31' AS DATE) AS obs_year_end
 INTO
   #temp_dates
-FROM 
-  observation_period
+FROM @cdm_database_schema.observation_period
 ;
 
 INSERT INTO @results_database_schema.ACHILLES_results (analysis_id, stratum_1, count_value)
@@ -1504,8 +1499,7 @@ SELECT
   109 AS analysis_id,  
 	obs_year AS stratum_1, 
 	COUNT_BIG(DISTINCT person_id) AS count_value
-FROM 
-	observation_period,
+FROM @cdm_database_schema.observation_period,
 	#temp_dates
 WHERE  
 		observation_period_start_date <= obs_year_start
@@ -1533,8 +1527,7 @@ SELECT DISTINCT
   DATEADD(dd,-1,DATEADD(mm,1,CAST(CAST(YEAR(observation_period_start_date) AS VARCHAR(4)) +  RIGHT('0' + CAST(MONTH(OBSERVATION_PERIOD_START_DATE) AS VARCHAR(2)), 2) + '01' AS DATE))) AS obs_month_end
 INTO
   #temp_dates
-FROM 
-  observation_period
+FROM @cdm_database_schema.observation_period
 ;
 
 
@@ -1544,7 +1537,7 @@ SELECT
 	obs_month AS stratum_1, 
 	COUNT_BIG(DISTINCT person_id) AS count_value
 FROM
-	observation_period,
+	@cdm_database_schema.observation_period,
 	#temp_Dates
 WHERE 
 		observation_period_start_date <= obs_month_start
@@ -1567,7 +1560,7 @@ select 111 as analysis_id,
 	YEAR(observation_period_start_date)*100 + month(OBSERVATION_PERIOD_START_DATE) as stratum_1, 
 	COUNT_BIG(distinct op1.PERSON_ID) as count_value
 from
-	observation_period op1
+	@cdm_database_schema.observation_period op1
 group by YEAR(observation_period_start_date)*100 + month(OBSERVATION_PERIOD_START_DATE)
 ;
 --}
@@ -1581,7 +1574,7 @@ select 112 as analysis_id,
 	YEAR(observation_period_end_date)*100 + month(observation_period_end_date) as stratum_1, 
 	COUNT_BIG(distinct op1.PERSON_ID) as count_value
 from
-	observation_period op1
+	@cdm_database_schema.observation_period op1
 group by YEAR(observation_period_end_date)*100 + month(observation_period_end_date)
 ;
 --}
@@ -1593,7 +1586,7 @@ insert into @results_database_schema.ACHILLES_results (analysis_id, stratum_1, c
 select 113 as analysis_id,  
 	op1.num_periods as stratum_1, COUNT_BIG(distinct op1.PERSON_ID) as count_value
 from
-	(select person_id, COUNT_BIG(OBSERVATION_period_start_date) as num_periods from observation_period group by PERSON_ID) op1
+	(select person_id, COUNT_BIG(OBSERVATION_period_start_date) as num_periods from @cdm_database_schema.OBSERVATION_PERIOD group by PERSON_ID) op1
 group by op1.num_periods
 ;
 --}
@@ -1604,8 +1597,8 @@ insert into @results_database_schema.ACHILLES_results (analysis_id, count_value)
 select 114 as analysis_id,  
 	COUNT_BIG(distinct p1.PERSON_ID) as count_value
 from
-	PERSON p1
-	inner join (select person_id, MIN(year(OBSERVATION_period_start_date)) as first_obs_year from observation_period group by PERSON_ID) op1
+	@cdm_database_schema.PERSON p1
+	inner join (select person_id, MIN(year(OBSERVATION_period_start_date)) as first_obs_year from @cdm_database_schema.OBSERVATION_PERIOD group by PERSON_ID) op1
 	on p1.person_id = op1.person_id
 where p1.year_of_birth > op1.first_obs_year
 ;
@@ -1617,7 +1610,7 @@ insert into @results_database_schema.ACHILLES_results (analysis_id, count_value)
 select 115 as analysis_id,  
 	COUNT_BIG(op1.PERSON_ID) as count_value
 from
-	observation_period op1
+	@cdm_database_schema.observation_period op1
 where op1.observation_period_end_date < op1.observation_period_start_date
 ;
 --}
@@ -1636,7 +1629,7 @@ select distinct
 INTO
   #temp_dates
 from 
-  OBSERVATION_PERIOD
+  @cdm_database_schema.OBSERVATION_PERIOD
 ;
 
 insert into @results_database_schema.ACHILLES_results (analysis_id, stratum_1, stratum_2, stratum_3, count_value)
@@ -1646,9 +1639,9 @@ select 116 as analysis_id,
 	floor((t1.obs_year - p1.year_of_birth)/10) as stratum_3,
 	COUNT_BIG(distinct p1.PERSON_ID) as count_value
 from
-	PERSON p1
+	@cdm_database_schema.PERSON p1
 	inner join 
-  observation_period op1
+  @cdm_database_schema.observation_period op1
 	on p1.person_id = op1.person_id
 	,
 	#temp_dates t1 
@@ -1676,7 +1669,7 @@ select distinct
 into 
   #temp_dates
 from 
-  OBSERVATION_PERIOD
+  @cdm_database_schema.OBSERVATION_PERIOD
 ;
 
 insert into @results_database_schema.ACHILLES_results (analysis_id, stratum_1, count_value)
@@ -1684,7 +1677,7 @@ select 117 as analysis_id,
 	t1.obs_month as stratum_1,
 	COUNT_BIG(distinct op1.PERSON_ID) as count_value
 from
-	observation_period op1,
+	@cdm_database_schema.observation_period op1,
 	#temp_dates t1 
 where YEAR(observation_period_start_date)*100 + MONTH(observation_period_start_date) <= t1.obs_month
 	and YEAR(observation_period_end_date)*100 + MONTH(observation_period_end_date) >= t1.obs_month
@@ -1702,8 +1695,8 @@ insert into @results_database_schema.ACHILLES_results (analysis_id, count_value)
 select 118 as analysis_id,
   COUNT_BIG(op1.PERSON_ID) as count_value
 from
-  observation_period op1
-  left join PERSON p1
+  @cdm_database_schema.observation_period op1
+  left join @cdm_database_schema.PERSON p1
   on p1.person_id = op1.person_id
 where p1.person_id is null
 ;
@@ -1724,7 +1717,7 @@ select 200 as analysis_id,
 	vo1.visit_concept_id as stratum_1,
 	COUNT_BIG(distinct vo1.PERSON_ID) as count_value
 from
-	visit_occurrence vo1
+	@cdm_database_schema.visit_occurrence vo1
 group by vo1.visit_concept_id
 ;
 --}
@@ -1737,7 +1730,7 @@ select 201 as analysis_id,
 	vo1.visit_concept_id as stratum_1,
 	COUNT_BIG(vo1.PERSON_ID) as count_value
 from
-	visit_occurrence vo1
+	@cdm_database_schema.visit_occurrence vo1
 group by vo1.visit_concept_id
 ;
 --}
@@ -1752,7 +1745,7 @@ select 202 as analysis_id,
 	YEAR(visit_start_date)*100 + month(visit_start_date) as stratum_2, 
 	COUNT_BIG(distinct PERSON_ID) as count_value
 from
-visit_occurrence vo1
+@cdm_database_schema.visit_occurrence vo1
 group by vo1.visit_concept_id, 
 	YEAR(visit_start_date)*100 + month(visit_start_date)
 ;
@@ -1780,7 +1773,7 @@ from
 		1.0*(row_number() over (order by num_visits))/(COUNT_BIG(*) over ()+1) as p1
 	from (
 		select vo1.person_id, COUNT_BIG(distinct vo1.visit_concept_id) as num_visits
-		from visit_occurrence vo1
+		from @cdm_database_schema.visit_occurrence vo1
 		group by vo1.person_id
 	) t0
 ) t1
@@ -1798,9 +1791,9 @@ select 204 as analysis_id,
 	p1.gender_concept_id as stratum_3,
 	floor((year(visit_start_date) - p1.year_of_birth)/10) as stratum_4, 
 	COUNT_BIG(distinct p1.PERSON_ID) as count_value
-from person p1
+from @cdm_database_schema.PERSON p1
 inner join
-visit_occurrence vo1
+@cdm_database_schema.visit_occurrence vo1
 on p1.person_id = vo1.person_id
 group by vo1.visit_concept_id, 
 	YEAR(visit_start_date),
@@ -1835,10 +1828,10 @@ from
 		p1.gender_concept_id,
 		vo1.visit_start_year - p1.year_of_birth as count_value,
 		1.0*(row_number() over (partition by vo1.visit_concept_id, p1.gender_concept_id order by vo1.visit_start_year - p1.year_of_birth))/(COUNT_BIG(*) over (partition by vo1.visit_concept_id, p1.gender_concept_id)+1) as p1
-	from person p1
+	from @cdm_database_schema.PERSON p1
 		inner join (
 			select person_id, visit_concept_id, min(year(visit_start_date)) as visit_start_year
-			from visit_occurrence
+			from @cdm_database_schema.visit_occurrence
 			group by person_id, visit_concept_id
 		) vo1 on p1.person_id = vo1.person_id
 ) t1
@@ -1853,8 +1846,8 @@ insert into @results_database_schema.ACHILLES_results (analysis_id, count_value)
 select 207 as analysis_id,  
 	COUNT_BIG(vo1.PERSON_ID) as count_value
 from
-	visit_occurrence vo1
-	left join PERSON p1
+	@cdm_database_schema.visit_occurrence vo1
+	left join @cdm_database_schema.PERSON p1
 	on p1.person_id = vo1.person_id
 where p1.person_id is null
 ;
@@ -1867,8 +1860,8 @@ insert into @results_database_schema.ACHILLES_results (analysis_id, count_value)
 select 208 as analysis_id,  
 	COUNT_BIG(vo1.PERSON_ID) as count_value
 from
-	visit_occurrence vo1
-	left join observation_period op1
+	@cdm_database_schema.visit_occurrence vo1
+	left join @cdm_database_schema.observation_period op1
 	on op1.person_id = vo1.person_id
 	and vo1.visit_start_date >= op1.observation_period_start_date
 	and vo1.visit_start_date <= op1.observation_period_end_date
@@ -1882,7 +1875,7 @@ insert into @results_database_schema.ACHILLES_results (analysis_id, count_value)
 select 209 as analysis_id,  
 	COUNT_BIG(vo1.PERSON_ID) as count_value
 from
-	visit_occurrence vo1
+	@cdm_database_schema.visit_occurrence vo1
 where visit_end_date < visit_start_date
 ;
 --}
@@ -1893,8 +1886,8 @@ insert into @results_database_schema.ACHILLES_results (analysis_id, count_value)
 select 210 as analysis_id,  
 	COUNT_BIG(vo1.PERSON_ID) as count_value
 from
-	visit_occurrence vo1
-	left join care_site cs1
+	@cdm_database_schema.visit_occurrence vo1
+	left join @cdm_database_schema.care_site cs1
 	on vo1.care_site_id = cs1.care_site_id
 where vo1.care_site_id is not null
 	and cs1.care_site_id is null
@@ -1923,10 +1916,10 @@ from
        from 
        (
               select vo1.visit_concept_id, datediff(dd,visit_start_date,visit_end_date) as count_value, pc.total
-              from visit_occurrence vo1
+              from @cdm_database_schema.visit_occurrence vo1
               JOIN 
               (
-                     select visit_concept_id, COUNT_BIG(*) as total from visit_occurrence group by visit_concept_id
+                     select visit_concept_id, COUNT_BIG(*) as total from @cdm_database_schema.visit_occurrence group by visit_concept_id
               ) pc on pc.visit_concept_id = vo1.visit_concept_id
        ) Q
 ) t1
@@ -1941,7 +1934,7 @@ select 220 as analysis_id,
 	YEAR(visit_start_date)*100 + month(visit_start_date) as stratum_1, 
 	COUNT_BIG(PERSON_ID) as count_value
 from
-visit_occurrence vo1
+@cdm_database_schema.visit_occurrence vo1
 group by YEAR(visit_start_date)*100 + month(visit_start_date)
 ;
 --}
@@ -1957,7 +1950,7 @@ ACHILLES Analyses on PROVIDER table
 -- 300	Number of providers
 insert into @results_database_schema.ACHILLES_results (analysis_id, count_value)
 select 300 as analysis_id,  COUNT_BIG(distinct provider_id) as count_value
-from provider;
+from @cdm_database_schema.provider;
 --}
 
 
@@ -1965,7 +1958,7 @@ from provider;
 -- 301	Number of providers by specialty concept_id
 insert into @results_database_schema.ACHILLES_results (analysis_id, stratum_1, count_value)
 select 301 as analysis_id,  specialty_concept_id as stratum_1, COUNT_BIG(distinct provider_id) as count_value
-from provider
+from @cdm_database_schema.provider
 group by specialty_CONCEPT_ID;
 --}
 
@@ -1973,8 +1966,8 @@ group by specialty_CONCEPT_ID;
 -- 302	Number of providers with invalid care site id
 insert into @results_database_schema.ACHILLES_results (analysis_id, count_value)
 select 302 as analysis_id,  COUNT_BIG(provider_id) as count_value
-from provider p1
-	left join care_site cs1
+from @cdm_database_schema.provider p1
+	left join @cdm_database_schema.care_site cs1
 	on p1.care_site_id = cs1.care_site_id
 where p1.care_site_id is not null
 	and cs1.care_site_id is null
@@ -1997,7 +1990,7 @@ select 400 as analysis_id,
 	co1.condition_CONCEPT_ID as stratum_1,
 	COUNT_BIG(distinct co1.PERSON_ID) as count_value
 from
-	condition_occurrence co1
+	@cdm_database_schema.condition_occurrence co1
 group by co1.condition_CONCEPT_ID
 ;
 --}
@@ -2010,7 +2003,7 @@ select 401 as analysis_id,
 	co1.condition_CONCEPT_ID as stratum_1,
 	COUNT_BIG(co1.PERSON_ID) as count_value
 from
-	condition_occurrence co1
+	@cdm_database_schema.condition_occurrence co1
 group by co1.condition_CONCEPT_ID
 ;
 --}
@@ -2025,7 +2018,7 @@ select 402 as analysis_id,
 	YEAR(condition_start_date)*100 + month(condition_start_date) as stratum_2, 
 	COUNT_BIG(distinct PERSON_ID) as count_value
 from
-condition_occurrence co1
+@cdm_database_schema.condition_occurrence co1
 group by co1.condition_concept_id, 
 	YEAR(condition_start_date)*100 + month(condition_start_date)
 ;
@@ -2055,7 +2048,7 @@ from
 	(
 	select co1.person_id, COUNT_BIG(distinct co1.condition_concept_id) as num_conditions
 	from
-	condition_occurrence co1
+	@cdm_database_schema.condition_occurrence co1
 	group by co1.person_id
 	) t0
 ) t1
@@ -2073,9 +2066,9 @@ select 404 as analysis_id,
 	p1.gender_concept_id as stratum_3,
 	floor((year(condition_start_date) - p1.year_of_birth)/10) as stratum_4, 
 	COUNT_BIG(distinct p1.PERSON_ID) as count_value
-from person p1
+from @cdm_database_schema.PERSON p1
 inner join
-condition_occurrence co1
+@cdm_database_schema.condition_occurrence co1
 on p1.person_id = co1.person_id
 group by co1.condition_concept_id, 
 	YEAR(condition_start_date),
@@ -2092,7 +2085,7 @@ select 405 as analysis_id,
 	co1.condition_type_concept_id as stratum_2,
 	COUNT_BIG(co1.PERSON_ID) as count_value
 from
-	condition_occurrence co1
+	@cdm_database_schema.condition_occurrence co1
 group by co1.condition_CONCEPT_ID,	
 	co1.condition_type_concept_id
 ;
@@ -2122,10 +2115,10 @@ from
 		p1.gender_concept_id,
 		co1.condition_start_year - p1.year_of_birth as count_value,
 		1.0*(row_number() over (partition by co1.condition_concept_id, p1.gender_concept_id order by co1.condition_start_year - p1.year_of_birth))/(COUNT_BIG(*) over (partition by co1.condition_concept_id, p1.gender_concept_id)+1) as p1
-	from person p1
+	from @cdm_database_schema.PERSON p1
 	inner join (
 		select person_id, condition_concept_id, min(year(condition_start_date)) as condition_start_year
-		from condition_occurrence
+		from @cdm_database_schema.condition_occurrence
 		group by person_id, condition_concept_id
 	) co1 on p1.person_id = co1.person_id
 ) t1
@@ -2140,8 +2133,8 @@ insert into @results_database_schema.ACHILLES_results (analysis_id, count_value)
 select 409 as analysis_id,  
 	COUNT_BIG(co1.PERSON_ID) as count_value
 from
-	condition_occurrence co1
-	left join PERSON p1
+	@cdm_database_schema.condition_occurrence co1
+	left join @cdm_database_schema.PERSON p1
 	on p1.person_id = co1.person_id
 where p1.person_id is null
 ;
@@ -2154,8 +2147,8 @@ insert into @results_database_schema.ACHILLES_results (analysis_id, count_value)
 select 410 as analysis_id,  
 	COUNT_BIG(co1.PERSON_ID) as count_value
 from
-	condition_occurrence co1
-	left join observation_period op1
+	@cdm_database_schema.condition_occurrence co1
+	left join @cdm_database_schema.observation_period op1
 	on op1.person_id = co1.person_id
 	and co1.condition_start_date >= op1.observation_period_start_date
 	and co1.condition_start_date <= op1.observation_period_end_date
@@ -2170,7 +2163,7 @@ insert into @results_database_schema.ACHILLES_results (analysis_id, count_value)
 select 411 as analysis_id,  
 	COUNT_BIG(co1.PERSON_ID) as count_value
 from
-	condition_occurrence co1
+	@cdm_database_schema.condition_occurrence co1
 where co1.condition_end_date < co1.condition_start_date
 ;
 --}
@@ -2182,8 +2175,8 @@ insert into @results_database_schema.ACHILLES_results (analysis_id, count_value)
 select 412 as analysis_id,  
 	COUNT_BIG(co1.PERSON_ID) as count_value
 from
-	condition_occurrence co1
-	left join provider p1
+	@cdm_database_schema.condition_occurrence co1
+	left join @cdm_database_schema.provider p1
 	on p1.provider_id = co1.provider_id
 where co1.provider_id is not null
 	and p1.provider_id is null
@@ -2196,8 +2189,8 @@ insert into @results_database_schema.ACHILLES_results (analysis_id, count_value)
 select 413 as analysis_id,  
 	COUNT_BIG(co1.PERSON_ID) as count_value
 from
-	condition_occurrence co1
-	left join visit_occurrence vo1
+	@cdm_database_schema.condition_occurrence co1
+	left join @cdm_database_schema.visit_occurrence vo1
 	on co1.visit_occurrence_id = vo1.visit_occurrence_id
 where co1.visit_occurrence_id is not null
 	and vo1.visit_occurrence_id is null
@@ -2211,7 +2204,7 @@ select 420 as analysis_id,
 	YEAR(condition_start_date)*100 + month(condition_start_date) as stratum_1, 
 	COUNT_BIG(PERSON_ID) as count_value
 from
-condition_occurrence co1
+@cdm_database_schema.condition_occurrence co1
 group by YEAR(condition_start_date)*100 + month(condition_start_date)
 ;
 --}
@@ -2233,7 +2226,7 @@ select 500 as analysis_id,
 	d1.cause_concept_id as stratum_1,
 	COUNT_BIG(distinct d1.PERSON_ID) as count_value
 from
-	death d1
+	@cdm_database_schema.death d1
 group by d1.cause_concept_id
 ;
 --}
@@ -2246,7 +2239,7 @@ select 501 as analysis_id,
 	d1.cause_concept_id as stratum_1,
 	COUNT_BIG(d1.PERSON_ID) as count_value
 from
-	death d1
+	@cdm_database_schema.death d1
 group by d1.cause_concept_id
 ;
 --}
@@ -2260,7 +2253,7 @@ select 502 as analysis_id,
 	YEAR(death_date)*100 + month(death_date) as stratum_1, 
 	COUNT_BIG(distinct PERSON_ID) as count_value
 from
-death d1
+@cdm_database_schema.death d1
 group by YEAR(death_date)*100 + month(death_date)
 ;
 --}
@@ -2275,9 +2268,9 @@ select 504 as analysis_id,
 	p1.gender_concept_id as stratum_2,
 	floor((year(death_date) - p1.year_of_birth)/10) as stratum_3, 
 	COUNT_BIG(distinct p1.PERSON_ID) as count_value
-from person p1
+from @cdm_database_schema.PERSON p1
 inner join
-death d1
+@cdm_database_schema.death d1
 on p1.person_id = d1.person_id
 group by YEAR(death_date),
 	p1.gender_concept_id,
@@ -2292,7 +2285,7 @@ select 505 as analysis_id,
 	death_type_concept_id as stratum_1,
 	COUNT_BIG(PERSON_ID) as count_value
 from
-	death d1
+	@cdm_database_schema.death d1
 group by death_type_concept_id
 ;
 --}
@@ -2319,10 +2312,10 @@ from
 select p1.gender_concept_id,
 	d1.death_year - p1.year_of_birth as count_value,
 	1.0*(row_number() over (partition by p1.gender_concept_id order by d1.death_year - p1.year_of_birth))/(COUNT_BIG(*) over (partition by p1.gender_concept_id)+1) as p1
-from person p1
+from @cdm_database_schema.PERSON p1
 inner join
 (select person_id, min(year(death_date)) as death_year
-from death
+from @cdm_database_schema.death
 group by person_id
 ) d1
 on p1.person_id = d1.person_id
@@ -2339,8 +2332,8 @@ insert into @results_database_schema.ACHILLES_results (analysis_id, count_value)
 select 509 as analysis_id, 
 	COUNT_BIG(d1.PERSON_ID) as count_value
 from
-	death d1
-		left join person p1
+	@cdm_database_schema.death d1
+		left join @cdm_database_schema.person p1
 		on d1.person_id = p1.person_id
 where p1.person_id is null
 ;
@@ -2354,8 +2347,8 @@ insert into @results_database_schema.ACHILLES_results (analysis_id, count_value)
 select 510 as analysis_id, 
 	COUNT_BIG(d1.PERSON_ID) as count_value
 from
-	death d1
-		left join observation_period op1
+	@cdm_database_schema.death d1
+		left join @cdm_database_schema.observation_period op1
 		on d1.person_id = op1.person_id
 		and d1.death_date >= op1.observation_period_start_date
 		and d1.death_date <= op1.observation_period_end_date
@@ -2382,11 +2375,11 @@ from
 (
 select datediff(dd,d1.death_date, t0.max_date) as count_value,
 	1.0*(row_number() over (order by datediff(dd,d1.death_date, t0.max_date)))/(COUNT_BIG(*) over () + 1) as p1
-from death d1
+from @cdm_database_schema.death d1
 	inner join
 	(
 		select person_id, max(condition_start_date) as max_date
-		from condition_occurrence
+		from @cdm_database_schema.condition_occurrence
 		group by person_id
 	) t0 on d1.person_id = t0.person_id
 ) t1
@@ -2412,11 +2405,11 @@ from
 (
 select datediff(dd,d1.death_date, t0.max_date) as count_value,
 	1.0*(row_number() over (order by datediff(dd,d1.death_date, t0.max_date)))/(COUNT_BIG(*) over ()+1) as p1
-from death d1
+from @cdm_database_schema.death d1
 	inner join
 	(
 		select person_id, max(drug_exposure_start_date) as max_date
-		from drug_exposure
+		from @cdm_database_schema.drug_exposure
 		group by person_id
 	) t0
 	on d1.person_id = t0.person_id
@@ -2443,11 +2436,11 @@ from
 (
 select datediff(dd,d1.death_date, t0.max_date) as count_value,
 	1.0*(row_number() over (order by datediff(dd,d1.death_date, t0.max_date)))/(COUNT_BIG(*) over ()+1) as p1
-from death d1
+from @cdm_database_schema.death d1
 	inner join
 	(
 		select person_id, max(visit_start_date) as max_date
-		from visit_occurrence
+		from @cdm_database_schema.visit_occurrence
 		group by person_id
 	) t0
 	on d1.person_id = t0.person_id
@@ -2474,11 +2467,11 @@ from
 (
 select datediff(dd,d1.death_date, t0.max_date) as count_value,
 	1.0*(row_number() over (order by datediff(dd,d1.death_date, t0.max_date)))/(COUNT_BIG(*) over ()+1) as p1
-from death d1
+from @cdm_database_schema.death d1
 	inner join
 	(
 		select person_id, max(procedure_date) as max_date
-		from procedure_occurrence
+		from @cdm_database_schema.procedure_occurrence
 		group by person_id
 	) t0
 	on d1.person_id = t0.person_id
@@ -2505,11 +2498,11 @@ from
 (
 select datediff(dd,d1.death_date, t0.max_date) as count_value,
 	1.0*(row_number() over (order by datediff(dd,d1.death_date, t0.max_date)))/(COUNT_BIG(*) over ()+1) as p1
-from death d1
+from @cdm_database_schema.death d1
 	inner join
 	(
 		select person_id, max(observation_date) as max_date
-		from observation
+		from @cdm_database_schema.observation
 		group by person_id
 	) t0
 	on d1.person_id = t0.person_id
@@ -2534,7 +2527,7 @@ select 600 as analysis_id,
 	po1.procedure_CONCEPT_ID as stratum_1,
 	COUNT_BIG(distinct po1.PERSON_ID) as count_value
 from
-	procedure_occurrence po1
+	@cdm_database_schema.procedure_occurrence po1
 group by po1.procedure_CONCEPT_ID
 ;
 --}
@@ -2547,7 +2540,7 @@ select 601 as analysis_id,
 	po1.procedure_CONCEPT_ID as stratum_1,
 	COUNT_BIG(po1.PERSON_ID) as count_value
 from
-	procedure_occurrence po1
+	@cdm_database_schema.procedure_occurrence po1
 group by po1.procedure_CONCEPT_ID
 ;
 --}
@@ -2562,7 +2555,7 @@ select 602 as analysis_id,
 	YEAR(procedure_date)*100 + month(procedure_date) as stratum_2, 
 	COUNT_BIG(distinct PERSON_ID) as count_value
 from
-procedure_occurrence po1
+@cdm_database_schema.procedure_occurrence po1
 group by po1.procedure_concept_id, 
 	YEAR(procedure_date)*100 + month(procedure_date)
 ;
@@ -2592,7 +2585,7 @@ from
 	(
 	select po1.person_id, COUNT_BIG(distinct po1.procedure_concept_id) as num_procedures
 	from
-	procedure_occurrence po1
+	@cdm_database_schema.procedure_occurrence po1
 	group by po1.person_id
 	) t0
 ) t1
@@ -2610,9 +2603,9 @@ select 604 as analysis_id,
 	p1.gender_concept_id as stratum_3,
 	floor((year(procedure_date) - p1.year_of_birth)/10) as stratum_4, 
 	COUNT_BIG(distinct p1.PERSON_ID) as count_value
-from person p1
+from @cdm_database_schema.PERSON p1
 inner join
-procedure_occurrence po1
+@cdm_database_schema.procedure_occurrence po1
 on p1.person_id = po1.person_id
 group by po1.procedure_concept_id, 
 	YEAR(procedure_date),
@@ -2629,7 +2622,7 @@ select 605 as analysis_id,
 	po1.procedure_type_concept_id as stratum_2,
 	COUNT_BIG(po1.PERSON_ID) as count_value
 from
-	procedure_occurrence po1
+	@cdm_database_schema.procedure_occurrence po1
 group by po1.procedure_CONCEPT_ID,	
 	po1.procedure_type_concept_id
 ;
@@ -2659,10 +2652,10 @@ select po1.procedure_concept_id,
 	p1.gender_concept_id,
 	po1.procedure_start_year - p1.year_of_birth as count_value,
 	1.0*(row_number() over (partition by po1.procedure_concept_id, p1.gender_concept_id order by po1.procedure_start_year - p1.year_of_birth))/(COUNT_BIG(*) over (partition by po1.procedure_concept_id, p1.gender_concept_id)+1) as p1
-from person p1
+from @cdm_database_schema.PERSON p1
 inner join
 (select person_id, procedure_concept_id, min(year(procedure_date)) as procedure_start_year
-from procedure_occurrence
+from @cdm_database_schema.procedure_occurrence
 group by person_id, procedure_concept_id
 ) po1
 on p1.person_id = po1.person_id
@@ -2683,8 +2676,8 @@ insert into @results_database_schema.ACHILLES_results (analysis_id, count_value)
 select 609 as analysis_id,  
 	COUNT_BIG(po1.PERSON_ID) as count_value
 from
-	procedure_occurrence po1
-	left join PERSON p1
+	@cdm_database_schema.procedure_occurrence po1
+	left join @cdm_database_schema.PERSON p1
 	on p1.person_id = po1.person_id
 where p1.person_id is null
 ;
@@ -2697,8 +2690,8 @@ insert into @results_database_schema.ACHILLES_results (analysis_id, count_value)
 select 610 as analysis_id,  
 	COUNT_BIG(po1.PERSON_ID) as count_value
 from
-	procedure_occurrence po1
-	left join observation_period op1
+	@cdm_database_schema.procedure_occurrence po1
+	left join @cdm_database_schema.observation_period op1
 	on op1.person_id = po1.person_id
 	and po1.procedure_date >= op1.observation_period_start_date
 	and po1.procedure_date <= op1.observation_period_end_date
@@ -2714,8 +2707,8 @@ insert into @results_database_schema.ACHILLES_results (analysis_id, count_value)
 select 612 as analysis_id,  
 	COUNT_BIG(po1.PERSON_ID) as count_value
 from
-	procedure_occurrence po1
-	left join provider p1
+	@cdm_database_schema.procedure_occurrence po1
+	left join @cdm_database_schema.provider p1
 	on p1.provider_id = po1.provider_id
 where po1.provider_id is not null
 	and p1.provider_id is null
@@ -2728,8 +2721,8 @@ insert into @results_database_schema.ACHILLES_results (analysis_id, count_value)
 select 613 as analysis_id,  
 	COUNT_BIG(po1.PERSON_ID) as count_value
 from
-	procedure_occurrence po1
-	left join visit_occurrence vo1
+	@cdm_database_schema.procedure_occurrence po1
+	left join @cdm_database_schema.visit_occurrence vo1
 	on po1.visit_occurrence_id = vo1.visit_occurrence_id
 where po1.visit_occurrence_id is not null
 	and vo1.visit_occurrence_id is null
@@ -2744,7 +2737,7 @@ select 620 as analysis_id,
 	YEAR(procedure_date)*100 + month(procedure_date) as stratum_1, 
 	COUNT_BIG(PERSON_ID) as count_value
 from
-procedure_occurrence po1
+@cdm_database_schema.procedure_occurrence po1
 group by YEAR(procedure_date)*100 + month(procedure_date)
 ;
 --}
@@ -2766,7 +2759,7 @@ select 700 as analysis_id,
 	de1.drug_CONCEPT_ID as stratum_1,
 	COUNT_BIG(distinct de1.PERSON_ID) as count_value
 from
-	drug_exposure de1
+	@cdm_database_schema.drug_exposure de1
 group by de1.drug_CONCEPT_ID
 ;
 --}
@@ -2779,7 +2772,7 @@ select 701 as analysis_id,
 	de1.drug_CONCEPT_ID as stratum_1,
 	COUNT_BIG(de1.PERSON_ID) as count_value
 from
-	drug_exposure de1
+	@cdm_database_schema.drug_exposure de1
 group by de1.drug_CONCEPT_ID
 ;
 --}
@@ -2794,7 +2787,7 @@ select 702 as analysis_id,
 	YEAR(drug_exposure_start_date)*100 + month(drug_exposure_start_date) as stratum_2, 
 	COUNT_BIG(distinct PERSON_ID) as count_value
 from
-drug_exposure de1
+@cdm_database_schema.drug_exposure de1
 group by de1.drug_concept_id, 
 	YEAR(drug_exposure_start_date)*100 + month(drug_exposure_start_date)
 ;
@@ -2824,7 +2817,7 @@ from
 	(
 	select de1.person_id, COUNT_BIG(distinct de1.drug_concept_id) as num_drugs
 	from
-	drug_exposure de1
+	@cdm_database_schema.drug_exposure de1
 	group by de1.person_id
 	) t0
 ) t1
@@ -2842,9 +2835,9 @@ select 704 as analysis_id,
 	p1.gender_concept_id as stratum_3,
 	floor((year(drug_exposure_start_date) - p1.year_of_birth)/10) as stratum_4, 
 	COUNT_BIG(distinct p1.PERSON_ID) as count_value
-from person p1
+from @cdm_database_schema.PERSON p1
 inner join
-drug_exposure de1
+@cdm_database_schema.drug_exposure de1
 on p1.person_id = de1.person_id
 group by de1.drug_concept_id, 
 	YEAR(drug_exposure_start_date),
@@ -2861,7 +2854,7 @@ select 705 as analysis_id,
 	de1.drug_type_concept_id as stratum_2,
 	COUNT_BIG(de1.PERSON_ID) as count_value
 from
-	drug_exposure de1
+	@cdm_database_schema.drug_exposure de1
 group by de1.drug_CONCEPT_ID,	
 	de1.drug_type_concept_id
 ;
@@ -2891,10 +2884,10 @@ select de1.drug_concept_id,
 	p1.gender_concept_id,
 	de1.drug_start_year - p1.year_of_birth as count_value,
 	1.0*(row_number() over (partition by de1.drug_concept_id, p1.gender_concept_id order by de1.drug_start_year - p1.year_of_birth))/(COUNT_BIG(*) over (partition by de1.drug_concept_id, p1.gender_concept_id)+1) as p1
-from person p1
+from @cdm_database_schema.PERSON p1
 inner join
 (select person_id, drug_concept_id, min(year(drug_exposure_start_date)) as drug_start_year
-from drug_exposure
+from @cdm_database_schema.drug_exposure
 group by person_id, drug_concept_id
 ) de1
 on p1.person_id = de1.person_id
@@ -2912,8 +2905,8 @@ insert into @results_database_schema.ACHILLES_results (analysis_id, count_value)
 select 709 as analysis_id,  
 	COUNT_BIG(de1.PERSON_ID) as count_value
 from
-	drug_exposure de1
-	left join PERSON p1
+	@cdm_database_schema.drug_exposure de1
+	left join @cdm_database_schema.PERSON p1
 	on p1.person_id = de1.person_id
 where p1.person_id is null
 ;
@@ -2926,8 +2919,8 @@ insert into @results_database_schema.ACHILLES_results (analysis_id, count_value)
 select 710 as analysis_id,  
 	COUNT_BIG(de1.PERSON_ID) as count_value
 from
-	drug_exposure de1
-	left join observation_period op1
+	@cdm_database_schema.drug_exposure de1
+	left join @cdm_database_schema.observation_period op1
 	on op1.person_id = de1.person_id
 	and de1.drug_exposure_start_date >= op1.observation_period_start_date
 	and de1.drug_exposure_start_date <= op1.observation_period_end_date
@@ -2942,7 +2935,7 @@ insert into @results_database_schema.ACHILLES_results (analysis_id, count_value)
 select 711 as analysis_id,  
 	COUNT_BIG(de1.PERSON_ID) as count_value
 from
-	drug_exposure de1
+	@cdm_database_schema.drug_exposure de1
 where de1.drug_exposure_end_date < de1.drug_exposure_start_date
 ;
 --}
@@ -2954,8 +2947,8 @@ insert into @results_database_schema.ACHILLES_results (analysis_id, count_value)
 select 712 as analysis_id,  
 	COUNT_BIG(de1.PERSON_ID) as count_value
 from
-	drug_exposure de1
-	left join provider p1
+	@cdm_database_schema.drug_exposure de1
+	left join @cdm_database_schema.provider p1
 	on p1.provider_id = de1.provider_id
 where de1.provider_id is not null
 	and p1.provider_id is null
@@ -2968,8 +2961,8 @@ insert into @results_database_schema.ACHILLES_results (analysis_id, count_value)
 select 713 as analysis_id,  
 	COUNT_BIG(de1.PERSON_ID) as count_value
 from
-	drug_exposure de1
-	left join visit_occurrence vo1
+	@cdm_database_schema.drug_exposure de1
+	left join @cdm_database_schema.visit_occurrence vo1
 	on de1.visit_occurrence_id = vo1.visit_occurrence_id
 where de1.visit_occurrence_id is not null
 	and vo1.visit_occurrence_id is null
@@ -2998,7 +2991,7 @@ from
 select drug_concept_id,
 	days_supply as count_value,
 	1.0*(row_number() over (partition by drug_concept_id order by days_supply))/(COUNT_BIG(*) over (partition by drug_concept_id)+1) as p1
-from (select * from drug_exposure where days_supply is not null) de1
+from (select * from @cdm_database_schema.drug_exposure where days_supply is not null) de1
 
 ) t1
 group by drug_concept_id
@@ -3027,7 +3020,7 @@ from
 select drug_concept_id,
 	refills as count_value,
 	1.0*(row_number() over (partition by drug_concept_id order by refills))/(COUNT_BIG(*) over (partition by drug_concept_id)+1) as p1
-from (select * from drug_exposure where refills is not null) de1
+from (select * from @cdm_database_schema.drug_exposure where refills is not null) de1
 ) t1
 group by drug_concept_id
 ;
@@ -3057,7 +3050,7 @@ from
 select drug_concept_id,
 	quantity as count_value,
 	1.0*(row_number() over (partition by drug_concept_id order by quantity))/(COUNT_BIG(*) over (partition by drug_concept_id)+1) as p1
-from (select * from drug_exposure where quantity is not null) de1
+from (select * from @cdm_database_schema.drug_exposure where quantity is not null) de1
 ) t1
 group by drug_concept_id
 ;
@@ -3071,7 +3064,7 @@ select 720 as analysis_id,
 	YEAR(drug_exposure_start_date)*100 + month(drug_exposure_start_date) as stratum_1, 
 	COUNT_BIG(PERSON_ID) as count_value
 from
-drug_exposure de1
+@cdm_database_schema.drug_exposure de1
 group by YEAR(drug_exposure_start_date)*100 + month(drug_exposure_start_date)
 ;
 --}
@@ -3091,7 +3084,7 @@ select 800 as analysis_id,
 	o1.observation_CONCEPT_ID as stratum_1,
 	COUNT_BIG(distinct o1.PERSON_ID) as count_value
 from
-	observation o1
+	@cdm_database_schema.observation o1
 group by o1.observation_CONCEPT_ID
 ;
 --}
@@ -3104,7 +3097,7 @@ select 801 as analysis_id,
 	o1.observation_CONCEPT_ID as stratum_1,
 	COUNT_BIG(o1.PERSON_ID) as count_value
 from
-	observation o1
+	@cdm_database_schema.observation o1
 group by o1.observation_CONCEPT_ID
 ;
 --}
@@ -3119,7 +3112,7 @@ select 802 as analysis_id,
 	YEAR(observation_date)*100 + month(observation_date) as stratum_2, 
 	COUNT_BIG(distinct PERSON_ID) as count_value
 from
-observation o1
+@cdm_database_schema.observation o1
 group by o1.observation_concept_id, 
 	YEAR(observation_date)*100 + month(observation_date)
 ;
@@ -3149,7 +3142,7 @@ from
 	(
 	select o1.person_id, COUNT_BIG(distinct o1.observation_concept_id) as num_observations
 	from
-	observation o1
+	@cdm_database_schema.observation o1
 	group by o1.person_id
 	) t0
 ) t1
@@ -3167,9 +3160,9 @@ select 804 as analysis_id,
 	p1.gender_concept_id as stratum_3,
 	floor((year(observation_date) - p1.year_of_birth)/10) as stratum_4, 
 	COUNT_BIG(distinct p1.PERSON_ID) as count_value
-from person p1
+from @cdm_database_schema.PERSON p1
 inner join
-observation o1
+@cdm_database_schema.observation o1
 on p1.person_id = o1.person_id
 group by o1.observation_concept_id, 
 	YEAR(observation_date),
@@ -3186,7 +3179,7 @@ select 805 as analysis_id,
 	o1.observation_type_concept_id as stratum_2,
 	COUNT_BIG(o1.PERSON_ID) as count_value
 from
-	observation o1
+	@cdm_database_schema.observation o1
 group by o1.observation_CONCEPT_ID,	
 	o1.observation_type_concept_id
 ;
@@ -3216,10 +3209,10 @@ select o1.observation_concept_id,
 	p1.gender_concept_id,
 	o1.observation_start_year - p1.year_of_birth as count_value,
 	1.0*(row_number() over (partition by o1.observation_concept_id, p1.gender_concept_id order by o1.observation_start_year - p1.year_of_birth))/(COUNT_BIG(*) over (partition by o1.observation_concept_id, p1.gender_concept_id)+1) as p1
-from person p1
+from @cdm_database_schema.PERSON p1
 inner join
 (select person_id, observation_concept_id, min(year(observation_date)) as observation_start_year
-from observation
+from @cdm_database_schema.observation
 group by person_id, observation_concept_id
 ) o1
 on p1.person_id = o1.person_id
@@ -3236,7 +3229,7 @@ select 807 as analysis_id,
 	o1.unit_concept_id as stratum_2,
 	COUNT_BIG(o1.PERSON_ID) as count_value
 from
-	observation o1
+	@cdm_database_schema.observation o1
 group by o1.observation_CONCEPT_ID,
 	o1.unit_concept_id
 ;
@@ -3252,8 +3245,8 @@ insert into @results_database_schema.ACHILLES_results (analysis_id, count_value)
 select 809 as analysis_id,  
 	COUNT_BIG(o1.PERSON_ID) as count_value
 from
-	observation o1
-	left join PERSON p1
+	@cdm_database_schema.observation o1
+	left join @cdm_database_schema.PERSON p1
 	on p1.person_id = o1.person_id
 where p1.person_id is null
 ;
@@ -3266,8 +3259,8 @@ insert into @results_database_schema.ACHILLES_results (analysis_id, count_value)
 select 810 as analysis_id,  
 	COUNT_BIG(o1.PERSON_ID) as count_value
 from
-	observation o1
-	left join observation_period op1
+	@cdm_database_schema.observation o1
+	left join @cdm_database_schema.observation_period op1
 	on op1.person_id = o1.person_id
 	and o1.observation_date >= op1.observation_period_start_date
 	and o1.observation_date <= op1.observation_period_end_date
@@ -3283,8 +3276,8 @@ insert into @results_database_schema.ACHILLES_results (analysis_id, count_value)
 select 812 as analysis_id,  
 	COUNT_BIG(o1.PERSON_ID) as count_value
 from
-	observation o1
-	left join provider p1
+	@cdm_database_schema.observation o1
+	left join @cdm_database_schema.provider p1
 	on p1.provider_id = o1.provider_id
 where o1.provider_id is not null
 	and p1.provider_id is null
@@ -3297,8 +3290,8 @@ insert into @results_database_schema.ACHILLES_results (analysis_id, count_value)
 select 813 as analysis_id,  
 	COUNT_BIG(o1.PERSON_ID) as count_value
 from
-	observation o1
-	left join visit_occurrence vo1
+	@cdm_database_schema.observation o1
+	left join @cdm_database_schema.visit_occurrence vo1
 	on o1.visit_occurrence_id = vo1.visit_occurrence_id
 where o1.visit_occurrence_id is not null
 	and vo1.visit_occurrence_id is null
@@ -3312,7 +3305,7 @@ insert into @results_database_schema.ACHILLES_results (analysis_id, count_value)
 select 814 as analysis_id,  
 	COUNT_BIG(o1.PERSON_ID) as count_value
 from
-	observation o1
+	@cdm_database_schema.observation o1
 where o1.value_as_number is null
 	and o1.value_as_string is null
 	and o1.value_as_concept_id is null
@@ -3341,7 +3334,7 @@ from
 select observation_concept_id, unit_concept_id,
 	value_as_number as count_value,
 	1.0*(row_number() over (partition by observation_concept_id, unit_concept_id order by value_as_number))/(COUNT_BIG(*) over (partition by observation_concept_id, unit_concept_id)+1) as p1
-from observation o1
+from @cdm_database_schema.observation o1
 where o1.unit_concept_id is not null
 	and o1.value_as_number is not null
 ) t1
@@ -3383,7 +3376,7 @@ select 820 as analysis_id,
 	YEAR(observation_date)*100 + month(observation_date) as stratum_1, 
 	COUNT_BIG(PERSON_ID) as count_value
 from
-observation o1
+@cdm_database_schema.observation o1
 group by YEAR(observation_date)*100 + month(observation_date)
 ;
 --}
@@ -3405,7 +3398,7 @@ select 900 as analysis_id,
 	de1.drug_CONCEPT_ID as stratum_1,
 	COUNT_BIG(distinct de1.PERSON_ID) as count_value
 from
-	drug_era de1
+	@cdm_database_schema.drug_era de1
 group by de1.drug_CONCEPT_ID
 ;
 --}
@@ -3418,7 +3411,7 @@ select 901 as analysis_id,
 	de1.drug_CONCEPT_ID as stratum_1,
 	COUNT_BIG(de1.PERSON_ID) as count_value
 from
-	drug_era de1
+	@cdm_database_schema.drug_era de1
 group by de1.drug_CONCEPT_ID
 ;
 --}
@@ -3433,7 +3426,7 @@ select 902 as analysis_id,
 	YEAR(drug_era_start_date)*100 + month(drug_era_start_date) as stratum_2, 
 	COUNT_BIG(distinct PERSON_ID) as count_value
 from
-drug_era de1
+@cdm_database_schema.drug_era de1
 group by de1.drug_concept_id, 
 	YEAR(drug_era_start_date)*100 + month(drug_era_start_date)
 ;
@@ -3463,7 +3456,7 @@ from
 	(
 	select de1.person_id, COUNT_BIG(distinct de1.drug_concept_id) as num_drugs
 	from
-	drug_era de1
+	@cdm_database_schema.drug_era de1
 	group by de1.person_id
 	) t0
 ) t1
@@ -3481,9 +3474,9 @@ select 904 as analysis_id,
 	p1.gender_concept_id as stratum_3,
 	floor((year(drug_era_start_date) - p1.year_of_birth)/10) as stratum_4, 
 	COUNT_BIG(distinct p1.PERSON_ID) as count_value
-from person p1
+from @cdm_database_schema.PERSON p1
 inner join
-drug_era de1
+@cdm_database_schema.drug_era de1
 on p1.person_id = de1.person_id
 group by de1.drug_concept_id, 
 	YEAR(drug_era_start_date),
@@ -3517,10 +3510,10 @@ select de1.drug_concept_id,
 	p1.gender_concept_id,
 	de1.drug_start_year - p1.year_of_birth as count_value,
 	1.0*(row_number() over (partition by de1.drug_concept_id, p1.gender_concept_id order by de1.drug_start_year - p1.year_of_birth))/(COUNT_BIG(*) over (partition by de1.drug_concept_id, p1.gender_concept_id)+1) as p1
-from person p1
+from @cdm_database_schema.PERSON p1
 inner join
 (select person_id, drug_concept_id, min(year(drug_era_start_date)) as drug_start_year
-from drug_era
+from @cdm_database_schema.drug_era
 group by person_id, drug_concept_id
 ) de1
 on p1.person_id = de1.person_id
@@ -3553,7 +3546,7 @@ from
 select drug_concept_id,
 	datediff(dd,drug_era_start_date, drug_era_end_date) as count_value,
 	1.0*(row_number() over (partition by drug_concept_id order by datediff(dd,drug_era_start_date, drug_era_end_date)))/(COUNT_BIG(*) over (partition by drug_concept_id)+1) as p1
-from  drug_era de1
+from  @cdm_database_schema.drug_era de1
 
 ) t1
 group by drug_concept_id
@@ -3568,8 +3561,8 @@ insert into @results_database_schema.ACHILLES_results (analysis_id, count_value)
 select 908 as analysis_id,  
 	COUNT_BIG(de1.PERSON_ID) as count_value
 from
-	drug_era de1
-	left join PERSON p1
+	@cdm_database_schema.drug_era de1
+	left join @cdm_database_schema.PERSON p1
 	on p1.person_id = de1.person_id
 where p1.person_id is null
 ;
@@ -3582,8 +3575,8 @@ insert into @results_database_schema.ACHILLES_results (analysis_id, count_value)
 select 909 as analysis_id,  
 	COUNT_BIG(de1.PERSON_ID) as count_value
 from
-	drug_era de1
-	left join observation_period op1
+	@cdm_database_schema.drug_era de1
+	left join @cdm_database_schema.observation_period op1
 	on op1.person_id = de1.person_id
 	and de1.drug_era_start_date >= op1.observation_period_start_date
 	and de1.drug_era_start_date <= op1.observation_period_end_date
@@ -3598,7 +3591,7 @@ insert into @results_database_schema.ACHILLES_results (analysis_id, count_value)
 select 910 as analysis_id,  
 	COUNT_BIG(de1.PERSON_ID) as count_value
 from
-	drug_era de1
+	@cdm_database_schema.drug_era de1
 where de1.drug_era_end_date < de1.drug_era_start_date
 ;
 --}
@@ -3612,7 +3605,7 @@ select 920 as analysis_id,
 	YEAR(drug_era_start_date)*100 + month(drug_era_start_date) as stratum_1, 
 	COUNT_BIG(PERSON_ID) as count_value
 from
-drug_era de1
+@cdm_database_schema.drug_era de1
 group by YEAR(drug_era_start_date)*100 + month(drug_era_start_date)
 ;
 --}
@@ -3635,7 +3628,7 @@ select 1000 as analysis_id,
 	ce1.condition_CONCEPT_ID as stratum_1,
 	COUNT_BIG(distinct ce1.PERSON_ID) as count_value
 from
-	condition_era ce1
+	@cdm_database_schema.condition_era ce1
 group by ce1.condition_CONCEPT_ID
 ;
 --}
@@ -3648,7 +3641,7 @@ select 1001 as analysis_id,
 	ce1.condition_CONCEPT_ID as stratum_1,
 	COUNT_BIG(ce1.PERSON_ID) as count_value
 from
-	condition_era ce1
+	@cdm_database_schema.condition_era ce1
 group by ce1.condition_CONCEPT_ID
 ;
 --}
@@ -3663,7 +3656,7 @@ select 1002 as analysis_id,
 	YEAR(condition_era_start_date)*100 + month(condition_era_start_date) as stratum_2, 
 	COUNT_BIG(distinct PERSON_ID) as count_value
 from
-condition_era ce1
+@cdm_database_schema.condition_era ce1
 group by ce1.condition_concept_id, 
 	YEAR(condition_era_start_date)*100 + month(condition_era_start_date)
 ;
@@ -3693,7 +3686,7 @@ from
 	(
 	select ce1.person_id, COUNT_BIG(distinct ce1.condition_concept_id) as num_conditions
 	from
-	condition_era ce1
+	@cdm_database_schema.condition_era ce1
 	group by ce1.person_id
 	) t0
 ) t1
@@ -3711,9 +3704,9 @@ select 1004 as analysis_id,
 	p1.gender_concept_id as stratum_3,
 	floor((year(condition_era_start_date) - p1.year_of_birth)/10) as stratum_4, 
 	COUNT_BIG(distinct p1.PERSON_ID) as count_value
-from person p1
+from @cdm_database_schema.PERSON p1
 inner join
-condition_era ce1
+@cdm_database_schema.condition_era ce1
 on p1.person_id = ce1.person_id
 group by ce1.condition_concept_id, 
 	YEAR(condition_era_start_date),
@@ -3747,10 +3740,10 @@ select ce1.condition_concept_id,
 	p1.gender_concept_id,
 	ce1.condition_start_year - p1.year_of_birth as count_value,
 	1.0*(row_number() over (partition by ce1.condition_concept_id, p1.gender_concept_id order by ce1.condition_start_year - p1.year_of_birth))/(COUNT_BIG(*) over (partition by ce1.condition_concept_id, p1.gender_concept_id)+1) as p1
-from person p1
+from @cdm_database_schema.PERSON p1
 inner join
 (select person_id, condition_concept_id, min(year(condition_era_start_date)) as condition_start_year
-from condition_era
+from @cdm_database_schema.condition_era
 group by person_id, condition_concept_id
 ) ce1
 on p1.person_id = ce1.person_id
@@ -3783,7 +3776,7 @@ from
 select condition_concept_id,
 	datediff(dd,condition_era_start_date, condition_era_end_date) as count_value,
 	1.0*(row_number() over (partition by condition_concept_id order by datediff(dd,condition_era_start_date, condition_era_end_date)))/(COUNT_BIG(*) over (partition by condition_concept_id)+1) as p1
-from  condition_era ce1
+from  @cdm_database_schema.condition_era ce1
 
 ) t1
 group by condition_concept_id
@@ -3798,8 +3791,8 @@ insert into @results_database_schema.ACHILLES_results (analysis_id, count_value)
 select 1008 as analysis_id,  
 	COUNT_BIG(ce1.PERSON_ID) as count_value
 from
-	condition_era ce1
-	left join PERSON p1
+	@cdm_database_schema.condition_era ce1
+	left join @cdm_database_schema.PERSON p1
 	on p1.person_id = ce1.person_id
 where p1.person_id is null
 ;
@@ -3812,8 +3805,8 @@ insert into @results_database_schema.ACHILLES_results (analysis_id, count_value)
 select 1009 as analysis_id,  
 	COUNT_BIG(ce1.PERSON_ID) as count_value
 from
-	condition_era ce1
-	left join observation_period op1
+	@cdm_database_schema.condition_era ce1
+	left join @cdm_database_schema.observation_period op1
 	on op1.person_id = ce1.person_id
 	and ce1.condition_era_start_date >= op1.observation_period_start_date
 	and ce1.condition_era_start_date <= op1.observation_period_end_date
@@ -3828,7 +3821,7 @@ insert into @results_database_schema.ACHILLES_results (analysis_id, count_value)
 select 1010 as analysis_id,  
 	COUNT_BIG(ce1.PERSON_ID) as count_value
 from
-	condition_era ce1
+	@cdm_database_schema.condition_era ce1
 where ce1.condition_era_end_date < ce1.condition_era_start_date
 ;
 --}
@@ -3841,7 +3834,7 @@ select 1020 as analysis_id,
 	YEAR(condition_era_start_date)*100 + month(condition_era_start_date) as stratum_1, 
 	COUNT_BIG(PERSON_ID) as count_value
 from
-condition_era ce1
+@cdm_database_schema.condition_era ce1
 group by YEAR(condition_era_start_date)*100 + month(condition_era_start_date)
 ;
 --}
@@ -3860,8 +3853,8 @@ ACHILLES Analyses on LOCATION table
 insert into @results_database_schema.ACHILLES_results (analysis_id, stratum_1, count_value)
 select 1100 as analysis_id,  
 	left(l1.zip,3) as stratum_1, COUNT_BIG(distinct person_id) as count_value
-from PERSON p1
-	inner join LOCATION l1
+from @cdm_database_schema.PERSON p1
+	inner join @cdm_database_schema.LOCATION l1
 	on p1.location_id = l1.location_id
 where p1.location_id is not null
 	and l1.zip is not null
@@ -3874,8 +3867,8 @@ group by left(l1.zip,3);
 insert into @results_database_schema.ACHILLES_results (analysis_id, stratum_1, count_value)
 select 1101 as analysis_id,  
 	l1.state as stratum_1, COUNT_BIG(distinct person_id) as count_value
-from PERSON p1
-	inner join LOCATION l1
+from @cdm_database_schema.PERSON p1
+	inner join @cdm_database_schema.LOCATION l1
 	on p1.location_id = l1.location_id
 where p1.location_id is not null
 	and l1.state is not null
@@ -3888,8 +3881,8 @@ group by l1.state;
 insert into @results_database_schema.ACHILLES_results (analysis_id, stratum_1, count_value)
 select 1102 as analysis_id,  
 	left(l1.zip,3) as stratum_1, COUNT_BIG(distinct care_site_id) as count_value
-from care_site cs1
-	inner join LOCATION l1
+from @cdm_database_schema.care_site cs1
+	inner join @cdm_database_schema.LOCATION l1
 	on cs1.location_id = l1.location_id
 where cs1.location_id is not null
 	and l1.zip is not null
@@ -3902,7 +3895,7 @@ group by left(l1.zip,3);
 insert into @results_database_schema.ACHILLES_results (analysis_id, stratum_1, count_value)
 select 1103 as analysis_id,  
 	l1.state as stratum_1, COUNT_BIG(distinct care_site_id) as count_value
-from care_site cs1
+from @cdm_database_schema.care_site cs1
 	inner join LOCATION l1
 	on cs1.location_id = l1.location_id
 where cs1.location_id is not null
@@ -3923,8 +3916,8 @@ ACHILLES Analyses on CARE_SITE table
 insert into @results_database_schema.ACHILLES_results (analysis_id, stratum_1, count_value)
 select 1200 as analysis_id,  
 	cs1.place_of_service_concept_id as stratum_1, COUNT_BIG(person_id) as count_value
-from PERSON p1
-	inner join care_site cs1
+from @cdm_database_schema.PERSON p1
+	inner join @cdm_database_schema.care_site cs1
 	on p1.care_site_id = cs1.care_site_id
 where p1.care_site_id is not null
 	and cs1.place_of_service_concept_id is not null
@@ -3937,8 +3930,8 @@ group by cs1.place_of_service_concept_id;
 insert into @results_database_schema.ACHILLES_results (analysis_id, stratum_1, count_value)
 select 1201 as analysis_id,  
 	cs1.place_of_service_concept_id as stratum_1, COUNT_BIG(visit_occurrence_id) as count_value
-from visit_occurrence vo1
-	inner join care_site cs1
+from @cdm_database_schema.visit_occurrence vo1
+	inner join @cdm_database_schema.care_site cs1
 	on vo1.care_site_id = cs1.care_site_id
 where vo1.care_site_id is not null
 	and cs1.place_of_service_concept_id is not null
@@ -3952,7 +3945,7 @@ insert into @results_database_schema.ACHILLES_results (analysis_id, stratum_1, c
 select 1202 as analysis_id,  
 	cs1.place_of_service_concept_id as stratum_1, 
 	COUNT_BIG(care_site_id) as count_value
-from care_site cs1
+from @cdm_database_schema.care_site cs1
 where cs1.place_of_service_concept_id is not null
 group by cs1.place_of_service_concept_id;
 --}
@@ -4002,13 +3995,13 @@ from
 select p1.gender_concept_id,
 	DATEDIFF(dd,ppp1.payer_plan_period_start_date, ppp1.payer_plan_period_end_date) as count_value,
 	1.0*(row_number() over (partition by p1.gender_concept_id order by DATEDIFF(dd,ppp1.payer_plan_period_start_date, ppp1.payer_plan_period_end_date)))/(COUNT_BIG(*) over (partition by p1.gender_concept_id)+1) as p1
-from PERSON p1
+from @cdm_database_schema.PERSON p1
 	inner join 
 	(select person_id, 
 		payer_plan_period_START_DATE, 
 		payer_plan_period_END_DATE, 
 		ROW_NUMBER() over (PARTITION by person_id order by payer_plan_period_start_date asc) as rn1
-		 from payer_plan_period
+		 from @cdm_database_schema.payer_plan_period
 	) ppp1
 	on p1.PERSON_ID = ppp1.PERSON_ID
 	where ppp1.rn1 = 1
@@ -4039,13 +4032,13 @@ from
 select floor((year(ppp1.payer_plan_period_START_DATE) - p1.YEAR_OF_BIRTH)/140) as age_decile,
 	DATEDIFF(dd,ppp1.payer_plan_period_start_date, ppp1.payer_plan_period_end_date) as count_value,
 	1.0*(row_number() over (partition by floor((year(ppp1.payer_plan_period_START_DATE) - p1.YEAR_OF_BIRTH)/140) order by DATEDIFF(dd,ppp1.payer_plan_period_start_date, ppp1.payer_plan_period_end_date)))/(COUNT_BIG(*) over (partition by floor((year(ppp1.payer_plan_period_START_DATE) - p1.YEAR_OF_BIRTH)/140))+1) as p1
-from PERSON p1
+from @cdm_database_schema.PERSON p1
 	inner join 
 	(select person_id, 
 		payer_plan_period_START_DATE, 
 		payer_plan_period_END_DATE, 
 		ROW_NUMBER() over (PARTITION by person_id order by payer_plan_period_start_date asc) as rn1
-		 from payer_plan_period
+		 from @cdm_database_schema.payer_plan_period
 	) ppp1
 	on p1.PERSON_ID = ppp1.PERSON_ID
 	where ppp1.rn1 = 1
@@ -4065,13 +4058,13 @@ insert into @results_database_schema.ACHILLES_results (analysis_id, stratum_1, c
 select 1408 as analysis_id,  
 	floor(DATEDIFF(dd, ppp1.payer_plan_period_start_date, ppp1.payer_plan_period_end_date)/30) as stratum_1, 
 	COUNT_BIG(distinct p1.person_id) as count_value
-from PERSON p1
+from @cdm_database_schema.PERSON p1
 	inner join 
 	(select person_id, 
 		payer_plan_period_START_DATE, 
 		payer_plan_period_END_DATE, 
 		ROW_NUMBER() over (PARTITION by person_id order by payer_plan_period_start_date asc) as rn1
-		 from payer_plan_period
+		 from @cdm_database_schema.payer_plan_period
 	) ppp1
 	on p1.PERSON_ID = ppp1.PERSON_ID
 	where ppp1.rn1 = 1
@@ -4092,16 +4085,16 @@ select distinct
 INTO
   #temp_dates
 from 
-  payer_plan_period
+  @cdm_database_schema.payer_plan_period
 ;
 
 insert into @results_database_schema.ACHILLES_results (analysis_id, stratum_1, count_value)
 select 1409 as analysis_id,  
 	t1.obs_year as stratum_1, COUNT_BIG(distinct p1.PERSON_ID) as count_value
 from
-	PERSON p1
+	@cdm_database_schema.PERSON p1
 	inner join 
-    payer_plan_period ppp1
+    @cdm_database_schema.payer_plan_period ppp1
 	on p1.person_id = ppp1.person_id
 	,
 	#temp_dates t1 
@@ -4129,7 +4122,7 @@ SELECT DISTINCT
 INTO
   #temp_dates
 FROM 
-  payer_plan_period
+  @cdm_database_schema.payer_plan_period
 ;
 
 insert into @results_database_schema.ACHILLES_results (analysis_id, stratum_1, count_value)
@@ -4138,9 +4131,9 @@ select
 	obs_month as stratum_1, 
 	COUNT_BIG(distinct p1.PERSON_ID) as count_value
 from
-	PERSON p1
+	@cdm_database_schema.PERSON p1
 	inner join 
-  payer_plan_period ppp1
+  @cdm_database_schema.payer_plan_period ppp1
 	on p1.person_id = ppp1.person_id
 	,
 	#temp_dates
@@ -4162,8 +4155,8 @@ select 1411 as analysis_id,
 	cast(cast(YEAR(payer_plan_period_start_date) as varchar(4)) +  RIGHT('0' + CAST(month(payer_plan_period_START_DATE) AS VARCHAR(2)), 2) + '01' as date) as stratum_1,
 	 COUNT_BIG(distinct p1.PERSON_ID) as count_value
 from
-	PERSON p1
-	inner join payer_plan_period ppp1
+	@cdm_database_schema.PERSON p1
+	inner join @cdm_database_schema.payer_plan_period ppp1
 	on p1.person_id = ppp1.person_id
 group by cast(cast(YEAR(payer_plan_period_start_date) as varchar(4)) +  RIGHT('0' + CAST(month(payer_plan_period_START_DATE) AS VARCHAR(2)), 2) + '01' as date)
 ;
@@ -4178,8 +4171,8 @@ select 1412 as analysis_id,
 	cast(cast(YEAR(payer_plan_period_end_date) as varchar(4)) +  RIGHT('0' + CAST(month(payer_plan_period_end_DATE) AS VARCHAR(2)), 2) + '01' as date) as stratum_1, 
 	COUNT_BIG(distinct p1.PERSON_ID) as count_value
 from
-	PERSON p1
-	inner join payer_plan_period ppp1
+	@cdm_database_schema.PERSON p1
+	inner join @cdm_database_schema.payer_plan_period ppp1
 	on p1.person_id = ppp1.person_id
 group by cast(cast(YEAR(payer_plan_period_end_date) as varchar(4)) +  RIGHT('0' + CAST(month(payer_plan_period_end_DATE) AS VARCHAR(2)), 2) + '01' as date)
 ;
@@ -4193,8 +4186,8 @@ select 1413 as analysis_id,
 	ppp1.num_periods as stratum_1, 
 	COUNT_BIG(distinct p1.PERSON_ID) as count_value
 from
-	PERSON p1
-	inner join (select person_id, COUNT_BIG(payer_plan_period_start_date) as num_periods from payer_plan_period group by PERSON_ID) ppp1
+	@cdm_database_schema.PERSON p1
+	inner join (select person_id, COUNT_BIG(payer_plan_period_start_date) as num_periods from @cdm_database_schema.payer_plan_period group by PERSON_ID) ppp1
 	on p1.person_id = ppp1.person_id
 group by ppp1.num_periods
 ;
@@ -4206,8 +4199,8 @@ insert into @results_database_schema.ACHILLES_results (analysis_id, count_value)
 select 1414 as analysis_id,  
 	COUNT_BIG(distinct p1.PERSON_ID) as count_value
 from
-	PERSON p1
-	inner join (select person_id, MIN(year(payer_plan_period_start_date)) as first_obs_year from payer_plan_period group by PERSON_ID) ppp1
+	@cdm_database_schema.PERSON p1
+	inner join (select person_id, MIN(year(payer_plan_period_start_date)) as first_obs_year from @cdm_database_schema.payer_plan_period group by PERSON_ID) ppp1
 	on p1.person_id = ppp1.person_id
 where p1.year_of_birth > ppp1.first_obs_year
 ;
@@ -4219,7 +4212,7 @@ insert into @results_database_schema.ACHILLES_results (analysis_id, count_value)
 select 1415 as analysis_id,  
 	COUNT_BIG(ppp1.PERSON_ID) as count_value
 from
-	payer_plan_period ppp1
+	@cdm_database_schema.payer_plan_period ppp1
 where ppp1.payer_plan_period_end_date < ppp1.payer_plan_period_start_date
 ;
 --}
@@ -4241,8 +4234,8 @@ insert into @results_database_schema.ACHILLES_results (analysis_id, count_value)
 select 1500 as analysis_id,  
 	COUNT_BIG(dc1.drug_cost_ID) as count_value
 from
-	drug_cost dc1
-		left join drug_exposure de1
+	@cdm_database_schema.drug_cost dc1
+		left join @cdm_database_schema.drug_exposure de1
 		on dc1.drug_exposure_id = de1.drug_exposure_id
 where de1.drug_exposure_id is null
 ;
@@ -4254,8 +4247,8 @@ insert into @results_database_schema.ACHILLES_results (analysis_id, count_value)
 select 1501 as analysis_id,  
 	COUNT_BIG(dc1.drug_cost_ID) as count_value
 from
-	drug_cost dc1
-		left join payer_plan_period ppp1
+	@cdm_database_schema.drug_cost dc1
+		left join @cdm_database_schema.payer_plan_period ppp1
 		on dc1.payer_plan_period_id = ppp1.payer_plan_period_id
 where dc1.payer_plan_period_id is not null
 	and ppp1.payer_plan_period_id is null
@@ -4283,9 +4276,9 @@ from
 select drug_concept_id,
 	paid_copay as count_value,
 	1.0*(row_number() over (partition by drug_concept_id order by paid_copay))/(COUNT_BIG(*) over (partition by drug_concept_id)+1) as p1
-from drug_exposure de1
+from @cdm_database_schema.drug_exposure de1
 	inner join
-	drug_cost dc1
+	@cdm_database_schema.drug_cost dc1
 	on de1.drug_exposure_id = dc1.drug_exposure_id
 where paid_copay is not null
 ) t1
@@ -4314,9 +4307,9 @@ from
 select drug_concept_id,
 	paid_coinsurance as count_value,
 	1.0*(row_number() over (partition by drug_concept_id order by paid_coinsurance))/(COUNT_BIG(*) over (partition by drug_concept_id)+1) as p1
-from drug_exposure de1
+from @cdm_database_schema.drug_exposure de1
 	inner join
-	drug_cost dc1
+	@cdm_database_schema.drug_cost dc1
 	on de1.drug_exposure_id = dc1.drug_exposure_id
 where paid_coinsurance is not null
 ) t1
@@ -4344,9 +4337,9 @@ from
 select drug_concept_id,
 	paid_toward_deductible as count_value,
 	1.0*(row_number() over (partition by drug_concept_id order by paid_toward_deductible))/(COUNT_BIG(*) over (partition by drug_concept_id)+1) as p1
-from drug_exposure de1
+from @cdm_database_schema.drug_exposure de1
 	inner join
-	drug_cost dc1
+	@cdm_database_schema.drug_cost dc1
 	on de1.drug_exposure_id = dc1.drug_exposure_id
 where paid_toward_deductible is not null
 ) t1
@@ -4374,9 +4367,9 @@ from
 select drug_concept_id,
 	paid_by_payer as count_value,
 	1.0*(row_number() over (partition by drug_concept_id order by paid_by_payer))/(COUNT_BIG(*) over (partition by drug_concept_id)+1) as p1
-from drug_exposure de1
+from @cdm_database_schema.drug_exposure de1
 	inner join
-	drug_cost dc1
+	@cdm_database_schema.drug_cost dc1
 	on de1.drug_exposure_id = dc1.drug_exposure_id
 where paid_by_payer is not null
 ) t1
@@ -4404,9 +4397,9 @@ from
 select drug_concept_id,
 	paid_by_coordination_benefits as count_value,
 	1.0*(row_number() over (partition by drug_concept_id order by paid_by_coordination_benefits))/(COUNT_BIG(*) over (partition by drug_concept_id)+1) as p1
-from drug_exposure de1
+from @cdm_database_schema.drug_exposure de1
 	inner join
-	drug_cost dc1
+	@cdm_database_schema.drug_cost dc1
 	on de1.drug_exposure_id = dc1.drug_exposure_id
 where paid_by_coordination_benefits is not null
 ) t1
@@ -4434,9 +4427,9 @@ from
 select drug_concept_id,
 	total_out_of_pocket as count_value,
 	1.0*(row_number() over (partition by drug_concept_id order by total_out_of_pocket))/(COUNT_BIG(*) over (partition by drug_concept_id)+1) as p1
-from drug_exposure de1
+from @cdm_database_schema.drug_exposure de1
 	inner join
-	drug_cost dc1
+	@cdm_database_schema.drug_cost dc1
 	on de1.drug_exposure_id = dc1.drug_exposure_id
 where total_out_of_pocket is not null
 ) t1
@@ -4467,7 +4460,7 @@ select drug_concept_id,
 	1.0*(row_number() over (partition by drug_concept_id order by total_paid))/(COUNT_BIG(*) over (partition by drug_concept_id)+1) as p1
 from drug_exposure de1
 	inner join
-	drug_cost dc1
+	@cdm_database_schema.drug_cost dc1
 	on de1.drug_exposure_id = dc1.drug_exposure_id
 where total_paid is not null
 ) t1
@@ -4498,7 +4491,7 @@ select drug_concept_id,
 	1.0*(row_number() over (partition by drug_concept_id order by ingredient_cost))/(COUNT_BIG(*) over (partition by drug_concept_id)+1) as p1
 from drug_exposure de1
 	inner join
-	drug_cost dc1
+	@cdm_database_schema.drug_cost dc1
 	on de1.drug_exposure_id = dc1.drug_exposure_id
 where ingredient_cost is not null
 ) t1
@@ -4526,9 +4519,9 @@ from
 select drug_concept_id,
 	dispensing_fee as count_value,
 	1.0*(row_number() over (partition by drug_concept_id order by dispensing_fee))/(COUNT_BIG(*) over (partition by drug_concept_id)+1) as p1
-from drug_exposure de1
+from @cdm_database_schema.drug_exposure de1
 	inner join
-	drug_cost dc1
+	@cdm_database_schema.drug_cost dc1
 	on de1.drug_exposure_id = dc1.drug_exposure_id
 where dispensing_fee is not null
 ) t1
@@ -4556,9 +4549,9 @@ from
 select drug_concept_id,
 	average_wholesale_price as count_value,
 	1.0*(row_number() over (partition by drug_concept_id order by average_wholesale_price))/(COUNT_BIG(*) over (partition by drug_concept_id)+1) as p1
-from drug_exposure de1
+from @cdm_database_schema.drug_exposure de1
 	inner join
-	drug_cost dc1
+	@cdm_database_schema.drug_cost dc1
 	on de1.drug_exposure_id = dc1.drug_exposure_id
 where average_wholesale_price is not null
 ) t1
@@ -4579,8 +4572,8 @@ insert into @results_database_schema.ACHILLES_results (analysis_id, count_value)
 select 1600 as analysis_id,  
 	COUNT_BIG(pc1.procedure_cost_ID) as count_value
 from
-	procedure_cost pc1
-		left join procedure_occurrence po1
+	@cdm_database_schema.procedure_cost pc1
+		left join @cdm_database_schema.procedure_occurrence po1
 		on pc1.procedure_occurrence_id = po1.procedure_occurrence_id
 where po1.procedure_occurrence_id is null
 ;
@@ -4592,8 +4585,8 @@ insert into @results_database_schema.ACHILLES_results (analysis_id, count_value)
 select 1601 as analysis_id,  
 	COUNT_BIG(pc1.procedure_cost_ID) as count_value
 from
-	procedure_cost pc1
-		left join payer_plan_period ppp1
+	@cdm_database_schema.procedure_cost pc1
+		left join @cdm_database_schema.payer_plan_period ppp1
 		on pc1.payer_plan_period_id = ppp1.payer_plan_period_id
 where pc1.payer_plan_period_id is not null
 	and ppp1.payer_plan_period_id is null
@@ -4621,9 +4614,9 @@ from
 select procedure_concept_id,
 	paid_copay as count_value,
 	1.0*(row_number() over (partition by procedure_concept_id order by paid_copay))/(COUNT_BIG(*) over (partition by procedure_concept_id)+1) as p1
-from procedure_occurrence po1
+from @cdm_database_schema.procedure_occurrence po1
 	inner join
-	procedure_cost pc1
+	@cdm_database_schema.procedure_cost pc1
 	on po1.procedure_occurrence_id = pc1.procedure_occurrence_id
 where paid_copay is not null
 ) t1
@@ -4652,9 +4645,9 @@ from
 select procedure_concept_id,
 	paid_coinsurance as count_value,
 	1.0*(row_number() over (partition by procedure_concept_id order by paid_coinsurance))/(COUNT_BIG(*) over (partition by procedure_concept_id)+1) as p1
-from procedure_occurrence po1
+from @cdm_database_schema.procedure_occurrence po1
 	inner join
-	procedure_cost pc1
+	@cdm_database_schema.procedure_cost pc1
 	on po1.procedure_occurrence_id = pc1.procedure_occurrence_id
 where paid_coinsurance is not null
 ) t1
@@ -4682,9 +4675,9 @@ from
 select procedure_concept_id,
 	paid_toward_deductible as count_value,
 	1.0*(row_number() over (partition by procedure_concept_id order by paid_toward_deductible))/(COUNT_BIG(*) over (partition by procedure_concept_id)+1) as p1
-from procedure_occurrence po1
+from @cdm_database_schema.procedure_occurrence po1
 	inner join
-	procedure_cost pc1
+	@cdm_database_schema.procedure_cost pc1
 	on po1.procedure_occurrence_id = pc1.procedure_occurrence_id
 where paid_toward_deductible is not null
 ) t1
@@ -4712,9 +4705,9 @@ from
 select procedure_concept_id,
 	paid_by_payer as count_value,
 	1.0*(row_number() over (partition by procedure_concept_id order by paid_by_payer))/(COUNT_BIG(*) over (partition by procedure_concept_id)+1) as p1
-from procedure_occurrence po1
+from @cdm_database_schema.procedure_occurrence po1
 	inner join
-	procedure_cost pc1
+	@cdm_database_schema.procedure_cost pc1
 	on po1.procedure_occurrence_id = pc1.procedure_occurrence_id
 where paid_by_payer is not null
 ) t1
@@ -4742,9 +4735,9 @@ from
 select procedure_concept_id,
 	paid_by_coordination_benefits as count_value,
 	1.0*(row_number() over (partition by procedure_concept_id order by paid_by_coordination_benefits))/(COUNT_BIG(*) over (partition by procedure_concept_id)+1) as p1
-from procedure_occurrence po1
+from @cdm_database_schema.procedure_occurrence po1
 	inner join
-	procedure_cost pc1
+	@cdm_database_schema.procedure_cost pc1
 	on po1.procedure_occurrence_id = pc1.procedure_occurrence_id
 where paid_by_coordination_benefits is not null
 ) t1
@@ -4772,9 +4765,9 @@ from
 select procedure_concept_id,
 	total_out_of_pocket as count_value,
 	1.0*(row_number() over (partition by procedure_concept_id order by total_out_of_pocket))/(COUNT_BIG(*) over (partition by procedure_concept_id)+1) as p1
-from procedure_occurrence po1
+from @cdm_database_schema.procedure_occurrence po1
 	inner join
-	procedure_cost pc1
+	@cdm_database_schema.procedure_cost pc1
 	on po1.procedure_occurrence_id = pc1.procedure_occurrence_id
 where total_out_of_pocket is not null
 ) t1
@@ -4803,9 +4796,9 @@ from
 select procedure_concept_id,
 	total_paid as count_value,
 	1.0*(row_number() over (partition by procedure_concept_id order by total_paid))/(COUNT_BIG(*) over (partition by procedure_concept_id)+1) as p1
-from procedure_occurrence po1
+from @cdm_database_schema.procedure_occurrence po1
 	inner join
-	procedure_cost pc1
+	@cdm_database_schema.procedure_cost pc1
 	on po1.procedure_occurrence_id = pc1.procedure_occurrence_id
 where total_paid is not null
 ) t1
@@ -4829,7 +4822,7 @@ select 1610 as analysis_id,
 	revenue_code_concept_id as stratum_1, 
 	COUNT_BIG(pc1.procedure_cost_ID) as count_value
 from
-	procedure_cost pc1
+	@cdm_database_schema.procedure_cost pc1
 where revenue_code_concept_id is not null
 group by revenue_code_concept_id
 ;
@@ -4850,7 +4843,7 @@ select 1700 as analysis_id,
 	cohort_definition_id as stratum_1, 
 	COUNT_BIG(subject_ID) as count_value
 from
-	cohort c1
+	@cdm_database_schema.cohort c1
 group by cohort_definition_id
 ;
 --}
@@ -4862,7 +4855,7 @@ insert into @results_database_schema.ACHILLES_results (analysis_id, count_value)
 select 1701 as analysis_id, 
 	COUNT_BIG(subject_ID) as count_value
 from
-	cohort c1
+	@cdm_database_schema.cohort c1
 where c1.cohort_end_date < c1.cohort_start_date
 ;
 --}
