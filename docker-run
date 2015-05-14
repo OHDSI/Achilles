@@ -20,7 +20,7 @@ current_datetime <- strftime(Sys.time(), format="%Y-%m-%dT%H:%M:%S")
 src_name <- paste(env_vars$ACHILLES_SITE, current_datetime, sep=" ")
 output_path <- paste(env_vars$ACHILLES_OUTPUT_BASE, env_vars$ACHILLES_SITE,
                      current_datetime, sep="/")
-dir.create(output_path, showWarnings=FALSE, recursive=TRUE, mode=0770)
+dir.create(output_path, showWarnings=FALSE, recursive=TRUE, mode="0755")
 
 # Parse DB URI into pieces.
 db_conf <- parse_url(env_vars$ACHILLES_DB_URI)
@@ -36,12 +36,12 @@ connectionDetails <- createConnectionDetails(
 
 # Run Achilles report and generate data in the results schema.
 achillesResults <- achilles(
-    connectionDetails, cdmSchema=env_vars$ACHILLES_CDM_SCHEMA,
-    resultsSchema=env_vars$ACHILLES_RES_SCHEMA, sourceName=src_name
+    connectionDetails, cdmDatabaseSchema=env_vars$ACHILLES_CDM_SCHEMA,
+    resultsDatabaseSchema=env_vars$ACHILLES_RES_SCHEMA, sourceName=src_name
 )
 
 # Export Achilles results to output path in JSON format.
 exportToJson(
-    connectionDetails, cdmSchema=env_vars$ACHILLES_CDM_SCHEMA,
-    resultsSchema=env_vars$ACHILLES_RES_SCHEMA, outputPath=output_path
+    connectionDetails, cdmDatabaseSchema=env_vars$ACHILLES_CDM_SCHEMA,
+    resultsDatabaseSchema=env_vars$ACHILLES_RES_SCHEMA, outputPath=output_path
 )
