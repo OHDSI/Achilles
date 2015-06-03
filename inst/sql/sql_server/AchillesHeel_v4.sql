@@ -515,7 +515,7 @@ INSERT INTO @results_database_schema.ACHILLES_HEEL_results (
 	ACHILLES_HEEL_warning
 	)
 SELECT DISTINCT or1.analysis_id,
-	'ERROR: ' + cast(or1.analysis_id as VARCHAR) + '-' + oa1.analysis_name + '; should not have year of birth in the future, (n=' + cast(sum(or1.count_value) as VARCHAR) + ')' AS ACHILLES_HEEL_warning
+	'ERROR: ' + cast(or1.analysis_id as VARCHAR) + '-' + '1' + '|' + oa1.analysis_name + '; should not have year of birth in the future, (n=' + cast(sum(or1.count_value) as VARCHAR) + ')' AS ACHILLES_HEEL_warning
 FROM @results_database_schema.ACHILLES_results or1
 INNER JOIN @results_database_schema.ACHILLES_analysis oa1
 	ON or1.analysis_id = oa1.analysis_id
@@ -532,7 +532,7 @@ INSERT INTO @results_database_schema.ACHILLES_HEEL_results (
 	ACHILLES_HEEL_warning
 	)
 SELECT or1.analysis_id,
-	'ERROR: ' + cast(or1.analysis_id as VARCHAR) + '-' + oa1.analysis_name + '; should not have year of birth < 1800, (n=' + cast(sum(or1.count_value) as VARCHAR) + ')' AS ACHILLES_HEEL_warning
+	'ERROR: ' + cast(or1.analysis_id as VARCHAR) + '-'+ '2' + '|'  + oa1.analysis_name + '; should not have year of birth < 1800, (n=' + cast(sum(or1.count_value) as VARCHAR) + ')' AS ACHILLES_HEEL_warning
 FROM @results_database_schema.ACHILLES_results or1
 INNER JOIN @results_database_schema.ACHILLES_analysis oa1
 	ON or1.analysis_id = oa1.analysis_id
