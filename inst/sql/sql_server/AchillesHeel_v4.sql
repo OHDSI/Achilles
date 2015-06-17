@@ -111,13 +111,13 @@ WHERE or1.analysis_id IN (
 		) --all explicit counts of data anamolies
 	AND or1.count_value > 0;
 
---distributions where min should not be negative
+--distributions where min should not be negative (subID introduced) (pipe pattern applied)
 INSERT INTO @results_database_schema.ACHILLES_HEEL_results (
 	analysis_id,
 	ACHILLES_HEEL_warning
 	)
 SELECT DISTINCT ord1.analysis_id,
-  'ERROR: ' + cast(ord1.analysis_id as VARCHAR) + ' - ' + oa1.analysis_name + ' (count = ' + cast(COUNT_BIG(ord1.min_value) as VARCHAR) + '); min value should not be negative' AS ACHILLES_HEEL_warning
+  'ERROR: ' + cast(ord1.analysis_id as VARCHAR) + '-' + '1'+'|' + oa1.analysis_name + '; min value should not be negative|count=|' + cast(COUNT_BIG(ord1.min_value) as VARCHAR) +'|' AS ACHILLES_HEEL_warning
 FROM @results_database_schema.ACHILLES_results_dist ord1
 INNER JOIN @results_database_schema.ACHILLES_analysis oa1
 	ON ord1.analysis_id = oa1.analysis_id
@@ -397,13 +397,13 @@ WHERE or1.analysis_id IN (
 GROUP BY or1.analysis_id,
 	oa1.analysis_name;
 
---drug exposure - 8 RxNorm
+--drug exposure - 8 RxNorm  (subID introduced) (pipe pattern applied)
 INSERT INTO @results_database_schema.ACHILLES_HEEL_results (
 	analysis_id,
 	ACHILLES_HEEL_warning
 	)
 SELECT or1.analysis_id,
-	'ERROR: ' + cast(or1.analysis_id as VARCHAR) + '-' + oa1.analysis_name + '; ' + cast(COUNT_BIG(DISTINCT stratum_1) AS VARCHAR) + ' concepts in data are not in correct vocabulary (RxNorm)' AS ACHILLES_HEEL_warning
+	'ERROR: ' + cast(or1.analysis_id as VARCHAR) + '-' + '1'+'|' + oa1.analysis_name + '; concepts in data are not in correct vocabulary|count=|' + cast(COUNT_BIG(DISTINCT stratum_1) AS VARCHAR) + '|RxNorm' AS ACHILLES_HEEL_warning
 FROM @results_database_schema.ACHILLES_results or1
 INNER JOIN @results_database_schema.ACHILLES_analysis oa1
 	ON or1.analysis_id = oa1.analysis_id
@@ -421,13 +421,13 @@ WHERE or1.analysis_id IN (
 GROUP BY or1.analysis_id,
 	oa1.analysis_name;
 
---procedure - 4 CPT4/5 HCPCS/3 ICD9P
+--procedure - 4 CPT4/5 HCPCS/3 ICD9P (subID introduced) (pipe pattern applied)
 INSERT INTO @results_database_schema.ACHILLES_HEEL_results (
 	analysis_id,
 	ACHILLES_HEEL_warning
 	)
 SELECT or1.analysis_id,
-	'ERROR: ' + cast(or1.analysis_id as VARCHAR) + '-' + oa1.analysis_name + '; ' + cast(COUNT_BIG(DISTINCT stratum_1) AS VARCHAR) + ' concepts in data are not in correct vocabulary (CPT4/HCPCS/ICD9P)' AS ACHILLES_HEEL_warning
+	'ERROR: ' + cast(or1.analysis_id as VARCHAR) + '-' + '1'+'|'+ oa1.analysis_name + '; concepts in data are not in correct vocabulary|count=|'+ cast(COUNT_BIG(DISTINCT stratum_1) AS VARCHAR)+ '|CPT4/HCPCS/ICD9P' AS ACHILLES_HEEL_warning
 FROM @results_database_schema.ACHILLES_results or1
 INNER JOIN @results_database_schema.ACHILLES_analysis oa1
 	ON or1.analysis_id = oa1.analysis_id
@@ -509,7 +509,7 @@ GROUP BY or1.analysis_id,
 	oa1.analysis_name;
 
 
---ERROR:  year of birth in the future
+--ERROR:  year of birth in the future (subID introduced) 
 INSERT INTO @results_database_schema.ACHILLES_HEEL_results (
 	analysis_id,
 	ACHILLES_HEEL_warning
@@ -659,13 +659,13 @@ WHERE ord1.analysis_id IN (716)
 	AND ord1.max_value > 10
 GROUP BY ord1.analysis_id, oa1.analysis_name;
 
---WARNING: quantity > 600
+--WARNING: quantity > 600  (subID introduced) (pipe pattern applied)
 INSERT INTO @results_database_schema.ACHILLES_HEEL_results (
 	analysis_id,
 	ACHILLES_HEEL_warning
 	)
 SELECT DISTINCT ord1.analysis_id,
-  'WARNING: ' + cast(ord1.analysis_id as VARCHAR) + '-' + oa1.analysis_name + ' (count = ' + cast(count(ord1.max_value) as VARCHAR) + '); max value should not be > 600' AS ACHILLES_HEEL_warning
+  'WARNING: ' + cast(ord1.analysis_id as VARCHAR) + '-' + '1'+'|' + oa1.analysis_name + '; max value should not be > 600|count=|' + cast(count(ord1.max_value) as VARCHAR)+'||'  AS ACHILLES_HEEL_warning
 FROM @results_database_schema.ACHILLES_results_dist ord1
 INNER JOIN @results_database_schema.ACHILLES_analysis oa1
 	ON ord1.analysis_id = oa1.analysis_id
