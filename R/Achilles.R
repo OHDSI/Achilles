@@ -39,12 +39,12 @@
 #' @param smallcellcount     To avoid patient identifiability, cells with small counts (<= smallcellcount) are deleted.
 #' @param cdmVersion     Define the OMOP CDM version used:  currently support "4" and "5".  Default = "4"
 #' @param runHeel     Boolean to determine if Achilles Heel data quality reporting will be produced based on the summary statistics.  Default = TRUE
-#' @param validateSchema     Boolean to determine if CDM Schema Validation should be run. This could be very slow.  Default = TRUE
+#' @param validateSchema     Boolean to determine if CDM Schema Validation should be run. This could be very slow.  Default = FALSE
 #' 
 #' @return An object of type \code{achillesResults} containing details for connecting to the database containing the results 
 #' @examples \dontrun{
 #'   connectionDetails <- createConnectionDetails(dbms="sql server", server="RNDUSRDHIT07.jnj.com")
-#'   achillesResults <- achilles(connectionDetails, "cdm4_sim", "scratch", "TestDB")
+#'   achillesResults <- achilles(connectionDetails, cdmDatabaseSchema="cdm4_sim", resultsDatabaseSchema="scratch", sourceName="TestDB", validateSchema="TRUE")
 #'   fetchAchillesAnalysisResults(connectionDetails, "scratch", 106)
 #' }
 #' @export
@@ -58,7 +58,7 @@ achilles <- function (connectionDetails,
                       smallcellcount = 5, 
                       cdmVersion = "4", 
                       runHeel = TRUE,
-                      validateSchema = TRUE){
+                      validateSchema = FALSE){
   
   if (cdmVersion == "4")  {
     achillesFile <- "Achilles_v4.sql"

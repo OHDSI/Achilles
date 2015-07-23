@@ -8,7 +8,7 @@ achilles(connectionDetails, cdmDatabaseSchema,
   oracleTempSchema = cdmDatabaseSchema,
   resultsDatabaseSchema = cdmDatabaseSchema, sourceName = "", analysisIds,
   createTable = TRUE, smallcellcount = 5, cdmVersion = "4",
-  runHeel = TRUE, validateSchema = TRUE)
+  runHeel = TRUE, validateSchema = FALSE)
 }
 \arguments{
   \item{connectionDetails}{An R object of type
@@ -58,7 +58,7 @@ achilles(connectionDetails, cdmDatabaseSchema,
 
   \item{validateSchema}{Boolean to determine if CDM Schema
   Validation should be run. This could be very slow.
-  Default = TRUE}
+  Default = FALSE}
 }
 \value{
 An object of type \code{achillesResults} containing details
@@ -75,7 +75,7 @@ an entire OMOP CDM instance.
 \examples{
 \dontrun{
   connectionDetails <- createConnectionDetails(dbms="sql server", server="RNDUSRDHIT07.jnj.com")
-  achillesResults <- achilles(connectionDetails, "cdm4_sim", "scratch", "TestDB")
+  achillesResults <- achilles(connectionDetails, cdmDatabaseSchema="cdm4_sim", resultsDatabaseSchema="scratch", sourceName="TestDB", validateSchema="TRUE")
   fetchAchillesAnalysisResults(connectionDetails, "scratch", 106)
 }
 }
