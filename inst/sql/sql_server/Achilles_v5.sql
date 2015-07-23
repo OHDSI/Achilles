@@ -41,7 +41,7 @@ SQL for OMOP CDM v5
 {DEFAULT @source_name = 'CDM NAME'}
 {DEFAULT @smallcellcount = 5}
 {DEFAULT @createTable = TRUE}
-{DEFAULT @validateSchema = TRUE}
+{DEFAULT @validateSchema = FALSE}
 
   /****
     developer comment about general ACHILLES calculation process:  
@@ -1298,162 +1298,325 @@ group by p1.gender_concept_id, year(op1.index_date) - p1.YEAR_OF_BIRTH;
 
 --{103 IN (@list_of_analysis_ids)}?{
 -- 103	Distribution of age at first observation period
-insert into @results_database_schema.ACHILLES_results_dist (analysis_id, count_value, min_value, max_value, avg_value, stdev_value, median_value, p10_value, p25_value, p75_value, p90_value)
-select 103 as analysis_id,
-  COUNT_BIG(count_value) as count_value,
-	min(count_value) as min_value,
-	max(count_value) as max_value,
-	avg(1.0*count_value) as avg_value,
-	stdev(count_value) as stdev_value,
-	max(case when p1<=0.50 then count_value else -9999 end) as median_value,
-	max(case when p1<=0.10 then count_value else -9999 end) as p10_value,
-	max(case when p1<=0.25 then count_value else -9999 end) as p25_value,
-	max(case when p1<=0.75 then count_value else -9999 end) as p75_value,
-	max(case when p1<=0.90 then count_value else -9999 end) as p90_value
-from
+with rawData (person_id, age_value) as
 (
-	select year(op1.index_date) - p1.YEAR_OF_BIRTH as count_value,
-		1.0*(row_number() over (order by year(op1.index_date) - p1.YEAR_OF_BIRTH))/(COUNT_BIG(*) over () + 1) as p1
-	from @cdm_database_schema.PERSON p1
-		join 
-		(
-			select person_id, MIN(observation_period_start_date) as index_date from @cdm_database_schema.OBSERVATION_PERIOD group by PERSON_ID
-		)  op1 on p1.PERSON_ID = op1.PERSON_ID
-) t1
+select p.person_id, 
+  MIN(YEAR(observation_period_start_date)) - P.YEAR_OF_BIRTH as age_value
+  from @cdm_database_schema.PERSON p
+  JOIN @cdm_database_schema.OBSERVATION_PERIOD op on p.person_id = op.person_id
+  group by p.person_id, p.year_of_birth
+),
+overallStats (avg_value, stdev_value, min_value, max_value, total) as
+(
+  select avg(1.0 * age_value) as avg_value,
+  stdev(age_value) as stdev_value,
+  min(age_value) as min_value,
+  max(age_value) as max_value,
+  count_big(*) as total
+  FROM rawData
+),
+ageStats (age_value, total, rn) as
+(
+  select age_value, count_big(*) as total, row_number() over (order by age_value) as rn
+  from rawData
+  group by age_value
+),
+ageStatsPrior (age_value, total, accumulated) as
+(
+  select s.age_value, s.total, sum(p.total) as accumulated
+  from ageStats s
+  join ageStats p on p.rn <= s.rn
+  group by s.age_value, s.total, s.rn
+)
+select 103 as analysis_id,
+  o.total as count_value,
+	o.min_value,
+	o.max_value,
+	o.avg_value,
+	o.stdev_value,
+	MIN(case when p.accumulated >= .50 * o.total then age_value end) as median_value,
+	MIN(case when p.accumulated >= .10 * o.total then age_value end) as p10_value,
+	MIN(case when p.accumulated >= .25 * o.total then age_value end) as p25_value,
+	MIN(case when p.accumulated >= .75 * o.total then age_value end) as p75_value,
+	MIN(case when p.accumulated >= .90 * o.total then age_value end) as p90_value
+INTO #tempResults
+from ageStatsPrior p
+CROSS APPLY overallStats o
+GROUP BY o.total, o.min_value, o.max_value, o.avg_value, o.stdev_value
 ;
---}
 
+insert into @results_database_schema.ACHILLES_results_dist (analysis_id, count_value, min_value, max_value, avg_value, stdev_value, median_value, p10_value, p25_value, p75_value, p90_value)
+select analysis_id, count_value, min_value, max_value, avg_value, stdev_value, median_value, p10_value, p25_value, p75_value, p90_value
+from #tempResults
+;
+
+truncate table #tempResults;
+drop table #tempResults;
+--}
 
 
 
 --{104 IN (@list_of_analysis_ids)}?{
 -- 104	Distribution of age at first observation period by gender
-insert into @results_database_schema.ACHILLES_results_dist (analysis_id, stratum_1, count_value, min_value, max_value, avg_value, stdev_value, median_value, p10_value, p25_value, p75_value, p90_value)
-select 104 as analysis_id,
-  gender_concept_id,
-	COUNT_BIG(count_value) as count_value,
-	min(count_value) as min_value,
-	max(count_value) as max_value,
-	avg(1.0*count_value) as avg_value,
-	stdev(count_value) as stdev_value,
-	max(case when p1<=0.50 then count_value else -9999 end) as median_value,
-	max(case when p1<=0.10 then count_value else -9999 end) as p10_value,
-	max(case when p1<=0.25 then count_value else -9999 end) as p25_value,
-	max(case when p1<=0.75 then count_value else -9999 end) as p75_value,
-	max(case when p1<=0.90 then count_value else -9999 end) as p90_value
-from
+with rawData (gender_concept_id, age_value) as
 (
-	select p1.gender_concept_id,
-		year(op1.index_date) - p1.YEAR_OF_BIRTH as count_value,
-		1.0*(row_number() over (partition by p1.gender_concept_id order by year(op1.index_date) - p1.YEAR_OF_BIRTH))/(COUNT_BIG(*) over (partition by p1.gender_concept_id)+1) as p1
-	from
-		@cdm_database_schema.PERSON p1
-		inner join (select person_id, MIN(observation_period_start_date) as index_date from @cdm_database_schema.OBSERVATION_PERIOD group by PERSON_ID) op1 on p1.PERSON_ID = op1.PERSON_ID
-) t1
-group by gender_concept_id
+  select p.gender_concept_id, MIN(YEAR(observation_period_start_date)) - P.YEAR_OF_BIRTH as age_value
+	from @cdm_database_schema.PERSON p
+	JOIN @cdm_database_schema.OBSERVATION_PERIOD op on p.person_id = op.person_id
+	group by p.person_id,p.gender_concept_id, p.year_of_birth
+),
+overallStats (gender_concept_id, avg_value, stdev_value, min_value, max_value, total) as
+(
+  select gender_concept_id,
+  avg(1.0 *age_value) as avg_value,
+  stdev(age_value) as stdev_value,
+  min(age_value) as min_value,
+  max(age_value) as max_value,
+  count_big(*) as total
+  FROM rawData
+  group by gender_concept_id
+),
+ageStats (gender_concept_id, age_value, total, rn) as
+(
+  select gender_concept_id, age_value, count_big(*) as total, row_number() over (order by age_value) as rn
+  FROM rawData
+  group by gender_concept_id, age_value
+),
+ageStatsPrior (gender_concept_id, age_value, total, accumulated) as
+(
+  select s.gender_concept_id, s.age_value, s.total, sum(p.total) as accumulated
+  from ageStats s
+  join ageStats p on s.gender_concept_id = p.gender_concept_id and p.rn <= s.rn
+  group by s.gender_concept_id, s.age_value, s.total, s.rn
+)
+select 104 as analysis_id,
+  o.gender_concept_id as stratum_1,
+  o.total as count_value,
+  o.min_value,
+	o.max_value,
+	o.avg_value,
+	o.stdev_value,
+	MIN(case when p.accumulated >= .50 * o.total then age_value end) as median_value,
+	MIN(case when p.accumulated >= .10 * o.total then age_value end) as p10_value,
+	MIN(case when p.accumulated >= .25 * o.total then age_value end) as p25_value,
+	MIN(case when p.accumulated >= .75 * o.total then age_value end) as p75_value,
+	MIN(case when p.accumulated >= .90 * o.total then age_value end) as p90_value
+INTO #tempResults
+from ageStatsPrior p
+join overallStats o on p.gender_concept_id = o.gender_concept_id
+GROUP BY o.gender_concept_id, o.total, o.min_value, o.max_value, o.avg_value, o.stdev_value
 ;
+
+insert into @results_database_schema.ACHILLES_results_dist (analysis_id, stratum_1, count_value, min_value, max_value, avg_value, stdev_value, median_value, p10_value, p25_value, p75_value, p90_value)
+select analysis_id, stratum_1, count_value, min_value, max_value, avg_value, stdev_value, median_value, p10_value, p25_value, p75_value, p90_value
+from #tempResults;
+
+truncate table #tempResults;
+drop table #tempResults;
 --}
 
 --{105 IN (@list_of_analysis_ids)}?{
 -- 105	Length of observation (days) of first observation period
-insert into @results_database_schema.ACHILLES_results_dist (analysis_id, count_value, min_value, max_value, avg_value, stdev_value, median_value, p10_value, p25_value, p75_value, p90_value)
-select 105 as analysis_id,
-  COUNT_BIG(count_value) as count_value,
-	min(count_value) as min_value,
-	max(count_value) as max_value,
-	avg(1.0*count_value) as avg_value,
-	stdev(count_value) as stdev_value,
-	max(case when p1<=0.50 then count_value else -9999 end) as median_value,
-	max(case when p1<=0.10 then count_value else -9999 end) as p10_value,
-	max(case when p1<=0.25 then count_value else -9999 end) as p25_value,
-	max(case when p1<=0.75 then count_value else -9999 end) as p75_value,
-	max(case when p1<=0.90 then count_value else -9999 end) as p90_value
-from
+with rawData (count_value) as
 (
-select DATEDIFF(dd,op1.observation_period_start_date, op1.observation_period_end_date) as count_value,
-	1.0*(row_number() over (order by DATEDIFF(dd,op1.observation_period_start_date, op1.observation_period_end_date)))/(COUNT_BIG(*) over() + 1) as p1
-from @cdm_database_schema.PERSON p1
-	inner join 
-	(select person_id, 
-		OBSERVATION_PERIOD_START_DATE, 
-		OBSERVATION_PERIOD_END_DATE, 
-		ROW_NUMBER() over (PARTITION by person_id order by observation_period_start_date asc) as rn1
-		 from @cdm_database_schema.OBSERVATION_PERIOD
-	) op1 on p1.PERSON_ID = op1.PERSON_ID
-	where op1.rn1 = 1
-) t1
+  select count_value
+  FROM
+  (
+    select DATEDIFF(dd,op.observation_period_start_date, op.observation_period_end_date) as count_value,
+  	  ROW_NUMBER() over (PARTITION by op.person_id order by op.observation_period_start_date asc) as rn
+    from @cdm_database_schema.OBSERVATION_PERIOD op
+	) op
+	where op.rn = 1
+),
+overallStats (avg_value, stdev_value, min_value, max_value, total) as
+(
+  select avg(1.0 * count_value) as avg_value,
+  stdev(count_value) as stdev_value,
+  min(count_value) as min_value,
+  max(count_value) as max_value,
+  count_big(*) as total
+  from rawData
+),
+stats (count_value, total, rn) as
+(
+  select count_value, count_big(*) as total, row_number() over (order by count_value) as rn
+  FROM
+  (
+    select DATEDIFF(dd,op.observation_period_start_date, op.observation_period_end_date) as count_value,
+  	  ROW_NUMBER() over (PARTITION by op.person_id order by op.observation_period_start_date asc) as rn
+    from @cdm_database_schema.OBSERVATION_PERIOD op
+	) op
+  where op.rn = 1
+  group by count_value
+),
+priorStats (count_value, total, accumulated) as
+(
+  select s.count_value, s.total, sum(p.total) as accumulated
+  from stats s
+  join stats p on p.rn <= s.rn
+  group by s.count_value, s.total, s.rn
+)
+select 105 as analysis_id,
+  o.total as count_value,
+  o.min_value,
+	o.max_value,
+	o.avg_value,
+	o.stdev_value,
+	MIN(case when p.accumulated >= .50 * o.total then count_value end) as median_value,
+	MIN(case when p.accumulated >= .10 * o.total then count_value end) as p10_value,
+	MIN(case when p.accumulated >= .25 * o.total then count_value end) as p25_value,
+	MIN(case when p.accumulated >= .75 * o.total then count_value end) as p75_value,
+	MIN(case when p.accumulated >= .90 * o.total then count_value end) as p90_value
+into #tempResults
+from priorStats p
+CROSS APPLY overallStats o
+GROUP BY o.total, o.min_value, o.max_value, o.avg_value, o.stdev_value
 ;
+
+insert into @results_database_schema.ACHILLES_results_dist (analysis_id, count_value, min_value, max_value, avg_value, stdev_value, median_value, p10_value, p25_value, p75_value, p90_value)
+select analysis_id, count_value, min_value, max_value, avg_value, stdev_value, median_value, p10_value, p25_value, p75_value, p90_value
+from #tempResults;
+
+truncate table #tempResults;
+drop table #tempResults;
 --}
 
 
 --{106 IN (@list_of_analysis_ids)}?{
 -- 106	Length of observation (days) of first observation period by gender
-insert into @results_database_schema.ACHILLES_results_dist (analysis_id, stratum_1, count_value, min_value, max_value, avg_value, stdev_value, median_value, p10_value, p25_value, p75_value, p90_value)
-select 106 as analysis_id,
-  gender_concept_id as stratum_1,
-	COUNT_BIG(count_value) as count_value,
-	min(count_value) as min_value,
-	max(count_value) as max_value,
-	avg(1.0*count_value) as avg_value,
-	stdev(count_value) as stdev_value,
-	max(case when p1<=0.50 then count_value else -9999 end) as median_value,
-	max(case when p1<=0.10 then count_value else -9999 end) as p10_value,
-	max(case when p1<=0.25 then count_value else -9999 end) as p25_value,
-	max(case when p1<=0.75 then count_value else -9999 end) as p75_value,
-	max(case when p1<=0.90 then count_value else -9999 end) as p90_value
-from
+with rawData(gender_concept_id, count_value) as
 (
-select p1.gender_concept_id,
-	DATEDIFF(dd,op1.observation_period_start_date, op1.observation_period_end_date) as count_value,
-	1.0*(row_number() over (partition by p1.gender_concept_id order by DATEDIFF(dd,op1.observation_period_start_date, op1.observation_period_end_date)))/(COUNT_BIG(*) over (partition by p1.gender_concept_id) + 1) as p1
-from @cdm_database_schema.PERSON p1
-	inner join 
-	(select person_id, 
-		OBSERVATION_PERIOD_START_DATE, 
-		OBSERVATION_PERIOD_END_DATE, 
-		ROW_NUMBER() over (PARTITION by person_id order by observation_period_start_date asc) as rn1
-		 from @cdm_database_schema.OBSERVATION_PERIOD
-	) op1 on p1.PERSON_ID = op1.PERSON_ID
-	where op1.rn1 = 1
-) t1
-group by gender_concept_id
+  select p.gender_concept_id, op.count_value
+  FROM
+  (
+    select person_id, DATEDIFF(dd,op.observation_period_start_date, op.observation_period_end_date) as count_value,
+      ROW_NUMBER() over (PARTITION by op.person_id order by op.observation_period_start_date asc) as rn
+    from @cdm_database_schema.OBSERVATION_PERIOD op
+	) op
+  JOIN @cdm_database_schema.PERSON p on op.person_id = p.person_id
+	where op.rn = 1
+),
+overallStats (gender_concept_id, avg_value, stdev_value, min_value, max_value, total) as
+(
+  select gender_concept_id,
+    avg(1.0 * count_value) as avg_value,
+    stdev(count_value) as stdev_value,
+    min(count_value) as min_value,
+    max(count_value) as max_value,
+    count_big(*) as total
+  FROM rawData
+  group by gender_concept_id
+),
+stats (gender_concept_id, count_value, total, rn) as
+(
+  select gender_concept_id, count_value, count_big(*) as total, row_number() over (order by count_value) as rn
+  FROM rawData
+  group by gender_concept_id, count_value
+),
+priorStats (gender_concept_id,count_value, total, accumulated) as
+(
+  select s.gender_concept_id, s.count_value, s.total, sum(p.total) as accumulated
+  from stats s
+  join stats p on s.gender_concept_id = p.gender_concept_id and p.rn <= s.rn
+  group by s.gender_concept_id, s.count_value, s.total, s.rn
+)
+select 106 as analysis_id,
+  o.gender_concept_id,
+  o.total as count_value,
+  o.min_value,
+	o.max_value,
+	o.avg_value,
+	o.stdev_value,
+	MIN(case when p.accumulated >= .50 * o.total then count_value end) as median_value,
+	MIN(case when p.accumulated >= .10 * o.total then count_value end) as p10_value,
+	MIN(case when p.accumulated >= .25 * o.total then count_value end) as p25_value,
+	MIN(case when p.accumulated >= .75 * o.total then count_value end) as p75_value,
+	MIN(case when p.accumulated >= .90 * o.total then count_value end) as p90_value
+INTO #tempResults
+from priorStats p
+join overallStats o on p.gender_concept_id = o.gender_concept_id
+GROUP BY o.gender_concept_id, o.total, o.min_value, o.max_value, o.avg_value, o.stdev_value
 ;
+
+insert into @results_database_schema.ACHILLES_results_dist (analysis_id, stratum_1, count_value, min_value, max_value, avg_value, stdev_value, median_value, p10_value, p25_value, p75_value, p90_value)
+select analysis_id, gender_concept_id, count_value, min_value, max_value, avg_value, stdev_value, median_value, p10_value, p25_value, p75_value, p90_value
+FROM #tempResults;
+
+truncate table #tempResults;
+drop table #tempResults;
+
 --}
-
-
 
 --{107 IN (@list_of_analysis_ids)}?{
 -- 107	Length of observation (days) of first observation period by age decile
-insert into @results_database_schema.ACHILLES_results_dist (analysis_id, stratum_1, count_value, min_value, max_value, avg_value, stdev_value, median_value, p10_value, p25_value, p75_value, p90_value)
-select 107 as analysis_id,
-  age_decile as stratum_1,
-	COUNT_BIG(count_value) as count_value,
-	min(count_value) as min_value,
-	max(count_value) as max_value,
-	avg(1.0*count_value) as avg_value,
-	stdev(count_value) as stdev_value,
-	max(case when p1<=0.50 then count_value else -9999 end) as median_value,
-	max(case when p1<=0.10 then count_value else -9999 end) as p10_value,
-	max(case when p1<=0.25 then count_value else -9999 end) as p25_value,
-	max(case when p1<=0.75 then count_value else -9999 end) as p75_value,
-	max(case when p1<=0.90 then count_value else -9999 end) as p90_value
-from
+
+with rawData (age_decile, count_value) as
 (
-select floor((year(op1.OBSERVATION_PERIOD_START_DATE) - p1.YEAR_OF_BIRTH)/10) as age_decile,
-	DATEDIFF(dd,op1.observation_period_start_date, op1.observation_period_end_date) as count_value,
-	1.0*(row_number() over (partition by floor((year(op1.OBSERVATION_PERIOD_START_DATE) - p1.YEAR_OF_BIRTH)/10) order by DATEDIFF(dd,op1.observation_period_start_date, op1.observation_period_end_date)))/(COUNT_BIG(*) over (partition by floor((year(op1.OBSERVATION_PERIOD_START_DATE) - p1.YEAR_OF_BIRTH)/10))+1) as p1
-from @cdm_database_schema.PERSON p1
-	inner join 
-	(select person_id, 
-		OBSERVATION_PERIOD_START_DATE, 
-		OBSERVATION_PERIOD_END_DATE, 
-		ROW_NUMBER() over (PARTITION by person_id order by observation_period_start_date asc) as rn1
-		 from @cdm_database_schema.OBSERVATION_PERIOD
-	) op1 on p1.PERSON_ID = op1.PERSON_ID
-where op1.rn1 = 1
-) t1
-group by age_decile
+  select floor((year(op.OBSERVATION_PERIOD_START_DATE) - p.YEAR_OF_BIRTH)/10) as age_decile,
+    DATEDIFF(dd,op.observation_period_start_date, op.observation_period_end_date) as count_value
+  FROM
+  (
+    select person_id, 
+  		op.observation_period_start_date,
+  		op.observation_period_end_date,
+      ROW_NUMBER() over (PARTITION by op.person_id order by op.observation_period_start_date asc) as rn
+    from @cdm_database_schema.OBSERVATION_PERIOD op
+  ) op
+  JOIN @cdm_database_schema.PERSON p on op.person_id = p.person_id
+  where op.rn = 1
+),
+overallStats (age_decile, avg_value, stdev_value, min_value, max_value, total) as
+(
+  select age_decile,
+    avg(1.0 * count_value) as avg_value,
+    stdev(count_value) as stdev_value,
+    min(count_value) as min_value,
+    max(count_value) as max_value,
+    count_big(*) as total
+  from rawData
+  group by age_decile
+),
+stats (age_decile, count_value, total, rn) as
+(
+  select age_decile,
+    count_value, 
+		count_big(*) as total, 
+		row_number() over (order by count_value) as rn
+  FROM rawData
+  group by age_decile, count_value
+),
+priorStats (age_decile,count_value, total, accumulated) as
+(
+  select s.age_decile, s.count_value, s.total, sum(p.total) as accumulated
+  from stats s
+  join stats p on s.age_decile = p.age_decile and p.rn <= s.rn
+  group by s.age_decile, s.count_value, s.total, s.rn
+)
+select 107 as analysis_id,
+  o.age_decile,
+  o.total as count_value,
+  o.min_value,
+	o.max_value,
+	o.avg_value,
+	o.stdev_value,
+	MIN(case when p.accumulated >= .50 * o.total then count_value else o.max_value end) as median_value,
+	MIN(case when p.accumulated >= .10 * o.total then count_value else o.max_value end) as p10_value,
+	MIN(case when p.accumulated >= .25 * o.total then count_value else o.max_value end) as p25_value,
+	MIN(case when p.accumulated >= .75 * o.total then count_value else o.max_value end) as p75_value,
+	MIN(case when p.accumulated >= .90 * o.total then count_value else o.max_value end) as p90_value
+into #tempResults
+from priorStats p
+join overallStats o on p.age_decile = o.age_decile
+GROUP BY o.age_decile, o.total, o.min_value, o.max_value, o.avg_value, o.stdev_value
 ;
+
+insert into @results_database_schema.ACHILLES_results_dist (analysis_id, stratum_1, count_value, min_value, max_value, avg_value, stdev_value, median_value, p10_value, p25_value, p75_value, p90_value)
+select analysis_id, age_decile, count_value, min_value, max_value, avg_value, stdev_value, median_value, p10_value, p25_value, p75_value, p90_value
+FROM #tempResults;
+
+truncate table #tempResults;
+drop table #tempResults;
+
 --}
 
 
@@ -1755,29 +1918,61 @@ group by vo1.visit_concept_id,
 
 --{203 IN (@list_of_analysis_ids)}?{
 -- 203	Number of distinct visit occurrence concepts per person
-insert into @results_database_schema.ACHILLES_results_dist (analysis_id, count_value, min_value, max_value, avg_value, stdev_value, median_value, p10_value, p25_value, p75_value, p90_value)
-select 203 as analysis_id,
-  COUNT_BIG(count_value) as count_value,
-	min(count_value) as min_value,
-	max(count_value) as max_value,
-	avg(1.0*count_value) as avg_value,
-	stdev(count_value) as stdev_value,
-	max(case when p1<=0.50 then count_value else -9999 end) as median_value,
-	max(case when p1<=0.10 then count_value else -9999 end) as p10_value,
-	max(case when p1<=0.25 then count_value else -9999 end) as p25_value,
-	max(case when p1<=0.75 then count_value else -9999 end) as p75_value,
-	max(case when p1<=0.90 then count_value else -9999 end) as p90_value
-from
+
+with rawData(person_id, count_value) as
 (
-	select num_visits as count_value,
-		1.0*(row_number() over (order by num_visits))/(COUNT_BIG(*) over ()+1) as p1
-	from (
-		select vo1.person_id, COUNT_BIG(distinct vo1.visit_concept_id) as num_visits
+    select vo1.person_id, COUNT_BIG(distinct vo1.visit_concept_id) as count_value
 		from @cdm_database_schema.visit_occurrence vo1
 		group by vo1.person_id
-	) t0
-) t1
+),
+overallStats (avg_value, stdev_value, min_value, max_value, total) as
+(
+  select avg(1.0 * count_value) as avg_value,
+    stdev(count_value) as stdev_value,
+    min(count_value) as min_value,
+    max(count_value) as max_value,
+    count_big(*) as total
+  from rawData
+),
+stats (count_value, total, rn) as
+(
+  select count_value, 
+  	count_big(*) as total, 
+		row_number() over (order by count_value) as rn
+  FROM rawData
+  group by count_value
+),
+priorStats (count_value, total, accumulated) as
+(
+  select s.count_value, s.total, sum(p.total) as accumulated
+  from stats s
+  join stats p on p.rn <= s.rn
+  group by s.count_value, s.total, s.rn
+)
+select 203 as analysis_id,
+  o.total as count_value,
+  o.min_value,
+	o.max_value,
+	o.avg_value,
+	o.stdev_value,
+	MIN(case when p.accumulated >= .50 * o.total then count_value else o.max_value end) as median_value,
+	MIN(case when p.accumulated >= .10 * o.total then count_value else o.max_value end) as p10_value,
+	MIN(case when p.accumulated >= .25 * o.total then count_value else o.max_value end) as p25_value,
+	MIN(case when p.accumulated >= .75 * o.total then count_value else o.max_value end) as p75_value,
+	MIN(case when p.accumulated >= .90 * o.total then count_value else o.max_value end) as p90_value
+INTO #tempResults
+from priorStats p
+cross apply overallStats o
+GROUP BY o.total, o.min_value, o.max_value, o.avg_value, o.stdev_value
 ;
+
+insert into @results_database_schema.ACHILLES_results_dist (analysis_id, count_value, min_value, max_value, avg_value, stdev_value, median_value, p10_value, p25_value, p75_value, p90_value)
+select analysis_id, count_value, min_value, max_value, avg_value, stdev_value, median_value, p10_value, p25_value, p75_value, p90_value
+FROM #tempResults;
+
+truncate table #tempResults;
+drop table #tempResults;
+
 --}
 
 
@@ -1808,35 +2003,71 @@ group by vo1.visit_concept_id,
 
 --{206 IN (@list_of_analysis_ids)}?{
 -- 206	Distribution of age by visit_concept_id
-insert into @results_database_schema.ACHILLES_results_dist (analysis_id, stratum_1, stratum_2, count_value, min_value, max_value, avg_value, stdev_value, median_value, p10_value, p25_value, p75_value, p90_value)
-select 206 as analysis_id,
-  visit_concept_id as stratum_1,
-	gender_concept_id as stratum_2,
-	COUNT_BIG(count_value) as count_value,
-	min(count_value) as min_value,
-	max(count_value) as max_value,
-	avg(1.0*count_value) as avg_value,
-	stdev(count_value) as stdev_value,
-	max(case when p1<=0.50 then count_value else -9999 end) as median_value,
-	max(case when p1<=0.10 then count_value else -9999 end) as p10_value,
-	max(case when p1<=0.25 then count_value else -9999 end) as p25_value,
-	max(case when p1<=0.75 then count_value else -9999 end) as p75_value,
-	max(case when p1<=0.90 then count_value else -9999 end) as p90_value
-from
+
+with rawData(stratum1_id, stratum2_id, count_value) as
 (
-	select vo1.visit_concept_id,
-		p1.gender_concept_id,
-		vo1.visit_start_year - p1.year_of_birth as count_value,
-		1.0*(row_number() over (partition by vo1.visit_concept_id, p1.gender_concept_id order by vo1.visit_start_year - p1.year_of_birth))/(COUNT_BIG(*) over (partition by vo1.visit_concept_id, p1.gender_concept_id)+1) as p1
+  select vo1.visit_concept_id,
+  	p1.gender_concept_id,
+		vo1.visit_start_year - p1.year_of_birth as count_value
 	from @cdm_database_schema.PERSON p1
-		inner join (
-			select person_id, visit_concept_id, min(year(visit_start_date)) as visit_start_year
-			from @cdm_database_schema.visit_occurrence
-			group by person_id, visit_concept_id
-		) vo1 on p1.person_id = vo1.person_id
-) t1
-group by visit_concept_id, gender_concept_id
+	inner join 
+  (
+		select person_id, visit_concept_id, min(year(visit_start_date)) as visit_start_year
+		from @cdm_database_schema.visit_occurrence
+		group by person_id, visit_concept_id
+	) vo1 on p1.person_id = vo1.person_id
+),
+overallStats (stratum1_id, stratum2_id, avg_value, stdev_value, min_value, max_value, total) as
+(
+  select stratum1_id,
+    stratum2_id,
+    avg(1.0 * count_value) as avg_value,
+    stdev(count_value) as stdev_value,
+    min(count_value) as min_value,
+    max(count_value) as max_value,
+    count_big(*) as total
+  FROM rawData
+	group by stratum1_id, stratum2_id
+),
+stats (stratum1_id, stratum2_id, count_value, total, rn) as
+(
+  select stratum1_id, stratum2_id, count_value, count_big(*) as total, row_number() over (partition by stratum1_id, stratum2_id order by count_value) as rn
+  FROM rawData
+  group by stratum1_id, stratum2_id, count_value
+),
+priorStats (stratum1_id, stratum2_id, count_value, total, accumulated) as
+(
+  select s.stratum1_id, s.stratum2_id, s.count_value, s.total, sum(p.total) as accumulated
+  from stats s
+  join stats p on s.stratum1_id = p.stratum1_id and s.stratum2_id = p.stratum2_id and p.rn <= s.rn
+  group by s.stratum1_id, s.stratum2_id, s.count_value, s.total, s.rn
+)
+select 206 as analysis_id,
+  o.stratum1_id,
+  o.stratum2_id,
+  o.total as count_value,
+  o.min_value,
+	o.max_value,
+	o.avg_value,
+	o.stdev_value,
+	MIN(case when p.accumulated >= .50 * o.total then count_value else o.max_value end) as median_value,
+	MIN(case when p.accumulated >= .10 * o.total then count_value else o.max_value end) as p10_value,
+	MIN(case when p.accumulated >= .25 * o.total then count_value else o.max_value end) as p25_value,
+	MIN(case when p.accumulated >= .75 * o.total then count_value else o.max_value end) as p75_value,
+	MIN(case when p.accumulated >= .90 * o.total then count_value else o.max_value end) as p90_value
+into #tempResults
+from priorStats p
+join overallStats o on p.stratum1_id = o.stratum1_id and p.stratum2_id = o.stratum2_id 
+GROUP BY o.stratum1_id, o.stratum2_id, o.total, o.min_value, o.max_value, o.avg_value, o.stdev_value
 ;
+
+insert into @results_database_schema.ACHILLES_results_dist (analysis_id, stratum_1, stratum_2, count_value, min_value, max_value, avg_value, stdev_value, median_value, p10_value, p25_value, p75_value, p90_value)
+select analysis_id, stratum1_id, stratum2_id, count_value, min_value, max_value, avg_value, stdev_value, median_value, p10_value, p25_value, p75_value, p90_value
+from #tempResults;
+
+truncate table #tempResults;
+drop table #tempResults;
+
 --}
 
 
@@ -1897,33 +2128,60 @@ where vo1.care_site_id is not null
 
 --{211 IN (@list_of_analysis_ids)}?{
 -- 211	Distribution of length of stay by visit_concept_id
-insert into @results_database_schema.ACHILLES_results_dist (analysis_id, stratum_1, count_value, min_value, max_value, avg_value, stdev_value, median_value, p10_value, p25_value, p75_value, p90_value)
-select 211 as analysis_id,
-       visit_concept_id as stratum_1,
-       COUNT_BIG(count_value) as count_value,
-       min(count_value) as min_value,
-       max(count_value) as max_value,
-       avg(1.0*count_value) as avg_value,
-       stdev(count_value) as stdev_value,
-       max(case when p1<=0.50 then count_value else -9999 end) as median_value,
-       max(case when p1<=0.10 then count_value else -9999 end) as p10_value,
-       max(case when p1<=0.25 then count_value else -9999 end) as p25_value,
-       max(case when p1<=0.75 then count_value else -9999 end) as p75_value,
-       max(case when p1<=0.90 then count_value else -9999 end) as p90_value
-from
+with rawData(stratum_id, count_value) as
 (
-       select visit_concept_id, count_value, (1.0 * (row_number() over (partition by visit_concept_id order by count_value)) / (Q.total +1)) as p1
-       from 
-       (
-              select vo1.visit_concept_id, datediff(dd,visit_start_date,visit_end_date) as count_value, pc.total
-              from @cdm_database_schema.visit_occurrence vo1
-              JOIN 
-              (
-                     select visit_concept_id, COUNT_BIG(*) as total from @cdm_database_schema.visit_occurrence group by visit_concept_id
-              ) pc on pc.visit_concept_id = vo1.visit_concept_id
-       ) Q
-) t1
-group by visit_concept_id;
+  select visit_concept_id, datediff(dd,visit_start_date,visit_end_date) as count_value
+  from @cdm_database_schema.visit_occurrence
+),
+overallStats (stratum_id, avg_value, stdev_value, min_value, max_value, total) as
+(
+  select stratum_id,
+    avg(1.0 * count_value) as avg_value,
+    stdev(count_value) as stdev_value,
+    min(count_value) as min_value,
+    max(count_value) as max_value,
+    count_big(*) as total
+  FROM rawData
+  group by stratum_id
+),
+stats (stratum_id, count_value, total, rn) as
+(
+  select stratum_id, count_value, count_big(*) as total, row_number() over (order by count_value) as rn
+  FROM rawData
+  group by stratum_id, count_value
+),
+priorStats (stratum_id, count_value, total, accumulated) as
+(
+  select s.stratum_id, s.count_value, s.total, sum(p.total) as accumulated
+  from stats s
+  join stats p on s.stratum_id = p.stratum_id and p.rn <= s.rn
+  group by s.stratum_id, s.count_value, s.total, s.rn
+)
+select 211 as analysis_id,
+  o.stratum_id,
+  o.total as count_value,
+  o.min_value,
+	o.max_value,
+	o.avg_value,
+	o.stdev_value,
+	MIN(case when p.accumulated >= .50 * o.total then count_value else o.max_value end) as median_value,
+	MIN(case when p.accumulated >= .10 * o.total then count_value else o.max_value end) as p10_value,
+	MIN(case when p.accumulated >= .25 * o.total then count_value else o.max_value end) as p25_value,
+	MIN(case when p.accumulated >= .75 * o.total then count_value else o.max_value end) as p75_value,
+	MIN(case when p.accumulated >= .90 * o.total then count_value else o.max_value end) as p90_value
+into #tempResults
+from priorStats p
+join overallStats o on p.stratum_id = o.stratum_id
+GROUP BY o.stratum_id, o.total, o.min_value, o.max_value, o.avg_value, o.stdev_value
+;
+
+insert into @results_database_schema.ACHILLES_results_dist (analysis_id, stratum_1, count_value, min_value, max_value, avg_value, stdev_value, median_value, p10_value, p25_value, p75_value, p90_value)
+select analysis_id, stratum_id, count_value, min_value, max_value, avg_value, stdev_value, median_value, p10_value, p25_value, p75_value, p90_value
+from #tempResults;
+
+truncate table #tempResults;
+drop table #tempResults;
+
 --}
 
 
@@ -2028,31 +2286,60 @@ group by co1.condition_concept_id,
 
 --{403 IN (@list_of_analysis_ids)}?{
 -- 403	Number of distinct condition occurrence concepts per person
-insert into @results_database_schema.ACHILLES_results_dist (analysis_id, count_value, min_value, max_value, avg_value, stdev_value, median_value, p10_value, p25_value, p75_value, p90_value)
-select 403 as analysis_id,
-  COUNT_BIG(count_value) as count_value,
-	min(count_value) as min_value,
-	max(count_value) as max_value,
-	avg(1.0*count_value) as avg_value,
-	stdev(count_value) as stdev_value,
-	max(case when p1<=0.50 then count_value else -9999 end) as median_value,
-	max(case when p1<=0.10 then count_value else -9999 end) as p10_value,
-	max(case when p1<=0.25 then count_value else -9999 end) as p25_value,
-	max(case when p1<=0.75 then count_value else -9999 end) as p75_value,
-	max(case when p1<=0.90 then count_value else -9999 end) as p90_value
-from
+with rawData(person_id, count_value) as
 (
-select num_conditions as count_value,
-	1.0*(row_number() over (order by num_conditions))/(COUNT_BIG(*) over ()+1) as p1
-from
-	(
-	select co1.person_id, COUNT_BIG(distinct co1.condition_concept_id) as num_conditions
-	from
-	@cdm_database_schema.condition_occurrence co1
-	group by co1.person_id
-	) t0
-) t1
+  select person_id, COUNT_BIG(distinct condition_concept_id) as num_conditions
+  from @cdm_database_schema.condition_occurrence
+	group by person_id
+),
+overallStats (avg_value, stdev_value, min_value, max_value, total) as
+(
+  select avg(1.0 * count_value) as avg_value,
+    stdev(count_value) as stdev_value,
+    min(count_value) as min_value,
+    max(count_value) as max_value,
+    count_big(*) as total
+  from rawData
+),
+stats (count_value, total, rn) as
+(
+  select count_value, 
+  	count_big(*) as total, 
+		row_number() over (order by count_value) as rn
+  FROM rawData
+  group by count_value
+),
+priorStats (count_value, total, accumulated) as
+(
+  select s.count_value, s.total, sum(p.total) as accumulated
+  from stats s
+  join stats p on p.rn <= s.rn
+  group by s.count_value, s.total, s.rn
+)
+select 403 as analysis_id,
+  o.total as count_value,
+  o.min_value,
+	o.max_value,
+	o.avg_value,
+	o.stdev_value,
+	MIN(case when p.accumulated >= .50 * o.total then count_value else o.max_value end) as median_value,
+	MIN(case when p.accumulated >= .10 * o.total then count_value else o.max_value end) as p10_value,
+	MIN(case when p.accumulated >= .25 * o.total then count_value else o.max_value end) as p25_value,
+	MIN(case when p.accumulated >= .75 * o.total then count_value else o.max_value end) as p75_value,
+	MIN(case when p.accumulated >= .90 * o.total then count_value else o.max_value end) as p90_value
+into #tempResults
+from priorStats p
+cross apply overallStats o
+GROUP BY o.total, o.min_value, o.max_value, o.avg_value, o.stdev_value
 ;
+
+insert into @results_database_schema.ACHILLES_results_dist (analysis_id, count_value, min_value, max_value, avg_value, stdev_value, median_value, p10_value, p25_value, p75_value, p90_value)
+select analysis_id, count_value, min_value, max_value, avg_value, stdev_value, median_value, p10_value, p25_value, p75_value, p90_value
+from #tempResults;
+
+truncate table #tempResults;
+drop table #tempResults;
+
 --}
 
 
@@ -2095,35 +2382,73 @@ group by co1.condition_CONCEPT_ID,
 
 --{406 IN (@list_of_analysis_ids)}?{
 -- 406	Distribution of age by condition_concept_id
-insert into @results_database_schema.ACHILLES_results_dist (analysis_id, stratum_1, stratum_2, count_value, min_value, max_value, avg_value, stdev_value, median_value, p10_value, p25_value, p75_value, p90_value)
-select 406 as analysis_id,
-  condition_concept_id as stratum_1,
-	gender_concept_id as stratum_2,
-	COUNT_BIG(count_value) as count_value,
-	min(count_value) as min_value,
-	max(count_value) as max_value,
-	avg(1.0*count_value) as avg_value,
-	stdev(count_value) as stdev_value,
-	max(case when p1<=0.50 then count_value else -9999 end) as median_value,
-	max(case when p1<=0.10 then count_value else -9999 end) as p10_value,
-	max(case when p1<=0.25 then count_value else -9999 end) as p25_value,
-	max(case when p1<=0.75 then count_value else -9999 end) as p75_value,
-	max(case when p1<=0.90 then count_value else -9999 end) as p90_value
-from
+select co1.condition_concept_id as subject_id,
+  p1.gender_concept_id,
+	(co1.condition_start_year - p1.year_of_birth) as count_value
+INTO #rawData_406
+from @cdm_database_schema.PERSON p1
+inner join 
 (
-	select co1.condition_concept_id,
-		p1.gender_concept_id,
-		co1.condition_start_year - p1.year_of_birth as count_value,
-		1.0*(row_number() over (partition by co1.condition_concept_id, p1.gender_concept_id order by co1.condition_start_year - p1.year_of_birth))/(COUNT_BIG(*) over (partition by co1.condition_concept_id, p1.gender_concept_id)+1) as p1
-	from @cdm_database_schema.PERSON p1
-	inner join (
-		select person_id, condition_concept_id, min(year(condition_start_date)) as condition_start_year
-		from @cdm_database_schema.condition_occurrence
-		group by person_id, condition_concept_id
-	) co1 on p1.person_id = co1.person_id
-) t1
-group by condition_concept_id, gender_concept_id
+	select person_id, condition_concept_id, min(year(condition_start_date)) as condition_start_year
+	from @cdm_database_schema.condition_occurrence
+	group by person_id, condition_concept_id
+) co1 on p1.person_id = co1.person_id
 ;
+
+with overallStats (stratum1_id, stratum2_id, avg_value, stdev_value, min_value, max_value, total) as
+(
+  select subject_id as stratum1_id,
+    gender_concept_id as stratum2_id,
+    avg(1.0 * count_value) as avg_value,
+    stdev(count_value) as stdev_value,
+    min(count_value) as min_value,
+    max(count_value) as max_value,
+    count_big(*) as total
+  FROM #rawData_406
+	group by subject_id, gender_concept_id
+),
+stats (stratum1_id, stratum2_id, count_value, total, rn) as
+(
+  select subject_id as stratum1_id, gender_concept_id as stratum2_id, count_value, count_big(*) as total, row_number() over (partition by subject_id, gender_concept_id order by count_value) as rn
+  FROM #rawData_406
+  group by subject_id, gender_concept_id, count_value
+),
+priorStats (stratum1_id, stratum2_id, count_value, total, accumulated) as
+(
+  select s.stratum1_id, s.stratum2_id, s.count_value, s.total, sum(p.total) as accumulated
+  from stats s
+  join stats p on s.stratum1_id = p.stratum1_id and s.stratum2_id = p.stratum2_id and p.rn <= s.rn
+  group by s.stratum1_id, s.stratum2_id, s.count_value, s.total, s.rn
+)
+select 406 as analysis_id,
+  o.stratum1_id,
+  o.stratum2_id,
+  o.total as count_value,
+  o.min_value,
+	o.max_value,
+	o.avg_value,
+	o.stdev_value,
+	MIN(case when p.accumulated >= .50 * o.total then count_value else o.max_value end) as median_value,
+	MIN(case when p.accumulated >= .10 * o.total then count_value else o.max_value end) as p10_value,
+	MIN(case when p.accumulated >= .25 * o.total then count_value else o.max_value end) as p25_value,
+	MIN(case when p.accumulated >= .75 * o.total then count_value else o.max_value end) as p75_value,
+	MIN(case when p.accumulated >= .90 * o.total then count_value else o.max_value end) as p90_value
+INTO #tempResults
+from priorStats p
+join overallStats o on p.stratum1_id = o.stratum1_id and p.stratum2_id = o.stratum2_id 
+GROUP BY o.stratum1_id, o.stratum2_id, o.total, o.min_value, o.max_value, o.avg_value, o.stdev_value
+;
+
+insert into @results_database_schema.ACHILLES_results_dist (analysis_id, stratum_1, stratum_2, count_value, min_value, max_value, avg_value, stdev_value, median_value, p10_value, p25_value, p75_value, p90_value)
+select analysis_id, stratum1_id, stratum2_id, count_value, min_value, max_value, avg_value, stdev_value, median_value, p10_value, p25_value, p75_value, p90_value
+from #tempResults;
+
+truncate table #tempResults;
+drop table #tempResults;
+
+truncate Table #rawData_406;
+drop table #rawData_406;
+
 --}
 
 
@@ -2294,34 +2619,68 @@ group by death_type_concept_id
 
 --{506 IN (@list_of_analysis_ids)}?{
 -- 506	Distribution of age by condition_concept_id
-insert into @results_database_schema.ACHILLES_results_dist (analysis_id, stratum_1, count_value, min_value, max_value, avg_value, stdev_value, median_value, p10_value, p25_value, p75_value, p90_value)
-select 506 as analysis_id,
-	gender_concept_id as stratum_1,
-	COUNT_BIG(count_value) as count_value,
-	min(count_value) as min_value,
-	max(count_value) as max_value,
-	avg(1.0*count_value) as avg_value,
-	stdev(count_value) as stdev_value,
-	max(case when p1<=0.50 then count_value else -9999 end) as median_value,
-	max(case when p1<=0.10 then count_value else -9999 end) as p10_value,
-	max(case when p1<=0.25 then count_value else -9999 end) as p25_value,
-	max(case when p1<=0.75 then count_value else -9999 end) as p75_value,
-	max(case when p1<=0.90 then count_value else -9999 end) as p90_value
-from
+
+with rawData(stratum_id, count_value) as
 (
-select p1.gender_concept_id,
-	d1.death_year - p1.year_of_birth as count_value,
-	1.0*(row_number() over (partition by p1.gender_concept_id order by d1.death_year - p1.year_of_birth))/(COUNT_BIG(*) over (partition by p1.gender_concept_id)+1) as p1
-from @cdm_database_schema.PERSON p1
-inner join
-(select person_id, min(year(death_date)) as death_year
-from @cdm_database_schema.death
-group by person_id
-) d1
-on p1.person_id = d1.person_id
-) t1
-group by gender_concept_id
+  select p1.gender_concept_id,
+    d1.death_year - p1.year_of_birth as count_value
+  from @cdm_database_schema.PERSON p1
+  inner join
+  (select person_id, min(year(death_date)) as death_year
+  from @cdm_database_schema.death
+  group by person_id
+  ) d1
+  on p1.person_id = d1.person_id
+),
+overallStats (stratum_id, avg_value, stdev_value, min_value, max_value, total) as
+(
+  select stratum_id,
+    avg(1.0 * count_value) as avg_value,
+    stdev(count_value) as stdev_value,
+    min(count_value) as min_value,
+    max(count_value) as max_value,
+    count_big(*) as total
+  FROM rawData
+  group by stratum_id
+),
+stats (stratum_id, count_value, total, rn) as
+(
+  select stratum_id, count_value, count_big(*) as total, row_number() over (order by count_value) as rn
+  FROM rawData
+  group by stratum_id, count_value
+),
+priorStats (stratum_id, count_value, total, accumulated) as
+(
+  select s.stratum_id, s.count_value, s.total, sum(p.total) as accumulated
+  from stats s
+  join stats p on s.stratum_id = p.stratum_id and p.rn <= s.rn
+  group by s.stratum_id, s.count_value, s.total, s.rn
+)
+select 506 as analysis_id,
+  o.stratum_id,
+  o.total as count_value,
+  o.min_value,
+	o.max_value,
+	o.avg_value,
+	o.stdev_value,
+	MIN(case when p.accumulated >= .50 * o.total then count_value else o.max_value end) as median_value,
+	MIN(case when p.accumulated >= .10 * o.total then count_value else o.max_value end) as p10_value,
+	MIN(case when p.accumulated >= .25 * o.total then count_value else o.max_value end) as p25_value,
+	MIN(case when p.accumulated >= .75 * o.total then count_value else o.max_value end) as p75_value,
+	MIN(case when p.accumulated >= .90 * o.total then count_value else o.max_value end) as p90_value
+into #tempResults
+from priorStats p
+join overallStats o on p.stratum_id = o.stratum_id
+GROUP BY o.stratum_id, o.total, o.min_value, o.max_value, o.avg_value, o.stdev_value
 ;
+
+insert into @results_database_schema.ACHILLES_results_dist (analysis_id, stratum_1, count_value, min_value, max_value, avg_value, stdev_value, median_value, p10_value, p25_value, p75_value, p90_value)
+select analysis_id, stratum_id, count_value, min_value, max_value, avg_value, stdev_value, median_value, p10_value, p25_value, p75_value, p90_value
+from #tempResults;
+
+truncate table #tempResults;
+
+drop table #tempResults;
 --}
 
 
@@ -2389,54 +2748,77 @@ from @cdm_database_schema.death d1
 
 --{512 IN (@list_of_analysis_ids)}?{
 -- 512	Distribution of time from death to last drug
-insert into @results_database_schema.ACHILLES_results_dist (analysis_id, count_value, min_value, max_value, avg_value, stdev_value, median_value, p10_value, p25_value, p75_value, p90_value)
-select 512 as analysis_id,
-	COUNT_BIG(count_value) as count_value,
-	min(count_value) as min_value,
-	max(count_value) as max_value,
-	avg(1.0*count_value) as avg_value,
-	stdev(count_value) as stdev_value,
-	max(case when p1<=0.50 then count_value else -9999 end) as median_value,
-	max(case when p1<=0.10 then count_value else -9999 end) as p10_value,
-	max(case when p1<=0.25 then count_value else -9999 end) as p25_value,
-	max(case when p1<=0.75 then count_value else -9999 end) as p75_value,
-	max(case when p1<=0.90 then count_value else -9999 end) as p90_value
-from
+with rawData(count_value) as
 (
-select datediff(dd,d1.death_date, t0.max_date) as count_value,
-	1.0*(row_number() over (order by datediff(dd,d1.death_date, t0.max_date)))/(COUNT_BIG(*) over ()+1) as p1
-from @cdm_database_schema.death d1
-	inner join
+  select datediff(dd,d1.death_date, t0.max_date) as count_value
+  from @cdm_database_schema.death d1
+  inner join
 	(
 		select person_id, max(drug_exposure_start_date) as max_date
 		from @cdm_database_schema.drug_exposure
 		group by person_id
 	) t0
 	on d1.person_id = t0.person_id
-) t1
+),
+overallStats (avg_value, stdev_value, min_value, max_value, total) as
+(
+  select avg(1.0 * count_value) as avg_value,
+    stdev(count_value) as stdev_value,
+    min(count_value) as min_value,
+    max(count_value) as max_value,
+    count_big(*) as total
+  from rawData
+),
+stats (count_value, total, rn) as
+(
+  select count_value, 
+  	count_big(*) as total, 
+		row_number() over (order by count_value) as rn
+  FROM rawData
+  group by count_value
+),
+priorStats (count_value, total, accumulated) as
+(
+  select s.count_value, s.total, sum(p.total) as accumulated
+  from stats s
+  join stats p on p.rn <= s.rn
+  group by s.count_value, s.total, s.rn
+)
+select 512 as analysis_id,
+  o.total as count_value,
+  o.min_value,
+	o.max_value,
+	o.avg_value,
+	o.stdev_value,
+	MIN(case when p.accumulated >= .50 * o.total then count_value else o.max_value end) as median_value,
+	MIN(case when p.accumulated >= .10 * o.total then count_value else o.max_value end) as p10_value,
+	MIN(case when p.accumulated >= .25 * o.total then count_value else o.max_value end) as p25_value,
+	MIN(case when p.accumulated >= .75 * o.total then count_value else o.max_value end) as p75_value,
+	MIN(case when p.accumulated >= .90 * o.total then count_value else o.max_value end) as p90_value
+into #tempResults
+from priorStats p
+cross apply overallStats o
+GROUP BY o.total, o.min_value, o.max_value, o.avg_value, o.stdev_value
 ;
+
+insert into @results_database_schema.ACHILLES_results_dist (analysis_id, count_value, min_value, max_value, avg_value, stdev_value, median_value, p10_value, p25_value, p75_value, p90_value)
+select analysis_id, count_value, min_value, max_value, avg_value, stdev_value, median_value, p10_value, p25_value, p75_value, p90_value
+FROM #tempResults;
+
+truncate table #tempResults;
+
+drop table #tempResults;
+
+
 --}
 
 
 --{513 IN (@list_of_analysis_ids)}?{
 -- 513	Distribution of time from death to last visit
-insert into @results_database_schema.ACHILLES_results_dist (analysis_id, count_value, min_value, max_value, avg_value, stdev_value, median_value, p10_value, p25_value, p75_value, p90_value)
-select 513 as analysis_id,
-	COUNT_BIG(count_value) as count_value,
-	min(count_value) as min_value,
-	max(count_value) as max_value,
-	avg(1.0*count_value) as avg_value,
-	stdev(count_value) as stdev_value,
-	max(case when p1<=0.50 then count_value else -9999 end) as median_value,
-	max(case when p1<=0.10 then count_value else -9999 end) as p10_value,
-	max(case when p1<=0.25 then count_value else -9999 end) as p25_value,
-	max(case when p1<=0.75 then count_value else -9999 end) as p75_value,
-	max(case when p1<=0.90 then count_value else -9999 end) as p90_value
-from
+with rawData(count_value) as
 (
-select datediff(dd,d1.death_date, t0.max_date) as count_value,
-	1.0*(row_number() over (order by datediff(dd,d1.death_date, t0.max_date)))/(COUNT_BIG(*) over ()+1) as p1
-from @cdm_database_schema.death d1
+  select datediff(dd,d1.death_date, t0.max_date) as count_value
+  from @cdm_database_schema.death d1
 	inner join
 	(
 		select person_id, max(visit_start_date) as max_date
@@ -2444,30 +2826,65 @@ from @cdm_database_schema.death d1
 		group by person_id
 	) t0
 	on d1.person_id = t0.person_id
-) t1
+),
+overallStats (avg_value, stdev_value, min_value, max_value, total) as
+(
+  select avg(1.0 * count_value) as avg_value,
+    stdev(count_value) as stdev_value,
+    min(count_value) as min_value,
+    max(count_value) as max_value,
+    count_big(*) as total
+  from rawData
+),
+stats (count_value, total, rn) as
+(
+  select count_value, 
+  	count_big(*) as total, 
+		row_number() over (order by count_value) as rn
+  FROM rawData
+  group by count_value
+),
+priorStats (count_value, total, accumulated) as
+(
+  select s.count_value, s.total, sum(p.total) as accumulated
+  from stats s
+  join stats p on p.rn <= s.rn
+  group by s.count_value, s.total, s.rn
+)
+select 513 as analysis_id,
+  o.total as count_value,
+  o.min_value,
+	o.max_value,
+	o.avg_value,
+	o.stdev_value,
+	MIN(case when p.accumulated >= .50 * o.total then count_value else o.max_value end) as median_value,
+	MIN(case when p.accumulated >= .10 * o.total then count_value else o.max_value end) as p10_value,
+	MIN(case when p.accumulated >= .25 * o.total then count_value else o.max_value end) as p25_value,
+	MIN(case when p.accumulated >= .75 * o.total then count_value else o.max_value end) as p75_value,
+	MIN(case when p.accumulated >= .90 * o.total then count_value else o.max_value end) as p90_value
+into #tempResults
+from priorStats p
+cross apply overallStats o
+GROUP BY o.total, o.min_value, o.max_value, o.avg_value, o.stdev_value
 ;
+
+insert into @results_database_schema.ACHILLES_results_dist (analysis_id, count_value, min_value, max_value, avg_value, stdev_value, median_value, p10_value, p25_value, p75_value, p90_value)
+select analysis_id, count_value, min_value, max_value, avg_value, stdev_value, median_value, p10_value, p25_value, p75_value, p90_value
+from #tempResults;
+
+truncate table #tempResults;
+
+drop table #tempResults;
+
 --}
 
 
 --{514 IN (@list_of_analysis_ids)}?{
 -- 514	Distribution of time from death to last procedure
-insert into @results_database_schema.ACHILLES_results_dist (analysis_id, count_value, min_value, max_value, avg_value, stdev_value, median_value, p10_value, p25_value, p75_value, p90_value)
-select 514 as analysis_id,
-	COUNT_BIG(count_value) as count_value,
-	min(count_value) as min_value,
-	max(count_value) as max_value,
-	avg(1.0*count_value) as avg_value,
-	stdev(count_value) as stdev_value,
-	max(case when p1<=0.50 then count_value else -9999 end) as median_value,
-	max(case when p1<=0.10 then count_value else -9999 end) as p10_value,
-	max(case when p1<=0.25 then count_value else -9999 end) as p25_value,
-	max(case when p1<=0.75 then count_value else -9999 end) as p75_value,
-	max(case when p1<=0.90 then count_value else -9999 end) as p90_value
-from
+with rawData(count_value) as
 (
-select datediff(dd,d1.death_date, t0.max_date) as count_value,
-	1.0*(row_number() over (order by datediff(dd,d1.death_date, t0.max_date)))/(COUNT_BIG(*) over ()+1) as p1
-from @cdm_database_schema.death d1
+  select datediff(dd,d1.death_date, t0.max_date) as count_value
+  from @cdm_database_schema.death d1
 	inner join
 	(
 		select person_id, max(procedure_date) as max_date
@@ -2475,30 +2892,65 @@ from @cdm_database_schema.death d1
 		group by person_id
 	) t0
 	on d1.person_id = t0.person_id
-) t1
+),
+overallStats (avg_value, stdev_value, min_value, max_value, total) as
+(
+  select avg(1.0 * count_value) as avg_value,
+    stdev(count_value) as stdev_value,
+    min(count_value) as min_value,
+    max(count_value) as max_value,
+    count_big(*) as total
+  from rawData
+),
+stats (count_value, total, rn) as
+(
+  select count_value, 
+  	count_big(*) as total, 
+		row_number() over (order by count_value) as rn
+  FROM rawData
+  group by count_value
+),
+priorStats (count_value, total, accumulated) as
+(
+  select s.count_value, s.total, sum(p.total) as accumulated
+  from stats s
+  join stats p on p.rn <= s.rn
+  group by s.count_value, s.total, s.rn
+)
+select 514 as analysis_id,
+  o.total as count_value,
+  o.min_value,
+	o.max_value,
+	o.avg_value,
+	o.stdev_value,
+	MIN(case when p.accumulated >= .50 * o.total then count_value else o.max_value end) as median_value,
+	MIN(case when p.accumulated >= .10 * o.total then count_value else o.max_value end) as p10_value,
+	MIN(case when p.accumulated >= .25 * o.total then count_value else o.max_value end) as p25_value,
+	MIN(case when p.accumulated >= .75 * o.total then count_value else o.max_value end) as p75_value,
+	MIN(case when p.accumulated >= .90 * o.total then count_value else o.max_value end) as p90_value
+into #tempResults
+from priorStats p
+cross apply overallStats o
+GROUP BY o.total, o.min_value, o.max_value, o.avg_value, o.stdev_value
 ;
+
+insert into @results_database_schema.ACHILLES_results_dist (analysis_id, count_value, min_value, max_value, avg_value, stdev_value, median_value, p10_value, p25_value, p75_value, p90_value)
+select analysis_id, count_value, min_value, max_value, avg_value, stdev_value, median_value, p10_value, p25_value, p75_value, p90_value
+from #tempResults;
+
+truncate table #tempResults;
+
+drop table #tempResults;
+
 --}
 
 
 --{515 IN (@list_of_analysis_ids)}?{
 -- 515	Distribution of time from death to last observation
-insert into @results_database_schema.ACHILLES_results_dist (analysis_id, count_value, min_value, max_value, avg_value, stdev_value, median_value, p10_value, p25_value, p75_value, p90_value)
-select 515 as analysis_id,
-	COUNT_BIG(count_value) as count_value,
-	min(count_value) as min_value,
-	max(count_value) as max_value,
-	avg(1.0*count_value) as avg_value,
-	stdev(count_value) as stdev_value,
-	max(case when p1<=0.50 then count_value else -9999 end) as median_value,
-	max(case when p1<=0.10 then count_value else -9999 end) as p10_value,
-	max(case when p1<=0.25 then count_value else -9999 end) as p25_value,
-	max(case when p1<=0.75 then count_value else -9999 end) as p75_value,
-	max(case when p1<=0.90 then count_value else -9999 end) as p90_value
-from
+with rawData(count_value) as
 (
-select datediff(dd,d1.death_date, t0.max_date) as count_value,
-	1.0*(row_number() over (order by datediff(dd,d1.death_date, t0.max_date)))/(COUNT_BIG(*) over ()+1) as p1
-from @cdm_database_schema.death d1
+  select datediff(dd,d1.death_date, t0.max_date) as count_value
+  from @cdm_database_schema.death d1
 	inner join
 	(
 		select person_id, max(observation_date) as max_date
@@ -2506,8 +2958,57 @@ from @cdm_database_schema.death d1
 		group by person_id
 	) t0
 	on d1.person_id = t0.person_id
-) t1
+),
+overallStats (avg_value, stdev_value, min_value, max_value, total) as
+(
+  select avg(1.0 * count_value) as avg_value,
+    stdev(count_value) as stdev_value,
+    min(count_value) as min_value,
+    max(count_value) as max_value,
+    count_big(*) as total
+  from rawData
+),
+stats (count_value, total, rn) as
+(
+  select count_value, 
+  	count_big(*) as total, 
+		row_number() over (order by count_value) as rn
+  FROM rawData
+  group by count_value
+),
+priorStats (count_value, total, accumulated) as
+(
+  select s.count_value, s.total, sum(p.total) as accumulated
+  from stats s
+  join stats p on p.rn <= s.rn
+  group by s.count_value, s.total, s.rn
+)
+select 515 as analysis_id,
+  o.total as count_value,
+  o.min_value,
+	o.max_value,
+	o.avg_value,
+	o.stdev_value,
+	MIN(case when p.accumulated >= .50 * o.total then count_value else o.max_value end) as median_value,
+	MIN(case when p.accumulated >= .10 * o.total then count_value else o.max_value end) as p10_value,
+	MIN(case when p.accumulated >= .25 * o.total then count_value else o.max_value end) as p25_value,
+	MIN(case when p.accumulated >= .75 * o.total then count_value else o.max_value end) as p75_value,
+	MIN(case when p.accumulated >= .90 * o.total then count_value else o.max_value end) as p90_value
+into #tempResults
+from priorStats p
+cross apply overallStats o
+GROUP BY o.total, o.min_value, o.max_value, o.avg_value, o.stdev_value
 ;
+
+insert into @results_database_schema.ACHILLES_results_dist (analysis_id, count_value, min_value, max_value, avg_value, stdev_value, median_value, p10_value, p25_value, p75_value, p90_value)
+select analysis_id, count_value, min_value, max_value, avg_value, stdev_value, median_value, p10_value, p25_value, p75_value, p90_value
+from #tempResults
+;
+
+truncate table #tempResults;
+drop table #tempResults;
+
+
 --}
 
 
@@ -2565,31 +3066,62 @@ group by po1.procedure_concept_id,
 
 --{603 IN (@list_of_analysis_ids)}?{
 -- 603	Number of distinct procedure occurrence concepts per person
-insert into @results_database_schema.ACHILLES_results_dist (analysis_id, count_value, min_value, max_value, avg_value, stdev_value, median_value, p10_value, p25_value, p75_value, p90_value)
-select 603 as analysis_id,
-	COUNT_BIG(count_value) as count_value,
-	min(count_value) as min_value,
-	max(count_value) as max_value,
-	avg(1.0*count_value) as avg_value,
-	stdev(count_value) as stdev_value,
-	max(case when p1<=0.50 then count_value else -9999 end) as median_value,
-	max(case when p1<=0.10 then count_value else -9999 end) as p10_value,
-	max(case when p1<=0.25 then count_value else -9999 end) as p25_value,
-	max(case when p1<=0.75 then count_value else -9999 end) as p75_value,
-	max(case when p1<=0.90 then count_value else -9999 end) as p90_value
-from
+with rawData(count_value) as
 (
-select num_procedures as count_value,
-	1.0*(row_number() over (order by num_procedures))/(COUNT_BIG(*) over ()+1) as p1
-from
-	(
-	select po1.person_id, COUNT_BIG(distinct po1.procedure_concept_id) as num_procedures
-	from
-	@cdm_database_schema.procedure_occurrence po1
-	group by po1.person_id
-	) t0
-) t1
+  select COUNT_BIG(distinct po.procedure_concept_id) as num_procedures
+	from @cdm_database_schema.procedure_occurrence po
+	group by po.person_id
+),
+overallStats (avg_value, stdev_value, min_value, max_value, total) as
+(
+  select avg(1.0 * count_value) as avg_value,
+    stdev(count_value) as stdev_value,
+    min(count_value) as min_value,
+    max(count_value) as max_value,
+    count_big(*) as total
+  from rawData
+),
+stats (count_value, total, rn) as
+(
+  select count_value, 
+  	count_big(*) as total, 
+		row_number() over (order by count_value) as rn
+  FROM rawData
+  group by count_value
+),
+priorStats (count_value, total, accumulated) as
+(
+  select s.count_value, s.total, sum(p.total) as accumulated
+  from stats s
+  join stats p on p.rn <= s.rn
+  group by s.count_value, s.total, s.rn
+)
+select 603 as analysis_id,
+  o.total as count_value,
+  o.min_value,
+	o.max_value,
+	o.avg_value,
+	o.stdev_value,
+	MIN(case when p.accumulated >= .50 * o.total then count_value else o.max_value end) as median_value,
+	MIN(case when p.accumulated >= .10 * o.total then count_value else o.max_value end) as p10_value,
+	MIN(case when p.accumulated >= .25 * o.total then count_value else o.max_value end) as p25_value,
+	MIN(case when p.accumulated >= .75 * o.total then count_value else o.max_value end) as p75_value,
+	MIN(case when p.accumulated >= .90 * o.total then count_value else o.max_value end) as p90_value
+into #tempResults
+from priorStats p
+cross apply overallStats o
+GROUP BY o.total, o.min_value, o.max_value, o.avg_value, o.stdev_value
 ;
+
+insert into @results_database_schema.ACHILLES_results_dist (analysis_id, count_value, min_value, max_value, avg_value, stdev_value, median_value, p10_value, p25_value, p75_value, p90_value)
+select analysis_id, count_value, min_value, max_value, avg_value, stdev_value, median_value, p10_value, p25_value, p75_value, p90_value
+from #tempResults
+;
+
+truncate table #tempResults;
+drop table #tempResults;
+
+
 --}
 
 
@@ -2632,43 +3164,74 @@ group by po1.procedure_CONCEPT_ID,
 
 --{606 IN (@list_of_analysis_ids)}?{
 -- 606	Distribution of age by procedure_concept_id
-insert into @results_database_schema.ACHILLES_results_dist (analysis_id, stratum_1, stratum_2, count_value, min_value, max_value, avg_value, stdev_value, median_value, p10_value, p25_value, p75_value, p90_value)
-select 606 as analysis_id,
-	procedure_concept_id as stratum_1,
-	gender_concept_id as stratum_2,
-	COUNT_BIG(count_value) as count_value,
-	min(count_value) as min_value,
-	max(count_value) as max_value,
-	avg(1.0*count_value) as avg_value,
-	stdev(count_value) as stdev_value,
-	max(case when p1<=0.50 then count_value else -9999 end) as median_value,
-	max(case when p1<=0.10 then count_value else -9999 end) as p10_value,
-	max(case when p1<=0.25 then count_value else -9999 end) as p25_value,
-	max(case when p1<=0.75 then count_value else -9999 end) as p75_value,
-	max(case when p1<=0.90 then count_value else -9999 end) as p90_value
-from
-(
-select po1.procedure_concept_id,
-	p1.gender_concept_id,
-	po1.procedure_start_year - p1.year_of_birth as count_value,
-	1.0*(row_number() over (partition by po1.procedure_concept_id, p1.gender_concept_id order by po1.procedure_start_year - p1.year_of_birth))/(COUNT_BIG(*) over (partition by po1.procedure_concept_id, p1.gender_concept_id)+1) as p1
+select po1.procedure_concept_id as subject_id,
+  p1.gender_concept_id,
+	po1.procedure_start_year - p1.year_of_birth as count_value
+INTO #rawData_606
 from @cdm_database_schema.PERSON p1
 inner join
-(select person_id, procedure_concept_id, min(year(procedure_date)) as procedure_start_year
-from @cdm_database_schema.procedure_occurrence
-group by person_id, procedure_concept_id
-) po1
-on p1.person_id = po1.person_id
-) t1
-group by procedure_concept_id, gender_concept_id
+(
+	select person_id, procedure_concept_id, min(year(procedure_date)) as procedure_start_year
+	from @cdm_database_schema.procedure_occurrence
+	group by person_id, procedure_concept_id
+) po1 on p1.person_id = po1.person_id
 ;
+
+with overallStats (stratum1_id, stratum2_id, avg_value, stdev_value, min_value, max_value, total) as
+(
+  select subject_id as stratum1_id,
+    gender_concept_id as stratum2_id,
+    avg(1.0 * count_value) as avg_value,
+    stdev(count_value) as stdev_value,
+    min(count_value) as min_value,
+    max(count_value) as max_value,
+    count_big(*) as total
+  FROM #rawData_606
+	group by subject_id, gender_concept_id
+),
+stats (stratum1_id, stratum2_id, count_value, total, rn) as
+(
+  select subject_id as stratum1_id, gender_concept_id as stratum2_id, count_value, count_big(*) as total, row_number() over (partition by subject_id, gender_concept_id order by count_value) as rn
+  FROM #rawData_606
+  group by subject_id, gender_concept_id, count_value
+),
+priorStats (stratum1_id, stratum2_id, count_value, total, accumulated) as
+(
+  select s.stratum1_id, s.stratum2_id, s.count_value, s.total, sum(p.total) as accumulated
+  from stats s
+  join stats p on s.stratum1_id = p.stratum1_id and s.stratum2_id = p.stratum2_id and p.rn <= s.rn
+  group by s.stratum1_id, s.stratum2_id, s.count_value, s.total, s.rn
+)
+select 606 as analysis_id,
+  o.stratum1_id,
+  o.stratum2_id,
+  o.total as count_value,
+  o.min_value,
+	o.max_value,
+	o.avg_value,
+	o.stdev_value,
+	MIN(case when p.accumulated >= .50 * o.total then count_value else o.max_value end) as median_value,
+	MIN(case when p.accumulated >= .10 * o.total then count_value else o.max_value end) as p10_value,
+	MIN(case when p.accumulated >= .25 * o.total then count_value else o.max_value end) as p25_value,
+	MIN(case when p.accumulated >= .75 * o.total then count_value else o.max_value end) as p75_value,
+	MIN(case when p.accumulated >= .90 * o.total then count_value else o.max_value end) as p90_value
+into #tempResults
+from priorStats p
+join overallStats o on p.stratum1_id = o.stratum1_id and p.stratum2_id = o.stratum2_id 
+GROUP BY o.stratum1_id, o.stratum2_id, o.total, o.min_value, o.max_value, o.avg_value, o.stdev_value
+;
+
+insert into @results_database_schema.ACHILLES_results_dist (analysis_id, stratum_1, stratum_2, count_value, min_value, max_value, avg_value, stdev_value, median_value, p10_value, p25_value, p75_value, p90_value)
+select analysis_id, stratum1_id, stratum2_id, count_value, min_value, max_value, avg_value, stdev_value, median_value, p10_value, p25_value, p75_value, p90_value
+from #tempResults
+;
+
+truncate table #tempResults;
+drop table #tempResults;
+truncate table #rawData_606;
+drop table #rawData_606;
+
 --}
-
-
-
-
-
-
 
 --{609 IN (@list_of_analysis_ids)}?{
 -- 609	Number of procedure occurrence records with invalid person_id
@@ -2797,31 +3360,66 @@ group by de1.drug_concept_id,
 
 --{703 IN (@list_of_analysis_ids)}?{
 -- 703	Number of distinct drug exposure concepts per person
-insert into @results_database_schema.ACHILLES_results_dist (analysis_id, count_value, min_value, max_value, avg_value, stdev_value, median_value, p10_value, p25_value, p75_value, p90_value)
-select 703 as analysis_id,
-	COUNT_BIG(count_value) as count_value,
-	min(count_value) as min_value,
-	max(count_value) as max_value,
-	avg(1.0*count_value) as avg_value,
-	stdev(count_value) as stdev_value,
-	max(case when p1<=0.50 then count_value else -9999 end) as median_value,
-	max(case when p1<=0.10 then count_value else -9999 end) as p10_value,
-	max(case when p1<=0.25 then count_value else -9999 end) as p25_value,
-	max(case when p1<=0.75 then count_value else -9999 end) as p75_value,
-	max(case when p1<=0.90 then count_value else -9999 end) as p90_value
-from
+with rawData(count_value) as
 (
-select num_drugs as count_value,
-	1.0*(row_number() over (order by num_drugs))/(COUNT_BIG(*) over ()+1) as p1
-from
-	(
-	select de1.person_id, COUNT_BIG(distinct de1.drug_concept_id) as num_drugs
+  select num_drugs as count_value
 	from
-	@cdm_database_schema.drug_exposure de1
-	group by de1.person_id
+	(
+		select de1.person_id, COUNT_BIG(distinct de1.drug_concept_id) as num_drugs
+		from
+		@cdm_database_schema.drug_exposure de1
+		group by de1.person_id
 	) t0
-) t1
+),
+overallStats (avg_value, stdev_value, min_value, max_value, total) as
+(
+  select avg(1.0 * count_value) as avg_value,
+    stdev(count_value) as stdev_value,
+    min(count_value) as min_value,
+    max(count_value) as max_value,
+    count_big(*) as total
+  from rawData
+),
+stats (count_value, total, rn) as
+(
+  select count_value, 
+  	count_big(*) as total, 
+		row_number() over (order by count_value) as rn
+  FROM rawData
+  group by count_value
+),
+priorStats (count_value, total, accumulated) as
+(
+  select s.count_value, s.total, sum(p.total) as accumulated
+  from stats s
+  join stats p on p.rn <= s.rn
+  group by s.count_value, s.total, s.rn
+)
+select 703 as analysis_id,
+  o.total as count_value,
+  o.min_value,
+	o.max_value,
+	o.avg_value,
+	o.stdev_value,
+	MIN(case when p.accumulated >= .50 * o.total then count_value else o.max_value end) as median_value,
+	MIN(case when p.accumulated >= .10 * o.total then count_value else o.max_value end) as p10_value,
+	MIN(case when p.accumulated >= .25 * o.total then count_value else o.max_value end) as p25_value,
+	MIN(case when p.accumulated >= .75 * o.total then count_value else o.max_value end) as p75_value,
+	MIN(case when p.accumulated >= .90 * o.total then count_value else o.max_value end) as p90_value
+into #tempResults
+from priorStats p
+cross apply overallStats o
+GROUP BY o.total, o.min_value, o.max_value, o.avg_value, o.stdev_value
 ;
+
+insert into @results_database_schema.ACHILLES_results_dist (analysis_id, count_value, min_value, max_value, avg_value, stdev_value, median_value, p10_value, p25_value, p75_value, p90_value)
+select analysis_id, count_value, min_value, max_value, avg_value, stdev_value, median_value, p10_value, p25_value, p75_value, p90_value
+from #tempResults
+;
+
+truncate table #tempResults;
+drop table #tempResults;
+
 --}
 
 
@@ -2864,38 +3462,76 @@ group by de1.drug_CONCEPT_ID,
 
 --{706 IN (@list_of_analysis_ids)}?{
 -- 706	Distribution of age by drug_concept_id
-insert into @results_database_schema.ACHILLES_results_dist (analysis_id, stratum_1, stratum_2, count_value, min_value, max_value, avg_value, stdev_value, median_value, p10_value, p25_value, p75_value, p90_value)
-select 706 as analysis_id,
-	drug_concept_id as stratum_1,
-	gender_concept_id as stratum_2,
-	COUNT_BIG(count_value) as count_value,
-	min(count_value) as min_value,
-	max(count_value) as max_value,
-	avg(1.0*count_value) as avg_value,
-	stdev(count_value) as stdev_value,
-	max(case when p1<=0.50 then count_value else -9999 end) as median_value,
-	max(case when p1<=0.10 then count_value else -9999 end) as p10_value,
-	max(case when p1<=0.25 then count_value else -9999 end) as p25_value,
-	max(case when p1<=0.75 then count_value else -9999 end) as p75_value,
-	max(case when p1<=0.90 then count_value else -9999 end) as p90_value
-from
-(
-select de1.drug_concept_id,
-	p1.gender_concept_id,
-	de1.drug_start_year - p1.year_of_birth as count_value,
-	1.0*(row_number() over (partition by de1.drug_concept_id, p1.gender_concept_id order by de1.drug_start_year - p1.year_of_birth))/(COUNT_BIG(*) over (partition by de1.drug_concept_id, p1.gender_concept_id)+1) as p1
+select de1.drug_concept_id as subject_id,
+  p1.gender_concept_id,
+	de1.drug_start_year - p1.year_of_birth as count_value
+INTO #rawData_706
 from @cdm_database_schema.PERSON p1
 inner join
-(select person_id, drug_concept_id, min(year(drug_exposure_start_date)) as drug_start_year
-from @cdm_database_schema.drug_exposure
-group by person_id, drug_concept_id
-) de1
-on p1.person_id = de1.person_id
-) t1
-group by drug_concept_id, gender_concept_id
+(
+	select person_id, drug_concept_id, min(year(drug_exposure_start_date)) as drug_start_year
+	from @cdm_database_schema.drug_exposure
+	group by person_id, drug_concept_id
+) de1 on p1.person_id = de1.person_id
 ;
---}
 
+with overallStats (stratum1_id, stratum2_id, avg_value, stdev_value, min_value, max_value, total) as
+(
+  select subject_id as stratum1_id,
+    gender_concept_id as stratum2_id,
+    avg(1.0 * count_value) as avg_value,
+    stdev(count_value) as stdev_value,
+    min(count_value) as min_value,
+    max(count_value) as max_value,
+    count_big(*) as total
+  FROM #rawData_706
+	group by subject_id, gender_concept_id
+),
+stats (stratum1_id, stratum2_id, count_value, total, rn) as
+(
+  select subject_id as stratum1_id, gender_concept_id as stratum2_id, count_value, count_big(*) as total, row_number() over (partition by subject_id, gender_concept_id order by count_value) as rn
+  FROM #rawData_706
+  group by subject_id, gender_concept_id, count_value
+),
+priorStats (stratum1_id, stratum2_id, count_value, total, accumulated) as
+(
+  select s.stratum1_id, s.stratum2_id, s.count_value, s.total, sum(p.total) as accumulated
+  from stats s
+  join stats p on s.stratum1_id = p.stratum1_id and s.stratum2_id = p.stratum2_id and p.rn <= s.rn
+  group by s.stratum1_id, s.stratum2_id, s.count_value, s.total, s.rn
+)
+select 706 as analysis_id,
+  o.stratum1_id,
+  o.stratum2_id,
+  o.total as count_value,
+  o.min_value,
+	o.max_value,
+	o.avg_value,
+	o.stdev_value,
+	MIN(case when p.accumulated >= .50 * o.total then count_value else o.max_value end) as median_value,
+	MIN(case when p.accumulated >= .10 * o.total then count_value else o.max_value end) as p10_value,
+	MIN(case when p.accumulated >= .25 * o.total then count_value else o.max_value end) as p25_value,
+	MIN(case when p.accumulated >= .75 * o.total then count_value else o.max_value end) as p75_value,
+	MIN(case when p.accumulated >= .90 * o.total then count_value else o.max_value end) as p90_value
+into #tempResults
+from priorStats p
+join overallStats o on p.stratum1_id = o.stratum1_id and p.stratum2_id = o.stratum2_id 
+GROUP BY o.stratum1_id, o.stratum2_id, o.total, o.min_value, o.max_value, o.avg_value, o.stdev_value
+;
+
+insert into @results_database_schema.ACHILLES_results_dist (analysis_id, stratum_1, stratum_2, count_value, min_value, max_value, avg_value, stdev_value, median_value, p10_value, p25_value, p75_value, p90_value)
+select analysis_id, stratum1_id, stratum2_id, count_value, min_value, max_value, avg_value, stdev_value, median_value, p10_value, p25_value, p75_value, p90_value
+from #tempResults
+;
+
+
+truncate table #rawData_706;
+drop table #rawData_706;
+
+truncate table #tempResults;
+drop table #tempResults;
+
+--}
 
 
 
@@ -2973,87 +3609,187 @@ where de1.visit_occurrence_id is not null
 
 --{715 IN (@list_of_analysis_ids)}?{
 -- 715	Distribution of days_supply by drug_concept_id
-insert into @results_database_schema.ACHILLES_results_dist (analysis_id, stratum_1, count_value, min_value, max_value, avg_value, stdev_value, median_value, p10_value, p25_value, p75_value, p90_value)
-select 715 as analysis_id,
-	drug_concept_id as stratum_1,
-	COUNT_BIG(count_value) as count_value,
-	min(count_value) as min_value,
-	max(count_value) as max_value,
-	avg(1.0*count_value) as avg_value,
-	stdev(count_value) as stdev_value,
-	max(case when p1<=0.50 then count_value else -9999 end) as median_value,
-	max(case when p1<=0.10 then count_value else -9999 end) as p10_value,
-	max(case when p1<=0.25 then count_value else -9999 end) as p25_value,
-	max(case when p1<=0.75 then count_value else -9999 end) as p75_value,
-	max(case when p1<=0.90 then count_value else -9999 end) as p90_value
-from
+with rawData(stratum_id, count_value) as
 (
-select drug_concept_id,
-	days_supply as count_value,
-	1.0*(row_number() over (partition by drug_concept_id order by days_supply))/(COUNT_BIG(*) over (partition by drug_concept_id)+1) as p1
-from (select * from @cdm_database_schema.drug_exposure where days_supply is not null) de1
-
-) t1
-group by drug_concept_id
+  select drug_concept_id,
+		days_supply as count_value
+	from @cdm_database_schema.drug_exposure 
+	where days_supply is not null
+),
+overallStats (stratum_id, avg_value, stdev_value, min_value, max_value, total) as
+(
+  select stratum_id,
+    avg(1.0 * count_value) as avg_value,
+    stdev(count_value) as stdev_value,
+    min(count_value) as min_value,
+    max(count_value) as max_value,
+    count_big(*) as total
+  FROM rawData
+	group by stratum_id
+),
+stats (stratum_id, count_value, total, rn) as
+(
+  select stratum_id, count_value, count_big(*) as total, row_number() over (order by count_value) as rn
+  FROM rawData
+  group by stratum_id, count_value
+),
+priorStats (stratum_id, count_value, total, accumulated) as
+(
+  select s.stratum_id, s.count_value, s.total, sum(p.total) as accumulated
+  from stats s
+  join stats p on s.stratum_id = p.stratum_id and p.rn <= s.rn
+  group by s.stratum_id, s.count_value, s.total, s.rn
+)
+select 715 as analysis_id,
+  o.stratum_id,
+  o.total as count_value,
+  o.min_value,
+	o.max_value,
+	o.avg_value,
+	o.stdev_value,
+	MIN(case when p.accumulated >= .50 * o.total then count_value else o.max_value end) as median_value,
+	MIN(case when p.accumulated >= .10 * o.total then count_value else o.max_value end) as p10_value,
+	MIN(case when p.accumulated >= .25 * o.total then count_value else o.max_value end) as p25_value,
+	MIN(case when p.accumulated >= .75 * o.total then count_value else o.max_value end) as p75_value,
+	MIN(case when p.accumulated >= .90 * o.total then count_value else o.max_value end) as p90_value
+into #tempResults
+from priorStats p
+join overallStats o on p.stratum_id = o.stratum_id
+GROUP BY o.stratum_id, o.total, o.min_value, o.max_value, o.avg_value, o.stdev_value
 ;
---}
 
+insert into @results_database_schema.ACHILLES_results_dist (analysis_id, stratum_1, count_value, min_value, max_value, avg_value, stdev_value, median_value, p10_value, p25_value, p75_value, p90_value)
+select analysis_id, stratum_id, count_value, min_value, max_value, avg_value, stdev_value, median_value, p10_value, p25_value, p75_value, p90_value
+from #tempResults
+;
+
+truncate table #tempResults;
+drop table #tempResults;
+
+--}
 
 
 --{716 IN (@list_of_analysis_ids)}?{
 -- 716	Distribution of refills by drug_concept_id
-insert into @results_database_schema.ACHILLES_results_dist (analysis_id, stratum_1, count_value, min_value, max_value, avg_value, stdev_value, median_value, p10_value, p25_value, p75_value, p90_value)
-select 716 as analysis_id,
-	drug_concept_id as stratum_1,
-	COUNT_BIG(count_value) as count_value,
-	min(count_value) as min_value,
-	max(count_value) as max_value,
-	avg(1.0*count_value) as avg_value,
-	stdev(count_value) as stdev_value,
-	max(case when p1<=0.50 then count_value else -9999 end) as median_value,
-	max(case when p1<=0.10 then count_value else -9999 end) as p10_value,
-	max(case when p1<=0.25 then count_value else -9999 end) as p25_value,
-	max(case when p1<=0.75 then count_value else -9999 end) as p75_value,
-	max(case when p1<=0.90 then count_value else -9999 end) as p90_value
-from
+with rawData(stratum_id, count_value) as
 (
-select drug_concept_id,
-	refills as count_value,
-	1.0*(row_number() over (partition by drug_concept_id order by refills))/(COUNT_BIG(*) over (partition by drug_concept_id)+1) as p1
-from (select * from @cdm_database_schema.drug_exposure where refills is not null) de1
-) t1
-group by drug_concept_id
+  select drug_concept_id,
+    refills as count_value
+	from @cdm_database_schema.drug_exposure 
+	where refills is not null
+),
+overallStats (stratum_id, avg_value, stdev_value, min_value, max_value, total) as
+(
+  select stratum_id,
+    avg(1.0 * count_value) as avg_value,
+    stdev(count_value) as stdev_value,
+    min(count_value) as min_value,
+    max(count_value) as max_value,
+    count_big(*) as total
+  FROM rawData
+	group by stratum_id
+),
+stats (stratum_id, count_value, total, rn) as
+(
+  select stratum_id, count_value, count_big(*) as total, row_number() over (order by count_value) as rn
+  FROM rawData
+  group by stratum_id, count_value
+),
+priorStats (stratum_id, count_value, total, accumulated) as
+(
+  select s.stratum_id, s.count_value, s.total, sum(p.total) as accumulated
+  from stats s
+  join stats p on s.stratum_id = p.stratum_id and p.rn <= s.rn
+  group by s.stratum_id, s.count_value, s.total, s.rn
+)
+select 716 as analysis_id,
+  o.stratum_id,
+  o.total as count_value,
+  o.min_value,
+	o.max_value,
+	o.avg_value,
+	o.stdev_value,
+	MIN(case when p.accumulated >= .50 * o.total then count_value else o.max_value end) as median_value,
+	MIN(case when p.accumulated >= .10 * o.total then count_value else o.max_value end) as p10_value,
+	MIN(case when p.accumulated >= .25 * o.total then count_value else o.max_value end) as p25_value,
+	MIN(case when p.accumulated >= .75 * o.total then count_value else o.max_value end) as p75_value,
+	MIN(case when p.accumulated >= .90 * o.total then count_value else o.max_value end) as p90_value
+into #tempResults
+from priorStats p
+join overallStats o on p.stratum_id = o.stratum_id
+GROUP BY o.stratum_id, o.total, o.min_value, o.max_value, o.avg_value, o.stdev_value
 ;
+
+insert into @results_database_schema.ACHILLES_results_dist (analysis_id, stratum_1, count_value, min_value, max_value, avg_value, stdev_value, median_value, p10_value, p25_value, p75_value, p90_value)
+select analysis_id, stratum_id, count_value, min_value, max_value, avg_value, stdev_value, median_value, p10_value, p25_value, p75_value, p90_value
+from #tempResults;
+
+truncate table #tempResults;
+drop table #tempResults;
+
 --}
-
-
 
 
 
 --{717 IN (@list_of_analysis_ids)}?{
 -- 717	Distribution of quantity by drug_concept_id
-insert into @results_database_schema.ACHILLES_results_dist (analysis_id, stratum_1, count_value, min_value, max_value, avg_value, stdev_value, median_value, p10_value, p25_value, p75_value, p90_value)
-select 717 as analysis_id,
-	drug_concept_id as stratum_1,
-	COUNT_BIG(count_value) as count_value,
-	min(count_value) as min_value,
-	max(count_value) as max_value,
-	avg(1.0*count_value) as avg_value,
-	stdev(count_value) as stdev_value,
-	max(case when p1<=0.50 then count_value else -9999 end) as median_value,
-	max(case when p1<=0.10 then count_value else -9999 end) as p10_value,
-	max(case when p1<=0.25 then count_value else -9999 end) as p25_value,
-	max(case when p1<=0.75 then count_value else -9999 end) as p75_value,
-	max(case when p1<=0.90 then count_value else -9999 end) as p90_value
-from
+with rawData(stratum_id, count_value) as
 (
-select drug_concept_id,
-	quantity as count_value,
-	1.0*(row_number() over (partition by drug_concept_id order by quantity))/(COUNT_BIG(*) over (partition by drug_concept_id)+1) as p1
-from (select * from @cdm_database_schema.drug_exposure where quantity is not null) de1
-) t1
-group by drug_concept_id
+  select drug_concept_id,
+    quantity as count_value
+  from @cdm_database_schema.drug_exposure 
+	where quantity is not null
+),
+overallStats (stratum_id, avg_value, stdev_value, min_value, max_value, total) as
+(
+  select stratum_id,
+    avg(1.0 * count_value) as avg_value,
+    stdev(count_value) as stdev_value,
+    min(count_value) as min_value,
+    max(count_value) as max_value,
+    count_big(*) as total
+  FROM rawData
+	group by stratum_id
+),
+stats (stratum_id, count_value, total, rn) as
+(
+  select stratum_id, count_value, count_big(*) as total, row_number() over (order by count_value) as rn
+  FROM rawData
+  group by stratum_id, count_value
+),
+priorStats (stratum_id, count_value, total, accumulated) as
+(
+  select s.stratum_id, s.count_value, s.total, sum(p.total) as accumulated
+  from stats s
+  join stats p on s.stratum_id = p.stratum_id and p.rn <= s.rn
+  group by s.stratum_id, s.count_value, s.total, s.rn
+)
+select 717 as analysis_id,
+  o.stratum_id,
+  o.total as count_value,
+  o.min_value,
+	o.max_value,
+	o.avg_value,
+	o.stdev_value,
+	MIN(case when p.accumulated >= .50 * o.total then count_value else o.max_value end) as median_value,
+	MIN(case when p.accumulated >= .10 * o.total then count_value else o.max_value end) as p10_value,
+	MIN(case when p.accumulated >= .25 * o.total then count_value else o.max_value end) as p25_value,
+	MIN(case when p.accumulated >= .75 * o.total then count_value else o.max_value end) as p75_value,
+	MIN(case when p.accumulated >= .90 * o.total then count_value else o.max_value end) as p90_value
+into #tempResults
+from priorStats p
+join overallStats o on p.stratum_id = o.stratum_id
+GROUP BY o.stratum_id, o.total, o.min_value, o.max_value, o.avg_value, o.stdev_value
 ;
+
+insert into @results_database_schema.ACHILLES_results_dist (analysis_id, stratum_1, count_value, min_value, max_value, avg_value, stdev_value, median_value, p10_value, p25_value, p75_value, p90_value)
+select analysis_id, stratum_id, count_value, min_value, max_value, avg_value, stdev_value, median_value, p10_value, p25_value, p75_value, p90_value
+from #tempResults;
+
+truncate table #tempResults;
+drop table #tempResults;
+
+
 --}
 
 
@@ -3122,31 +3858,68 @@ group by o1.observation_concept_id,
 
 --{803 IN (@list_of_analysis_ids)}?{
 -- 803	Number of distinct observation occurrence concepts per person
-insert into @results_database_schema.ACHILLES_results_dist (analysis_id, count_value, min_value, max_value, avg_value, stdev_value, median_value, p10_value, p25_value, p75_value, p90_value)
-select 803 as analysis_id,
-	COUNT_BIG(count_value) as count_value,
-	min(count_value) as min_value,
-	max(count_value) as max_value,
-	avg(1.0*count_value) as avg_value,
-	stdev(count_value) as stdev_value,
-	max(case when p1<=0.50 then count_value else -9999 end) as median_value,
-	max(case when p1<=0.10 then count_value else -9999 end) as p10_value,
-	max(case when p1<=0.25 then count_value else -9999 end) as p25_value,
-	max(case when p1<=0.75 then count_value else -9999 end) as p75_value,
-	max(case when p1<=0.90 then count_value else -9999 end) as p90_value
-from
+with rawData(count_value) as
 (
-select num_observations as count_value,
-	1.0*(row_number() over (order by num_observations))/(COUNT_BIG(*) over ()+1) as p1
-from
+  select num_observations as count_value
+  from
 	(
-	select o1.person_id, COUNT_BIG(distinct o1.observation_concept_id) as num_observations
-	from
-	@cdm_database_schema.observation o1
-	group by o1.person_id
+  	select o1.person_id, COUNT_BIG(distinct o1.observation_concept_id) as num_observations
+  	from
+  	@cdm_database_schema.observation o1
+  	group by o1.person_id
 	) t0
-) t1
+),
+overallStats (avg_value, stdev_value, min_value, max_value, total) as
+(
+  select avg(1.0 * count_value) as avg_value,
+    stdev(count_value) as stdev_value,
+    min(count_value) as min_value,
+    max(count_value) as max_value,
+    count_big(*) as total
+  from rawData
+),
+stats (count_value, total, rn) as
+(
+  select count_value, 
+  	count_big(*) as total, 
+		row_number() over (order by count_value) as rn
+  FROM rawData
+  group by count_value
+),
+priorStats (count_value, total, accumulated) as
+(
+  select s.count_value, s.total, sum(p.total) as accumulated
+  from stats s
+  join stats p on p.rn <= s.rn
+  group by s.count_value, s.total, s.rn
+)
+select 803 as analysis_id,
+  o.total as count_value,
+  o.min_value,
+	o.max_value,
+	o.avg_value,
+	o.stdev_value,
+	MIN(case when p.accumulated >= .50 * o.total then count_value else o.max_value end) as median_value,
+	MIN(case when p.accumulated >= .10 * o.total then count_value else o.max_value end) as p10_value,
+	MIN(case when p.accumulated >= .25 * o.total then count_value else o.max_value end) as p25_value,
+	MIN(case when p.accumulated >= .75 * o.total then count_value else o.max_value end) as p75_value,
+	MIN(case when p.accumulated >= .90 * o.total then count_value else o.max_value end) as p90_value
+into #tempResults
+from priorStats p
+cross apply overallStats o
+GROUP BY o.total, o.min_value, o.max_value, o.avg_value, o.stdev_value
 ;
+
+insert into @results_database_schema.ACHILLES_results_dist (analysis_id, count_value, min_value, max_value, avg_value, stdev_value, median_value, p10_value, p25_value, p75_value, p90_value)
+select analysis_id, count_value, min_value, max_value, avg_value, stdev_value, median_value, p10_value, p25_value, p75_value, p90_value
+from #tempResults
+;
+
+truncate table #tempResults;
+
+drop table #tempResults;
+
+
 --}
 
 
@@ -3189,36 +3962,76 @@ group by o1.observation_CONCEPT_ID,
 
 --{806 IN (@list_of_analysis_ids)}?{
 -- 806	Distribution of age by observation_concept_id
-insert into @results_database_schema.ACHILLES_results_dist (analysis_id, stratum_1, stratum_2, count_value, min_value, max_value, avg_value, stdev_value, median_value, p10_value, p25_value, p75_value, p90_value)
-select 806 as analysis_id,
-	observation_concept_id as stratum_1,
-	gender_concept_id as stratum_2,
-	COUNT_BIG(count_value) as count_value,
-	min(count_value) as min_value,
-	max(count_value) as max_value,
-	avg(1.0*count_value) as avg_value,
-	stdev(count_value) as stdev_value,
-	max(case when p1<=0.50 then count_value else -9999 end) as median_value,
-	max(case when p1<=0.10 then count_value else -9999 end) as p10_value,
-	max(case when p1<=0.25 then count_value else -9999 end) as p25_value,
-	max(case when p1<=0.75 then count_value else -9999 end) as p75_value,
-	max(case when p1<=0.90 then count_value else -9999 end) as p90_value
-from
-(
-select o1.observation_concept_id,
-	p1.gender_concept_id,
-	o1.observation_start_year - p1.year_of_birth as count_value,
-	1.0*(row_number() over (partition by o1.observation_concept_id, p1.gender_concept_id order by o1.observation_start_year - p1.year_of_birth))/(COUNT_BIG(*) over (partition by o1.observation_concept_id, p1.gender_concept_id)+1) as p1
+select o1.observation_concept_id as subject_id,
+  p1.gender_concept_id,
+	o1.observation_start_year - p1.year_of_birth as count_value
+INTO #rawData_806
 from @cdm_database_schema.PERSON p1
 inner join
-(select person_id, observation_concept_id, min(year(observation_date)) as observation_start_year
-from @cdm_database_schema.observation
-group by person_id, observation_concept_id
+(
+	select person_id, observation_concept_id, min(year(observation_date)) as observation_start_year
+	from @cdm_database_schema.observation
+	group by person_id, observation_concept_id
 ) o1
 on p1.person_id = o1.person_id
-) t1
-group by observation_concept_id, gender_concept_id
 ;
+
+with overallStats (stratum1_id, stratum2_id, avg_value, stdev_value, min_value, max_value, total) as
+(
+  select subject_id as stratum1_id,
+    gender_concept_id as stratum2_id,
+    avg(1.0 * count_value) as avg_value,
+    stdev(count_value) as stdev_value,
+    min(count_value) as min_value,
+    max(count_value) as max_value,
+    count_big(*) as total
+  FROM #rawData_806
+	group by subject_id, gender_concept_id
+),
+stats (stratum1_id, stratum2_id, count_value, total, rn) as
+(
+  select subject_id as stratum1_id, gender_concept_id as stratum2_id, count_value, count_big(*) as total, row_number() over (partition by subject_id, gender_concept_id order by count_value) as rn
+  FROM #rawData_806
+  group by subject_id, gender_concept_id, count_value
+),
+priorStats (stratum1_id, stratum2_id, count_value, total, accumulated) as
+(
+  select s.stratum1_id, s.stratum2_id, s.count_value, s.total, sum(p.total) as accumulated
+  from stats s
+  join stats p on s.stratum1_id = p.stratum1_id and s.stratum2_id = p.stratum2_id and p.rn <= s.rn
+  group by s.stratum1_id, s.stratum2_id, s.count_value, s.total, s.rn
+)
+select 806 as analysis_id,
+  o.stratum1_id,
+  o.stratum2_id,
+  o.total as count_value,
+  o.min_value,
+	o.max_value,
+	o.avg_value,
+	o.stdev_value,
+	MIN(case when p.accumulated >= .50 * o.total then count_value else o.max_value end) as median_value,
+	MIN(case when p.accumulated >= .10 * o.total then count_value else o.max_value end) as p10_value,
+	MIN(case when p.accumulated >= .25 * o.total then count_value else o.max_value end) as p25_value,
+	MIN(case when p.accumulated >= .75 * o.total then count_value else o.max_value end) as p75_value,
+	MIN(case when p.accumulated >= .90 * o.total then count_value else o.max_value end) as p90_value
+into #tempResults
+from priorStats p
+join overallStats o on p.stratum1_id = o.stratum1_id and p.stratum2_id = o.stratum2_id 
+GROUP BY o.stratum1_id, o.stratum2_id, o.total, o.min_value, o.max_value, o.avg_value, o.stdev_value
+;
+
+insert into @results_database_schema.ACHILLES_results_dist (analysis_id, stratum_1, stratum_2, count_value, min_value, max_value, avg_value, stdev_value, median_value, p10_value, p25_value, p75_value, p90_value)
+select analysis_id, stratum1_id, stratum2_id, count_value, min_value, max_value, avg_value, stdev_value, median_value, p10_value, p25_value, p75_value, p90_value
+from #tempResults
+;
+
+truncate table #rawData_806;
+drop table #rawData_806;
+
+truncate table #tempResults;
+drop table #tempResults;
+
+
 --}
 
 --{807 IN (@list_of_analysis_ids)}?{
@@ -3314,32 +4127,71 @@ where o1.value_as_number is null
 
 
 --{815 IN (@list_of_analysis_ids)}?{
--- 815	Distribution of numeric values, by observation_concept_id and unit_concept_id
-insert into @results_database_schema.ACHILLES_results_dist (analysis_id, stratum_1, stratum_2, count_value, min_value, max_value, avg_value, stdev_value, median_value, p10_value, p25_value, p75_value, p90_value)
-select 815 as analysis_id,
-	observation_concept_id as stratum_1,
-	unit_concept_id as stratum_2,
-	COUNT_BIG(count_value) as count_value,
-	min(count_value) as min_value,
-	max(count_value) as max_value,
-	avg(1.0*count_value) as avg_value,
-	stdev(count_value) as stdev_value,
-	max(case when p1<=0.50 then count_value else -9999 end) as median_value,
-	max(case when p1<=0.10 then count_value else -9999 end) as p10_value,
-	max(case when p1<=0.25 then count_value else -9999 end) as p25_value,
-	max(case when p1<=0.75 then count_value else -9999 end) as p75_value,
-	max(case when p1<=0.90 then count_value else -9999 end) as p90_value
-from
-(
-select observation_concept_id, unit_concept_id,
-	value_as_number as count_value,
-	1.0*(row_number() over (partition by observation_concept_id, unit_concept_id order by value_as_number))/(COUNT_BIG(*) over (partition by observation_concept_id, unit_concept_id)+1) as p1
+-- 815  Distribution of numeric values, by observation_concept_id and unit_concept_id
+select observation_concept_id as subject_id, 
+	unit_concept_id,
+	value_as_number as count_value
+INTO #rawData_815
 from @cdm_database_schema.observation o1
 where o1.unit_concept_id is not null
 	and o1.value_as_number is not null
-) t1
-group by observation_concept_id, unit_concept_id
 ;
+
+with overallStats (stratum1_id, stratum2_id, avg_value, stdev_value, min_value, max_value, total) as
+(
+  select subject_id as stratum1_id,
+    unit_concept_id as stratum2_id,
+    avg(1.0 * count_value) as avg_value,
+    stdev(count_value) as stdev_value,
+    min(count_value) as min_value,
+    max(count_value) as max_value,
+    count_big(*) as total
+  FROM #rawData_815
+	group by subject_id, unit_concept_id
+),
+stats (stratum1_id, stratum2_id, count_value, total, rn) as
+(
+  select subject_id as stratum1_id, unit_concept_id as stratum2_id, count_value, count_big(*) as total, row_number() over (partition by subject_id, unit_concept_id order by count_value) as rn
+  FROM #rawData_815
+  group by subject_id, unit_concept_id, count_value
+),
+priorStats (stratum1_id, stratum2_id, count_value, total, accumulated) as
+(
+  select s.stratum1_id, s.stratum2_id, s.count_value, s.total, sum(p.total) as accumulated
+  from stats s
+  join stats p on s.stratum1_id = p.stratum1_id and s.stratum2_id = p.stratum2_id and p.rn <= s.rn
+  group by s.stratum1_id, s.stratum2_id, s.count_value, s.total, s.rn
+)
+select 815 as analysis_id,
+  o.stratum1_id,
+  o.stratum2_id,
+  o.total as count_value,
+  o.min_value,
+	o.max_value,
+	o.avg_value,
+	o.stdev_value,
+	MIN(case when p.accumulated >= .50 * o.total then count_value else o.max_value end) as median_value,
+	MIN(case when p.accumulated >= .10 * o.total then count_value else o.max_value end) as p10_value,
+	MIN(case when p.accumulated >= .25 * o.total then count_value else o.max_value end) as p25_value,
+	MIN(case when p.accumulated >= .75 * o.total then count_value else o.max_value end) as p75_value,
+	MIN(case when p.accumulated >= .90 * o.total then count_value else o.max_value end) as p90_value
+into #tempResults
+from priorStats p
+join overallStats o on p.stratum1_id = o.stratum1_id and p.stratum2_id = o.stratum2_id 
+GROUP BY o.stratum1_id, o.stratum2_id, o.total, o.min_value, o.max_value, o.avg_value, o.stdev_value
+;
+
+insert into @results_database_schema.ACHILLES_results_dist (analysis_id, stratum_1, stratum_2, count_value, min_value, max_value, avg_value, stdev_value, median_value, p10_value, p25_value, p75_value, p90_value)
+select analysis_id, stratum1_id, stratum2_id, count_value, min_value, max_value, avg_value, stdev_value, median_value, p10_value, p25_value, p75_value, p90_value
+from #tempResults
+;
+
+truncate table #rawData_815;
+drop table #rawData_815;
+
+truncate table #tempResults;
+drop table #tempResults;
+
 --}
 
 
@@ -3436,31 +4288,62 @@ group by de1.drug_concept_id,
 
 --{903 IN (@list_of_analysis_ids)}?{
 -- 903	Number of distinct drug era concepts per person
-insert into @results_database_schema.ACHILLES_results_dist (analysis_id, count_value, min_value, max_value, avg_value, stdev_value, median_value, p10_value, p25_value, p75_value, p90_value)
-select 903 as analysis_id,
-	COUNT_BIG(count_value) as count_value,
-	min(count_value) as min_value,
-	max(count_value) as max_value,
-	avg(1.0*count_value) as avg_value,
-	stdev(count_value) as stdev_value,
-	max(case when p1<=0.50 then count_value else -9999 end) as median_value,
-	max(case when p1<=0.10 then count_value else -9999 end) as p10_value,
-	max(case when p1<=0.25 then count_value else -9999 end) as p25_value,
-	max(case when p1<=0.75 then count_value else -9999 end) as p75_value,
-	max(case when p1<=0.90 then count_value else -9999 end) as p90_value
-from
+with rawData(count_value) as
 (
-select num_drugs as count_value,
-	1.0*(row_number() over (order by num_drugs))/(COUNT_BIG(*) over ()+1) as p1
-from
-	(
-	select de1.person_id, COUNT_BIG(distinct de1.drug_concept_id) as num_drugs
-	from
-	@cdm_database_schema.drug_era de1
+  select COUNT_BIG(distinct de1.drug_concept_id) as count_value
+	from @cdm_database_schema.drug_era de1
 	group by de1.person_id
-	) t0
-) t1
+),
+overallStats (avg_value, stdev_value, min_value, max_value, total) as
+(
+  select avg(1.0 * count_value) as avg_value,
+    stdev(count_value) as stdev_value,
+    min(count_value) as min_value,
+    max(count_value) as max_value,
+    count_big(*) as total
+  from rawData
+),
+stats (count_value, total, rn) as
+(
+  select count_value, 
+  	count_big(*) as total, 
+		row_number() over (order by count_value) as rn
+  FROM rawData
+  group by count_value
+),
+priorStats (count_value, total, accumulated) as
+(
+  select s.count_value, s.total, sum(p.total) as accumulated
+  from stats s
+  join stats p on p.rn <= s.rn
+  group by s.count_value, s.total, s.rn
+)
+select 903 as analysis_id,
+  o.total as count_value,
+  o.min_value,
+	o.max_value,
+	o.avg_value,
+	o.stdev_value,
+	MIN(case when p.accumulated >= .50 * o.total then count_value else o.max_value end) as median_value,
+	MIN(case when p.accumulated >= .10 * o.total then count_value else o.max_value end) as p10_value,
+	MIN(case when p.accumulated >= .25 * o.total then count_value else o.max_value end) as p25_value,
+	MIN(case when p.accumulated >= .75 * o.total then count_value else o.max_value end) as p75_value,
+	MIN(case when p.accumulated >= .90 * o.total then count_value else o.max_value end) as p90_value
+into #tempResults
+from priorStats p
+cross apply overallStats o
+GROUP BY o.total, o.min_value, o.max_value, o.avg_value, o.stdev_value
 ;
+
+insert into @results_database_schema.ACHILLES_results_dist (analysis_id, count_value, min_value, max_value, avg_value, stdev_value, median_value, p10_value, p25_value, p75_value, p90_value)
+select analysis_id, count_value, min_value, max_value, avg_value, stdev_value, median_value, p10_value, p25_value, p75_value, p90_value
+from #tempResults
+;
+
+truncate table #tempResults;
+drop table #tempResults;
+
+
 --}
 
 
@@ -3490,67 +4373,139 @@ group by de1.drug_concept_id,
 
 --{906 IN (@list_of_analysis_ids)}?{
 -- 906	Distribution of age by drug_concept_id
-insert into @results_database_schema.ACHILLES_results_dist (analysis_id, stratum_1, stratum_2, count_value, min_value, max_value, avg_value, stdev_value, median_value, p10_value, p25_value, p75_value, p90_value)
-select 906 as analysis_id,
-	drug_concept_id as stratum_1,
-	gender_concept_id as stratum_2,
-	COUNT_BIG(count_value) as count_value,
-	min(count_value) as min_value,
-	max(count_value) as max_value,
-	avg(1.0*count_value) as avg_value,
-	stdev(count_value) as stdev_value,
-	max(case when p1<=0.50 then count_value else -9999 end) as median_value,
-	max(case when p1<=0.10 then count_value else -9999 end) as p10_value,
-	max(case when p1<=0.25 then count_value else -9999 end) as p25_value,
-	max(case when p1<=0.75 then count_value else -9999 end) as p75_value,
-	max(case when p1<=0.90 then count_value else -9999 end) as p90_value
-from
-(
-select de1.drug_concept_id,
-	p1.gender_concept_id,
-	de1.drug_start_year - p1.year_of_birth as count_value,
-	1.0*(row_number() over (partition by de1.drug_concept_id, p1.gender_concept_id order by de1.drug_start_year - p1.year_of_birth))/(COUNT_BIG(*) over (partition by de1.drug_concept_id, p1.gender_concept_id)+1) as p1
+select de.drug_concept_id as subject_id,
+  p1.gender_concept_id,
+  de.drug_start_year - p1.year_of_birth as count_value
+INTO #rawData_906
 from @cdm_database_schema.PERSON p1
 inner join
-(select person_id, drug_concept_id, min(year(drug_era_start_date)) as drug_start_year
-from @cdm_database_schema.drug_era
-group by person_id, drug_concept_id
-) de1
-on p1.person_id = de1.person_id
-) t1
-group by drug_concept_id, gender_concept_id
+(
+	select person_id, drug_concept_id, min(year(drug_era_start_date)) as drug_start_year
+	from @cdm_database_schema.drug_era
+	group by person_id, drug_concept_id
+) de on p1.person_id =de.person_id
+;
+
+with overallStats (stratum1_id, stratum2_id, avg_value, stdev_value, min_value, max_value, total) as
+(
+  select subject_id as stratum1_id,
+    gender_concept_id as stratum2_id,
+    avg(1.0 * count_value) as avg_value,
+    stdev(count_value) as stdev_value,
+    min(count_value) as min_value,
+    max(count_value) as max_value,
+    count_big(*) as total
+  FROM #rawData_906
+	group by subject_id, gender_concept_id
+),
+stats (stratum1_id, stratum2_id, count_value, total, rn) as
+(
+  select subject_id as stratum1_id, gender_concept_id as stratum2_id, count_value, count_big(*) as total, row_number() over (partition by subject_id, gender_concept_id order by count_value) as rn
+  FROM #rawData_906
+  group by subject_id, gender_concept_id, count_value
+),
+priorStats (stratum1_id, stratum2_id, count_value, total, accumulated) as
+(
+  select s.stratum1_id, s.stratum2_id, s.count_value, s.total, sum(p.total) as accumulated
+  from stats s
+  join stats p on s.stratum1_id = p.stratum1_id and s.stratum2_id = p.stratum2_id and p.rn <= s.rn
+  group by s.stratum1_id, s.stratum2_id, s.count_value, s.total, s.rn
+)
+select 906 as analysis_id,
+  o.stratum1_id,
+  o.stratum2_id,
+  o.total as count_value,
+  o.min_value,
+	o.max_value,
+	o.avg_value,
+	o.stdev_value,
+	MIN(case when p.accumulated >= .50 * o.total then count_value else o.max_value end) as median_value,
+	MIN(case when p.accumulated >= .10 * o.total then count_value else o.max_value end) as p10_value,
+	MIN(case when p.accumulated >= .25 * o.total then count_value else o.max_value end) as p25_value,
+	MIN(case when p.accumulated >= .75 * o.total then count_value else o.max_value end) as p75_value,
+	MIN(case when p.accumulated >= .90 * o.total then count_value else o.max_value end) as p90_value
+into #tempResults
+from priorStats p
+join overallStats o on p.stratum1_id = o.stratum1_id and p.stratum2_id = o.stratum2_id 
+GROUP BY o.stratum1_id, o.stratum2_id, o.total, o.min_value, o.max_value, o.avg_value, o.stdev_value
+;
+
+insert into @results_database_schema.ACHILLES_results_dist (analysis_id, stratum_1, stratum_2, count_value, min_value, max_value, avg_value, stdev_value, median_value, p10_value, p25_value, p75_value, p90_value)
+select analysis_id, stratum1_id, stratum2_id, count_value, min_value, max_value, avg_value, stdev_value, median_value, p10_value, p25_value, p75_value, p90_value
+from #tempResults
+;
+
+
+truncate table #rawData_906;
+drop table #rawData_906;
+
+truncate table #tempResults;
+drop table #tempResults;
+
 ;
 --}
 
 
-
-
-
 --{907 IN (@list_of_analysis_ids)}?{
 -- 907	Distribution of drug era length, by drug_concept_id
-insert into @results_database_schema.ACHILLES_results_dist (analysis_id, stratum_1, count_value, min_value, max_value, avg_value, stdev_value, median_value, p10_value, p25_value, p75_value, p90_value)
-select 907 as analysis_id,
-	drug_concept_id as stratum_1,
-	COUNT_BIG(count_value) as count_value,
-	min(count_value) as min_value,
-	max(count_value) as max_value,
-	avg(1.0*count_value) as avg_value,
-	stdev(count_value) as stdev_value,
-	max(case when p1<=0.50 then count_value else -9999 end) as median_value,
-	max(case when p1<=0.10 then count_value else -9999 end) as p10_value,
-	max(case when p1<=0.25 then count_value else -9999 end) as p25_value,
-	max(case when p1<=0.75 then count_value else -9999 end) as p75_value,
-	max(case when p1<=0.90 then count_value else -9999 end) as p90_value
-from
+with rawData(stratum1_id, count_value) as
 (
-select drug_concept_id,
-	datediff(dd,drug_era_start_date, drug_era_end_date) as count_value,
-	1.0*(row_number() over (partition by drug_concept_id order by datediff(dd,drug_era_start_date, drug_era_end_date)))/(COUNT_BIG(*) over (partition by drug_concept_id)+1) as p1
-from  @cdm_database_schema.drug_era de1
-
-) t1
-group by drug_concept_id
+  select drug_concept_id,
+    datediff(dd,drug_era_start_date, drug_era_end_date) as count_value
+  from  @cdm_database_schema.drug_era de1
+),
+overallStats (stratum1_id, avg_value, stdev_value, min_value, max_value, total) as
+(
+  select stratum1_id, 
+  	avg(1.0 * count_value) as avg_value,
+    stdev(count_value) as stdev_value,
+    min(count_value) as min_value,
+    max(count_value) as max_value,
+    count_big(*) as total
+  from rawData
+  group by stratum1_id
+),
+stats (stratum1_id, count_value, total, rn) as
+(
+  select stratum1_id, 
+		count_value, 
+  	count_big(*) as total, 
+		row_number() over (partition by stratum1_id order by count_value) as rn
+  FROM rawData
+  group by stratum1_id, count_value
+),
+priorStats (stratum1_id, count_value, total, accumulated) as
+(
+  select s.stratum1_id, s.count_value, s.total, sum(p.total) as accumulated
+  from stats s
+  join stats p on s.stratum1_id = p.stratum1_id and p.rn <= s.rn
+  group by s.stratum1_id, s.count_value, s.total, s.rn
+)
+select 907 as analysis_id,
+  p.stratum1_id as stratum_1,
+  o.total as count_value,
+  o.min_value,
+	o.max_value,
+	o.avg_value,
+	o.stdev_value,
+	MIN(case when p.accumulated >= .50 * o.total then count_value else o.max_value end) as median_value,
+	MIN(case when p.accumulated >= .10 * o.total then count_value else o.max_value end) as p10_value,
+	MIN(case when p.accumulated >= .25 * o.total then count_value else o.max_value end) as p25_value,
+	MIN(case when p.accumulated >= .75 * o.total then count_value else o.max_value end) as p75_value,
+	MIN(case when p.accumulated >= .90 * o.total then count_value else o.max_value end) as p90_value
+into #tempResults
+from priorStats p
+join overallStats o on p.stratum1_id = o.stratum1_id
+GROUP BY p.stratum1_id, o.total, o.min_value, o.max_value, o.avg_value, o.stdev_value
 ;
+
+insert into @results_database_schema.ACHILLES_results_dist (analysis_id, stratum_1, count_value, min_value, max_value, avg_value, stdev_value, median_value, p10_value, p25_value, p75_value, p90_value)
+select analysis_id, stratum_1, count_value, min_value, max_value, avg_value, stdev_value, median_value, p10_value, p25_value, p75_value, p90_value
+from #tempResults
+
+truncate table #tempResults;
+drop table #tempResults;
+
 --}
 
 
@@ -3666,31 +4621,61 @@ group by ce1.condition_concept_id,
 
 --{1003 IN (@list_of_analysis_ids)}?{
 -- 1003	Number of distinct condition era concepts per person
-insert into @results_database_schema.ACHILLES_results_dist (analysis_id, count_value, min_value, max_value, avg_value, stdev_value, median_value, p10_value, p25_value, p75_value, p90_value)
-select 1003 as analysis_id,
-	COUNT_BIG(count_value) as count_value,
-	min(count_value) as min_value,
-	max(count_value) as max_value,
-	avg(1.0*count_value) as avg_value,
-	stdev(count_value) as stdev_value,
-	max(case when p1<=0.50 then count_value else -9999 end) as median_value,
-	max(case when p1<=0.10 then count_value else -9999 end) as p10_value,
-	max(case when p1<=0.25 then count_value else -9999 end) as p25_value,
-	max(case when p1<=0.75 then count_value else -9999 end) as p75_value,
-	max(case when p1<=0.90 then count_value else -9999 end) as p90_value
-from
+with rawData(count_value) as
 (
-select num_conditions as count_value,
-	1.0*(row_number() over (order by num_conditions))/(COUNT_BIG(*) over ()+1) as p1
-from
-	(
-	select ce1.person_id, COUNT_BIG(distinct ce1.condition_concept_id) as num_conditions
-	from
-	@cdm_database_schema.condition_era ce1
+  select COUNT_BIG(distinct ce1.condition_concept_id) as count_value
+	from @cdm_database_schema.condition_era ce1
 	group by ce1.person_id
-	) t0
-) t1
+),
+overallStats (avg_value, stdev_value, min_value, max_value, total) as
+(
+  select avg(1.0 * count_value) as avg_value,
+    stdev(count_value) as stdev_value,
+    min(count_value) as min_value,
+    max(count_value) as max_value,
+    count_big(*) as total
+  from rawData
+),
+stats (count_value, total, rn) as
+(
+  select count_value, 
+  	count_big(*) as total, 
+		row_number() over (order by count_value) as rn
+  FROM rawData
+  group by count_value
+),
+priorStats (count_value, total, accumulated) as
+(
+  select s.count_value, s.total, sum(p.total) as accumulated
+  from stats s
+  join stats p on p.rn <= s.rn
+  group by s.count_value, s.total, s.rn
+)
+select 1003 as analysis_id,
+  o.total as count_value,
+  o.min_value,
+	o.max_value,
+	o.avg_value,
+	o.stdev_value,
+	MIN(case when p.accumulated >= .50 * o.total then count_value else o.max_value end) as median_value,
+	MIN(case when p.accumulated >= .10 * o.total then count_value else o.max_value end) as p10_value,
+	MIN(case when p.accumulated >= .25 * o.total then count_value else o.max_value end) as p25_value,
+	MIN(case when p.accumulated >= .75 * o.total then count_value else o.max_value end) as p75_value,
+	MIN(case when p.accumulated >= .90 * o.total then count_value else o.max_value end) as p90_value
+into #tempResults
+from priorStats p
+cross apply overallStats o
+GROUP BY o.total, o.min_value, o.max_value, o.avg_value, o.stdev_value
 ;
+
+insert into @results_database_schema.ACHILLES_results_dist (analysis_id, count_value, min_value, max_value, avg_value, stdev_value, median_value, p10_value, p25_value, p75_value, p90_value)
+select analysis_id, count_value, min_value, max_value, avg_value, stdev_value, median_value, p10_value, p25_value, p75_value, p90_value
+from #tempResults
+;
+
+truncate table #tempResults;
+drop table #tempResults;
+
 --}
 
 
@@ -3720,67 +4705,139 @@ group by ce1.condition_concept_id,
 
 --{1006 IN (@list_of_analysis_ids)}?{
 -- 1006	Distribution of age by condition_concept_id
-insert into @results_database_schema.ACHILLES_results_dist (analysis_id, stratum_1, stratum_2, count_value, min_value, max_value, avg_value, stdev_value, median_value, p10_value, p25_value, p75_value, p90_value)
-select 1006 as analysis_id,
-	condition_concept_id as stratum_1,
-	gender_concept_id as stratum_2,
-	COUNT_BIG(count_value) as count_value,
-	min(count_value) as min_value,
-	max(count_value) as max_value,
-	avg(1.0*count_value) as avg_value,
-	stdev(count_value) as stdev_value,
-	max(case when p1<=0.50 then count_value else -9999 end) as median_value,
-	max(case when p1<=0.10 then count_value else -9999 end) as p10_value,
-	max(case when p1<=0.25 then count_value else -9999 end) as p25_value,
-	max(case when p1<=0.75 then count_value else -9999 end) as p75_value,
-	max(case when p1<=0.90 then count_value else -9999 end) as p90_value
-from
-(
-select ce1.condition_concept_id,
-	p1.gender_concept_id,
-	ce1.condition_start_year - p1.year_of_birth as count_value,
-	1.0*(row_number() over (partition by ce1.condition_concept_id, p1.gender_concept_id order by ce1.condition_start_year - p1.year_of_birth))/(COUNT_BIG(*) over (partition by ce1.condition_concept_id, p1.gender_concept_id)+1) as p1
+select ce.condition_concept_id as subject_id,
+  p1.gender_concept_id,
+  ce.condition_start_year - p1.year_of_birth as count_value
+INTO #rawData_1006
 from @cdm_database_schema.PERSON p1
 inner join
-(select person_id, condition_concept_id, min(year(condition_era_start_date)) as condition_start_year
-from @cdm_database_schema.condition_era
-group by person_id, condition_concept_id
-) ce1
-on p1.person_id = ce1.person_id
-) t1
-group by condition_concept_id, gender_concept_id
+(
+  select person_id, condition_concept_id, min(year(condition_era_start_date)) as condition_start_year
+  from @cdm_database_schema.condition_era
+  group by person_id, condition_concept_id
+) ce on p1.person_id = ce.person_id
 ;
+
+with overallStats (stratum1_id, stratum2_id, avg_value, stdev_value, min_value, max_value, total) as
+(
+  select subject_id as stratum1_id,
+    gender_concept_id as stratum2_id,
+    avg(1.0 * count_value) as avg_value,
+    stdev(count_value) as stdev_value,
+    min(count_value) as min_value,
+    max(count_value) as max_value,
+    count_big(*) as total
+  FROM #rawData_1006
+	group by subject_id, gender_concept_id
+),
+stats (stratum1_id, stratum2_id, count_value, total, rn) as
+(
+  select subject_id as stratum1_id, gender_concept_id as stratum2_id, count_value, count_big(*) as total, row_number() over (partition by subject_id, gender_concept_id order by count_value) as rn
+  FROM #rawData_1006
+  group by subject_id, gender_concept_id, count_value
+),
+priorStats (stratum1_id, stratum2_id, count_value, total, accumulated) as
+(
+  select s.stratum1_id, s.stratum2_id, s.count_value, s.total, sum(p.total) as accumulated
+  from stats s
+  join stats p on s.stratum1_id = p.stratum1_id and s.stratum2_id = p.stratum2_id and p.rn <= s.rn
+  group by s.stratum1_id, s.stratum2_id, s.count_value, s.total, s.rn
+)
+select 1006 as analysis_id,
+  o.stratum1_id,
+  o.stratum2_id,
+  o.total as count_value,
+  o.min_value,
+	o.max_value,
+	o.avg_value,
+	o.stdev_value,
+	MIN(case when p.accumulated >= .50 * o.total then count_value else o.max_value end) as median_value,
+	MIN(case when p.accumulated >= .10 * o.total then count_value else o.max_value end) as p10_value,
+	MIN(case when p.accumulated >= .25 * o.total then count_value else o.max_value end) as p25_value,
+	MIN(case when p.accumulated >= .75 * o.total then count_value else o.max_value end) as p75_value,
+	MIN(case when p.accumulated >= .90 * o.total then count_value else o.max_value end) as p90_value
+into #tempResults
+from priorStats p
+join overallStats o on p.stratum1_id = o.stratum1_id and p.stratum2_id = o.stratum2_id 
+GROUP BY o.stratum1_id, o.stratum2_id, o.total, o.min_value, o.max_value, o.avg_value, o.stdev_value
+;
+
+insert into @results_database_schema.ACHILLES_results_dist (analysis_id, stratum_1, stratum_2, count_value, min_value, max_value, avg_value, stdev_value, median_value, p10_value, p25_value, p75_value, p90_value)
+select analysis_id, stratum1_id, stratum2_id, count_value, min_value, max_value, avg_value, stdev_value, median_value, p10_value, p25_value, p75_value, p90_value
+from #tempResults
+;
+
+truncate table #rawData_1006;
+drop table #rawData_1006;
+
+truncate table #tempResults;
+drop table #tempResults;
+
 --}
-
-
 
 
 
 --{1007 IN (@list_of_analysis_ids)}?{
 -- 1007	Distribution of condition era length, by condition_concept_id
-insert into @results_database_schema.ACHILLES_results_dist (analysis_id, stratum_1, count_value, min_value, max_value, avg_value, stdev_value, median_value, p10_value, p25_value, p75_value, p90_value)
-select 1007 as analysis_id,
-	condition_concept_id as stratum_1,
-	COUNT_BIG(count_value) as count_value,
-	min(count_value) as min_value,
-	max(count_value) as max_value,
-	avg(1.0*count_value) as avg_value,
-	stdev(count_value) as stdev_value,
-	max(case when p1<=0.50 then count_value else -9999 end) as median_value,
-	max(case when p1<=0.10 then count_value else -9999 end) as p10_value,
-	max(case when p1<=0.25 then count_value else -9999 end) as p25_value,
-	max(case when p1<=0.75 then count_value else -9999 end) as p75_value,
-	max(case when p1<=0.90 then count_value else -9999 end) as p90_value
-from
+with rawData(stratum1_id, count_value) as
 (
-select condition_concept_id,
-	datediff(dd,condition_era_start_date, condition_era_end_date) as count_value,
-	1.0*(row_number() over (partition by condition_concept_id order by datediff(dd,condition_era_start_date, condition_era_end_date)))/(COUNT_BIG(*) over (partition by condition_concept_id)+1) as p1
-from  @cdm_database_schema.condition_era ce1
-
-) t1
-group by condition_concept_id
+  select condition_concept_id as stratum1_id,
+    datediff(dd,condition_era_start_date, condition_era_end_date) as count_value
+  from  @cdm_database_schema.condition_era ce1
+),
+overallStats (stratum1_id, avg_value, stdev_value, min_value, max_value, total) as
+(
+  select stratum1_id, 
+    avg(1.0 * count_value) as avg_value,
+    stdev(count_value) as stdev_value,
+    min(count_value) as min_value,
+    max(count_value) as max_value,
+    count_big(*) as total
+  from rawData
+  group by stratum1_id
+),
+stats (stratum1_id, count_value, total, rn) as
+(
+  select stratum1_id, 
+		count_value, 
+  	count_big(*) as total, 
+		row_number() over (partition by stratum1_id order by count_value) as rn
+  FROM rawData
+  group by stratum1_id, count_value
+),
+priorStats (stratum1_id, count_value, total, accumulated) as
+(
+  select s.stratum1_id, s.count_value, s.total, sum(p.total) as accumulated
+  from stats s
+  join stats p on s.stratum1_id = p.stratum1_id and p.rn <= s.rn
+  group by s.stratum1_id, s.count_value, s.total, s.rn
+)
+select 1007 as analysis_id,
+  p.stratum1_id as stratum_1,
+  o.total as count_value,
+  o.min_value,
+	o.max_value,
+	o.avg_value,
+	o.stdev_value,
+	MIN(case when p.accumulated >= .50 * o.total then count_value else o.max_value end) as median_value,
+	MIN(case when p.accumulated >= .10 * o.total then count_value else o.max_value end) as p10_value,
+	MIN(case when p.accumulated >= .25 * o.total then count_value else o.max_value end) as p25_value,
+	MIN(case when p.accumulated >= .75 * o.total then count_value else o.max_value end) as p75_value,
+	MIN(case when p.accumulated >= .90 * o.total then count_value else o.max_value end) as p90_value
+into #tempResults
+from priorStats p
+join overallStats o on p.stratum1_id = o.stratum1_id
+GROUP BY p.stratum1_id, o.total, o.min_value, o.max_value, o.avg_value, o.stdev_value
 ;
+
+insert into @results_database_schema.ACHILLES_results_dist (analysis_id, stratum_1, count_value, min_value, max_value, avg_value, stdev_value, median_value, p10_value, p25_value, p75_value, p90_value)
+select analysis_id, stratum_1, count_value, min_value, max_value, avg_value, stdev_value, median_value, p10_value, p25_value, p75_value, p90_value
+from #tempResults;
+
+truncate table #tempResults;
+drop table #tempResults;
+
+
 --}
 
 
@@ -3977,25 +5034,11 @@ ACHILLES Analyses on PAYOR_PLAN_PERIOD table
 
 --{1406 IN (@list_of_analysis_ids)}?{
 -- 1406	Length of payer plan (days) of first payer plan period by gender
-insert into @results_database_schema.ACHILLES_results_dist (analysis_id, stratum_1, count_value, min_value, max_value, avg_value, stdev_value, median_value, p10_value, p25_value, p75_value, p90_value)
-select 1406 as analysis_id,
-	gender_concept_id as stratum_1,
-	COUNT_BIG(count_value) as count_value,
-	min(count_value) as min_value,
-	max(count_value) as max_value,
-	avg(1.0*count_value) as avg_value,
-	stdev(count_value) as stdev_value,
-	max(case when p1<=0.50 then count_value else -9999 end) as median_value,
-	max(case when p1<=0.10 then count_value else -9999 end) as p10_value,
-	max(case when p1<=0.25 then count_value else -9999 end) as p25_value,
-	max(case when p1<=0.75 then count_value else -9999 end) as p75_value,
-	max(case when p1<=0.90 then count_value else -9999 end) as p90_value
-from
+with rawData(stratum1_id, count_value) as
 (
-select p1.gender_concept_id,
-	DATEDIFF(dd,ppp1.payer_plan_period_start_date, ppp1.payer_plan_period_end_date) as count_value,
-	1.0*(row_number() over (partition by p1.gender_concept_id order by DATEDIFF(dd,ppp1.payer_plan_period_start_date, ppp1.payer_plan_period_end_date)))/(COUNT_BIG(*) over (partition by p1.gender_concept_id)+1) as p1
-from @cdm_database_schema.PERSON p1
+  select p1.gender_concept_id as stratum1_id,
+    DATEDIFF(dd,ppp1.payer_plan_period_start_date, ppp1.payer_plan_period_end_date) as count_value
+  from @cdm_database_schema.PERSON p1
 	inner join 
 	(select person_id, 
 		payer_plan_period_START_DATE, 
@@ -4005,34 +5048,72 @@ from @cdm_database_schema.PERSON p1
 	) ppp1
 	on p1.PERSON_ID = ppp1.PERSON_ID
 	where ppp1.rn1 = 1
-) t1
-group by gender_concept_id
+),
+overallStats (stratum1_id, avg_value, stdev_value, min_value, max_value, total) as
+(
+  select stratum1_id, 
+    avg(1.0 * count_value) as avg_value,
+    stdev(count_value) as stdev_value,
+    min(count_value) as min_value,
+    max(count_value) as max_value,
+    count_big(*) as total
+  from rawData
+  group by stratum1_id
+),
+stats (stratum1_id, count_value, total, rn) as
+(
+  select stratum1_id, 
+  	count_value, 
+  	count_big(*) as total, 
+		row_number() over (partition by stratum1_id order by count_value) as rn
+  FROM rawData
+  group by stratum1_id, count_value
+),
+priorStats (stratum1_id, count_value, total, accumulated) as
+(
+  select s.stratum1_id, s.count_value, s.total, sum(p.total) as accumulated
+  from stats s
+  join stats p on s.stratum1_id = p.stratum1_id and p.rn <= s.rn
+  group by s.stratum1_id, s.count_value, s.total, s.rn
+)
+select 1406 as analysis_id,
+  p.stratum1_id as stratum_1,
+  o.total as count_value,
+  o.min_value,
+	o.max_value,
+	o.avg_value,
+	o.stdev_value,
+	MIN(case when p.accumulated >= .50 * o.total then count_value else o.max_value end) as median_value,
+	MIN(case when p.accumulated >= .10 * o.total then count_value else o.max_value end) as p10_value,
+	MIN(case when p.accumulated >= .25 * o.total then count_value else o.max_value end) as p25_value,
+	MIN(case when p.accumulated >= .75 * o.total then count_value else o.max_value end) as p75_value,
+	MIN(case when p.accumulated >= .90 * o.total then count_value else o.max_value end) as p90_value
+into #tempResults
+from priorStats p
+join overallStats o on p.stratum1_id = o.stratum1_id
+GROUP BY p.stratum1_id, o.total, o.min_value, o.max_value, o.avg_value, o.stdev_value
 ;
+
+insert into @results_database_schema.ACHILLES_results_dist (analysis_id, stratum_1, count_value, min_value, max_value, avg_value, stdev_value, median_value, p10_value, p25_value, p75_value, p90_value)
+select analysis_id, stratum_1, count_value, min_value, max_value, avg_value, stdev_value, median_value, p10_value, p25_value, p75_value, p90_value
+from #tempResults
+;
+
+truncate table #tempResults;
+drop table #tempResults;
+
+
 --}
 
 
 
 --{1407 IN (@list_of_analysis_ids)}?{
 -- 1407	Length of payer plan (days) of first payer plan period by age decile
-insert into @results_database_schema.ACHILLES_results_dist (analysis_id, stratum_1, count_value, min_value, max_value, avg_value, stdev_value, median_value, p10_value, p25_value, p75_value, p90_value)
-select 1407 as analysis_id,
-	age_decile as stratum_1,
-	COUNT_BIG(count_value) as count_value,
-	min(count_value) as min_value,
-	max(count_value) as max_value,
-	avg(1.0*count_value) as avg_value,
-	stdev(count_value) as stdev_value,
-	max(case when p1<=0.50 then count_value else -9999 end) as median_value,
-	max(case when p1<=0.10 then count_value else -9999 end) as p10_value,
-	max(case when p1<=0.25 then count_value else -9999 end) as p25_value,
-	max(case when p1<=0.75 then count_value else -9999 end) as p75_value,
-	max(case when p1<=0.90 then count_value else -9999 end) as p90_value
-from
+with rawData(stratum_id, count_value) as
 (
-select floor((year(ppp1.payer_plan_period_START_DATE) - p1.YEAR_OF_BIRTH)/140) as age_decile,
-	DATEDIFF(dd,ppp1.payer_plan_period_start_date, ppp1.payer_plan_period_end_date) as count_value,
-	1.0*(row_number() over (partition by floor((year(ppp1.payer_plan_period_START_DATE) - p1.YEAR_OF_BIRTH)/140) order by DATEDIFF(dd,ppp1.payer_plan_period_start_date, ppp1.payer_plan_period_end_date)))/(COUNT_BIG(*) over (partition by floor((year(ppp1.payer_plan_period_START_DATE) - p1.YEAR_OF_BIRTH)/140))+1) as p1
-from @cdm_database_schema.PERSON p1
+  select floor((year(ppp1.payer_plan_period_START_DATE) - p1.YEAR_OF_BIRTH)/10) as stratum_id,
+    DATEDIFF(dd,ppp1.payer_plan_period_start_date, ppp1.payer_plan_period_end_date) as count_value
+  from @cdm_database_schema.PERSON p1
 	inner join 
 	(select person_id, 
 		payer_plan_period_START_DATE, 
@@ -4042,12 +5123,59 @@ from @cdm_database_schema.PERSON p1
 	) ppp1
 	on p1.PERSON_ID = ppp1.PERSON_ID
 	where ppp1.rn1 = 1
-) t1
-group by age_decile
+),
+overallStats (stratum_id, avg_value, stdev_value, min_value, max_value, total) as
+(
+  select stratum_id,
+    avg(1.0 * count_value) as avg_value,
+    stdev(count_value) as stdev_value,
+    min(count_value) as min_value,
+    max(count_value) as max_value,
+    count_big(*) as total
+  FROM rawData
+  group by stratum_id
+),
+stats (stratum_id, count_value, total, rn) as
+(
+  select stratum_id, count_value, count_big(*) as total, row_number() over (order by count_value) as rn
+  FROM rawData
+  group by stratum_id, count_value
+),
+priorStats (stratum_id, count_value, total, accumulated) as
+(
+  select s.stratum_id, s.count_value, s.total, sum(p.total) as accumulated
+  from stats s
+  join stats p on s.stratum_id = p.stratum_id and p.rn <= s.rn
+  group by s.stratum_id, s.count_value, s.total, s.rn
+)
+select 1407 as analysis_id,
+  o.stratum_id,
+  o.total as count_value,
+  o.min_value,
+  o.max_value,
+	o.avg_value,
+	o.stdev_value,
+	MIN(case when p.accumulated >= .50 * o.total then count_value else o.max_value end) as median_value,
+	MIN(case when p.accumulated >= .10 * o.total then count_value else o.max_value end) as p10_value,
+	MIN(case when p.accumulated >= .25 * o.total then count_value else o.max_value end) as p25_value,
+	MIN(case when p.accumulated >= .75 * o.total then count_value else o.max_value end) as p75_value,
+	MIN(case when p.accumulated >= .90 * o.total then count_value else o.max_value end) as p90_value
+into #tempResults
+from priorStats p
+join overallStats o on p.stratum_id = o.stratum_id
+GROUP BY o.stratum_id, o.total, o.min_value, o.max_value, o.avg_value, o.stdev_value
 ;
+
+insert into @results_database_schema.ACHILLES_results_dist (analysis_id, stratum_1, count_value, min_value, max_value, avg_value, stdev_value, median_value, p10_value, p25_value, p75_value, p90_value)
+select analysis_id, stratum_id, count_value, min_value, max_value, avg_value, stdev_value, median_value, p10_value, p25_value, p75_value, p90_value
+from #tempResults
+;
+
+truncate table #tempResults;
+drop table #tempResults;
+
+
 --}
-
-
 
 
 
@@ -4228,6 +5356,32 @@ ACHILLES Analyses on DRUG_COST table
 
 *********************************************/
 
+-- for performance optimization, we create a table with drug costs pre-cached for the 15XX analysis
+
+-- { 1502 in (@list_of_analysis_ids) | 1503 in (@list_of_analysis_ids) | 1504 in (@list_of_analysis_ids) | 1505 in (@list_of_analysis_ids) | 1506 in (@list_of_analysis_ids) | 1507 in (@list_of_analysis_ids) | 1508 in (@list_of_analysis_ids) | 1509 in (@list_of_analysis_ids) | 1510 in (@list_of_analysis_ids) | 1511 in (@list_of_analysis_ids)}?{
+
+IF OBJECT_ID('@results_database_schema.ACHILLES_drug_cost_raw', 'U') IS NOT NULL
+  DROP TABLE @results_database_schema.ACHILLES_drug_cost_raw;
+
+select drug_concept_id as subject_id,
+  paid_copay,
+	paid_coinsurance,
+	paid_toward_deductible,
+	paid_by_payer,
+	paid_by_coordination_benefits, 
+	total_out_of_pocket,
+	total_paid,
+	ingredient_cost,
+	dispensing_fee,
+	average_wholesale_price
+INTO @results_database_schema.ACHILLES_drug_cost_raw
+from @cdm_database_schema.drug_cost dc1
+join @cdm_database_schema.drug_exposure de1 on de1.drug_exposure_id = dc1.drug_exposure_id and drug_concept_id <> 0
+;
+--}
+
+
+
 --{1500 IN (@list_of_analysis_ids)}?{
 -- 1500	Number of drug cost records with invalid drug exposure id
 insert into @results_database_schema.ACHILLES_results (analysis_id, count_value)
@@ -4258,306 +5412,652 @@ where dc1.payer_plan_period_id is not null
 
 --{1502 IN (@list_of_analysis_ids)}?{
 -- 1502	Distribution of paid copay, by drug_concept_id
-insert into @results_database_schema.ACHILLES_results_dist (analysis_id, stratum_1, count_value, min_value, max_value, avg_value, stdev_value, median_value, p10_value, p25_value, p75_value, p90_value)
-select 1502 as analysis_id,
-	drug_concept_id as stratum_1,
-	COUNT_BIG(count_value) as count_value,
-	min(count_value) as min_value,
-	max(count_value) as max_value,
-	avg(1.0*count_value) as avg_value,
-	stdev(count_value) as stdev_value,
-	max(case when p1<=0.50 then count_value else -9999 end) as median_value,
-	max(case when p1<=0.10 then count_value else -9999 end) as p10_value,
-	max(case when p1<=0.25 then count_value else -9999 end) as p25_value,
-	max(case when p1<=0.75 then count_value else -9999 end) as p75_value,
-	max(case when p1<=0.90 then count_value else -9999 end) as p90_value
-from
+with rawData(stratum1_id, count_value) as
 (
-select drug_concept_id,
-	paid_copay as count_value,
-	1.0*(row_number() over (partition by drug_concept_id order by paid_copay))/(COUNT_BIG(*) over (partition by drug_concept_id)+1) as p1
-from @cdm_database_schema.drug_exposure de1
-	inner join
-	@cdm_database_schema.drug_cost dc1
-	on de1.drug_exposure_id = dc1.drug_exposure_id
-where paid_copay is not null
-) t1
-group by drug_concept_id
+  select subject_id as stratum1_id,
+    paid_copay as count_value
+  from @results_database_schema.ACHILLES_drug_cost_raw
+  where paid_copay is not null
+),
+overallStats (stratum1_id, avg_value, stdev_value, min_value, max_value, total) as
+(
+  select stratum1_id, 
+    avg(1.0 * count_value) as avg_value,
+    stdev(count_value) as stdev_value,
+    min(count_value) as min_value,
+    max(count_value) as max_value,
+    count_big(*) as total
+  from rawData
+  group by stratum1_id
+),
+stats (stratum1_id, count_value, total, rn) as
+(
+  select stratum1_id, 
+		count_value, 
+  	count_big(*) as total, 
+		row_number() over (partition by stratum1_id order by count_value) as rn
+  FROM rawData
+  group by stratum1_id, count_value
+),
+priorStats (stratum1_id, count_value, total, accumulated) as
+(
+  select s.stratum1_id, s.count_value, s.total, sum(p.total) as accumulated
+  from stats s
+  join stats p on s.stratum1_id = p.stratum1_id and p.rn <= s.rn
+  group by s.stratum1_id, s.count_value, s.total, s.rn
+)
+select 1502 as analysis_id,
+  p.stratum1_id as stratum_1,
+  o.total as count_value,
+  o.min_value,
+	o.max_value,
+	o.avg_value,
+	o.stdev_value,
+	MIN(case when p.accumulated >= .50 * o.total then count_value else o.max_value end) as median_value,
+	MIN(case when p.accumulated >= .10 * o.total then count_value else o.max_value end) as p10_value,
+	MIN(case when p.accumulated >= .25 * o.total then count_value else o.max_value end) as p25_value,
+	MIN(case when p.accumulated >= .75 * o.total then count_value else o.max_value end) as p75_value,
+	MIN(case when p.accumulated >= .90 * o.total then count_value else o.max_value end) as p90_value
+into #tempResults
+from priorStats p
+join overallStats o on p.stratum1_id = o.stratum1_id
+GROUP BY p.stratum1_id, o.total, o.min_value, o.max_value, o.avg_value, o.stdev_value
 ;
+
+insert into @results_database_schema.ACHILLES_results_dist (analysis_id, stratum_1, count_value, min_value, max_value, avg_value, stdev_value, median_value, p10_value, p25_value, p75_value, p90_value)
+select analysis_id, stratum_1, count_value, min_value, max_value, avg_value, stdev_value, median_value, p10_value, p25_value, p75_value, p90_value
+from #tempResults;
+
+truncate table #tempResults;
+drop table #tempResults;
+
+
 --}
 
 
 --{1503 IN (@list_of_analysis_ids)}?{
 -- 1503	Distribution of paid coinsurance, by drug_concept_id
-insert into @results_database_schema.ACHILLES_results_dist (analysis_id, stratum_1, count_value, min_value, max_value, avg_value, stdev_value, median_value, p10_value, p25_value, p75_value, p90_value)
-select 1503 as analysis_id,
-	drug_concept_id as stratum_1,
-	COUNT_BIG(count_value) as count_value,
-	min(count_value) as min_value,
-	max(count_value) as max_value,
-	avg(1.0*count_value) as avg_value,
-	stdev(count_value) as stdev_value,
-	max(case when p1<=0.50 then count_value else -9999 end) as median_value,
-	max(case when p1<=0.10 then count_value else -9999 end) as p10_value,
-	max(case when p1<=0.25 then count_value else -9999 end) as p25_value,
-	max(case when p1<=0.75 then count_value else -9999 end) as p75_value,
-	max(case when p1<=0.90 then count_value else -9999 end) as p90_value
-from
+with rawData(stratum1_id, count_value) as
 (
-select drug_concept_id,
-	paid_coinsurance as count_value,
-	1.0*(row_number() over (partition by drug_concept_id order by paid_coinsurance))/(COUNT_BIG(*) over (partition by drug_concept_id)+1) as p1
-from @cdm_database_schema.drug_exposure de1
-	inner join
-	@cdm_database_schema.drug_cost dc1
-	on de1.drug_exposure_id = dc1.drug_exposure_id
-where paid_coinsurance is not null
-) t1
-group by drug_concept_id
+  select subject_id as stratum1_id,
+    paid_coinsurance as count_value
+  from @results_database_schema.ACHILLES_drug_cost_raw
+  where paid_coinsurance is not null
+),
+overallStats (stratum1_id, avg_value, stdev_value, min_value, max_value, total) as
+(
+  select stratum1_id, 
+    avg(1.0 * count_value) as avg_value,
+    stdev(count_value) as stdev_value,
+    min(count_value) as min_value,
+    max(count_value) as max_value,
+    count_big(*) as total
+  from rawData
+  group by stratum1_id
+),
+stats (stratum1_id, count_value, total, rn) as
+(
+  select stratum1_id, 
+		count_value, 
+  	count_big(*) as total, 
+		row_number() over (partition by stratum1_id order by count_value) as rn
+  FROM rawData
+  group by stratum1_id, count_value
+),
+priorStats (stratum1_id, count_value, total, accumulated) as
+(
+  select s.stratum1_id, s.count_value, s.total, sum(p.total) as accumulated
+  from stats s
+  join stats p on s.stratum1_id = p.stratum1_id and p.rn <= s.rn
+  group by s.stratum1_id, s.count_value, s.total, s.rn
+)
+select 1503 as analysis_id,
+  p.stratum1_id as stratum_1,
+  o.total as count_value,
+  o.min_value,
+	o.max_value,
+	o.avg_value,
+	o.stdev_value,
+	MIN(case when p.accumulated >= .50 * o.total then count_value else o.max_value end) as median_value,
+	MIN(case when p.accumulated >= .10 * o.total then count_value else o.max_value end) as p10_value,
+	MIN(case when p.accumulated >= .25 * o.total then count_value else o.max_value end) as p25_value,
+	MIN(case when p.accumulated >= .75 * o.total then count_value else o.max_value end) as p75_value,
+	MIN(case when p.accumulated >= .90 * o.total then count_value else o.max_value end) as p90_value
+into #tempResults
+from priorStats p
+join overallStats o on p.stratum1_id = o.stratum1_id
+GROUP BY p.stratum1_id, o.total, o.min_value, o.max_value, o.avg_value, o.stdev_value
 ;
+
+insert into @results_database_schema.ACHILLES_results_dist (analysis_id, stratum_1, count_value, min_value, max_value, avg_value, stdev_value, median_value, p10_value, p25_value, p75_value, p90_value)
+select analysis_id, stratum_1, count_value, min_value, max_value, avg_value, stdev_value, median_value, p10_value, p25_value, p75_value, p90_value
+from #tempResults;
+
+truncate table #tempResults;
+drop table #tempResults;
+
+
 --}
 
 --{1504 IN (@list_of_analysis_ids)}?{
 -- 1504	Distribution of paid toward deductible, by drug_concept_id
-insert into @results_database_schema.ACHILLES_results_dist (analysis_id, stratum_1, count_value, min_value, max_value, avg_value, stdev_value, median_value, p10_value, p25_value, p75_value, p90_value)
-select 1504 as analysis_id,
-	drug_concept_id as stratum_1,
-	COUNT_BIG(count_value) as count_value,
-	min(count_value) as min_value,
-	max(count_value) as max_value,
-	avg(1.0*count_value) as avg_value,
-	stdev(count_value) as stdev_value,
-	max(case when p1<=0.50 then count_value else -9999 end) as median_value,
-	max(case when p1<=0.10 then count_value else -9999 end) as p10_value,
-	max(case when p1<=0.25 then count_value else -9999 end) as p25_value,
-	max(case when p1<=0.75 then count_value else -9999 end) as p75_value,
-	max(case when p1<=0.90 then count_value else -9999 end) as p90_value
-from
+with rawData(stratum1_id, count_value) as
 (
-select drug_concept_id,
-	paid_toward_deductible as count_value,
-	1.0*(row_number() over (partition by drug_concept_id order by paid_toward_deductible))/(COUNT_BIG(*) over (partition by drug_concept_id)+1) as p1
-from @cdm_database_schema.drug_exposure de1
-	inner join
-	@cdm_database_schema.drug_cost dc1
-	on de1.drug_exposure_id = dc1.drug_exposure_id
-where paid_toward_deductible is not null
-) t1
-group by drug_concept_id
+  select subject_id as stratum1_id,
+    paid_toward_deductible as count_value
+  from @results_database_schema.ACHILLES_drug_cost_raw
+  where paid_toward_deductible is not null
+),
+overallStats (stratum1_id, avg_value, stdev_value, min_value, max_value, total) as
+(
+  select stratum1_id, 
+    avg(1.0 * count_value) as avg_value,
+    stdev(count_value) as stdev_value,
+    min(count_value) as min_value,
+    max(count_value) as max_value,
+    count_big(*) as total
+  from rawData
+  group by stratum1_id
+),
+stats (stratum1_id, count_value, total, rn) as
+(
+  select stratum1_id, 
+  	count_value, 
+  	count_big(*) as total, 
+		row_number() over (partition by stratum1_id order by count_value) as rn
+  FROM rawData
+  group by stratum1_id, count_value
+),
+priorStats (stratum1_id, count_value, total, accumulated) as
+(
+  select s.stratum1_id, s.count_value, s.total, sum(p.total) as accumulated
+  from stats s
+  join stats p on s.stratum1_id = p.stratum1_id and p.rn <= s.rn
+  group by s.stratum1_id, s.count_value, s.total, s.rn
+)
+select 1504 as analysis_id,
+  p.stratum1_id as stratum_1,
+  o.total as count_value,
+  o.min_value,
+	o.max_value,
+	o.avg_value,
+	o.stdev_value,
+	MIN(case when p.accumulated >= .50 * o.total then count_value else o.max_value end) as median_value,
+	MIN(case when p.accumulated >= .10 * o.total then count_value else o.max_value end) as p10_value,
+	MIN(case when p.accumulated >= .25 * o.total then count_value else o.max_value end) as p25_value,
+	MIN(case when p.accumulated >= .75 * o.total then count_value else o.max_value end) as p75_value,
+	MIN(case when p.accumulated >= .90 * o.total then count_value else o.max_value end) as p90_value
+into #tempResults
+from priorStats p
+join overallStats o on p.stratum1_id = o.stratum1_id
+GROUP BY p.stratum1_id, o.total, o.min_value, o.max_value, o.avg_value, o.stdev_value
 ;
+
+insert into @results_database_schema.ACHILLES_results_dist (analysis_id, stratum_1, count_value, min_value, max_value, avg_value, stdev_value, median_value, p10_value, p25_value, p75_value, p90_value)
+select analysis_id, stratum_1, count_value, min_value, max_value, avg_value, stdev_value, median_value, p10_value, p25_value, p75_value, p90_value
+from #tempResults
+;
+
+truncate table #tempResults;
+drop table #tempResults;
+
+
 --}
 
 --{1505 IN (@list_of_analysis_ids)}?{
 -- 1505	Distribution of paid by payer, by drug_concept_id
-insert into @results_database_schema.ACHILLES_results_dist (analysis_id, stratum_1, count_value, min_value, max_value, avg_value, stdev_value, median_value, p10_value, p25_value, p75_value, p90_value)
-select 1505 as analysis_id,
-	drug_concept_id as stratum_1,
-	COUNT_BIG(count_value) as count_value,
-	min(count_value) as min_value,
-	max(count_value) as max_value,
-	avg(1.0*count_value) as avg_value,
-	stdev(count_value) as stdev_value,
-	max(case when p1<=0.50 then count_value else -9999 end) as median_value,
-	max(case when p1<=0.10 then count_value else -9999 end) as p10_value,
-	max(case when p1<=0.25 then count_value else -9999 end) as p25_value,
-	max(case when p1<=0.75 then count_value else -9999 end) as p75_value,
-	max(case when p1<=0.90 then count_value else -9999 end) as p90_value
-from
+with rawData(stratum1_id, count_value) as
 (
-select drug_concept_id,
-	paid_by_payer as count_value,
-	1.0*(row_number() over (partition by drug_concept_id order by paid_by_payer))/(COUNT_BIG(*) over (partition by drug_concept_id)+1) as p1
-from @cdm_database_schema.drug_exposure de1
-	inner join
-	@cdm_database_schema.drug_cost dc1
-	on de1.drug_exposure_id = dc1.drug_exposure_id
-where paid_by_payer is not null
-) t1
-group by drug_concept_id
+  select subject_id as stratum1_id,
+    paid_by_payer as count_value
+  from @results_database_schema.ACHILLES_drug_cost_raw
+  where paid_by_payer is not null
+),
+overallStats (stratum1_id, avg_value, stdev_value, min_value, max_value, total) as
+(
+  select stratum1_id, 
+    avg(1.0 * count_value) as avg_value,
+    stdev(count_value) as stdev_value,
+    min(count_value) as min_value,
+    max(count_value) as max_value,
+    count_big(*) as total
+  from rawData
+  group by stratum1_id
+),
+stats (stratum1_id, count_value, total, rn) as
+(
+  select stratum1_id, 
+    count_value, 
+  	count_big(*) as total, 
+		row_number() over (partition by stratum1_id order by count_value) as rn
+  FROM rawData
+  group by stratum1_id, count_value
+),
+priorStats (stratum1_id, count_value, total, accumulated) as
+(
+  select s.stratum1_id, s.count_value, s.total, sum(p.total) as accumulated
+  from stats s
+  join stats p on s.stratum1_id = p.stratum1_id and p.rn <= s.rn
+  group by s.stratum1_id, s.count_value, s.total, s.rn
+)
+select 1505 as analysis_id,
+  p.stratum1_id as stratum_1,
+  o.total as count_value,
+  o.min_value,
+	o.max_value,
+	o.avg_value,
+	o.stdev_value,
+	MIN(case when p.accumulated >= .50 * o.total then count_value else o.max_value end) as median_value,
+	MIN(case when p.accumulated >= .10 * o.total then count_value else o.max_value end) as p10_value,
+	MIN(case when p.accumulated >= .25 * o.total then count_value else o.max_value end) as p25_value,
+	MIN(case when p.accumulated >= .75 * o.total then count_value else o.max_value end) as p75_value,
+	MIN(case when p.accumulated >= .90 * o.total then count_value else o.max_value end) as p90_value
+into #tempResults
+from priorStats p
+join overallStats o on p.stratum1_id = o.stratum1_id
+GROUP BY p.stratum1_id, o.total, o.min_value, o.max_value, o.avg_value, o.stdev_value
 ;
+
+insert into @results_database_schema.ACHILLES_results_dist (analysis_id, stratum_1, count_value, min_value, max_value, avg_value, stdev_value, median_value, p10_value, p25_value, p75_value, p90_value)
+select analysis_id, stratum_1, count_value, min_value, max_value, avg_value, stdev_value, median_value, p10_value, p25_value, p75_value, p90_value
+from #tempResults
+;
+
+truncate table #tempResults;
+drop table #tempResults;
+
+
 --}
 
 --{1506 IN (@list_of_analysis_ids)}?{
 -- 1506	Distribution of paid by coordination of benefit, by drug_concept_id
-insert into @results_database_schema.ACHILLES_results_dist (analysis_id, stratum_1, count_value, min_value, max_value, avg_value, stdev_value, median_value, p10_value, p25_value, p75_value, p90_value)
-select 1506 as analysis_id,
-	drug_concept_id as stratum_1,
-	COUNT_BIG(count_value) as count_value,
-	min(count_value) as min_value,
-	max(count_value) as max_value,
-	avg(1.0*count_value) as avg_value,
-	stdev(count_value) as stdev_value,
-	max(case when p1<=0.50 then count_value else -9999 end) as median_value,
-	max(case when p1<=0.10 then count_value else -9999 end) as p10_value,
-	max(case when p1<=0.25 then count_value else -9999 end) as p25_value,
-	max(case when p1<=0.75 then count_value else -9999 end) as p75_value,
-	max(case when p1<=0.90 then count_value else -9999 end) as p90_value
-from
+with rawData(stratum1_id, count_value) as
 (
-select drug_concept_id,
-	paid_by_coordination_benefits as count_value,
-	1.0*(row_number() over (partition by drug_concept_id order by paid_by_coordination_benefits))/(COUNT_BIG(*) over (partition by drug_concept_id)+1) as p1
-from @cdm_database_schema.drug_exposure de1
-	inner join
-	@cdm_database_schema.drug_cost dc1
-	on de1.drug_exposure_id = dc1.drug_exposure_id
-where paid_by_coordination_benefits is not null
-) t1
-group by drug_concept_id
+  select subject_id as stratum1_id,
+    paid_by_coordination_benefits as count_value
+  from @results_database_schema.ACHILLES_drug_cost_raw
+  where paid_by_coordination_benefits is not null
+),
+overallStats (stratum1_id, avg_value, stdev_value, min_value, max_value, total) as
+(
+  select stratum1_id, 
+    avg(1.0 * count_value) as avg_value,
+    stdev(count_value) as stdev_value,
+    min(count_value) as min_value,
+    max(count_value) as max_value,
+    count_big(*) as total
+  from rawData
+  group by stratum1_id
+),
+stats (stratum1_id, count_value, total, rn) as
+(
+  select stratum1_id, 
+    count_value, 
+    count_big(*) as total, 
+		row_number() over (partition by stratum1_id order by count_value) as rn
+  FROM rawData
+  group by stratum1_id, count_value
+),
+priorStats (stratum1_id, count_value, total, accumulated) as
+(
+  select s.stratum1_id, s.count_value, s.total, sum(p.total) as accumulated
+  from stats s
+  join stats p on s.stratum1_id = p.stratum1_id and p.rn <= s.rn
+  group by s.stratum1_id, s.count_value, s.total, s.rn
+)
+select 1506 as analysis_id,
+  p.stratum1_id as stratum_1,
+  o.total as count_value,
+  o.min_value,
+	o.max_value,
+	o.avg_value,
+	o.stdev_value,
+	MIN(case when p.accumulated >= .50 * o.total then count_value else o.max_value end) as median_value,
+	MIN(case when p.accumulated >= .10 * o.total then count_value else o.max_value end) as p10_value,
+	MIN(case when p.accumulated >= .25 * o.total then count_value else o.max_value end) as p25_value,
+	MIN(case when p.accumulated >= .75 * o.total then count_value else o.max_value end) as p75_value,
+	MIN(case when p.accumulated >= .90 * o.total then count_value else o.max_value end) as p90_value
+into #tempResults
+from priorStats p
+join overallStats o on p.stratum1_id = o.stratum1_id
+GROUP BY p.stratum1_id, o.total, o.min_value, o.max_value, o.avg_value, o.stdev_value
 ;
+
+insert into @results_database_schema.ACHILLES_results_dist (analysis_id, stratum_1, count_value, min_value, max_value, avg_value, stdev_value, median_value, p10_value, p25_value, p75_value, p90_value)
+select analysis_id, stratum_1, count_value, min_value, max_value, avg_value, stdev_value, median_value, p10_value, p25_value, p75_value, p90_value
+from #tempResults
+;
+
+truncate table #tempResults;
+drop table #tempResults;
+
 --}
 
 --{1507 IN (@list_of_analysis_ids)}?{
 -- 1507	Distribution of total out-of-pocket, by drug_concept_id
-insert into @results_database_schema.ACHILLES_results_dist (analysis_id, stratum_1, count_value, min_value, max_value, avg_value, stdev_value, median_value, p10_value, p25_value, p75_value, p90_value)
-select 1507 as analysis_id,
-	drug_concept_id as stratum_1,
-	COUNT_BIG(count_value) as count_value,
-	min(count_value) as min_value,
-	max(count_value) as max_value,
-	avg(1.0*count_value) as avg_value,
-	stdev(count_value) as stdev_value,
-	max(case when p1<=0.50 then count_value else -9999 end) as median_value,
-	max(case when p1<=0.10 then count_value else -9999 end) as p10_value,
-	max(case when p1<=0.25 then count_value else -9999 end) as p25_value,
-	max(case when p1<=0.75 then count_value else -9999 end) as p75_value,
-	max(case when p1<=0.90 then count_value else -9999 end) as p90_value
-from
+with rawData(stratum1_id, count_value) as
 (
-select drug_concept_id,
-	total_out_of_pocket as count_value,
-	1.0*(row_number() over (partition by drug_concept_id order by total_out_of_pocket))/(COUNT_BIG(*) over (partition by drug_concept_id)+1) as p1
-from @cdm_database_schema.drug_exposure de1
-	inner join
-	@cdm_database_schema.drug_cost dc1
-	on de1.drug_exposure_id = dc1.drug_exposure_id
-where total_out_of_pocket is not null
-) t1
-group by drug_concept_id
+  select subject_id as stratum1_id,
+    total_out_of_pocket as count_value
+  from @results_database_schema.ACHILLES_drug_cost_raw
+  where total_out_of_pocket is not null
+),
+overallStats (stratum1_id, avg_value, stdev_value, min_value, max_value, total) as
+(
+  select stratum1_id, 
+    avg(1.0 * count_value) as avg_value,
+    stdev(count_value) as stdev_value,
+    min(count_value) as min_value,
+    max(count_value) as max_value,
+    count_big(*) as total
+  from rawData
+  group by stratum1_id
+),
+stats (stratum1_id, count_value, total, rn) as
+(
+  select stratum1_id, 
+    count_value, 
+    count_big(*) as total, 
+  	row_number() over (partition by stratum1_id order by count_value) as rn
+  FROM rawData
+  group by stratum1_id, count_value
+),
+priorStats (stratum1_id, count_value, total, accumulated) as
+(
+  select s.stratum1_id, s.count_value, s.total, sum(p.total) as accumulated
+  from stats s
+  join stats p on s.stratum1_id = p.stratum1_id and p.rn <= s.rn
+  group by s.stratum1_id, s.count_value, s.total, s.rn
+)
+select 1507 as analysis_id,
+  p.stratum1_id as stratum_1,
+  o.total as count_value,
+  o.min_value,
+	o.max_value,
+	o.avg_value,
+	o.stdev_value,
+	MIN(case when p.accumulated >= .50 * o.total then count_value else o.max_value end) as median_value,
+	MIN(case when p.accumulated >= .10 * o.total then count_value else o.max_value end) as p10_value,
+	MIN(case when p.accumulated >= .25 * o.total then count_value else o.max_value end) as p25_value,
+	MIN(case when p.accumulated >= .75 * o.total then count_value else o.max_value end) as p75_value,
+	MIN(case when p.accumulated >= .90 * o.total then count_value else o.max_value end) as p90_value
+into #tempResults
+from priorStats p
+join overallStats o on p.stratum1_id = o.stratum1_id
+GROUP BY p.stratum1_id, o.total, o.min_value, o.max_value, o.avg_value, o.stdev_value
 ;
+
+insert into @results_database_schema.ACHILLES_results_dist (analysis_id, stratum_1, count_value, min_value, max_value, avg_value, stdev_value, median_value, p10_value, p25_value, p75_value, p90_value)
+select analysis_id, stratum_1, count_value, min_value, max_value, avg_value, stdev_value, median_value, p10_value, p25_value, p75_value, p90_value
+from #tempResults
+;
+
+truncate table #tempResults;
+drop table #tempResults;
+
 --}
 
 
 --{1508 IN (@list_of_analysis_ids)}?{
 -- 1508	Distribution of total paid, by drug_concept_id
-insert into @results_database_schema.ACHILLES_results_dist (analysis_id, stratum_1, count_value, min_value, max_value, avg_value, stdev_value, median_value, p10_value, p25_value, p75_value, p90_value)
-select 1508 as analysis_id,
-	drug_concept_id as stratum_1,
-	COUNT_BIG(count_value) as count_value,
-	min(count_value) as min_value,
-	max(count_value) as max_value,
-	avg(1.0*count_value) as avg_value,
-	stdev(count_value) as stdev_value,
-	max(case when p1<=0.50 then count_value else -9999 end) as median_value,
-	max(case when p1<=0.10 then count_value else -9999 end) as p10_value,
-	max(case when p1<=0.25 then count_value else -9999 end) as p25_value,
-	max(case when p1<=0.75 then count_value else -9999 end) as p75_value,
-	max(case when p1<=0.90 then count_value else -9999 end) as p90_value
-from
+with rawData(stratum1_id, count_value) as
 (
-select drug_concept_id,
-	total_paid as count_value,
-	1.0*(row_number() over (partition by drug_concept_id order by total_paid))/(COUNT_BIG(*) over (partition by drug_concept_id)+1) as p1
-from drug_exposure de1
-	inner join
-	@cdm_database_schema.drug_cost dc1
-	on de1.drug_exposure_id = dc1.drug_exposure_id
-where total_paid is not null
-) t1
-group by drug_concept_id
+  select subject_id as stratum1_id,
+    total_paid as count_value
+  from @results_database_schema.ACHILLES_drug_cost_raw
+  where total_paid is not null
+),
+overallStats (stratum1_id, avg_value, stdev_value, min_value, max_value, total) as
+(
+  select stratum1_id, 
+    avg(1.0 * count_value) as avg_value,
+    stdev(count_value) as stdev_value,
+    min(count_value) as min_value,
+    max(count_value) as max_value,
+    count_big(*) as total
+  from rawData
+  group by stratum1_id
+),
+stats (stratum1_id, count_value, total, rn) as
+(
+  select stratum1_id, 
+    count_value, 
+    count_big(*) as total, 
+    row_number() over (partition by stratum1_id order by count_value) as rn
+  FROM rawData
+  group by stratum1_id, count_value
+),
+priorStats (stratum1_id, count_value, total, accumulated) as
+(
+  select s.stratum1_id, s.count_value, s.total, sum(p.total) as accumulated
+  from stats s
+  join stats p on s.stratum1_id = p.stratum1_id and p.rn <= s.rn
+  group by s.stratum1_id, s.count_value, s.total, s.rn
+)
+select 1508 as analysis_id,
+  p.stratum1_id as stratum_1,
+  o.total as count_value,
+  o.min_value,
+	o.max_value,
+	o.avg_value,
+	o.stdev_value,
+	MIN(case when p.accumulated >= .50 * o.total then count_value else o.max_value end) as median_value,
+	MIN(case when p.accumulated >= .10 * o.total then count_value else o.max_value end) as p10_value,
+	MIN(case when p.accumulated >= .25 * o.total then count_value else o.max_value end) as p25_value,
+	MIN(case when p.accumulated >= .75 * o.total then count_value else o.max_value end) as p75_value,
+	MIN(case when p.accumulated >= .90 * o.total then count_value else o.max_value end) as p90_value
+into #tempResults
+from priorStats p
+join overallStats o on p.stratum1_id = o.stratum1_id
+GROUP BY p.stratum1_id, o.total, o.min_value, o.max_value, o.avg_value, o.stdev_value
 ;
+
+insert into @results_database_schema.ACHILLES_results_dist (analysis_id, stratum_1, count_value, min_value, max_value, avg_value, stdev_value, median_value, p10_value, p25_value, p75_value, p90_value)
+select analysis_id, stratum_1, count_value, min_value, max_value, avg_value, stdev_value, median_value, p10_value, p25_value, p75_value, p90_value
+from #tempResults
+;
+
+truncate table #tempResults;
+drop table #tempResults;
+
 --}
 
 
 --{1509 IN (@list_of_analysis_ids)}?{
 -- 1509	Distribution of ingredient_cost, by drug_concept_id
-insert into @results_database_schema.ACHILLES_results_dist (analysis_id, stratum_1, count_value, min_value, max_value, avg_value, stdev_value, median_value, p10_value, p25_value, p75_value, p90_value)
-select 1509 as analysis_id,
-	drug_concept_id as stratum_1,
-	COUNT_BIG(count_value) as count_value,
-	min(count_value) as min_value,
-	max(count_value) as max_value,
-	avg(1.0*count_value) as avg_value,
-	stdev(count_value) as stdev_value,
-	max(case when p1<=0.50 then count_value else -9999 end) as median_value,
-	max(case when p1<=0.10 then count_value else -9999 end) as p10_value,
-	max(case when p1<=0.25 then count_value else -9999 end) as p25_value,
-	max(case when p1<=0.75 then count_value else -9999 end) as p75_value,
-	max(case when p1<=0.90 then count_value else -9999 end) as p90_value
-from
+with rawData(stratum1_id, count_value) as
 (
-select drug_concept_id,
-	ingredient_cost as count_value,
-	1.0*(row_number() over (partition by drug_concept_id order by ingredient_cost))/(COUNT_BIG(*) over (partition by drug_concept_id)+1) as p1
-from drug_exposure de1
-	inner join
-	@cdm_database_schema.drug_cost dc1
-	on de1.drug_exposure_id = dc1.drug_exposure_id
-where ingredient_cost is not null
-) t1
-group by drug_concept_id
+  select subject_id as stratum1_id,
+    ingredient_cost as count_value
+  from @results_database_schema.ACHILLES_drug_cost_raw
+  where ingredient_cost is not null
+),
+overallStats (stratum1_id, avg_value, stdev_value, min_value, max_value, total) as
+(
+  select stratum1_id, 
+    avg(1.0 * count_value) as avg_value,
+    stdev(count_value) as stdev_value,
+    min(count_value) as min_value,
+    max(count_value) as max_value,
+    count_big(*) as total
+  from rawData
+  group by stratum1_id
+),
+stats (stratum1_id, count_value, total, rn) as
+(
+  select stratum1_id, 
+    count_value, 
+    count_big(*) as total, 
+    row_number() over (partition by stratum1_id order by count_value) as rn
+  FROM rawData
+  group by stratum1_id, count_value
+),
+priorStats (stratum1_id, count_value, total, accumulated) as
+(
+  select s.stratum1_id, s.count_value, s.total, sum(p.total) as accumulated
+  from stats s
+  join stats p on s.stratum1_id = p.stratum1_id and p.rn <= s.rn
+  group by s.stratum1_id, s.count_value, s.total, s.rn
+)
+select 1509 as analysis_id,
+  p.stratum1_id as stratum_1,
+  o.total as count_value,
+  o.min_value,
+  o.max_value,
+	o.avg_value,
+	o.stdev_value,
+	MIN(case when p.accumulated >= .50 * o.total then count_value else o.max_value end) as median_value,
+	MIN(case when p.accumulated >= .10 * o.total then count_value else o.max_value end) as p10_value,
+	MIN(case when p.accumulated >= .25 * o.total then count_value else o.max_value end) as p25_value,
+	MIN(case when p.accumulated >= .75 * o.total then count_value else o.max_value end) as p75_value,
+	MIN(case when p.accumulated >= .90 * o.total then count_value else o.max_value end) as p90_value
+into #tempResults
+from priorStats p
+join overallStats o on p.stratum1_id = o.stratum1_id
+GROUP BY p.stratum1_id, o.total, o.min_value, o.max_value, o.avg_value, o.stdev_value
 ;
+
+insert into @results_database_schema.ACHILLES_results_dist (analysis_id, stratum_1, count_value, min_value, max_value, avg_value, stdev_value, median_value, p10_value, p25_value, p75_value, p90_value)
+select analysis_id, stratum_1, count_value, min_value, max_value, avg_value, stdev_value, median_value, p10_value, p25_value, p75_value, p90_value
+from #tempResults
+;
+
+truncate table #tempResults;
+drop table #tempResults;
+
 --}
 
 --{1510 IN (@list_of_analysis_ids)}?{
 -- 1510	Distribution of dispensing fee, by drug_concept_id
-insert into @results_database_schema.ACHILLES_results_dist (analysis_id, stratum_1, count_value, min_value, max_value, avg_value, stdev_value, median_value, p10_value, p25_value, p75_value, p90_value)
-select 1510 as analysis_id,
-	drug_concept_id as stratum_1,
-	COUNT_BIG(count_value) as count_value,
-	min(count_value) as min_value,
-	max(count_value) as max_value,
-	avg(1.0*count_value) as avg_value,
-	stdev(count_value) as stdev_value,
-	max(case when p1<=0.50 then count_value else -9999 end) as median_value,
-	max(case when p1<=0.10 then count_value else -9999 end) as p10_value,
-	max(case when p1<=0.25 then count_value else -9999 end) as p25_value,
-	max(case when p1<=0.75 then count_value else -9999 end) as p75_value,
-	max(case when p1<=0.90 then count_value else -9999 end) as p90_value
-from
+with rawData(stratum1_id, count_value) as
 (
-select drug_concept_id,
-	dispensing_fee as count_value,
-	1.0*(row_number() over (partition by drug_concept_id order by dispensing_fee))/(COUNT_BIG(*) over (partition by drug_concept_id)+1) as p1
-from @cdm_database_schema.drug_exposure de1
-	inner join
-	@cdm_database_schema.drug_cost dc1
-	on de1.drug_exposure_id = dc1.drug_exposure_id
-where dispensing_fee is not null
-) t1
-group by drug_concept_id
+  select subject_id as stratum1_id,
+    dispensing_fee as count_value
+  from @results_database_schema.ACHILLES_drug_cost_raw
+  where dispensing_fee is not null
+),
+overallStats (stratum1_id, avg_value, stdev_value, min_value, max_value, total) as
+(
+  select stratum1_id, 
+    avg(1.0 * count_value) as avg_value,
+    stdev(count_value) as stdev_value,
+    min(count_value) as min_value,
+    max(count_value) as max_value,
+    count_big(*) as total
+  from rawData
+  group by stratum1_id
+),
+stats (stratum1_id, count_value, total, rn) as
+(
+  select stratum1_id, 
+    count_value, 
+    count_big(*) as total, 
+    row_number() over (partition by stratum1_id order by count_value) as rn
+  FROM rawData
+  group by stratum1_id, count_value
+),
+priorStats (stratum1_id, count_value, total, accumulated) as
+(
+  select s.stratum1_id, s.count_value, s.total, sum(p.total) as accumulated
+  from stats s
+  join stats p on s.stratum1_id = p.stratum1_id and p.rn <= s.rn
+  group by s.stratum1_id, s.count_value, s.total, s.rn
+)
+select 1510 as analysis_id,
+  p.stratum1_id as stratum_1,
+  o.total as count_value,
+  o.min_value,
+  o.max_value,
+  o.avg_value,
+	o.stdev_value,
+	MIN(case when p.accumulated >= .50 * o.total then count_value else o.max_value end) as median_value,
+	MIN(case when p.accumulated >= .10 * o.total then count_value else o.max_value end) as p10_value,
+	MIN(case when p.accumulated >= .25 * o.total then count_value else o.max_value end) as p25_value,
+	MIN(case when p.accumulated >= .75 * o.total then count_value else o.max_value end) as p75_value,
+	MIN(case when p.accumulated >= .90 * o.total then count_value else o.max_value end) as p90_value
+into #tempResults
+from priorStats p
+join overallStats o on p.stratum1_id = o.stratum1_id
+GROUP BY p.stratum1_id, o.total, o.min_value, o.max_value, o.avg_value, o.stdev_value
 ;
+
+insert into @results_database_schema.ACHILLES_results_dist (analysis_id, stratum_1, count_value, min_value, max_value, avg_value, stdev_value, median_value, p10_value, p25_value, p75_value, p90_value)
+select analysis_id, stratum_1, count_value, min_value, max_value, avg_value, stdev_value, median_value, p10_value, p25_value, p75_value, p90_value
+from #tempResults
+;
+
+truncate table #tempResults;
+drop table #tempResults;
 --}
 
 --{1511 IN (@list_of_analysis_ids)}?{
 -- 1511	Distribution of average wholesale price, by drug_concept_id
-insert into @results_database_schema.ACHILLES_results_dist (analysis_id, stratum_1, count_value, min_value, max_value, avg_value, stdev_value, median_value, p10_value, p25_value, p75_value, p90_value)
-select 1511 as analysis_id,
-	drug_concept_id as stratum_1,
-	COUNT_BIG(count_value) as count_value,
-	min(count_value) as min_value,
-	max(count_value) as max_value,
-	avg(1.0*count_value) as avg_value,
-	stdev(count_value) as stdev_value,
-	max(case when p1<=0.50 then count_value else -9999 end) as median_value,
-	max(case when p1<=0.10 then count_value else -9999 end) as p10_value,
-	max(case when p1<=0.25 then count_value else -9999 end) as p25_value,
-	max(case when p1<=0.75 then count_value else -9999 end) as p75_value,
-	max(case when p1<=0.90 then count_value else -9999 end) as p90_value
-from
+with rawData(stratum1_id, count_value) as
 (
-select drug_concept_id,
-	average_wholesale_price as count_value,
-	1.0*(row_number() over (partition by drug_concept_id order by average_wholesale_price))/(COUNT_BIG(*) over (partition by drug_concept_id)+1) as p1
-from @cdm_database_schema.drug_exposure de1
-	inner join
-	@cdm_database_schema.drug_cost dc1
-	on de1.drug_exposure_id = dc1.drug_exposure_id
-where average_wholesale_price is not null
-) t1
-group by drug_concept_id
+  select subject_id as stratum1_id,
+    average_wholesale_price as count_value
+  from @results_database_schema.ACHILLES_drug_cost_raw
+  where average_wholesale_price is not null
+),
+overallStats (stratum1_id, avg_value, stdev_value, min_value, max_value, total) as
+(
+  select stratum1_id, 
+    avg(1.0 * count_value) as avg_value,
+    stdev(count_value) as stdev_value,
+    min(count_value) as min_value,
+    max(count_value) as max_value,
+    count_big(*) as total
+  from rawData
+  group by stratum1_id
+),
+stats (stratum1_id, count_value, total, rn) as
+(
+  select stratum1_id, 
+    count_value, 
+    count_big(*) as total, 
+    row_number() over (partition by stratum1_id order by count_value) as rn
+  FROM rawData
+  group by stratum1_id, count_value
+),
+priorStats (stratum1_id, count_value, total, accumulated) as
+(
+  select s.stratum1_id, s.count_value, s.total, sum(p.total) as accumulated
+  from stats s
+  join stats p on s.stratum1_id = p.stratum1_id and p.rn <= s.rn
+  group by s.stratum1_id, s.count_value, s.total, s.rn
+)
+select 1511 as analysis_id,
+  p.stratum1_id as stratum_1,
+  o.total as count_value,
+  o.min_value,
+  o.max_value,
+  o.avg_value,
+  o.stdev_value,
+	MIN(case when p.accumulated >= .50 * o.total then count_value else o.max_value end) as median_value,
+	MIN(case when p.accumulated >= .10 * o.total then count_value else o.max_value end) as p10_value,
+	MIN(case when p.accumulated >= .25 * o.total then count_value else o.max_value end) as p25_value,
+	MIN(case when p.accumulated >= .75 * o.total then count_value else o.max_value end) as p75_value,
+	MIN(case when p.accumulated >= .90 * o.total then count_value else o.max_value end) as p90_value
+into #tempResults
+from priorStats p
+join overallStats o on p.stratum1_id = o.stratum1_id
+GROUP BY p.stratum1_id, o.total, o.min_value, o.max_value, o.avg_value, o.stdev_value
 ;
+
+insert into @results_database_schema.ACHILLES_results_dist (analysis_id, stratum_1, count_value, min_value, max_value, avg_value, stdev_value, median_value, p10_value, p25_value, p75_value, p90_value)
+select analysis_id, stratum_1, count_value, min_value, max_value, avg_value, stdev_value, median_value, p10_value, p25_value, p75_value, p90_value
+from #tempResults
+;
+
+truncate table #tempResults;
+drop table #tempResults;
+
+
 --}
+
+-- clean up cached table if exists
+IF OBJECT_ID('@results_database_schema.ACHILLES_drug_cost_raw', 'U') IS NOT NULL
+  DROP TABLE @results_database_schema.ACHILLES_drug_cost_raw;
 
 /********************************************
 
@@ -4565,6 +6065,24 @@ ACHILLES Analyses on PROCEDURE_COST table
 
 *********************************************/
 
+-- { 1602 in (@list_of_analysis_ids) | 1603 in (@list_of_analysis_ids) | 1604 in (@list_of_analysis_ids) | 1605 in (@list_of_analysis_ids) | 1606 in (@list_of_analysis_ids) | 1607 in (@list_of_analysis_ids) | 1608 in (@list_of_analysis_ids)}?{
+
+IF OBJECT_ID('@results_database_schema.ACHILLES_procedure_cost_raw', 'U') IS NOT NULL
+  DROP TABLE @results_database_schema.ACHILLES_procedure_cost_raw;
+
+select procedure_concept_id as subject_id,
+  paid_copay,
+  paid_coinsurance,
+	paid_toward_deductible,
+	paid_by_payer,
+	paid_by_coordination_benefits, 
+	total_out_of_pocket,
+	total_paid
+INTO @results_database_schema.ACHILLES_procedure_cost_raw
+from @cdm_database_schema.procedure_cost pc1
+join @cdm_database_schema.procedure_occurrence po1 on pc1.procedure_occurrence_id = po1.procedure_occurrence_id and procedure_concept_id <> 0
+;
+--}
 
 --{1600 IN (@list_of_analysis_ids)}?{
 -- 1600	Number of procedure cost records with invalid procedure exposure id
@@ -4596,214 +6114,451 @@ where pc1.payer_plan_period_id is not null
 
 --{1602 IN (@list_of_analysis_ids)}?{
 -- 1602	Distribution of paid copay, by procedure_concept_id
-insert into @results_database_schema.ACHILLES_results_dist (analysis_id, stratum_1, count_value, min_value, max_value, avg_value, stdev_value, median_value, p10_value, p25_value, p75_value, p90_value)
-select 1602 as analysis_id,
-	procedure_concept_id as stratum_1,
-	COUNT_BIG(count_value) as count_value,
-	min(count_value) as min_value,
-	max(count_value) as max_value,
-	avg(1.0*count_value) as avg_value,
-	stdev(count_value) as stdev_value,
-	max(case when p1<=0.50 then count_value else -9999 end) as median_value,
-	max(case when p1<=0.10 then count_value else -9999 end) as p10_value,
-	max(case when p1<=0.25 then count_value else -9999 end) as p25_value,
-	max(case when p1<=0.75 then count_value else -9999 end) as p75_value,
-	max(case when p1<=0.90 then count_value else -9999 end) as p90_value
-from
+with rawData(stratum1_id, count_value) as
 (
-select procedure_concept_id,
-	paid_copay as count_value,
-	1.0*(row_number() over (partition by procedure_concept_id order by paid_copay))/(COUNT_BIG(*) over (partition by procedure_concept_id)+1) as p1
-from @cdm_database_schema.procedure_occurrence po1
-	inner join
-	@cdm_database_schema.procedure_cost pc1
-	on po1.procedure_occurrence_id = pc1.procedure_occurrence_id
-where paid_copay is not null
-) t1
-group by procedure_concept_id
+  select subject_id as stratum1_id,
+    paid_copay as count_value
+  from @results_database_schema.ACHILLES_procedure_cost_raw
+  where paid_copay is not null
+),
+overallStats (stratum1_id, avg_value, stdev_value, min_value, max_value, total) as
+(
+  select stratum1_id, 
+    avg(1.0 * count_value) as avg_value,
+    stdev(count_value) as stdev_value,
+    min(count_value) as min_value,
+    max(count_value) as max_value,
+    count_big(*) as total
+  from rawData
+  group by stratum1_id
+),
+stats (stratum1_id, count_value, total, rn) as
+(
+  select stratum1_id, 
+    count_value, 
+    count_big(*) as total, 
+    row_number() over (partition by stratum1_id order by count_value) as rn
+  FROM rawData
+  group by stratum1_id, count_value
+),
+priorStats (stratum1_id, count_value, total, accumulated) as
+(
+  select s.stratum1_id, s.count_value, s.total, sum(p.total) as accumulated
+  from stats s
+  join stats p on s.stratum1_id = p.stratum1_id and p.rn <= s.rn
+  group by s.stratum1_id, s.count_value, s.total, s.rn
+)
+select 1602 as analysis_id,
+  p.stratum1_id as stratum_1,
+  o.total as count_value,
+  o.min_value,
+  o.max_value,
+  o.avg_value,
+  o.stdev_value,
+  MIN(case when p.accumulated >= .50 * o.total then count_value else o.max_value end) as median_value,
+	MIN(case when p.accumulated >= .10 * o.total then count_value else o.max_value end) as p10_value,
+	MIN(case when p.accumulated >= .25 * o.total then count_value else o.max_value end) as p25_value,
+	MIN(case when p.accumulated >= .75 * o.total then count_value else o.max_value end) as p75_value,
+	MIN(case when p.accumulated >= .90 * o.total then count_value else o.max_value end) as p90_value
+into #tempResults
+from priorStats p
+join overallStats o on p.stratum1_id = o.stratum1_id
+GROUP BY p.stratum1_id, o.total, o.min_value, o.max_value, o.avg_value, o.stdev_value
 ;
+
+insert into @results_database_schema.ACHILLES_results_dist (analysis_id, stratum_1, count_value, min_value, max_value, avg_value, stdev_value, median_value, p10_value, p25_value, p75_value, p90_value)
+select analysis_id, stratum_1, count_value, min_value, max_value, avg_value, stdev_value, median_value, p10_value, p25_value, p75_value, p90_value
+from #tempResults
+;
+
+truncate table #tempResults;
+drop table #tempResults;
+
 --}
 
 
 --{1603 IN (@list_of_analysis_ids)}?{
 -- 1603	Distribution of paid coinsurance, by procedure_concept_id
-insert into @results_database_schema.ACHILLES_results_dist (analysis_id, stratum_1, count_value, min_value, max_value, avg_value, stdev_value, median_value, p10_value, p25_value, p75_value, p90_value)
-select 1603 as analysis_id,
-	procedure_concept_id as stratum_1,
-	COUNT_BIG(count_value) as count_value,
-	min(count_value) as min_value,
-	max(count_value) as max_value,
-	avg(1.0*count_value) as avg_value,
-	stdev(count_value) as stdev_value,
-	max(case when p1<=0.50 then count_value else -9999 end) as median_value,
-	max(case when p1<=0.10 then count_value else -9999 end) as p10_value,
-	max(case when p1<=0.25 then count_value else -9999 end) as p25_value,
-	max(case when p1<=0.75 then count_value else -9999 end) as p75_value,
-	max(case when p1<=0.90 then count_value else -9999 end) as p90_value
-from
+with rawData(stratum1_id, count_value) as
 (
-select procedure_concept_id,
-	paid_coinsurance as count_value,
-	1.0*(row_number() over (partition by procedure_concept_id order by paid_coinsurance))/(COUNT_BIG(*) over (partition by procedure_concept_id)+1) as p1
-from @cdm_database_schema.procedure_occurrence po1
-	inner join
-	@cdm_database_schema.procedure_cost pc1
-	on po1.procedure_occurrence_id = pc1.procedure_occurrence_id
-where paid_coinsurance is not null
-) t1
-group by procedure_concept_id
+  select subject_id as stratum1_id,
+    paid_coinsurance as count_value
+  from @results_database_schema.ACHILLES_procedure_cost_raw
+  where paid_coinsurance is not null
+),
+overallStats (stratum1_id, avg_value, stdev_value, min_value, max_value, total) as
+(
+  select stratum1_id, 
+    avg(1.0 * count_value) as avg_value,
+    stdev(count_value) as stdev_value,
+    min(count_value) as min_value,
+    max(count_value) as max_value,
+    count_big(*) as total
+  from rawData
+  group by stratum1_id
+),
+stats (stratum1_id, count_value, total, rn) as
+(
+  select stratum1_id, 
+    count_value, 
+    count_big(*) as total, 
+    row_number() over (partition by stratum1_id order by count_value) as rn
+  FROM rawData
+  group by stratum1_id, count_value
+),
+priorStats (stratum1_id, count_value, total, accumulated) as
+(
+  select s.stratum1_id, s.count_value, s.total, sum(p.total) as accumulated
+  from stats s
+  join stats p on s.stratum1_id = p.stratum1_id and p.rn <= s.rn
+  group by s.stratum1_id, s.count_value, s.total, s.rn
+)
+select 1603 as analysis_id,
+  p.stratum1_id as stratum_1,
+  o.total as count_value,
+  o.min_value,
+  o.max_value,
+  o.avg_value,
+  o.stdev_value,
+  MIN(case when p.accumulated >= .50 * o.total then count_value else o.max_value end) as median_value,
+  MIN(case when p.accumulated >= .10 * o.total then count_value else o.max_value end) as p10_value,
+	MIN(case when p.accumulated >= .25 * o.total then count_value else o.max_value end) as p25_value,
+	MIN(case when p.accumulated >= .75 * o.total then count_value else o.max_value end) as p75_value,
+	MIN(case when p.accumulated >= .90 * o.total then count_value else o.max_value end) as p90_value
+into #tempResults
+from priorStats p
+join overallStats o on p.stratum1_id = o.stratum1_id
+GROUP BY p.stratum1_id, o.total, o.min_value, o.max_value, o.avg_value, o.stdev_value
 ;
+
+insert into @results_database_schema.ACHILLES_results_dist (analysis_id, stratum_1, count_value, min_value, max_value, avg_value, stdev_value, median_value, p10_value, p25_value, p75_value, p90_value)
+select analysis_id, stratum_1, count_value, min_value, max_value, avg_value, stdev_value, median_value, p10_value, p25_value, p75_value, p90_value
+from #tempResults
+;
+
+truncate table #tempResults;
+drop table #tempResults;
+
 --}
 
 --{1604 IN (@list_of_analysis_ids)}?{
 -- 1604	Distribution of paid toward deductible, by procedure_concept_id
-insert into @results_database_schema.ACHILLES_results_dist (analysis_id, stratum_1, count_value, min_value, max_value, avg_value, stdev_value, median_value, p10_value, p25_value, p75_value, p90_value)
-select 1604 as analysis_id,
-	procedure_concept_id as stratum_1,
-	COUNT_BIG(count_value) as count_value,
-	min(count_value) as min_value,
-	max(count_value) as max_value,
-	avg(1.0*count_value) as avg_value,
-	stdev(count_value) as stdev_value,
-	max(case when p1<=0.50 then count_value else -9999 end) as median_value,
-	max(case when p1<=0.10 then count_value else -9999 end) as p10_value,
-	max(case when p1<=0.25 then count_value else -9999 end) as p25_value,
-	max(case when p1<=0.75 then count_value else -9999 end) as p75_value,
-	max(case when p1<=0.90 then count_value else -9999 end) as p90_value
-from
+with rawData(stratum1_id, count_value) as
 (
-select procedure_concept_id,
-	paid_toward_deductible as count_value,
-	1.0*(row_number() over (partition by procedure_concept_id order by paid_toward_deductible))/(COUNT_BIG(*) over (partition by procedure_concept_id)+1) as p1
-from @cdm_database_schema.procedure_occurrence po1
-	inner join
-	@cdm_database_schema.procedure_cost pc1
-	on po1.procedure_occurrence_id = pc1.procedure_occurrence_id
-where paid_toward_deductible is not null
-) t1
-group by procedure_concept_id
+  select subject_id as stratum1_id,
+    paid_toward_deductible as count_value
+  from @results_database_schema.ACHILLES_procedure_cost_raw
+  where paid_toward_deductible is not null
+),
+overallStats (stratum1_id, avg_value, stdev_value, min_value, max_value, total) as
+(
+  select stratum1_id, 
+    avg(1.0 * count_value) as avg_value,
+    stdev(count_value) as stdev_value,
+    min(count_value) as min_value,
+    max(count_value) as max_value,
+    count_big(*) as total
+  from rawData
+  group by stratum1_id
+),
+stats (stratum1_id, count_value, total, rn) as
+(
+  select stratum1_id, 
+    count_value, 
+    count_big(*) as total, 
+    row_number() over (partition by stratum1_id order by count_value) as rn
+  FROM rawData
+  group by stratum1_id, count_value
+),
+priorStats (stratum1_id, count_value, total, accumulated) as
+(
+  select s.stratum1_id, s.count_value, s.total, sum(p.total) as accumulated
+  from stats s
+  join stats p on s.stratum1_id = p.stratum1_id and p.rn <= s.rn
+  group by s.stratum1_id, s.count_value, s.total, s.rn
+)
+select 1604 as analysis_id,
+  p.stratum1_id as stratum_1,
+  o.total as count_value,
+  o.min_value,
+  o.max_value,
+  o.avg_value,
+  o.stdev_value,
+  MIN(case when p.accumulated >= .50 * o.total then count_value else o.max_value end) as median_value,
+  MIN(case when p.accumulated >= .10 * o.total then count_value else o.max_value end) as p10_value,
+  MIN(case when p.accumulated >= .25 * o.total then count_value else o.max_value end) as p25_value,
+	MIN(case when p.accumulated >= .75 * o.total then count_value else o.max_value end) as p75_value,
+	MIN(case when p.accumulated >= .90 * o.total then count_value else o.max_value end) as p90_value
+into #tempResults
+from priorStats p
+join overallStats o on p.stratum1_id = o.stratum1_id
+GROUP BY p.stratum1_id, o.total, o.min_value, o.max_value, o.avg_value, o.stdev_value
 ;
+
+insert into @results_database_schema.ACHILLES_results_dist (analysis_id, stratum_1, count_value, min_value, max_value, avg_value, stdev_value, median_value, p10_value, p25_value, p75_value, p90_value)
+select analysis_id, stratum_1, count_value, min_value, max_value, avg_value, stdev_value, median_value, p10_value, p25_value, p75_value, p90_value
+from #tempResults
+;
+
+truncate table #tempResults;
+drop table #tempResults;
+
 --}
 
 --{1605 IN (@list_of_analysis_ids)}?{
 -- 1605	Distribution of paid by payer, by procedure_concept_id
-insert into @results_database_schema.ACHILLES_results_dist (analysis_id, stratum_1, count_value, min_value, max_value, avg_value, stdev_value, median_value, p10_value, p25_value, p75_value, p90_value)
-select 1605 as analysis_id,
-	procedure_concept_id as stratum_1,
-	COUNT_BIG(count_value) as count_value,
-	min(count_value) as min_value,
-	max(count_value) as max_value,
-	avg(1.0*count_value) as avg_value,
-	stdev(count_value) as stdev_value,
-	max(case when p1<=0.50 then count_value else -9999 end) as median_value,
-	max(case when p1<=0.10 then count_value else -9999 end) as p10_value,
-	max(case when p1<=0.25 then count_value else -9999 end) as p25_value,
-	max(case when p1<=0.75 then count_value else -9999 end) as p75_value,
-	max(case when p1<=0.90 then count_value else -9999 end) as p90_value
-from
+with rawData(stratum1_id, count_value) as
 (
-select procedure_concept_id,
-	paid_by_payer as count_value,
-	1.0*(row_number() over (partition by procedure_concept_id order by paid_by_payer))/(COUNT_BIG(*) over (partition by procedure_concept_id)+1) as p1
-from @cdm_database_schema.procedure_occurrence po1
-	inner join
-	@cdm_database_schema.procedure_cost pc1
-	on po1.procedure_occurrence_id = pc1.procedure_occurrence_id
-where paid_by_payer is not null
-) t1
-group by procedure_concept_id
+  select subject_id as stratum1_id,
+    paid_by_payer as count_value
+  from @results_database_schema.ACHILLES_procedure_cost_raw
+  where paid_by_payer is not null
+),
+overallStats (stratum1_id, avg_value, stdev_value, min_value, max_value, total) as
+(
+  select stratum1_id, 
+    avg(1.0 * count_value) as avg_value,
+    stdev(count_value) as stdev_value,
+    min(count_value) as min_value,
+    max(count_value) as max_value,
+    count_big(*) as total
+  from rawData
+  group by stratum1_id
+),
+stats (stratum1_id, count_value, total, rn) as
+(
+  select stratum1_id, 
+    count_value, 
+    count_big(*) as total, 
+    row_number() over (partition by stratum1_id order by count_value) as rn
+  FROM rawData
+  group by stratum1_id, count_value
+),
+priorStats (stratum1_id, count_value, total, accumulated) as
+(
+  select s.stratum1_id, s.count_value, s.total, sum(p.total) as accumulated
+  from stats s
+  join stats p on s.stratum1_id = p.stratum1_id and p.rn <= s.rn
+  group by s.stratum1_id, s.count_value, s.total, s.rn
+)
+select 1605 as analysis_id,
+  p.stratum1_id as stratum_1,
+  o.total as count_value,
+  o.min_value,
+  o.max_value,
+  o.avg_value,
+  o.stdev_value,
+  MIN(case when p.accumulated >= .50 * o.total then count_value else o.max_value end) as median_value,
+  MIN(case when p.accumulated >= .10 * o.total then count_value else o.max_value end) as p10_value,
+  MIN(case when p.accumulated >= .25 * o.total then count_value else o.max_value end) as p25_value,
+  MIN(case when p.accumulated >= .75 * o.total then count_value else o.max_value end) as p75_value,
+	MIN(case when p.accumulated >= .90 * o.total then count_value else o.max_value end) as p90_value
+into #tempResults
+from priorStats p
+join overallStats o on p.stratum1_id = o.stratum1_id
+GROUP BY p.stratum1_id, o.total, o.min_value, o.max_value, o.avg_value, o.stdev_value
 ;
+
+insert into @results_database_schema.ACHILLES_results_dist (analysis_id, stratum_1, count_value, min_value, max_value, avg_value, stdev_value, median_value, p10_value, p25_value, p75_value, p90_value)
+select analysis_id, stratum_1, count_value, min_value, max_value, avg_value, stdev_value, median_value, p10_value, p25_value, p75_value, p90_value
+from #tempResults
+;
+
+truncate table #tempResults;
+drop table #tempResults;
+
 --}
 
 --{1606 IN (@list_of_analysis_ids)}?{
 -- 1606	Distribution of paid by coordination of benefit, by procedure_concept_id
-insert into @results_database_schema.ACHILLES_results_dist (analysis_id, stratum_1, count_value, min_value, max_value, avg_value, stdev_value, median_value, p10_value, p25_value, p75_value, p90_value)
-select 1606 as analysis_id,
-	procedure_concept_id as stratum_1,
-	COUNT_BIG(count_value) as count_value,
-	min(count_value) as min_value,
-	max(count_value) as max_value,
-	avg(1.0*count_value) as avg_value,
-	stdev(count_value) as stdev_value,
-	max(case when p1<=0.50 then count_value else -9999 end) as median_value,
-	max(case when p1<=0.10 then count_value else -9999 end) as p10_value,
-	max(case when p1<=0.25 then count_value else -9999 end) as p25_value,
-	max(case when p1<=0.75 then count_value else -9999 end) as p75_value,
-	max(case when p1<=0.90 then count_value else -9999 end) as p90_value
-from
+with rawData(stratum1_id, count_value) as
 (
-select procedure_concept_id,
-	paid_by_coordination_benefits as count_value,
-	1.0*(row_number() over (partition by procedure_concept_id order by paid_by_coordination_benefits))/(COUNT_BIG(*) over (partition by procedure_concept_id)+1) as p1
-from @cdm_database_schema.procedure_occurrence po1
-	inner join
-	@cdm_database_schema.procedure_cost pc1
-	on po1.procedure_occurrence_id = pc1.procedure_occurrence_id
-where paid_by_coordination_benefits is not null
-) t1
-group by procedure_concept_id
+  select subject_id as stratum1_id,
+    paid_by_coordination_benefits as count_value
+  from @results_database_schema.ACHILLES_procedure_cost_raw
+  where paid_by_coordination_benefits is not null
+),
+overallStats (stratum1_id, avg_value, stdev_value, min_value, max_value, total) as
+(
+  select stratum1_id, 
+    avg(1.0 * count_value) as avg_value,
+    stdev(count_value) as stdev_value,
+    min(count_value) as min_value,
+    max(count_value) as max_value,
+    count_big(*) as total
+  from rawData
+  group by stratum1_id
+),
+stats (stratum1_id, count_value, total, rn) as
+(
+  select stratum1_id, 
+    count_value, 
+    count_big(*) as total, 
+    row_number() over (partition by stratum1_id order by count_value) as rn
+  FROM rawData
+  group by stratum1_id, count_value
+),
+priorStats (stratum1_id, count_value, total, accumulated) as
+(
+  select s.stratum1_id, s.count_value, s.total, sum(p.total) as accumulated
+  from stats s
+  join stats p on s.stratum1_id = p.stratum1_id and p.rn <= s.rn
+  group by s.stratum1_id, s.count_value, s.total, s.rn
+)
+select 1606 as analysis_id,
+  p.stratum1_id as stratum_1,
+  o.total as count_value,
+  o.min_value,
+  o.max_value,
+  o.avg_value,
+  o.stdev_value,
+  MIN(case when p.accumulated >= .50 * o.total then count_value else o.max_value end) as median_value,
+  MIN(case when p.accumulated >= .10 * o.total then count_value else o.max_value end) as p10_value,
+  MIN(case when p.accumulated >= .25 * o.total then count_value else o.max_value end) as p25_value,
+  MIN(case when p.accumulated >= .75 * o.total then count_value else o.max_value end) as p75_value,
+  MIN(case when p.accumulated >= .90 * o.total then count_value else o.max_value end) as p90_value
+into #tempResults
+from priorStats p
+join overallStats o on p.stratum1_id = o.stratum1_id
+GROUP BY p.stratum1_id, o.total, o.min_value, o.max_value, o.avg_value, o.stdev_value
 ;
+
+insert into @results_database_schema.ACHILLES_results_dist (analysis_id, stratum_1, count_value, min_value, max_value, avg_value, stdev_value, median_value, p10_value, p25_value, p75_value, p90_value)
+select analysis_id, stratum_1, count_value, min_value, max_value, avg_value, stdev_value, median_value, p10_value, p25_value, p75_value, p90_value
+from #tempResults
+;
+
+truncate table #tempResults;
+drop table #tempResults;
+
 --}
 
 --{1607 IN (@list_of_analysis_ids)}?{
 -- 1607	Distribution of total out-of-pocket, by procedure_concept_id
-insert into @results_database_schema.ACHILLES_results_dist (analysis_id, stratum_1, count_value, min_value, max_value, avg_value, stdev_value, median_value, p10_value, p25_value, p75_value, p90_value)
-select 1607 as analysis_id,
-	procedure_concept_id as stratum_1,
-	COUNT_BIG(count_value) as count_value,
-	min(count_value) as min_value,
-	max(count_value) as max_value,
-	avg(1.0*count_value) as avg_value,
-	stdev(count_value) as stdev_value,
-	max(case when p1<=0.50 then count_value else -9999 end) as median_value,
-	max(case when p1<=0.10 then count_value else -9999 end) as p10_value,
-	max(case when p1<=0.25 then count_value else -9999 end) as p25_value,
-	max(case when p1<=0.75 then count_value else -9999 end) as p75_value,
-	max(case when p1<=0.90 then count_value else -9999 end) as p90_value
-from
+with rawData(stratum1_id, count_value) as
 (
-select procedure_concept_id,
-	total_out_of_pocket as count_value,
-	1.0*(row_number() over (partition by procedure_concept_id order by total_out_of_pocket))/(COUNT_BIG(*) over (partition by procedure_concept_id)+1) as p1
-from @cdm_database_schema.procedure_occurrence po1
-	inner join
-	@cdm_database_schema.procedure_cost pc1
-	on po1.procedure_occurrence_id = pc1.procedure_occurrence_id
-where total_out_of_pocket is not null
-) t1
-group by procedure_concept_id
+  select subject_id as stratum1_id,
+    total_out_of_pocket as count_value
+  from @results_database_schema.ACHILLES_procedure_cost_raw
+  where total_out_of_pocket is not null
+),
+overallStats (stratum1_id, avg_value, stdev_value, min_value, max_value, total) as
+(
+  select stratum1_id, 
+    avg(1.0 * count_value) as avg_value,
+    stdev(count_value) as stdev_value,
+    min(count_value) as min_value,
+    max(count_value) as max_value,
+    count_big(*) as total
+  from rawData
+  group by stratum1_id
+),
+stats (stratum1_id, count_value, total, rn) as
+(
+  select stratum1_id, 
+    count_value, 
+    count_big(*) as total, 
+    row_number() over (partition by stratum1_id order by count_value) as rn
+  FROM rawData
+  group by stratum1_id, count_value
+),
+priorStats (stratum1_id, count_value, total, accumulated) as
+(
+  select s.stratum1_id, s.count_value, s.total, sum(p.total) as accumulated
+  from stats s
+  join stats p on s.stratum1_id = p.stratum1_id and p.rn <= s.rn
+  group by s.stratum1_id, s.count_value, s.total, s.rn
+)
+select 1607 as analysis_id,
+  p.stratum1_id as stratum_1,
+  o.total as count_value,
+  o.min_value,
+  o.max_value,
+  o.avg_value,
+  o.stdev_value,
+  MIN(case when p.accumulated >= .50 * o.total then count_value else o.max_value end) as median_value,
+  MIN(case when p.accumulated >= .10 * o.total then count_value else o.max_value end) as p10_value,
+  MIN(case when p.accumulated >= .25 * o.total then count_value else o.max_value end) as p25_value,
+  MIN(case when p.accumulated >= .75 * o.total then count_value else o.max_value end) as p75_value,
+  MIN(case when p.accumulated >= .90 * o.total then count_value else o.max_value end) as p90_value
+into #tempResults
+from priorStats p
+join overallStats o on p.stratum1_id = o.stratum1_id
+GROUP BY p.stratum1_id, o.total, o.min_value, o.max_value, o.avg_value, o.stdev_value
 ;
+
+insert into @results_database_schema.ACHILLES_results_dist (analysis_id, stratum_1, count_value, min_value, max_value, avg_value, stdev_value, median_value, p10_value, p25_value, p75_value, p90_value)
+select analysis_id, stratum_1, count_value, min_value, max_value, avg_value, stdev_value, median_value, p10_value, p25_value, p75_value, p90_value
+from #tempResults
+;
+
+truncate table #tempResults;
+drop table #tempResults;
+
 --}
 
 
 --{1608 IN (@list_of_analysis_ids)}?{
 -- 1608	Distribution of total paid, by procedure_concept_id
-insert into @results_database_schema.ACHILLES_results_dist (analysis_id, stratum_1, count_value, min_value, max_value, avg_value, stdev_value, median_value, p10_value, p25_value, p75_value, p90_value)
-select 1608 as analysis_id,
-	procedure_concept_id as stratum_1,
-	COUNT_BIG(count_value) as count_value,
-	min(count_value) as min_value,
-	max(count_value) as max_value,
-	avg(1.0*count_value) as avg_value,
-	stdev(count_value) as stdev_value,
-	max(case when p1<=0.50 then count_value else -9999 end) as median_value,
-	max(case when p1<=0.10 then count_value else -9999 end) as p10_value,
-	max(case when p1<=0.25 then count_value else -9999 end) as p25_value,
-	max(case when p1<=0.75 then count_value else -9999 end) as p75_value,
-	max(case when p1<=0.90 then count_value else -9999 end) as p90_value
-from
+with rawData(stratum1_id, count_value) as
 (
-select procedure_concept_id,
-	total_paid as count_value,
-	1.0*(row_number() over (partition by procedure_concept_id order by total_paid))/(COUNT_BIG(*) over (partition by procedure_concept_id)+1) as p1
-from @cdm_database_schema.procedure_occurrence po1
-	inner join
-	@cdm_database_schema.procedure_cost pc1
-	on po1.procedure_occurrence_id = pc1.procedure_occurrence_id
-where total_paid is not null
-) t1
-group by procedure_concept_id
+  select subject_id as stratum1_id,
+    total_paid as count_value
+  from @results_database_schema.ACHILLES_procedure_cost_raw
+  where total_paid is not null
+),
+overallStats (stratum1_id, avg_value, stdev_value, min_value, max_value, total) as
+(
+  select stratum1_id, 
+    avg(1.0 * count_value) as avg_value,
+    stdev(count_value) as stdev_value,
+    min(count_value) as min_value,
+    max(count_value) as max_value,
+    count_big(*) as total
+  from rawData
+  group by stratum1_id
+),
+stats (stratum1_id, count_value, total, rn) as
+(
+  select stratum1_id, 
+    count_value, 
+    count_big(*) as total, 
+    row_number() over (partition by stratum1_id order by count_value) as rn
+  FROM rawData
+  group by stratum1_id, count_value
+),
+priorStats (stratum1_id, count_value, total, accumulated) as
+(
+  select s.stratum1_id, s.count_value, s.total, sum(p.total) as accumulated
+  from stats s
+  join stats p on s.stratum1_id = p.stratum1_id and p.rn <= s.rn
+  group by s.stratum1_id, s.count_value, s.total, s.rn
+)
+select 1608 as analysis_id,
+  p.stratum1_id as stratum_1,
+  o.total as count_value,
+  o.min_value,
+  o.max_value,
+  o.avg_value,
+  o.stdev_value,
+  MIN(case when p.accumulated >= .50 * o.total then count_value else o.max_value end) as median_value,
+  MIN(case when p.accumulated >= .10 * o.total then count_value else o.max_value end) as p10_value,
+  MIN(case when p.accumulated >= .25 * o.total then count_value else o.max_value end) as p25_value,
+  MIN(case when p.accumulated >= .75 * o.total then count_value else o.max_value end) as p75_value,
+  MIN(case when p.accumulated >= .90 * o.total then count_value else o.max_value end) as p90_value
+into #tempResults
+from priorStats p
+join overallStats o on p.stratum1_id = o.stratum1_id
+GROUP BY p.stratum1_id, o.total, o.min_value, o.max_value, o.avg_value, o.stdev_value
 ;
+
+insert into @results_database_schema.ACHILLES_results_dist (analysis_id, stratum_1, count_value, min_value, max_value, avg_value, stdev_value, median_value, p10_value, p25_value, p75_value, p90_value)
+select analysis_id, stratum_1, count_value, min_value, max_value, avg_value, stdev_value, median_value, p10_value, p25_value, p75_value, p90_value
+from #tempResults
+;
+
+truncate table #tempResults;
+drop table #tempResults;
 --}
 
 
@@ -4828,6 +6583,9 @@ group by revenue_code_concept_id
 ;
 --}
 
+-- clean up cached table if exists
+IF OBJECT_ID('@results_database_schema.ACHILLES_procedure_cost_raw', 'U') IS NOT NULL
+  DROP TABLE @results_database_schema.ACHILLES_procedure_cost_raw;
 
 
 /********************************************
