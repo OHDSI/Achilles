@@ -4,4 +4,4 @@ from
 	(select * from ACHILLES_results where analysis_id = 502) num
 	inner join
 	(select * from ACHILLES_results where analysis_id = 117) denom on num.stratum_1 = denom.stratum_1  --calendar year
-ORDER BY CAST(num.stratum_1 as INT)
+
