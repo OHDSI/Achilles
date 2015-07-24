@@ -7,4 +7,3 @@ inner join ACHILLES_results ar1 on aa1.analysis_id = ar1.analysis_id,
 	select count_value from ACHILLES_results where analysis_id = 1
 ) denom
 where aa1.analysis_id = 108
-order by cast(ar1.stratum_1 as int) asc

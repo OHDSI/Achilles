@@ -10,6 +10,6 @@ select c1.concept_id as drug_concept_id,
 from ACHILLES_results_dist ard1
 	inner join
 	@cdm_database_schema.concept c1
-	on CAST(ard1.stratum_1 AS INT) = c1.concept_id
+	on ard1.stratum_1 = CAST(c1.concept_id as VARCHAR)
 where ard1.analysis_id = 716
 and ard1.count_value > 0

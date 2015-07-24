@@ -94,7 +94,7 @@ from (select * from ACHILLES_results where analysis_id = 400) ar1
 
 
 	) concept_hierarchy
-	on CAST(ar1.stratum_1 AS INT) = concept_hierarchy.concept_id
+	on ar1.stratum_1 = CAST(concept_hierarchy.concept_id as VARCHAR)
 	,
 	(select count_value from ACHILLES_results where analysis_id = 1) denom
 
