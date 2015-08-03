@@ -4441,8 +4441,6 @@ drop table #rawData_906;
 
 truncate table #tempResults;
 drop table #tempResults;
-
-;
 --}
 
 
