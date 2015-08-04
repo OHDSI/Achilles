@@ -1341,7 +1341,7 @@ select 103 as analysis_id,
 	MIN(case when p.accumulated >= .90 * o.total then age_value end) as p90_value
 INTO #tempResults
 from ageStatsPrior p
-CROSS APPLY overallStats o
+CROSS JOIN overallStats o
 GROUP BY o.total, o.min_value, o.max_value, o.avg_value, o.stdev_value
 ;
 
@@ -1469,7 +1469,7 @@ select 105 as analysis_id,
 	MIN(case when p.accumulated >= .90 * o.total then count_value end) as p90_value
 into #tempResults
 from priorStats p
-CROSS APPLY overallStats o
+CROSS JOIN overallStats o
 GROUP BY o.total, o.min_value, o.max_value, o.avg_value, o.stdev_value
 ;
 
@@ -1962,7 +1962,7 @@ select 203 as analysis_id,
 	MIN(case when p.accumulated >= .90 * o.total then count_value else o.max_value end) as p90_value
 INTO #tempResults
 from priorStats p
-cross apply overallStats o
+CROSS JOIN overallStats o
 GROUP BY o.total, o.min_value, o.max_value, o.avg_value, o.stdev_value
 ;
 
@@ -2329,7 +2329,7 @@ select 403 as analysis_id,
 	MIN(case when p.accumulated >= .90 * o.total then count_value else o.max_value end) as p90_value
 into #tempResults
 from priorStats p
-cross apply overallStats o
+CROSS JOIN overallStats o
 GROUP BY o.total, o.min_value, o.max_value, o.avg_value, o.stdev_value
 ;
 
@@ -2797,7 +2797,7 @@ select 512 as analysis_id,
 	MIN(case when p.accumulated >= .90 * o.total then count_value else o.max_value end) as p90_value
 into #tempResults
 from priorStats p
-cross apply overallStats o
+CROSS JOIN overallStats o
 GROUP BY o.total, o.min_value, o.max_value, o.avg_value, o.stdev_value
 ;
 
@@ -2864,7 +2864,7 @@ select 513 as analysis_id,
 	MIN(case when p.accumulated >= .90 * o.total then count_value else o.max_value end) as p90_value
 into #tempResults
 from priorStats p
-cross apply overallStats o
+CROSS JOIN overallStats o
 GROUP BY o.total, o.min_value, o.max_value, o.avg_value, o.stdev_value
 ;
 
@@ -2930,7 +2930,7 @@ select 514 as analysis_id,
 	MIN(case when p.accumulated >= .90 * o.total then count_value else o.max_value end) as p90_value
 into #tempResults
 from priorStats p
-cross apply overallStats o
+CROSS JOIN overallStats o
 GROUP BY o.total, o.min_value, o.max_value, o.avg_value, o.stdev_value
 ;
 
@@ -2996,7 +2996,7 @@ select 515 as analysis_id,
 	MIN(case when p.accumulated >= .90 * o.total then count_value else o.max_value end) as p90_value
 into #tempResults
 from priorStats p
-cross apply overallStats o
+CROSS JOIN overallStats o
 GROUP BY o.total, o.min_value, o.max_value, o.avg_value, o.stdev_value
 ;
 
@@ -3109,7 +3109,7 @@ select 603 as analysis_id,
 	MIN(case when p.accumulated >= .90 * o.total then count_value else o.max_value end) as p90_value
 into #tempResults
 from priorStats p
-cross apply overallStats o
+CROSS JOIN overallStats o
 GROUP BY o.total, o.min_value, o.max_value, o.avg_value, o.stdev_value
 ;
 
@@ -3408,7 +3408,7 @@ select 703 as analysis_id,
 	MIN(case when p.accumulated >= .90 * o.total then count_value else o.max_value end) as p90_value
 into #tempResults
 from priorStats p
-cross apply overallStats o
+CROSS JOIN overallStats o
 GROUP BY o.total, o.min_value, o.max_value, o.avg_value, o.stdev_value
 ;
 
@@ -3906,7 +3906,7 @@ select 803 as analysis_id,
 	MIN(case when p.accumulated >= .90 * o.total then count_value else o.max_value end) as p90_value
 into #tempResults
 from priorStats p
-cross apply overallStats o
+CROSS JOIN overallStats o
 GROUP BY o.total, o.min_value, o.max_value, o.avg_value, o.stdev_value
 ;
 
@@ -4331,7 +4331,7 @@ select 903 as analysis_id,
 	MIN(case when p.accumulated >= .90 * o.total then count_value else o.max_value end) as p90_value
 into #tempResults
 from priorStats p
-cross apply overallStats o
+CROSS JOIN overallStats o
 GROUP BY o.total, o.min_value, o.max_value, o.avg_value, o.stdev_value
 ;
 
@@ -4662,7 +4662,7 @@ select 1003 as analysis_id,
 	MIN(case when p.accumulated >= .90 * o.total then count_value else o.max_value end) as p90_value
 into #tempResults
 from priorStats p
-cross apply overallStats o
+CROSS JOIN overallStats o
 GROUP BY o.total, o.min_value, o.max_value, o.avg_value, o.stdev_value
 ;
 
