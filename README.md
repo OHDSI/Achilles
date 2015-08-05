@@ -60,5 +60,13 @@ License
 =======
 Achilles is licensed under Apache License 2.0
 
+Development
+===========
+Achilles is being developed in R Studio.
+
+###Development status
+[![Build Status](https://travis-ci.org/OHDSI/Achilles.svg?branch=master)](https://travis-ci.org/OHDSI/Achilles)
+
+
 # Acknowledgements
 - This project is supported in part through the National Science Foundation grant IIS 1251151.
