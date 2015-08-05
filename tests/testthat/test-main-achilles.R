@@ -8,7 +8,13 @@ test_that("Achilles main does not throw an error on Postgres", {
                                      user = Sys.getenv("CDM5_POSTGRESQL_USER"),
                                      password = URLdecode(Sys.getenv("CDM5_POSTGRESQL_PASSWORD")),
                                      server = Sys.getenv("CDM5_POSTGRESQL_SERVER"))
-  try(results <- achilles(details, cdmDatabaseSchema = Sys.getenv("CDM5_POSTGRESQL_CDM_SCHEMA"), resultsDatabaseSchema = Sys.getenv("CDM5_POSTGRESQL_OHDSI_SCHEMA"), sourceName = "NHANES", cdmVersion = "5", validateSchema = FALSE, createTable = TRUE))
+  try(result <- achilles(details, 
+                         cdmDatabaseSchema = Sys.getenv("CDM5_POSTGRESQL_CDM_SCHEMA"), 
+                         resultsDatabaseSchema = Sys.getenv("CDM5_POSTGRESQL_OHDSI_SCHEMA"), 
+                         sourceName = "NHANES", 
+                         cdmVersion = "5", 
+                         validateSchema = FALSE, 
+                         createTable = TRUE))
   if (file.exists("errorReport.txt")){
     writeLines(readChar("errorReport.txt", file.info("errorReport.txt")$size))
   }
@@ -20,9 +26,14 @@ test_that("Achilles main does not throw an error on SQL Server", {
   details <- createConnectionDetails(dbms = "sql server",
                                      user = Sys.getenv("CDM5_SQL_SERVER_USER"),
                                      password = URLdecode(Sys.getenv("CDM5_SQL_SERVER_PASSWORD")),
-                                     server = Sys.getenv("CDM5_SQL_SERVER_SERVER"),
-                                     schema = Sys.getenv("CDM5_SQL_SERVER_CDM_SCHEMA"))
-  try(results <- achilles(details, cdmDatabaseSchema = Sys.getenv("CDM5_SQL_SERVER_CDM_SCHEMA"), resultsDatabaseSchema = Sys.getenv("CDM5_SQL_SERVER_OHDSI_SCHEMA"), sourceName = "NHANES", cdmVersion = "5", validateSchema = FALSE, createTable = TRUE))
+                                     server = Sys.getenv("CDM5_SQL_SERVER_SERVER"))
+  try(result <- achilles(details, 
+                         cdmDatabaseSchema = Sys.getenv("CDM5_SQL_SERVER_CDM_SCHEMA"), 
+                         resultsDatabaseSchema = Sys.getenv("CDM5_SQL_SERVER_OHDSI_SCHEMA"), 
+                         sourceName = "NHANES", 
+                         cdmVersion = "5", 
+                         validateSchema = FALSE, 
+                         createTable = TRUE))
   if (file.exists("errorReport.txt")){
     writeLines(readChar("errorReport.txt", file.info("errorReport.txt")$size))
   }
@@ -34,9 +45,15 @@ test_that("Achilles main does not throw an error on Oracle", {
   details <- createConnectionDetails(dbms = "oracle",
                                      user = Sys.getenv("CDM5_ORACLE_USER"),
                                      password = URLdecode(Sys.getenv("CDM5_ORACLE_PASSWORD")),
-                                     server = Sys.getenv("CDM5_ORACLE_SERVER"),
-                                     schema = Sys.getenv("CDM5_ORACLE_CDM_SCHEMA"))
-  try(results <- achilles(details, cdmDatabaseSchema = Sys.getenv("CDM5_ORACLE_CDM_SCHEMA"), resultsDatabaseSchema = Sys.getenv("CDM5_ORACLE_OHDSI_SCHEMA"), sourceName = "NHANES", cdmVersion = "5", validateSchema = FALSE, createTable = TRUE))
+                                     server = Sys.getenv("CDM5_ORACLE_SERVER"))
+  try(result <- achilles(details, 
+                         cdmDatabaseSchema = Sys.getenv("CDM5_ORACLE_CDM_SCHEMA"), 
+                         resultsDatabaseSchema = Sys.getenv("CDM5_ORACLE_OHDSI_SCHEMA"), 
+                         oracleTempSchema = Sys.getenv("CDM5_ORACLE_OHDSI_SCHEMA"), 
+                         sourceName = "NHANES", 
+                         cdmVersion = "5", 
+                         validateSchema = FALSE, 
+                         createTable = TRUE))
   if (file.exists("errorReport.txt")){
     writeLines(readChar("errorReport.txt", file.info("errorReport.txt")$size))
   }
