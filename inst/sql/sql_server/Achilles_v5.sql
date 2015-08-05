@@ -1409,7 +1409,8 @@ GROUP BY o.gender_concept_id, o.total, o.min_value, o.max_value, o.avg_value, o.
 
 insert into @results_database_schema.ACHILLES_results_dist (analysis_id, stratum_1, count_value, min_value, max_value, avg_value, stdev_value, median_value, p10_value, p25_value, p75_value, p90_value)
 select analysis_id, stratum_1, count_value, min_value, max_value, avg_value, stdev_value, median_value, p10_value, p25_value, p75_value, p90_value
-from #tempResults;
+from #tempResults
+;
 
 truncate table #tempResults;
 drop table #tempResults;
@@ -1475,7 +1476,8 @@ GROUP BY o.total, o.min_value, o.max_value, o.avg_value, o.stdev_value
 
 insert into @results_database_schema.ACHILLES_results_dist (analysis_id, count_value, min_value, max_value, avg_value, stdev_value, median_value, p10_value, p25_value, p75_value, p90_value)
 select analysis_id, count_value, min_value, max_value, avg_value, stdev_value, median_value, p10_value, p25_value, p75_value, p90_value
-from #tempResults;
+from #tempResults
+;
 
 truncate table #tempResults;
 drop table #tempResults;
@@ -1540,7 +1542,8 @@ GROUP BY o.gender_concept_id, o.total, o.min_value, o.max_value, o.avg_value, o.
 
 insert into @results_database_schema.ACHILLES_results_dist (analysis_id, stratum_1, count_value, min_value, max_value, avg_value, stdev_value, median_value, p10_value, p25_value, p75_value, p90_value)
 select analysis_id, gender_concept_id, count_value, min_value, max_value, avg_value, stdev_value, median_value, p10_value, p25_value, p75_value, p90_value
-FROM #tempResults;
+FROM #tempResults
+;
 
 truncate table #tempResults;
 drop table #tempResults;
@@ -1612,7 +1615,8 @@ GROUP BY o.age_decile, o.total, o.min_value, o.max_value, o.avg_value, o.stdev_v
 
 insert into @results_database_schema.ACHILLES_results_dist (analysis_id, stratum_1, count_value, min_value, max_value, avg_value, stdev_value, median_value, p10_value, p25_value, p75_value, p90_value)
 select analysis_id, age_decile, count_value, min_value, max_value, avg_value, stdev_value, median_value, p10_value, p25_value, p75_value, p90_value
-FROM #tempResults;
+FROM #tempResults
+;
 
 truncate table #tempResults;
 drop table #tempResults;
@@ -1968,7 +1972,8 @@ GROUP BY o.total, o.min_value, o.max_value, o.avg_value, o.stdev_value
 
 insert into @results_database_schema.ACHILLES_results_dist (analysis_id, count_value, min_value, max_value, avg_value, stdev_value, median_value, p10_value, p25_value, p75_value, p90_value)
 select analysis_id, count_value, min_value, max_value, avg_value, stdev_value, median_value, p10_value, p25_value, p75_value, p90_value
-FROM #tempResults;
+FROM #tempResults
+;
 
 truncate table #tempResults;
 drop table #tempResults;
@@ -2063,7 +2068,8 @@ GROUP BY o.stratum1_id, o.stratum2_id, o.total, o.min_value, o.max_value, o.avg_
 
 insert into @results_database_schema.ACHILLES_results_dist (analysis_id, stratum_1, stratum_2, count_value, min_value, max_value, avg_value, stdev_value, median_value, p10_value, p25_value, p75_value, p90_value)
 select analysis_id, stratum1_id, stratum2_id, count_value, min_value, max_value, avg_value, stdev_value, median_value, p10_value, p25_value, p75_value, p90_value
-from #tempResults;
+from #tempResults
+;
 
 truncate table #tempResults;
 drop table #tempResults;
@@ -2177,7 +2183,8 @@ GROUP BY o.stratum_id, o.total, o.min_value, o.max_value, o.avg_value, o.stdev_v
 
 insert into @results_database_schema.ACHILLES_results_dist (analysis_id, stratum_1, count_value, min_value, max_value, avg_value, stdev_value, median_value, p10_value, p25_value, p75_value, p90_value)
 select analysis_id, stratum_id, count_value, min_value, max_value, avg_value, stdev_value, median_value, p10_value, p25_value, p75_value, p90_value
-from #tempResults;
+from #tempResults
+;
 
 truncate table #tempResults;
 drop table #tempResults;
@@ -2335,7 +2342,8 @@ GROUP BY o.total, o.min_value, o.max_value, o.avg_value, o.stdev_value
 
 insert into @results_database_schema.ACHILLES_results_dist (analysis_id, count_value, min_value, max_value, avg_value, stdev_value, median_value, p10_value, p25_value, p75_value, p90_value)
 select analysis_id, count_value, min_value, max_value, avg_value, stdev_value, median_value, p10_value, p25_value, p75_value, p90_value
-from #tempResults;
+from #tempResults
+;
 
 truncate table #tempResults;
 drop table #tempResults;
@@ -2441,7 +2449,8 @@ GROUP BY o.stratum1_id, o.stratum2_id, o.total, o.min_value, o.max_value, o.avg_
 
 insert into @results_database_schema.ACHILLES_results_dist (analysis_id, stratum_1, stratum_2, count_value, min_value, max_value, avg_value, stdev_value, median_value, p10_value, p25_value, p75_value, p90_value)
 select analysis_id, stratum1_id, stratum2_id, count_value, min_value, max_value, avg_value, stdev_value, median_value, p10_value, p25_value, p75_value, p90_value
-from #tempResults;
+from #tempResults
+;
 
 truncate table #tempResults;
 drop table #tempResults;
@@ -2676,7 +2685,8 @@ GROUP BY o.stratum_id, o.total, o.min_value, o.max_value, o.avg_value, o.stdev_v
 
 insert into @results_database_schema.ACHILLES_results_dist (analysis_id, stratum_1, count_value, min_value, max_value, avg_value, stdev_value, median_value, p10_value, p25_value, p75_value, p90_value)
 select analysis_id, stratum_id, count_value, min_value, max_value, avg_value, stdev_value, median_value, p10_value, p25_value, p75_value, p90_value
-from #tempResults;
+from #tempResults
+;
 
 truncate table #tempResults;
 
@@ -2803,7 +2813,8 @@ GROUP BY o.total, o.min_value, o.max_value, o.avg_value, o.stdev_value
 
 insert into @results_database_schema.ACHILLES_results_dist (analysis_id, count_value, min_value, max_value, avg_value, stdev_value, median_value, p10_value, p25_value, p75_value, p90_value)
 select analysis_id, count_value, min_value, max_value, avg_value, stdev_value, median_value, p10_value, p25_value, p75_value, p90_value
-FROM #tempResults;
+FROM #tempResults
+;
 
 truncate table #tempResults;
 
@@ -2870,7 +2881,8 @@ GROUP BY o.total, o.min_value, o.max_value, o.avg_value, o.stdev_value
 
 insert into @results_database_schema.ACHILLES_results_dist (analysis_id, count_value, min_value, max_value, avg_value, stdev_value, median_value, p10_value, p25_value, p75_value, p90_value)
 select analysis_id, count_value, min_value, max_value, avg_value, stdev_value, median_value, p10_value, p25_value, p75_value, p90_value
-from #tempResults;
+from #tempResults
+;
 
 truncate table #tempResults;
 
@@ -2936,7 +2948,8 @@ GROUP BY o.total, o.min_value, o.max_value, o.avg_value, o.stdev_value
 
 insert into @results_database_schema.ACHILLES_results_dist (analysis_id, count_value, min_value, max_value, avg_value, stdev_value, median_value, p10_value, p25_value, p75_value, p90_value)
 select analysis_id, count_value, min_value, max_value, avg_value, stdev_value, median_value, p10_value, p25_value, p75_value, p90_value
-from #tempResults;
+from #tempResults
+;
 
 truncate table #tempResults;
 
@@ -3722,7 +3735,8 @@ GROUP BY o.stratum_id, o.total, o.min_value, o.max_value, o.avg_value, o.stdev_v
 
 insert into @results_database_schema.ACHILLES_results_dist (analysis_id, stratum_1, count_value, min_value, max_value, avg_value, stdev_value, median_value, p10_value, p25_value, p75_value, p90_value)
 select analysis_id, stratum_id, count_value, min_value, max_value, avg_value, stdev_value, median_value, p10_value, p25_value, p75_value, p90_value
-from #tempResults;
+from #tempResults
+;
 
 truncate table #tempResults;
 drop table #tempResults;
@@ -3784,7 +3798,8 @@ GROUP BY o.stratum_id, o.total, o.min_value, o.max_value, o.avg_value, o.stdev_v
 
 insert into @results_database_schema.ACHILLES_results_dist (analysis_id, stratum_1, count_value, min_value, max_value, avg_value, stdev_value, median_value, p10_value, p25_value, p75_value, p90_value)
 select analysis_id, stratum_id, count_value, min_value, max_value, avg_value, stdev_value, median_value, p10_value, p25_value, p75_value, p90_value
-from #tempResults;
+from #tempResults
+;
 
 truncate table #tempResults;
 drop table #tempResults;
@@ -4500,6 +4515,7 @@ GROUP BY p.stratum1_id, o.total, o.min_value, o.max_value, o.avg_value, o.stdev_
 insert into @results_database_schema.ACHILLES_results_dist (analysis_id, stratum_1, count_value, min_value, max_value, avg_value, stdev_value, median_value, p10_value, p25_value, p75_value, p90_value)
 select analysis_id, stratum_1, count_value, min_value, max_value, avg_value, stdev_value, median_value, p10_value, p25_value, p75_value, p90_value
 from #tempResults
+;
 
 truncate table #tempResults;
 drop table #tempResults;
@@ -4830,7 +4846,8 @@ GROUP BY p.stratum1_id, o.total, o.min_value, o.max_value, o.avg_value, o.stdev_
 
 insert into @results_database_schema.ACHILLES_results_dist (analysis_id, stratum_1, count_value, min_value, max_value, avg_value, stdev_value, median_value, p10_value, p25_value, p75_value, p90_value)
 select analysis_id, stratum_1, count_value, min_value, max_value, avg_value, stdev_value, median_value, p10_value, p25_value, p75_value, p90_value
-from #tempResults;
+from #tempResults
+;
 
 truncate table #tempResults;
 drop table #tempResults;
@@ -5464,7 +5481,8 @@ GROUP BY p.stratum1_id, o.total, o.min_value, o.max_value, o.avg_value, o.stdev_
 
 insert into @results_database_schema.ACHILLES_results_dist (analysis_id, stratum_1, count_value, min_value, max_value, avg_value, stdev_value, median_value, p10_value, p25_value, p75_value, p90_value)
 select analysis_id, stratum_1, count_value, min_value, max_value, avg_value, stdev_value, median_value, p10_value, p25_value, p75_value, p90_value
-from #tempResults;
+from #tempResults
+;
 
 truncate table #tempResults;
 drop table #tempResults;
@@ -5529,7 +5547,8 @@ GROUP BY p.stratum1_id, o.total, o.min_value, o.max_value, o.avg_value, o.stdev_
 
 insert into @results_database_schema.ACHILLES_results_dist (analysis_id, stratum_1, count_value, min_value, max_value, avg_value, stdev_value, median_value, p10_value, p25_value, p75_value, p90_value)
 select analysis_id, stratum_1, count_value, min_value, max_value, avg_value, stdev_value, median_value, p10_value, p25_value, p75_value, p90_value
-from #tempResults;
+from #tempResults
+;
 
 truncate table #tempResults;
 drop table #tempResults;
