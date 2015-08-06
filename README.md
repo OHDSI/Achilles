@@ -66,6 +66,8 @@ Achilles is being developed in R Studio.
 
 ###Development status
 [![Build Status](https://travis-ci.org/OHDSI/Achilles.svg?branch=master)](https://travis-ci.org/OHDSI/Achilles)
+[![codecov.io](https://codecov.io/github/OHDSI/Achilles/coverage.svg?branch=master)](https://codecov.io/github/OHDSI/Achilles?branch=master)
+
 
 
 # Acknowledgements
