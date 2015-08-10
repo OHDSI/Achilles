@@ -1,7 +1,9 @@
 library(testthat)
 
-# These tests currently just check if the main achilles function doesn't throw any errors on the different platforms
+# These tests currently just check if the main achilles function and export functiosn don't throw any errors on the different platforms
 # Note: Currently only checking CDM v5
+
+
 test_that("Achilles main does not throw an error on Postgres", {
   # Postgresql
   details <- createConnectionDetails(dbms = "postgresql",
