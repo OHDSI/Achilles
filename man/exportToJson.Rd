@@ -10,21 +10,15 @@ exportToJson(connectionDetails, cdmDatabaseSchema, resultsDatabaseSchema,
 \arguments{
   \item{connectionDetails}{An R object of type
   ConnectionDetail (details for the function that contains
-  server info, database type, optionally username/password,
-  port)}
-
-  \item{cdmDatabaseSchema}{Name of the database schema that
-  contains the vocabulary files}
-
+  server info, database type, optionally username/
+  password, port)} \item{cdmDatabaseSchema}{Name of the
+  database schema that contains the vocabulary files}
   \item{resultsDatabaseSchema}{Name of the database schema
   that contains the Achilles analysis files. Default is
-  cdmDatabaseSchema}
-
-  \item{outputPath}{A folder location to save the JSON
-  files. Default is current working folder}
-
-  \item{reports}{A character vector listing the set of
-  reports to generate. Default is all reports. See
+  cdmDatabaseSchema} \item{outputPath}{A folder location
+  to save the JSON files. Default is current working
+  folder} \item{reports}{A character vector listing the
+  set of reports to generate. Default is all reports. See
   \code{data(allReports)} for a list of all report types}
 }
 \value{

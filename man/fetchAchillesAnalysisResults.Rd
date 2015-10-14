@@ -10,12 +10,9 @@ fetchAchillesAnalysisResults(connectionDetails, resultsDatabase, analysisId)
   \item{connectionDetails}{An R object of type
   ConnectionDetail (details for the function that contains
   server info, database type, optionally username/password,
-  port)}
-
-  \item{resultsDatabase}{Name of database containing the
-  Achilles descriptive statistics.}
-
-  \item{analysisId}{A single analysisId}
+  port)} \item{resultsDatabase}{Name of database containing
+  the Achilles descriptive statistics.} \item{analysisId}{A
+  single analysisId}
 }
 \value{
 An object of type \code{achillesAnalysisResults}

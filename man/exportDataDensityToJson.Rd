@@ -10,25 +10,20 @@ exportDataDensityToJson(connectionDetails, cdmDatabaseSchema,
 \arguments{
   \item{connectionDetails}{An R object of type
   ConnectionDetail (details for the function that contains
-  server info, database type, optionally username/password,
-  port)}
-
-  \item{cdmDatabaseSchema}{Name of the database schema that
-  contains the vocabulary files}
-
+  server info, database type, optionally username/
+  password, port)} \item{cdmDatabaseSchema}{Name of the
+  database schema that contains the vocabulary files}
   \item{resultsDatabaseSchema}{Name of the database schema
   that contains the Achilles analysis files. Default is
-  cdmDatabaseSchema}
-
-  \item{outputPath}{A folder location to save the JSON
-  files. Default is current working folder}
+  cdmDatabaseSchema} \item{outputPath}{A folder location to
+  save the JSON files. Default is current working folder}
 }
 \value{
 none
 }
 \description{
-\code{exportDataDensityToJson} Exports Achilles Data
-Density report into a JSON form for reports.
+\code{exportDataDensityToJson} Exports Achilles Data Density
+report into a JSON form for reports.
 }
 \details{
 Creates individual files for Data Density report found in

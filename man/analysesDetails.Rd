@@ -9,8 +9,8 @@
 data(analysesDetails)
 }
 \description{
-A data frame describing all Achilles analyses and their
-IDs. The variables are as follows:
+A data frame describing all Achilles analyses and their IDs.
+The variables are as follows:
 }
 \details{
 \itemize{ \item ANALYSIS_ID \item ANALYSIS_NAME \item
