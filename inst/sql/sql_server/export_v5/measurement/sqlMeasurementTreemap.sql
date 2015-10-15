@@ -17,7 +17,6 @@ from (select * from ACHILLES_results where analysis_id = 1800) ar1
 		(
 		select concept_id, concept_name
 		from @cdm_database_schema.concept
-		where vocabulary_id = 'LOINC'
 		) obs left join @cdm_database_schema.concept_ancestor ca1 on obs.concept_id = ca1.DESCENDANT_CONCEPT_ID and ca1.min_levels_of_separation = 1
 		left join @cdm_database_schema.concept c1 on ca1.ANCESTOR_CONCEPT_ID = c1.concept_id
 		left join @cdm_database_schema.concept_ancestor ca2 on c1.concept_id = ca2.DESCENDANT_CONCEPT_ID and ca2.min_levels_of_separation = 1
