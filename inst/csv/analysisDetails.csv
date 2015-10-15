@@ -177,3 +177,21 @@
 1610,"Number of records by revenue_code_concept_id","revenue_code_concept_id",NA,NA,NA,NA
 1700,"Number of records by cohort_concept_id","cohort_concept_id",NA,NA,NA,NA
 1701,"Number of records with cohort end date < cohort start date",NA,NA,NA,NA,NA
+1800,"Number of persons with at least one measurement, by measurement_concept_id","measurement_concept_id",NA,NA,NA,NA
+1801,"Number of measurement occurrence records, by measurement_concept_id","measurement_concept_id",NA,NA,NA,NA
+1802,"Number of persons by measurement start month, by measurement_concept_id","measurement_concept_id","calendar month",NA,NA,NA
+1803,"Number of distinct measurement concepts per person",NA,NA,NA,NA,NA
+1804,"Number of persons with at least one measurement, by measurement_concept_id by calendar year by gender by age decile","measurement_concept_id","calendar year","gender_concept_id","age decile",NA
+1805,"Number of measurement records, by measurement_concept_id by measurement_type_concept_id","measurement_concept_id","measurement_type_concept_id",NA,NA,NA
+1806,"Distribution of age by measurement_concept_id","measurement_concept_id","gender_concept_id",NA,NA,NA
+1807,"Number of measurement records, by measurement_concept_id and unit_concept_id","measurement_concept_id","unit_concept_id",NA,NA,NA
+1809,"Number of measurement records with invalid person_id",NA,NA,NA,NA,NA
+1810,"Number of measurement records outside valid observation period",NA,NA,NA,NA,NA
+1812,"Number of measurement records with invalid provider_id",NA,NA,NA,NA,NA
+1813,"Number of measurement records with invalid visit_id",NA,NA,NA,NA,NA
+1814,"Number of measurement records with no value (numeric, string, or concept)",NA,NA,NA,NA,NA
+1815,"Distribution of numeric values, by measurement_concept_id and unit_concept_id",NA,NA,NA,NA,NA
+1816,"Distribution of low range, by measurement_concept_id and unit_concept_id",NA,NA,NA,NA,NA
+1817,"Distribution of high range, by measurement_concept_id and unit_concept_id",NA,NA,NA,NA,NA
+1818,"Number of measurement records below/within/above normal range, by measurement_concept_id and unit_concept_id",NA,NA,NA,NA,NA
+1820,"Number of measurement records by measurement start month","calendar month",NA,NA,NA,NA

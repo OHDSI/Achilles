@@ -20,7 +20,7 @@
 # @author Chris Knoll
 # @author Frank DeFalco
 
-#allReports <- c("CONDITION",
+# allReports <- c("CONDITION",
 #                "CONDITION_ERA",  
 #                "DASHBOARD", 
 #                "DATA_DENSITY",
@@ -32,8 +32,9 @@
 #                "OBSERVATION_PERIOD",
 #                "PERSON", 
 #                "PROCEDURE",
-#                "VISIT")
-#save(allReports,file="allReports.rda")
+#                "VISIT",
+#                "MEASUREMENT")
+# save(allReports,file="allReports.rda")
 
 initOutputPath <- function (outputPath){
   # create output path if it doesn't already exist, warn if it does
