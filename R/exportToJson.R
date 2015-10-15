@@ -136,6 +136,13 @@ exportToJson <- function (connectionDetails, cdmDatabaseSchema, resultsDatabaseS
     generateAchillesHeelReport(conn, connectionDetails$dbms, cdmDatabaseSchema, outputPath, cdmVersion)
   }
   
+  if ("MEASUREMENT" %in% reports)
+  {
+    generateMeasurementTreemap(conn, connectionDetails$dbms, cdmDatabaseSchema, outputPath, cdmVersion)
+    generateMeasurementReports(conn, connectionDetails$dbms, cdmDatabaseSchema, outputPath, cdmVersion)
+  }
+  
+  
   if ("OBSERVATION" %in% reports)
   {  
     generateObservationTreemap(conn, connectionDetails$dbms, cdmDatabaseSchema, outputPath, cdmVersion)
@@ -372,6 +379,31 @@ exportDrugEraToJson <- function (connectionDetails, cdmDatabaseSchema, resultsDa
 exportHeelToJson <- function (connectionDetails, cdmDatabaseSchema, resultsDatabaseSchema, outputPath = getwd(), cdmVersion="4")
 {
   exportToJson(connectionDetails, cdmDatabaseSchema, resultsDatabaseSchema, outputPath, reports = c("HEEL"), cdmVersion)  
+}
+
+#' @title exportMeasurementToJson
+#'
+#' @description
+#' \code{exportMeasurementToJson} Exports Measurement report into a JSON form for reports.
+#'
+#' @details
+#' Creates individual files for Measurement report found in Achilles.Web
+#' 
+#' 
+#' @param connectionDetails  An R object of type ConnectionDetail (details for the function that contains server info, database type, optionally username/password, port)
+#' @param cdmDatabaseSchema      Name of the database schema that contains the vocabulary files
+#' @param resultsDatabaseSchema  		Name of the database schema that contains the Achilles analysis files. Default is cdmDatabaseSchema
+#' @param outputPath		A folder location to save the JSON files. Default is current working folder
+#' 
+#' @return none 
+#' @examples \dontrun{
+#'   connectionDetails <- createConnectionDetails(dbms="sql server", server="yourserver")
+#'   exportMeasurementToJson(connectionDetails, cdmDatabaseSchema="cdm4_sim", outputPath="your/output/path")
+#' }
+#' @export
+exportMeasurementToJson <- function (connectionDetails, cdmDatabaseSchema, resultsDatabaseSchema, outputPath = getwd(), cdmVersion="4")
+{
+  exportToJson(connectionDetails, cdmDatabaseSchema, resultsDatabaseSchema, outputPath, reports = c("MEASUREMENT"), cdmVersion)  
 }
 
 #' @title exportObservationToJson
@@ -1444,6 +1476,147 @@ generateDataDensityReport <- function(conn, dbms,cdmDatabaseSchema, outputPath, 
   
 }
 
+generateMeasurementTreemap <- function(conn, dbms, cdmDatabaseSchema, outputPath, cdmVersion = "4") {
+  writeLines("Generating measurement treemap")
+  progressBar <- txtProgressBar(max=1,style=3)
+  progress = 0
+  
+  queryMeasurementTreemap <- loadRenderTranslateSql(sqlFilename = addCdmVersionPath("/measurement/sqlMeasurementTreemap.sql",cdmVersion),
+                                                    packageName = "Achilles",
+                                                    dbms = dbms,
+                                                    cdm_database_schema = cdmDatabaseSchema
+  )
+  
+  dataMeasurementTreemap <- querySql(conn,queryMeasurementTreemap) 
+  
+  write(toJSON(dataMeasurementTreemap,method="C"),paste(outputPath, "/measurement_treemap.json", sep=''))
+  progress = progress + 1
+  setTxtProgressBar(progressBar, progress)
+  
+  close(progressBar)  
+  
+}
+
+generateMeasurementReports <- function(conn, dbms, cdmDatabaseSchema, outputPath, cdmVersion = "4")
+{
+  writeLines("Generating Measurement reports")
+  
+  treemapFile <- file.path(outputPath,"measurement_treemap.json")
+  if (!file.exists(treemapFile)){
+    writeLines(paste("Warning: treemap file",treemapFile,"does not exist. Skipping detail report generation."))
+    return()
+  }
+  
+  treemapData <- fromJSON(file = treemapFile)
+  uniqueConcepts <- unique(treemapData$CONCEPT_ID)
+  totalCount <- length(uniqueConcepts)
+  
+  measurementsFolder <- file.path(outputPath,"measurements")
+  if (file.exists(measurementsFolder)){
+    writeLines(paste("Warning: folder ",measurementsFolder," already exists"))
+  } else {
+    dir.create(paste(measurementsFolder,"/",sep=""))
+    
+  }
+  
+  progressBar <- txtProgressBar(style=3)
+  progress = 0
+  
+  queryPrevalenceByGenderAgeYear <- loadRenderTranslateSql(sqlFilename = addCdmVersionPath("/measurement/sqlPrevalenceByGenderAgeYear.sql",cdmVersion),
+                                                           packageName = "Achilles",
+                                                           dbms = dbms,
+                                                           cdm_database_schema = cdmDatabaseSchema
+  )
+  
+  queryPrevalenceByMonth <- loadRenderTranslateSql(sqlFilename = addCdmVersionPath("/measurement/sqlPrevalenceByMonth.sql",cdmVersion),
+                                                   packageName = "Achilles",
+                                                   dbms = dbms,
+                                                   cdm_database_schema = cdmDatabaseSchema
+  )
+  
+  queryMeasurementsByType <- loadRenderTranslateSql(sqlFilename = addCdmVersionPath("/measurement/sqlMeasurementsByType.sql",cdmVersion),
+                                                    packageName = "Achilles",
+                                                    dbms = dbms,
+                                                    cdm_database_schema = cdmDatabaseSchema
+  )
+  
+  queryAgeAtFirstOccurrence <- loadRenderTranslateSql(sqlFilename = addCdmVersionPath("/measurement/sqlAgeAtFirstOccurrence.sql",cdmVersion),
+                                                      packageName = "Achilles",
+                                                      dbms = dbms,
+                                                      cdm_database_schema = cdmDatabaseSchema
+  )
+  
+  queryRecordsByUnit <- loadRenderTranslateSql(sqlFilename = addCdmVersionPath("/measurement/sqlRecordsByUnit.sql",cdmVersion),
+                                               packageName = "Achilles",
+                                               dbms = dbms,
+                                               cdm_database_schema = cdmDatabaseSchema
+  )
+  
+  queryMeasurementValueDistribution <- loadRenderTranslateSql(sqlFilename = addCdmVersionPath("/measurement/sqlMeasurementValueDistribution.sql",cdmVersion),
+                                                              packageName = "Achilles",
+                                                              dbms = dbms,
+                                                              cdm_database_schema = cdmDatabaseSchema
+  )
+  
+  queryLowerLimitDistribution <- loadRenderTranslateSql(sqlFilename = addCdmVersionPath("/measurement/sqlLowerLimitDistribution.sql",cdmVersion),
+                                                        packageName = "Achilles",
+                                                        dbms = dbms,
+                                                        cdm_database_schema = cdmDatabaseSchema
+  )
+  
+  queryUpperLimitDistribution <- loadRenderTranslateSql(sqlFilename = addCdmVersionPath("/measurement/sqlUpperLimitDistribution.sql",cdmVersion),
+                                                        packageName = "Achilles",
+                                                        dbms = dbms,
+                                                        cdm_database_schema = cdmDatabaseSchema
+  )
+  
+  queryValuesRelativeToNorm <- loadRenderTranslateSql(sqlFilename = addCdmVersionPath("/measurement/sqlValuesRelativeToNorm.sql",cdmVersion),
+                                                      packageName = "Achilles",
+                                                      dbms = dbms,
+                                                      cdm_database_schema = cdmDatabaseSchema
+  )
+  
+  dataPrevalenceByGenderAgeYear <- querySql(conn,queryPrevalenceByGenderAgeYear) 
+  dataPrevalenceByMonth <- querySql(conn,queryPrevalenceByMonth)  
+  dataMeasurementsByType <- querySql(conn,queryMeasurementsByType)    
+  dataAgeAtFirstOccurrence <- querySql(conn,queryAgeAtFirstOccurrence)
+  dataRecordsByUnit <- querySql(conn,queryRecordsByUnit)
+  dataMeasurementValueDistribution <- querySql(conn,queryMeasurementValueDistribution)
+  dataLowerLimitDistribution <- querySql(conn,queryLowerLimitDistribution)
+  dataUpperLimitDistribution <- querySql(conn,queryUpperLimitDistribution)
+  dataValuesRelativeToNorm <- querySql(conn,queryValuesRelativeToNorm)
+  
+  buildMeasurementReport <- function(concept_id) {
+    report <- {}
+    report$PREVALENCE_BY_GENDER_AGE_YEAR <- dataPrevalenceByGenderAgeYear[dataPrevalenceByGenderAgeYear$CONCEPT_ID == concept_id,c(3,4,5,6)]    
+    report$PREVALENCE_BY_MONTH <- dataPrevalenceByMonth[dataPrevalenceByMonth$CONCEPT_ID == concept_id,c(3,4)]
+    report$MEASUREMENTS_BY_TYPE <- dataMeasurementsByType[dataMeasurementsByType$MEASUREMENT_CONCEPT_ID == concept_id,c(4,5)]
+    report$AGE_AT_FIRST_OCCURRENCE <- dataAgeAtFirstOccurrence[dataAgeAtFirstOccurrence$CONCEPT_ID == concept_id,c(2,3,4,5,6,7,8,9)]
+    
+    report$RECORDS_BY_UNIT <- dataRecordsByUnit[dataRecordsByUnit$MEASUREMENT_CONCEPT_ID == concept_id,c(4,5)]
+    report$MEASUREMENT_VALUE_DISTRIBUTION <- dataMeasurementValueDistribution[dataMeasurementValueDistribution$CONCEPT_ID == concept_id,c(2,3,4,5,6,7,8,9)]
+    report$LOWER_LIMIT_DISTRIBUTION <- dataLowerLimitDistribution[dataLowerLimitDistribution$CONCEPT_ID == concept_id,c(2,3,4,5,6,7,8,9)]
+    report$UPPER_LIMIT_DISTRIBUTION <- dataUpperLimitDistribution[dataUpperLimitDistribution$CONCEPT_ID == concept_id,c(2,3,4,5,6,7,8,9)]
+    report$VALUES_RELATIVE_TO_NORM <- dataValuesRelativeToNorm[dataValuesRelativeToNorm$MEASUREMENT_CONCEPT_ID == concept_id,c(4,5)]
+    
+    filename <- paste(outputPath, "/measurements/measurement_" , concept_id , ".json", sep='')  
+    
+    write(toJSON(report,method="C"),filename)  
+    
+    #Update progressbar:
+    env <- parent.env(environment())
+    curVal <- get("progress", envir = env)
+    assign("progress", curVal +1 ,envir= env)
+    setTxtProgressBar(get("progressBar", envir= env), (curVal + 1) / get("totalCount", envir= env))
+  }
+  
+  dummy <- lapply(uniqueConcepts, buildMeasurementReport)  
+  
+  setTxtProgressBar(progressBar, 1)
+  close(progressBar)  
+  
+}
+
 generateObservationTreemap <- function(conn, dbms, cdmDatabaseSchema, outputPath, cdmVersion = "4") {
   writeLines("Generating observation treemap")
   progressBar <- txtProgressBar(max=1,style=3)
@@ -1514,45 +1687,51 @@ generateObservationReports <- function(conn, dbms, cdmDatabaseSchema, outputPath
                                                       cdm_database_schema = cdmDatabaseSchema
   )
   
-  queryRecordsByUnit <- loadRenderTranslateSql(sqlFilename = addCdmVersionPath("/observation/sqlRecordsByUnit.sql",cdmVersion),
-                                               packageName = "Achilles",
-                                               dbms = dbms,
-                                               cdm_database_schema = cdmDatabaseSchema
-  )
+  if (cdmVersion == "4")
+  {
   
-  queryObservationValueDistribution <- loadRenderTranslateSql(sqlFilename = addCdmVersionPath("/observation/sqlObservationValueDistribution.sql",cdmVersion),
-                                                              packageName = "Achilles",
-                                                              dbms = dbms,
-                                                              cdm_database_schema = cdmDatabaseSchema
-  )
-  
-  queryLowerLimitDistribution <- loadRenderTranslateSql(sqlFilename = addCdmVersionPath("/observation/sqlLowerLimitDistribution.sql",cdmVersion),
+    queryRecordsByUnit <- loadRenderTranslateSql(sqlFilename = addCdmVersionPath("/observation/sqlRecordsByUnit.sql",cdmVersion),
+                                                 packageName = "Achilles",
+                                                 dbms = dbms,
+                                                 cdm_database_schema = cdmDatabaseSchema
+    )
+    
+    queryObservationValueDistribution <- loadRenderTranslateSql(sqlFilename = addCdmVersionPath("/observation/sqlObservationValueDistribution.sql",cdmVersion),
+                                                                packageName = "Achilles",
+                                                                dbms = dbms,
+                                                                cdm_database_schema = cdmDatabaseSchema
+    )
+    
+    queryLowerLimitDistribution <- loadRenderTranslateSql(sqlFilename = addCdmVersionPath("/observation/sqlLowerLimitDistribution.sql",cdmVersion),
+                                                          packageName = "Achilles",
+                                                          dbms = dbms,
+                                                          cdm_database_schema = cdmDatabaseSchema
+    )
+    
+    queryUpperLimitDistribution <- loadRenderTranslateSql(sqlFilename = addCdmVersionPath("/observation/sqlUpperLimitDistribution.sql",cdmVersion),
+                                                          packageName = "Achilles",
+                                                          dbms = dbms,
+                                                          cdm_database_schema = cdmDatabaseSchema
+    )
+    
+    queryValuesRelativeToNorm <- loadRenderTranslateSql(sqlFilename = addCdmVersionPath("/observation/sqlValuesRelativeToNorm.sql",cdmVersion),
                                                         packageName = "Achilles",
                                                         dbms = dbms,
                                                         cdm_database_schema = cdmDatabaseSchema
-  )
-  
-  queryUpperLimitDistribution <- loadRenderTranslateSql(sqlFilename = addCdmVersionPath("/observation/sqlUpperLimitDistribution.sql",cdmVersion),
-                                                        packageName = "Achilles",
-                                                        dbms = dbms,
-                                                        cdm_database_schema = cdmDatabaseSchema
-  )
-  
-  queryValuesRelativeToNorm <- loadRenderTranslateSql(sqlFilename = addCdmVersionPath("/observation/sqlValuesRelativeToNorm.sql",cdmVersion),
-                                                      packageName = "Achilles",
-                                                      dbms = dbms,
-                                                      cdm_database_schema = cdmDatabaseSchema
-  )
-  
+    )
+  }  
   dataPrevalenceByGenderAgeYear <- querySql(conn,queryPrevalenceByGenderAgeYear) 
   dataPrevalenceByMonth <- querySql(conn,queryPrevalenceByMonth)  
   dataObservationsByType <- querySql(conn,queryObservationsByType)    
   dataAgeAtFirstOccurrence <- querySql(conn,queryAgeAtFirstOccurrence)
-  dataRecordsByUnit <- querySql(conn,queryRecordsByUnit)
-  dataObservationValueDistribution <- querySql(conn,queryObservationValueDistribution)
-  dataLowerLimitDistribution <- querySql(conn,queryLowerLimitDistribution)
-  dataUpperLimitDistribution <- querySql(conn,queryUpperLimitDistribution)
-  dataValuesRelativeToNorm <- querySql(conn,queryValuesRelativeToNorm)
+  if (cdmVersion == "4")
+  {
+    dataRecordsByUnit <- querySql(conn,queryRecordsByUnit)
+    dataObservationValueDistribution <- querySql(conn,queryObservationValueDistribution)
+    dataLowerLimitDistribution <- querySql(conn,queryLowerLimitDistribution)
+    dataUpperLimitDistribution <- querySql(conn,queryUpperLimitDistribution)
+    dataValuesRelativeToNorm <- querySql(conn,queryValuesRelativeToNorm)
+  }
   
   buildObservationReport <- function(concept_id) {
     report <- {}
@@ -1561,12 +1740,15 @@ generateObservationReports <- function(conn, dbms, cdmDatabaseSchema, outputPath
     report$OBSERVATIONS_BY_TYPE <- dataObservationsByType[dataObservationsByType$OBSERVATION_CONCEPT_ID == concept_id,c(4,5)]
     report$AGE_AT_FIRST_OCCURRENCE <- dataAgeAtFirstOccurrence[dataAgeAtFirstOccurrence$CONCEPT_ID == concept_id,c(2,3,4,5,6,7,8,9)]
     
-    report$RECORDS_BY_UNIT <- dataRecordsByUnit[dataRecordsByUnit$OBSERVATION_CONCEPT_ID == concept_id,c(4,5)]
-    report$OBSERVATION_VALUE_DISTRIBUTION <- dataObservationValueDistribution[dataObservationValueDistribution$CONCEPT_ID == concept_id,c(2,3,4,5,6,7,8,9)]
-    report$LOWER_LIMIT_DISTRIBUTION <- dataLowerLimitDistribution[dataLowerLimitDistribution$CONCEPT_ID == concept_id,c(2,3,4,5,6,7,8,9)]
-    report$UPPER_LIMIT_DISTRIBUTION <- dataUpperLimitDistribution[dataUpperLimitDistribution$CONCEPT_ID == concept_id,c(2,3,4,5,6,7,8,9)]
-    report$VALUES_RELATIVE_TO_NORM <- dataValuesRelativeToNorm[dataValuesRelativeToNorm$OBSERVATION_CONCEPT_ID == concept_id,c(4,5)]
-    
+    if (cdmVersion == "4")
+    {
+      report$RECORDS_BY_UNIT <- dataRecordsByUnit[dataRecordsByUnit$OBSERVATION_CONCEPT_ID == concept_id,c(4,5)]
+      report$OBSERVATION_VALUE_DISTRIBUTION <- dataObservationValueDistribution[dataObservationValueDistribution$CONCEPT_ID == concept_id,c(2,3,4,5,6,7,8,9)]
+      report$LOWER_LIMIT_DISTRIBUTION <- dataLowerLimitDistribution[dataLowerLimitDistribution$CONCEPT_ID == concept_id,c(2,3,4,5,6,7,8,9)]
+      report$UPPER_LIMIT_DISTRIBUTION <- dataUpperLimitDistribution[dataUpperLimitDistribution$CONCEPT_ID == concept_id,c(2,3,4,5,6,7,8,9)]
+      report$VALUES_RELATIVE_TO_NORM <- dataValuesRelativeToNorm[dataValuesRelativeToNorm$OBSERVATION_CONCEPT_ID == concept_id,c(4,5)]
+    }
+
     filename <- paste(outputPath, "/observations/observation_" , concept_id , ".json", sep='')  
     
     write(toJSON(report,method="C"),filename)  
