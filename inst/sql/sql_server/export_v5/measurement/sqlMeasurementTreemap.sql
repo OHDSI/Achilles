@@ -12,18 +12,19 @@ from (select * from ACHILLES_results where analysis_id = 1800) ar1
 	on ar1.stratum_1 = ar2.stratum_1
 	inner join
 	(
-		select obs.concept_id, obs.concept_name, max(c1.concept_name) as level1_concept_name, max(c2.concept_name) as level2_concept_name, max(c3.concept_name) as level3_concept_name
+		select m.concept_id, m.concept_name, max(c1.concept_name) as level1_concept_name, max(c2.concept_name) as level2_concept_name, max(c3.concept_name) as level3_concept_name
 		from
 		(
-		select concept_id, concept_name
-		from @cdm_database_schema.concept
-		) obs left join @cdm_database_schema.concept_ancestor ca1 on obs.concept_id = ca1.DESCENDANT_CONCEPT_ID and ca1.min_levels_of_separation = 1
+		select distinct concept_id, concept_name
+		from @cdm_database_schema.concept c
+		join @cdm_database_schema.measurement m on c.concept_id = m.measurement_concept_id
+		) m left join @cdm_database_schema.concept_ancestor ca1 on m.concept_id = ca1.DESCENDANT_CONCEPT_ID and ca1.min_levels_of_separation = 1
 		left join @cdm_database_schema.concept c1 on ca1.ANCESTOR_CONCEPT_ID = c1.concept_id
 		left join @cdm_database_schema.concept_ancestor ca2 on c1.concept_id = ca2.DESCENDANT_CONCEPT_ID and ca2.min_levels_of_separation = 1
 		left join @cdm_database_schema.concept c2 on ca2.ANCESTOR_CONCEPT_ID = c2.concept_id
 		left join @cdm_database_schema.concept_ancestor ca3 on c2.concept_id = ca3.DESCENDANT_CONCEPT_ID and ca3.min_levels_of_separation = 1
 		left join @cdm_database_schema.concept c3 on ca3.ANCESTOR_CONCEPT_ID = c3.concept_id
-		group by obs.concept_id, obs.concept_name
+		group by m.concept_id, m.concept_name
 	) concept_hierarchy on ar1.stratum_1 = CAST(concept_hierarchy.concept_id as VARCHAR),
 	(select count_value from ACHILLES_results where analysis_id = 1) denom
 order by ar1.count_value desc
