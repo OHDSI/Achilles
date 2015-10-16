@@ -25,6 +25,7 @@
 115,"Number of persons with observation period end < observation period start",NA,NA,NA,NA,NA
 116,"Number of persons with at least one day of observation in each year by gender and age decile","calendar year","gender_concept_id","age decile",NA,NA
 117,"Number of persons with at least one day of observation in each month","calendar month",NA,NA,NA,NA
+118,"Number of observation periods with invalid person_id",NA,NA,NA,NA,NA
 200,"Number of persons with at least one visit occurrence, by visit_concept_id","visit_concept_id",NA,NA,NA,NA
 201,"Number of visit occurrence records, by visit_concept_id","visit_concept_id",NA,NA,NA,NA
 202,"Number of persons by visit occurrence start month, by visit_concept_id","visit_concept_id","calendar month",NA,NA,NA
