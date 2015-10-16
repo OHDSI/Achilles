@@ -10,18 +10,16 @@ fetchAchillesHeelResults(connectionDetails, resultsDatabase)
   \item{connectionDetails}{An R object of type
   ConnectionDetail (details for the function that contains
   server info, database type, optionally username/password,
-  port)}
-
-  \item{resultsDatabase}{Name of database containing the
-  Achilles descriptive statistics.}
+  port)} \item{resultsDatabase}{Name of database containing
+  the Achilles descriptive statistics.}
 }
 \value{
 A table listing all identified issues
 }
 \description{
 \code{fetchAchillesHeelResults} retrieves the AchillesHeel
-results for the AChilles analysis to identify potential
-data quality issues.
+results for the AChilles analysis to identify potential data
+quality issues.
 }
 \details{
 AchillesHeel is a part of the Achilles analysis aimed at
