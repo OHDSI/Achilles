@@ -9,8 +9,8 @@ RUN echo '' > /etc/apt/apt.conf.d/default
 # Install java and clean up.
 RUN apt-get update && \
     apt-get install -y \
-    libssl-dev \
     libcurl4-openssl-dev \
+    libssl-dev \
     libxml2-dev \
     openjdk-7-jdk \
     && rm -rf /var/lib/apt/lists/* \

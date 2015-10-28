@@ -7,12 +7,12 @@ library(httr)
 # Get passed environment variables.
 env_var_names <- list("ACHILLES_SITE", "ACHILLES_DB_URI",
                       "ACHILLES_CDM_SCHEMA", "ACHILLES_RES_SCHEMA",
-                      "ACHILLES_OUTPUT_BASE")
+                      "ACHILLES_OUTPUT_BASE", "ACHILLES_CDM_VERSION")
 env_vars <- Sys.getenv(env_var_names, unset=NA)
 
 # Replace unset environement variables with defaults.
 default_vars <- list("DefaultSite", "postgresql://localhost/postgres",
-                     "public", "public", "./output")
+                     "public", "public", "./output", "5")
 env_vars[is.na(env_vars)] <- default_vars[is.na(env_vars)]
 
 # Create name to tag results and output path from ACHILLES_SITE and timestamp
@@ -37,11 +37,13 @@ connectionDetails <- createConnectionDetails(
 # Run Achilles report and generate data in the results schema.
 achillesResults <- achilles(
     connectionDetails, cdmDatabaseSchema=env_vars$ACHILLES_CDM_SCHEMA,
-    resultsDatabaseSchema=env_vars$ACHILLES_RES_SCHEMA, sourceName=src_name
+    resultsDatabaseSchema=env_vars$ACHILLES_RES_SCHEMA, sourceName=src_name,
+    cdmVersion=env_vars$ACHILLES_CDM_VERSION
 )
 
 # Export Achilles results to output path in JSON format.
 exportToJson(
     connectionDetails, cdmDatabaseSchema=env_vars$ACHILLES_CDM_SCHEMA,
-    resultsDatabaseSchema=env_vars$ACHILLES_RES_SCHEMA, outputPath=output_path
+    resultsDatabaseSchema=env_vars$ACHILLES_RES_SCHEMA, outputPath=output_path,
+    cdmVersion=env_vars$ACHILLES_CDM_VERSION
 )

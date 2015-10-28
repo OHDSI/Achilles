@@ -2,3 +2,5 @@ ACHILLES_SITE=<site_name>
 ACHILLES_DB_URI=<db_uri>
 ACHILLES_CDM_SCHEMA=<cdm_schema>
 ACHILLES_RES_SCHEMA=<results_schema>
+ACHILLES_CDM_VERSION=<cdm_version>
+ACHILLES_OUTPUT_BASE=<mounted_output_dir>
