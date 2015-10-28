@@ -50,7 +50,11 @@ IF OBJECT_ID('@results_database_schema.ACHILLES_HEEL_results', 'U') IS NOT NULL
 
 CREATE TABLE @results_database_schema.ACHILLES_HEEL_results (
   analysis_id INT,
-	ACHILLES_HEEL_warning VARCHAR(255)
+	ACHILLES_HEEL_warning VARCHAR(255),
+	value1_type VARCHAR(255),
+	value1 VARCHAR(255),
+	value2 VARCHAR(255),
+	rule_id INT
 	);
 
 --check for non-zero counts from checks of improper data (invalid ids, out-of-bound data, inconsistent dates)
