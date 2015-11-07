@@ -50,16 +50,22 @@ IF OBJECT_ID('@results_database_schema.ACHILLES_HEEL_results', 'U') IS NOT NULL
 
 CREATE TABLE @results_database_schema.ACHILLES_HEEL_results (
   analysis_id INT,
-	ACHILLES_HEEL_warning VARCHAR(255)
-	);
+	ACHILLES_HEEL_warning VARCHAR(255),
+	rule_id INT,
+	record_count INT
+);
 
 --check for non-zero counts from checks of improper data (invalid ids, out-of-bound data, inconsistent dates)
 INSERT INTO @results_database_schema.ACHILLES_HEEL_results (
 	analysis_id,
-	ACHILLES_HEEL_warning
+	ACHILLES_HEEL_warning,
+	rule_id,
+	record_count
 	)
 SELECT DISTINCT or1.analysis_id,
-	'ERROR: ' + cast(or1.analysis_id as VARCHAR) + '-' + oa1.analysis_name + '; count (n=' + cast(or1.count_value as VARCHAR) + ') should not be > 0' AS ACHILLES_HEEL_warning
+	'ERROR: ' + cast(or1.analysis_id as VARCHAR) + '-' + oa1.analysis_name + '; count (n=' + cast(or1.count_value as VARCHAR) + ') should not be > 0' AS ACHILLES_HEEL_warning,
+	1 as rule_id,
+	or1.count_value
 FROM @results_database_schema.ACHILLES_results or1
 INNER JOIN @results_database_schema.ACHILLES_analysis oa1
 	ON or1.analysis_id = oa1.analysis_id
@@ -114,10 +120,14 @@ WHERE or1.analysis_id IN (
 --distributions where min should not be negative
 INSERT INTO @results_database_schema.ACHILLES_HEEL_results (
 	analysis_id,
-	ACHILLES_HEEL_warning
+	ACHILLES_HEEL_warning,
+	rule_id,
+	record_count
 	)
 SELECT DISTINCT ord1.analysis_id,
-  'ERROR: ' + cast(ord1.analysis_id as VARCHAR) + ' - ' + oa1.analysis_name + ' (count = ' + cast(COUNT_BIG(ord1.min_value) as VARCHAR) + '); min value should not be negative' AS ACHILLES_HEEL_warning
+  'ERROR: ' + cast(ord1.analysis_id as VARCHAR) + ' - ' + oa1.analysis_name + ' (count = ' + cast(COUNT_BIG(ord1.min_value) as VARCHAR) + '); min value should not be negative' AS ACHILLES_HEEL_warning,
+  2 as rule_id,
+  COUNT_BIG(ord1.min_value) as record_count
 FROM @results_database_schema.ACHILLES_results_dist ord1
 INNER JOIN @results_database_schema.ACHILLES_analysis oa1
 	ON ord1.analysis_id = oa1.analysis_id
@@ -161,10 +171,14 @@ WHERE ord1.analysis_id IN (
 --death distributions where max should not be positive
 INSERT INTO @results_database_schema.ACHILLES_HEEL_results (
 	analysis_id,
-	ACHILLES_HEEL_warning
-	)
+	ACHILLES_HEEL_warning,
+	rule_id,
+	record_count
+)
 SELECT DISTINCT ord1.analysis_id,
-  'WARNING: ' + cast(ord1.analysis_id as VARCHAR) + '-' + oa1.analysis_name + ' (count = ' + cast(COUNT_BIG(ord1.max_value) as VARCHAR) + '); max value should not be positive, otherwise its a zombie with data >1mo after death ' AS ACHILLES_HEEL_warning
+  'WARNING: ' + cast(ord1.analysis_id as VARCHAR) + '-' + oa1.analysis_name + ' (count = ' + cast(COUNT_BIG(ord1.max_value) as VARCHAR) + '); max value should not be positive, otherwise its a zombie with data >1mo after death ' AS ACHILLES_HEEL_warning,
+  3 as rule_id,
+  COUNT_BIG(ord1.max_value) as record_count
 FROM @results_database_schema.ACHILLES_results_dist ord1
 INNER JOIN @results_database_schema.ACHILLES_analysis oa1
 	ON ord1.analysis_id = oa1.analysis_id
@@ -181,10 +195,14 @@ GROUP BY ord1.analysis_id, oa1.analysis_name;
 --invalid concept_id
 INSERT INTO @results_database_schema.ACHILLES_HEEL_results (
 	analysis_id,
-	ACHILLES_HEEL_warning
-	)
+	ACHILLES_HEEL_warning,
+	rule_id,
+	record_count
+)
 SELECT or1.analysis_id,
-	'ERROR: ' + cast(or1.analysis_id as VARCHAR) + '-' + oa1.analysis_name + '; ' + cast(COUNT_BIG(DISTINCT stratum_1) AS VARCHAR) + ' concepts in data are not in vocabulary' AS ACHILLES_HEEL_warning
+	'ERROR: ' + cast(or1.analysis_id as VARCHAR) + '-' + oa1.analysis_name + '; ' + cast(COUNT_BIG(DISTINCT stratum_1) AS VARCHAR) + ' concepts in data are not in vocabulary' AS ACHILLES_HEEL_warning,
+  4 as rule_id,
+  COUNT_BIG(DISTINCT stratum_1) as record_count
 FROM @results_database_schema.ACHILLES_results or1
 INNER JOIN @results_database_schema.ACHILLES_analysis oa1
 	ON or1.analysis_id = oa1.analysis_id
