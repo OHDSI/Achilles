@@ -12,5 +12,7 @@ Depends:
     SqlRender,
     DatabaseConnector,
     rjson
+Suggests:
+    testthat
 License: Apache License
 Roxygen: list(wrap = TRUE)

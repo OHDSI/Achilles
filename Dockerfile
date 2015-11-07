@@ -12,7 +12,7 @@ RUN apt-get update && \
     libssl-dev \
     libcurl4-openssl-dev \
     libxml2-dev \
-    openjdk-6-jdk \
+    openjdk-7-jdk \
     && rm -rf /var/lib/apt/lists/* \
     && R CMD javareconf
 

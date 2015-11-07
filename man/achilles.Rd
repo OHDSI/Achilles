@@ -8,7 +8,7 @@ achilles(connectionDetails, cdmDatabaseSchema,
   oracleTempSchema = cdmDatabaseSchema,
   resultsDatabaseSchema = cdmDatabaseSchema, sourceName = "", analysisIds,
   createTable = TRUE, smallcellcount = 5, cdmVersion = "4",
-  runHeel = TRUE, validateSchema = TRUE)
+  runHeel = TRUE, validateSchema = FALSE)
 }
 \arguments{
   \item{connectionDetails}{An R object of type
@@ -28,21 +28,21 @@ achilles(connectionDetails, cdmDatabaseSchema,
   the database, as recorded in results} \item{analysisIds}
   {(optional) a vector containing the set of Achilles
   analysisIds for which results will be generated. If
-  not specified, all analyses will be executed. See
-  \code{data(analysesDetails)} for a list of all Achilles
-  analyses and their Ids.} \item{createTable}{If true, new
-  results tables will be created in the results schema.
-  If not, the tables are assumed to already exists, and
-  analysis results will be added} \item{smallcellcount}{To
-  avoid patient identifiability, cells with small counts
-  (<= smallcellcount) are deleted.} \item{cdmVersion}
+  not specified, all analyses will be executed. Use
+  \code{\link{getAnalysisDetails}} to get a list of all
+  Achilles analyses and their Ids.} \item{createTable}{If
+  true, new results tables will be created in the results
+  schema. If not, the tables are assumed to already exists,
+  and analysis results will be added} \item{smallcellcount}
+  {To avoid patient identifiability, cells with small
+  counts (<= smallcellcount) are deleted.} \item{cdmVersion}
   {Define the OMOP CDM version used: currently support
   "4" and "5". Default = "4"} \item{runHeel}{Boolean to
   determine if Achilles Heel data quality reporting will be
   produced based on the summary statistics. Default = TRUE}
   \item{validateSchema}{Boolean to determine if CDM Schema
   Validation should be run. This could be very slow. Default =
-  TRUE}
+  FALSE}
 }
 \value{
 An object of type \code{achillesResults} containing details
@@ -59,7 +59,7 @@ an entire OMOP CDM instance.
 \examples{
 \dontrun{
   connectionDetails <- createConnectionDetails(dbms="sql server", server="RNDUSRDHIT07.jnj.com")
-  achillesResults <- achilles(connectionDetails, "cdm4_sim", "scratch", "TestDB")
+  achillesResults <- achilles(connectionDetails, cdmDatabaseSchema="cdm4_sim", resultsDatabaseSchema="scratch", sourceName="TestDB", validateSchema="TRUE")
   fetchAchillesAnalysisResults(connectionDetails, "scratch", 106)
 }
 }

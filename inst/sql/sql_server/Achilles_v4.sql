@@ -41,7 +41,7 @@ SQL for OMOP CDM v4
 {DEFAULT @source_name = 'CDM NAME'}
 {DEFAULT @smallcellcount = 5}
 {DEFAULT @createTable = TRUE}
-{DEFAULT @validateSchema = TRUE}
+{DEFAULT @validateSchema = FALSE}
 
   /****
     developer comment about general ACHILLES calculation process:  
@@ -631,7 +631,7 @@ insert into @results_database_schema.ACHILLES_analysis (analysis_id, analysis_na
 	values (405, 'Number of condition occurrence records, by condition_concept_id by condition_type_concept_id', 'condition_concept_id', 'condition_type_concept_id');
 
 insert into @results_database_schema.ACHILLES_analysis (analysis_id, analysis_name, stratum_1_name, stratum_2_name)
-	values (406, 'Distribution of condition occurrence age by condition_concept_id', 'condition_concept_id', 'gender_concept_id');
+	values (406, 'Distribution of age by condition_concept_id', 'condition_concept_id', 'gender_concept_id');
 
 insert into @results_database_schema.ACHILLES_analysis (analysis_id, analysis_name)
 	values (409, 'Number of condition occurrence records with invalid person_id');
@@ -760,7 +760,7 @@ insert into @results_database_schema.ACHILLES_analysis (analysis_id, analysis_na
 	values (705, 'Number of drug exposure records, by drug_concept_id by drug_type_concept_id', 'drug_concept_id', 'drug_type_concept_id');
 
 insert into @results_database_schema.ACHILLES_analysis (analysis_id, analysis_name, stratum_1_name, stratum_2_name)
-	values (706, 'Distribution of drug exposure age by drug_concept_id', 'drug_concept_id', 'gender_concept_id');
+	values (706, 'Distribution of age by drug_concept_id', 'drug_concept_id', 'gender_concept_id');
 
 
 

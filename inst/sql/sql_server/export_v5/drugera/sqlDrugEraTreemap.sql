@@ -87,4 +87,3 @@ from (select * from ACHILLES_results where analysis_id = 900) ar1
 	on ar1.stratum_1 = CAST(concept_hierarchy.rxnorm_ingredient_concept_id AS VARCHAR)
 	,
 	(select count_value from ACHILLES_results where analysis_id = 1) denom
-order by ar1.count_value desc

@@ -8,4 +8,3 @@ from
 (
 	select count_value from ACHILLES_results where analysis_id = 1
 ) denom
-order by cast(ar1.stratum_1 as int) asc

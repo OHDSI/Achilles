@@ -14,7 +14,7 @@ FROM (
 	FROM (
 		SELECT *
 		FROM ACHILLES_results
-		WHERE analysis_id = 704
+		WHERE analysis_id = 1804
 			AND stratum_3 IN ('8507', '8532')
 		) num
 	INNER JOIN (
@@ -31,3 +31,4 @@ INNER JOIN @cdm_database_schema.concept c1
 	ON num_stratum_1 = CAST(c1.concept_id as VARCHAR)
 INNER JOIN @cdm_database_schema.concept c2
 	ON num_stratum_3 = CAST(c2.concept_id as VARCHAR)
+

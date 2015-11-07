@@ -12,4 +12,3 @@ from
 (
 	select count_value from ACHILLES_results where analysis_id = 1
 ) denom
-order by ar1.stratum_1 asc
