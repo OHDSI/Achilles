@@ -137,7 +137,7 @@ exportToJson <- function (connectionDetails, cdmDatabaseSchema, resultsDatabaseS
     generateAchillesHeelReport(conn, connectionDetails$dbms, cdmDatabaseSchema, outputPath, cdmVersion)
   }
   
-  if ("MEASUREMENT" %in% reports)
+  if ( ("MEASUREMENT" %in% reports) & (cdmVersion != "4"))
   {
     generateMeasurementTreemap(conn, connectionDetails$dbms, cdmDatabaseSchema, outputPath, cdmVersion)
     generateMeasurementReports(conn, connectionDetails$dbms, cdmDatabaseSchema, outputPath, cdmVersion)
