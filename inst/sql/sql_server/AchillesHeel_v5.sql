@@ -55,7 +55,7 @@ CREATE TABLE @results_database_schema.ACHILLES_HEEL_results (
 	record_count INT
 );
 
---check for non-zero counts from checks of improper data (invalid ids, out-of-bound data, inconsistent dates)
+--ruleid 1 check for non-zero counts from checks of improper data (invalid ids, out-of-bound data, inconsistent dates)
 INSERT INTO @results_database_schema.ACHILLES_HEEL_results (
 	analysis_id,
 	ACHILLES_HEEL_warning,
@@ -117,7 +117,7 @@ WHERE or1.analysis_id IN (
 		) --all explicit counts of data anamolies
 	AND or1.count_value > 0;
 
---distributions where min should not be negative
+--ruleid 2 distributions where min should not be negative
 INSERT INTO @results_database_schema.ACHILLES_HEEL_results (
 	analysis_id,
 	ACHILLES_HEEL_warning,
@@ -168,7 +168,7 @@ WHERE ord1.analysis_id IN (
 	AND ord1.min_value < 0
 	GROUP BY ord1.analysis_id,  oa1.analysis_name;
 
---death distributions where max should not be positive
+--ruleid 3 death distributions where max should not be positive
 INSERT INTO @results_database_schema.ACHILLES_HEEL_results (
 	analysis_id,
 	ACHILLES_HEEL_warning,
@@ -192,7 +192,7 @@ WHERE ord1.analysis_id IN (
 	AND ord1.max_value > 30
 GROUP BY ord1.analysis_id, oa1.analysis_name;
 
---invalid concept_id
+--ruleid 4 invalid concept_id
 INSERT INTO @results_database_schema.ACHILLES_HEEL_results (
 	analysis_id,
 	ACHILLES_HEEL_warning,
@@ -230,13 +230,17 @@ WHERE or1.analysis_id IN (
 GROUP BY or1.analysis_id,
 	oa1.analysis_name;
 
---invalid type concept_id
+--ruleid 5 invalid type concept_id
 INSERT INTO @results_database_schema.ACHILLES_HEEL_results (
 	analysis_id,
-	ACHILLES_HEEL_warning
+	ACHILLES_HEEL_warning,
+	rule_id,
+	record_count
 	)
 SELECT or1.analysis_id,
-	'ERROR: ' + cast(or1.analysis_id as VARCHAR) + '-' + oa1.analysis_name + '; ' + cast(COUNT_BIG(DISTINCT stratum_2) AS VARCHAR) + ' concepts in data are not in vocabulary' AS ACHILLES_HEEL_warning
+	'ERROR: ' + cast(or1.analysis_id as VARCHAR) + '-' + oa1.analysis_name + '; ' + cast(COUNT_BIG(DISTINCT stratum_2) AS VARCHAR) + ' concepts in data are not in vocabulary' AS ACHILLES_HEEL_warning,
+  5 as rule_id,
+  COUNT_BIG(DISTINCT stratum_2) as record_count
 FROM @results_database_schema.ACHILLES_results or1
 INNER JOIN @results_database_schema.ACHILLES_analysis oa1
 	ON or1.analysis_id = oa1.analysis_id
@@ -253,13 +257,17 @@ WHERE or1.analysis_id IN (
 GROUP BY or1.analysis_id,
 	oa1.analysis_name;
 
---invalid concept_id
+--ruleid 6 invalid concept_id
 INSERT INTO @results_database_schema.ACHILLES_HEEL_results (
 	analysis_id,
-	ACHILLES_HEEL_warning
+	ACHILLES_HEEL_warning,
+	rule_id,
+	record_count
 	)
 SELECT or1.analysis_id,
-	'WARNING: ' + cast(or1.analysis_id as VARCHAR) + '-' + oa1.analysis_name + '; data with unmapped concepts' AS ACHILLES_HEEL_warning
+	'WARNING: ' + cast(or1.analysis_id as VARCHAR) + '-' + oa1.analysis_name + '; data with unmapped concepts' AS ACHILLES_HEEL_warning,
+  6 as rule_id,
+  null as record_count
 FROM @results_database_schema.ACHILLES_results or1
 INNER JOIN @results_database_schema.ACHILLES_analysis oa1
 	ON or1.analysis_id = oa1.analysis_id
@@ -285,13 +293,17 @@ GROUP BY or1.analysis_id,
 	oa1.analysis_name;
 
 --concept from the wrong vocabulary
---gender  - 12 HL7
+--ruleid 7 gender  - 12 HL7
 INSERT INTO @results_database_schema.ACHILLES_HEEL_results (
 	analysis_id,
-	ACHILLES_HEEL_warning
+	ACHILLES_HEEL_warning,
+	rule_id,
+	record_count
 	)
 SELECT or1.analysis_id,
-	'ERROR: ' + cast(or1.analysis_id as VARCHAR) + '-' + oa1.analysis_name + '; ' + cast(COUNT_BIG(DISTINCT stratum_1) AS VARCHAR) + ' concepts in data are not in correct vocabulary' AS ACHILLES_HEEL_warning
+	'ERROR: ' + cast(or1.analysis_id as VARCHAR) + '-' + oa1.analysis_name + '; ' + cast(COUNT_BIG(DISTINCT stratum_1) AS VARCHAR) + ' concepts in data are not in correct vocabulary' AS ACHILLES_HEEL_warning,
+  7 as rule_id,
+  COUNT_BIG(DISTINCT stratum_1) as record_count
 FROM @results_database_schema.ACHILLES_results or1
 INNER JOIN @results_database_schema.ACHILLES_analysis oa1
 	ON or1.analysis_id = oa1.analysis_id
@@ -304,13 +316,17 @@ WHERE or1.analysis_id IN (2)
 GROUP BY or1.analysis_id,
 	oa1.analysis_name;
 
---race  - 13 CDC Race
+--ruleid 8 race  - 13 CDC Race
 INSERT INTO @results_database_schema.ACHILLES_HEEL_results (
 	analysis_id,
-	ACHILLES_HEEL_warning
+	ACHILLES_HEEL_warning,
+	rule_id,
+	record_count
 	)
 SELECT or1.analysis_id,
-	'ERROR: ' + cast(or1.analysis_id as VARCHAR) + '-' + oa1.analysis_name + '; ' + cast(COUNT_BIG(DISTINCT stratum_1) AS VARCHAR) + ' concepts in data are not in correct vocabulary' AS ACHILLES_HEEL_warning
+	'ERROR: ' + cast(or1.analysis_id as VARCHAR) + '-' + oa1.analysis_name + '; ' + cast(COUNT_BIG(DISTINCT stratum_1) AS VARCHAR) + ' concepts in data are not in correct vocabulary' AS ACHILLES_HEEL_warning,
+  8 as rule_id,
+  COUNT_BIG(DISTINCT stratum_1) as record_count
 FROM @results_database_schema.ACHILLES_results or1
 INNER JOIN @results_database_schema.ACHILLES_analysis oa1
 	ON or1.analysis_id = oa1.analysis_id
@@ -323,13 +339,17 @@ WHERE or1.analysis_id IN (4)
 GROUP BY or1.analysis_id,
 	oa1.analysis_name;
 
---ethnicity - 44 ethnicity
+--ruleid 9 ethnicity - 44 ethnicity
 INSERT INTO @results_database_schema.ACHILLES_HEEL_results (
 	analysis_id,
-	ACHILLES_HEEL_warning
+	ACHILLES_HEEL_warning,
+	rule_id,
+	record_count
 	)
 SELECT or1.analysis_id,
-	'ERROR: ' + cast(or1.analysis_id as VARCHAR) + '-' + oa1.analysis_name + '; ' + cast(COUNT_BIG(DISTINCT stratum_1) AS VARCHAR) + ' concepts in data are not in correct vocabulary (CMS Ethnicity)' AS ACHILLES_HEEL_warning
+	'ERROR: ' + cast(or1.analysis_id as VARCHAR) + '-' + oa1.analysis_name + '; ' + cast(COUNT_BIG(DISTINCT stratum_1) AS VARCHAR) + ' concepts in data are not in correct vocabulary (CMS Ethnicity)' AS ACHILLES_HEEL_warning,
+  9 as rule_id,
+  COUNT_BIG(DISTINCT stratum_1) as record_count
 FROM @results_database_schema.ACHILLES_results or1
 INNER JOIN @results_database_schema.ACHILLES_analysis oa1
 	ON or1.analysis_id = oa1.analysis_id
@@ -342,13 +362,17 @@ WHERE or1.analysis_id IN (5)
 GROUP BY or1.analysis_id,
 	oa1.analysis_name;
 
---place of service - 14 CMS place of service, 24 OMOP visit
+--ruleid 10 place of service - 14 CMS place of service, 24 OMOP visit
 INSERT INTO @results_database_schema.ACHILLES_HEEL_results (
 	analysis_id,
-	ACHILLES_HEEL_warning
+	ACHILLES_HEEL_warning,
+	rule_id,
+	record_count
 	)
 SELECT or1.analysis_id,
-	'ERROR: ' + cast(or1.analysis_id as VARCHAR) + '-' + oa1.analysis_name + '; ' + cast(COUNT_BIG(DISTINCT stratum_1) AS VARCHAR) + ' concepts in data are not in correct vocabulary' AS ACHILLES_HEEL_warning
+	'ERROR: ' + cast(or1.analysis_id as VARCHAR) + '-' + oa1.analysis_name + '; ' + cast(COUNT_BIG(DISTINCT stratum_1) AS VARCHAR) + ' concepts in data are not in correct vocabulary' AS ACHILLES_HEEL_warning,
+  10 as rule_id,
+  COUNT_BIG(DISTINCT stratum_1) as record_count
 FROM @results_database_schema.ACHILLES_results or1
 INNER JOIN @results_database_schema.ACHILLES_analysis oa1
 	ON or1.analysis_id = oa1.analysis_id
@@ -361,13 +385,17 @@ WHERE or1.analysis_id IN (202)
 GROUP BY or1.analysis_id,
 	oa1.analysis_name;
 
---specialty - 48 specialty
+--ruleid 11 specialty - 48 specialty
 INSERT INTO @results_database_schema.ACHILLES_HEEL_results (
 	analysis_id,
-	ACHILLES_HEEL_warning
+	ACHILLES_HEEL_warning,
+	rule_id,
+	record_count
 	)
 SELECT or1.analysis_id,
-	'ERROR: ' + cast(or1.analysis_id as VARCHAR) + '-' + oa1.analysis_name + '; ' + cast(COUNT_BIG(DISTINCT stratum_1) AS VARCHAR) + ' concepts in data are not in correct vocabulary (Specialty)' AS ACHILLES_HEEL_warning
+	'ERROR: ' + cast(or1.analysis_id as VARCHAR) + '-' + oa1.analysis_name + '; ' + cast(COUNT_BIG(DISTINCT stratum_1) AS VARCHAR) + ' concepts in data are not in correct vocabulary (Specialty)' AS ACHILLES_HEEL_warning,
+  11 as rule_id,
+  COUNT_BIG(DISTINCT stratum_1) as record_count
 FROM @results_database_schema.ACHILLES_results or1
 INNER JOIN @results_database_schema.ACHILLES_analysis oa1
 	ON or1.analysis_id = oa1.analysis_id
@@ -380,13 +408,17 @@ WHERE or1.analysis_id IN (301)
 GROUP BY or1.analysis_id,
 	oa1.analysis_name;
 
---condition occurrence, era - 1 SNOMED
+--ruleid 12 condition occurrence, era - 1 SNOMED
 INSERT INTO @results_database_schema.ACHILLES_HEEL_results (
 	analysis_id,
-	ACHILLES_HEEL_warning
+	ACHILLES_HEEL_warning,
+	rule_id,
+	record_count
 	)
 SELECT or1.analysis_id,
-	'ERROR: ' + cast(or1.analysis_id as VARCHAR) + '-' + oa1.analysis_name + '; ' + cast(COUNT_BIG(DISTINCT stratum_1) AS VARCHAR) + ' concepts in data are not in correct vocabulary' AS ACHILLES_HEEL_warning
+	'ERROR: ' + cast(or1.analysis_id as VARCHAR) + '-' + oa1.analysis_name + '; ' + cast(COUNT_BIG(DISTINCT stratum_1) AS VARCHAR) + ' concepts in data are not in correct vocabulary' AS ACHILLES_HEEL_warning,
+  12 as rule_id,
+  COUNT_BIG(DISTINCT stratum_1) as record_count
 FROM @results_database_schema.ACHILLES_results or1
 INNER JOIN @results_database_schema.ACHILLES_analysis oa1
 	ON or1.analysis_id = oa1.analysis_id
@@ -402,13 +434,17 @@ WHERE or1.analysis_id IN (
 GROUP BY or1.analysis_id,
 	oa1.analysis_name;
 
---drug exposure - 8 RxNorm
+--ruleid 13 drug exposure - 8 RxNorm
 INSERT INTO @results_database_schema.ACHILLES_HEEL_results (
 	analysis_id,
-	ACHILLES_HEEL_warning
+	ACHILLES_HEEL_warning,
+	rule_id,
+	record_count
 	)
 SELECT or1.analysis_id,
-	'ERROR: ' + cast(or1.analysis_id as VARCHAR) + '-' + oa1.analysis_name + '; ' + cast(COUNT_BIG(DISTINCT stratum_1) AS VARCHAR) + ' concepts in data are not in correct vocabulary' AS ACHILLES_HEEL_warning
+	'ERROR: ' + cast(or1.analysis_id as VARCHAR) + '-' + oa1.analysis_name + '; ' + cast(COUNT_BIG(DISTINCT stratum_1) AS VARCHAR) + ' concepts in data are not in correct vocabulary' AS ACHILLES_HEEL_warning,
+  13 as rule_id,
+  COUNT_BIG(DISTINCT stratum_1) as record_count
 FROM @results_database_schema.ACHILLES_results or1
 INNER JOIN @results_database_schema.ACHILLES_analysis oa1
 	ON or1.analysis_id = oa1.analysis_id
@@ -424,13 +460,17 @@ WHERE or1.analysis_id IN (
 GROUP BY or1.analysis_id,
 	oa1.analysis_name;
 
---procedure - 4 CPT4/5 HCPCS/3 ICD9P
+--ruleid 14 procedure - 4 CPT4/5 HCPCS/3 ICD9P
 INSERT INTO @results_database_schema.ACHILLES_HEEL_results (
 	analysis_id,
-	ACHILLES_HEEL_warning
+	ACHILLES_HEEL_warning,
+	rule_id,
+	record_count
 	)
 SELECT or1.analysis_id,
-	'ERROR: ' + cast(or1.analysis_id as VARCHAR) + '-' + oa1.analysis_name + '; ' + cast(COUNT_BIG(DISTINCT stratum_1) AS VARCHAR) + ' concepts in data are not in correct vocabulary' AS ACHILLES_HEEL_warning
+	'ERROR: ' + cast(or1.analysis_id as VARCHAR) + '-' + oa1.analysis_name + '; ' + cast(COUNT_BIG(DISTINCT stratum_1) AS VARCHAR) + ' concepts in data are not in correct vocabulary' AS ACHILLES_HEEL_warning,
+  14 as rule_id,
+  COUNT_BIG(DISTINCT stratum_1) as record_count
 FROM @results_database_schema.ACHILLES_results or1
 INNER JOIN @results_database_schema.ACHILLES_analysis oa1
 	ON or1.analysis_id = oa1.analysis_id
@@ -443,22 +483,26 @@ WHERE or1.analysis_id IN (600)
 GROUP BY or1.analysis_id,
 	oa1.analysis_name;
 
---observation  - 6 LOINC
+--15 observation  - 6 LOINC
 
 --NOT APPLICABLE IN CDMv5
 
 
---disease class - 40 DRG
+--16 disease class - 40 DRG
 
 --NOT APPLICABLE IN CDMV5
 
---revenue code - 43 revenue code
+--ruleid 17 revenue code - 43 revenue code
 INSERT INTO @results_database_schema.ACHILLES_HEEL_results (
 	analysis_id,
-	ACHILLES_HEEL_warning
+	ACHILLES_HEEL_warning,
+	rule_id,
+	record_count
 	)
 SELECT or1.analysis_id,
-	'ERROR: ' + cast(or1.analysis_id as VARCHAR) + '-' + oa1.analysis_name + '; ' + cast(COUNT_BIG(DISTINCT stratum_1) AS VARCHAR) + ' concepts in data are not in correct vocabulary (revenue code)' AS ACHILLES_HEEL_warning
+	'ERROR: ' + cast(or1.analysis_id as VARCHAR) + '-' + oa1.analysis_name + '; ' + cast(COUNT_BIG(DISTINCT stratum_1) AS VARCHAR) + ' concepts in data are not in correct vocabulary (revenue code)' AS ACHILLES_HEEL_warning,
+  17 as rule_id,
+  COUNT_BIG(DISTINCT stratum_1) as record_count
 FROM @results_database_schema.ACHILLES_results or1
 INNER JOIN @results_database_schema.ACHILLES_analysis oa1
 	ON or1.analysis_id = oa1.analysis_id
@@ -472,13 +516,17 @@ GROUP BY or1.analysis_id,
 	oa1.analysis_name;
 
 
---ERROR:  year of birth in the future
+--ruleid 18 ERROR:  year of birth in the future
 INSERT INTO @results_database_schema.ACHILLES_HEEL_results (
 	analysis_id,
-	ACHILLES_HEEL_warning
+	ACHILLES_HEEL_warning,
+	rule_id,
+	record_count
 	)
 SELECT DISTINCT or1.analysis_id,
-	'ERROR: ' + cast(or1.analysis_id as VARCHAR) + '-' + oa1.analysis_name + '; should not have year of birth in the future, (n=' + cast(sum(or1.count_value) as VARCHAR) + ')' AS ACHILLES_HEEL_warning
+	'ERROR: ' + cast(or1.analysis_id as VARCHAR) + '-' + oa1.analysis_name + '; should not have year of birth in the future, (n=' + cast(sum(or1.count_value) as VARCHAR) + ')' AS ACHILLES_HEEL_warning,
+  18 as rule_id,
+  sum(or1.count_value) as record_count
 FROM @results_database_schema.ACHILLES_results or1
 INNER JOIN @results_database_schema.ACHILLES_analysis oa1
 	ON or1.analysis_id = oa1.analysis_id
@@ -489,13 +537,17 @@ GROUP BY or1.analysis_id,
   oa1.analysis_name;
 
 
---WARNING:  year of birth < 1800
+--ruleid 19 WARNING:  year of birth < 1800
 INSERT INTO @results_database_schema.ACHILLES_HEEL_results (
 	analysis_id,
-	ACHILLES_HEEL_warning
+	ACHILLES_HEEL_warning,
+	rule_id,
+	record_count
 	)
 SELECT or1.analysis_id,
-	'ERROR: ' + cast(or1.analysis_id as VARCHAR) + '-' + oa1.analysis_name + '; should not have year of birth < 1800, (n=' + cast(sum(or1.count_value) as VARCHAR) + ')' AS ACHILLES_HEEL_warning
+	'ERROR: ' + cast(or1.analysis_id as VARCHAR) + '-' + oa1.analysis_name + '; should not have year of birth < 1800, (n=' + cast(sum(or1.count_value) as VARCHAR) + ')' AS ACHILLES_HEEL_warning,
+  19 as rule_id,
+  sum(or1.count_value) as record_count
 FROM @results_database_schema.ACHILLES_results or1
 INNER JOIN @results_database_schema.ACHILLES_analysis oa1
 	ON or1.analysis_id = oa1.analysis_id
@@ -505,13 +557,17 @@ WHERE or1.analysis_id IN (3)
 GROUP BY or1.analysis_id,
   oa1.analysis_name;
 
---ERROR:  age < 0
+--ruleid 20 ERROR:  age < 0
 INSERT INTO @results_database_schema.ACHILLES_HEEL_results (
 	analysis_id,
-	ACHILLES_HEEL_warning
+	ACHILLES_HEEL_warning,
+	rule_id,
+	record_count
 	)
 SELECT or1.analysis_id,
-	'ERROR: ' + cast(or1.analysis_id as VARCHAR) + '-' + oa1.analysis_name + '; should not have age < 0, (n=' + cast(sum(or1.count_value) as VARCHAR) + ')' AS ACHILLES_HEEL_warning
+	'ERROR: ' + cast(or1.analysis_id as VARCHAR) + '-' + oa1.analysis_name + '; should not have age < 0, (n=' + cast(sum(or1.count_value) as VARCHAR) + ')' AS ACHILLES_HEEL_warning,
+  20 as rule_id,
+  sum(or1.count_value) as record_count
 FROM @results_database_schema.ACHILLES_results or1
 INNER JOIN @results_database_schema.ACHILLES_analysis oa1
 	ON or1.analysis_id = oa1.analysis_id
@@ -521,13 +577,17 @@ WHERE or1.analysis_id IN (101)
 GROUP BY or1.analysis_id,
   oa1.analysis_name;
 
---ERROR: age > 150
+--ruleid 21 ERROR: age > 150  (TODO lower number seems more appropriate)
 INSERT INTO @results_database_schema.ACHILLES_HEEL_results (
 	analysis_id,
-	ACHILLES_HEEL_warning
+	ACHILLES_HEEL_warning,
+	rule_id,
+	record_count
 	)
 SELECT or1.analysis_id,
-	'ERROR: ' + cast(or1.analysis_id as VARCHAR) + '-' + oa1.analysis_name + '; should not have age > 150, (n=' + cast(sum(or1.count_value) as VARCHAR) + ')' AS ACHILLES_HEEL_warning
+	'ERROR: ' + cast(or1.analysis_id as VARCHAR) + '-' + oa1.analysis_name + '; should not have age > 150, (n=' + cast(sum(or1.count_value) as VARCHAR) + ')' AS ACHILLES_HEEL_warning,
+  21 as rule_id,
+  sum(or1.count_value) as record_count
 FROM @results_database_schema.ACHILLES_results or1
 INNER JOIN @results_database_schema.ACHILLES_analysis oa1
 	ON or1.analysis_id = oa1.analysis_id
@@ -537,13 +597,17 @@ WHERE or1.analysis_id IN (101)
 GROUP BY or1.analysis_id,
   oa1.analysis_name;
 
---WARNING:  monthly change > 100%
+--ruleid 22 WARNING:  monthly change > 100%
 INSERT INTO @results_database_schema.ACHILLES_HEEL_results (
 	analysis_id,
-	ACHILLES_HEEL_warning
+	ACHILLES_HEEL_warning,
+	rule_id,
+	record_count
 	)
 SELECT DISTINCT ar1.analysis_id,
-	'WARNING: ' + cast(ar1.analysis_id as VARCHAR) + '-' + aa1.analysis_name + '; theres a 100% change in monthly count of events' AS ACHILLES_HEEL_warning
+	'WARNING: ' + cast(ar1.analysis_id as VARCHAR) + '-' + aa1.analysis_name + '; theres a 100% change in monthly count of events' AS ACHILLES_HEEL_warning,
+  22 as rule_id,
+  NULL as record_count
 FROM @results_database_schema.ACHILLES_analysis aa1
 INNER JOIN @results_database_schema.ACHILLES_results ar1
 	ON aa1.analysis_id = ar1.analysis_id
@@ -564,13 +628,17 @@ WHERE (
 	AND 1.0 * abs(ar2.count_value - ar1.count_value) / ar1.count_value > 1
 	AND ar1.count_value > 10;
 
---WARNING:  monthly change > 100% at concept level
+--ruleid 23 WARNING:  monthly change > 100% at concept level
 INSERT INTO @results_database_schema.ACHILLES_HEEL_results (
 	analysis_id,
-	ACHILLES_HEEL_warning
+	ACHILLES_HEEL_warning,
+	rule_id,
+	record_count
 	)
 SELECT ar1.analysis_id,
-	'WARNING: ' + cast(ar1.analysis_id as VARCHAR) + '-' + aa1.analysis_name + '; ' + cast(COUNT_BIG(DISTINCT ar1.stratum_1) AS VARCHAR) + ' concepts have a 100% change in monthly count of events' AS ACHILLES_HEEL_warning
+	'WARNING: ' + cast(ar1.analysis_id as VARCHAR) + '-' + aa1.analysis_name + '; ' + cast(COUNT_BIG(DISTINCT ar1.stratum_1) AS VARCHAR) + ' concepts have a 100% change in monthly count of events' AS ACHILLES_HEEL_warning,
+  23 as rule_id,
+  COUNT_BIG(DISTINCT ar1.stratum_1 as record_count
 FROM @results_database_schema.ACHILLES_analysis aa1
 INNER JOIN @results_database_schema.ACHILLES_results ar1
 	ON aa1.analysis_id = ar1.analysis_id
@@ -594,13 +662,17 @@ WHERE (
 GROUP BY ar1.analysis_id,
 	aa1.analysis_name;
 
---WARNING: days_supply > 180 
+--ruleid 24 WARNING: days_supply > 180 
 INSERT INTO @results_database_schema.ACHILLES_HEEL_results (
 	analysis_id,
-	ACHILLES_HEEL_warning
+	ACHILLES_HEEL_warning,
+	rule_id,
+	record_count
 	)
 SELECT DISTINCT ord1.analysis_id,
-  'WARNING: ' + cast(ord1.analysis_id as VARCHAR) + '-' + oa1.analysis_name + ' (count = ' + cast(COUNT_BIG(ord1.max_value) as VARCHAR) + '); max value should not be > 180' AS ACHILLES_HEEL_warning
+  'WARNING: ' + cast(ord1.analysis_id as VARCHAR) + '-' + oa1.analysis_name + ' (count = ' + cast(COUNT_BIG(ord1.max_value) as VARCHAR) + '); max value should not be > 180' AS ACHILLES_HEEL_warning,
+  24 as rule_id,
+  COUNT_BIG(ord1.max_value) as record_count
 FROM @results_database_schema.ACHILLES_results_dist ord1
 INNER JOIN @results_database_schema.ACHILLES_analysis oa1
 	ON ord1.analysis_id = oa1.analysis_id
@@ -608,13 +680,17 @@ WHERE ord1.analysis_id IN (715)
 	AND ord1.max_value > 180
 GROUP BY ord1.analysis_id, oa1.analysis_name;
 
---WARNING:  refills > 10
+--ruleid 25 WARNING:  refills > 10
 INSERT INTO @results_database_schema.ACHILLES_HEEL_results (
 	analysis_id,
-	ACHILLES_HEEL_warning
+	ACHILLES_HEEL_warning,
+	rule_id,
+	record_count
 	)
 SELECT DISTINCT ord1.analysis_id,
-  'WARNING: ' + cast(ord1.analysis_id as VARCHAR) + '-' + oa1.analysis_name + ' (count = ' + cast(COUNT_BIG(ord1.max_value) as VARCHAR) + '); max value should not be > 10' AS ACHILLES_HEEL_warning
+  'WARNING: ' + cast(ord1.analysis_id as VARCHAR) + '-' + oa1.analysis_name + ' (count = ' + cast(COUNT_BIG(ord1.max_value) as VARCHAR) + '); max value should not be > 10' AS ACHILLES_HEEL_warning,
+  25 as rule_id,
+  COUNT_BIG(ord1.max_value) as record_count
 FROM @results_database_schema.ACHILLES_results_dist ord1
 INNER JOIN @results_database_schema.ACHILLES_analysis oa1
 	ON ord1.analysis_id = oa1.analysis_id
@@ -622,13 +698,17 @@ WHERE ord1.analysis_id IN (716)
 	AND ord1.max_value > 10
 GROUP BY ord1.analysis_id, oa1.analysis_name;
 
---WARNING: quantity > 600
+--ruleid 26 WARNING: quantity > 600
 INSERT INTO @results_database_schema.ACHILLES_HEEL_results (
 	analysis_id,
-	ACHILLES_HEEL_warning
+	ACHILLES_HEEL_warning,
+	rule_id,
+	record_count
 	)
 SELECT DISTINCT ord1.analysis_id,
-  'WARNING: ' + cast(ord1.analysis_id as VARCHAR) + '-' + oa1.analysis_name + ' (count = ' + cast(count(ord1.max_value) as VARCHAR) + '); max value should not be > 600' AS ACHILLES_HEEL_warning
+  'WARNING: ' + cast(ord1.analysis_id as VARCHAR) + '-' + oa1.analysis_name + ' (count = ' + cast(count(ord1.max_value) as VARCHAR) + '); max value should not be > 600' AS ACHILLES_HEEL_warning,
+  26 as rule_id,
+  count(ord1.max_value) as record_count
 FROM @results_database_schema.ACHILLES_results_dist ord1
 INNER JOIN @results_database_schema.ACHILLES_analysis oa1
 	ON ord1.analysis_id = oa1.analysis_id
