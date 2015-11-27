@@ -1399,7 +1399,7 @@ group by age_decile
 -- 108	Number of persons by length of observation period, in 30d increments
 insert into @results_database_schema.ACHILLES_results (analysis_id, stratum_1, count_value)
 select 108 as analysis_id,  floor(DATEDIFF(dd, op1.observation_period_start_date, op1.observation_period_end_date)/30) as stratum_1, COUNT_BIG(distinct p1.person_id) as count_value
-from PERSON p1
+from @cdm_database_schema.PERSON p1
 	inner join 
 	(select person_id, 
 		OBSERVATION_PERIOD_START_DATE, 
