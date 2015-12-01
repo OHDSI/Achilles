@@ -58,7 +58,9 @@ CREATE TABLE @results_database_schema.ACHILLES_HEEL_results (
 --check for non-zero counts from checks of improper data (invalid ids, out-of-bound data, inconsistent dates)
 INSERT INTO @results_database_schema.ACHILLES_HEEL_results (
 	analysis_id,
-	ACHILLES_HEEL_warning
+	ACHILLES_HEEL_warning,
+	rule_id,
+	record_count
 	)
 SELECT DISTINCT or1.analysis_id,
 	'ERROR: ' + cast(or1.analysis_id as VARCHAR) + '-' + oa1.analysis_name + '; count (n=' + cast(or1.count_value as VARCHAR) + ') should not be > 0' AS ACHILLES_HEEL_warning,
