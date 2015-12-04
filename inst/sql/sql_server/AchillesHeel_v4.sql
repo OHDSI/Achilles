@@ -125,7 +125,7 @@ INSERT INTO @results_database_schema.ACHILLES_HEEL_results (
 	record_count
 	)
 SELECT DISTINCT ord1.analysis_id,
-  'ERROR: ' + cast(ord1.analysis_id as VARCHAR) + ' - ' + oa1.analysis_name + ' (count = ' + cast(COUNT_BIG(ord1.min_value) as VARCHAR) + '); min value should not be negative' AS ACHILLES_HEEL_warning
+  'ERROR: ' + cast(ord1.analysis_id as VARCHAR) + ' - ' + oa1.analysis_name + ' (count = ' + cast(COUNT_BIG(ord1.min_value) as VARCHAR) + '); min value should not be negative' AS ACHILLES_HEEL_warning,
   2 as rule_id,
   COUNT_BIG(ord1.min_value) as record_count
 FROM @results_database_schema.ACHILLES_results_dist ord1
@@ -176,7 +176,7 @@ INSERT INTO @results_database_schema.ACHILLES_HEEL_results (
 	record_count
 	)
 SELECT DISTINCT ord1.analysis_id,
-  'WARNING: ' + cast(ord1.analysis_id as VARCHAR) + '-' + oa1.analysis_name + ' (count = ' + cast(COUNT_BIG(ord1.max_value) as VARCHAR) + '); max value should not be positive, otherwise its a zombie with data >1mo after death ' AS ACHILLES_HEEL_warning
+  'WARNING: ' + cast(ord1.analysis_id as VARCHAR) + '-' + oa1.analysis_name + ' (count = ' + cast(COUNT_BIG(ord1.max_value) as VARCHAR) + '); max value should not be positive, otherwise its a zombie with data >1mo after death ' AS ACHILLES_HEEL_warning,
   3 as rule_id,
   COUNT_BIG(ord1.max_value) as record_count
 FROM @results_database_schema.ACHILLES_results_dist ord1
