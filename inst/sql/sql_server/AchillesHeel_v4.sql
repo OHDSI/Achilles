@@ -711,7 +711,7 @@ INSERT INTO @results_database_schema.ACHILLES_HEEL_results (
 SELECT ar1.analysis_id,
 	'WARNING: ' + cast(ar1.analysis_id as VARCHAR) + '-' + aa1.analysis_name + '; ' + cast(COUNT_BIG(DISTINCT ar1.stratum_1) AS VARCHAR) + ' concepts have a 100% change in monthly count of events' AS ACHILLES_HEEL_warning,
   23 as rule_id,
-  COUNT_BIG(DISTINCT ar1.stratum_1 as record_count
+  COUNT_BIG(DISTINCT ar1.stratum_1) as record_count
 FROM @results_database_schema.ACHILLES_analysis aa1
 INNER JOIN @results_database_schema.ACHILLES_results ar1
 	ON aa1.analysis_id = ar1.analysis_id
