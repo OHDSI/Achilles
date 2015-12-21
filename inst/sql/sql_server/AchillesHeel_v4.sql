@@ -674,13 +674,13 @@ GROUP BY or1.analysis_id,
 INSERT INTO @results_database_schema.ACHILLES_HEEL_results (
 	analysis_id,
 	ACHILLES_HEEL_warning,
-	rule_id,
-	record_count
+	rule_id
+	
 	)
 SELECT DISTINCT ar1.analysis_id,
 	'WARNING: ' + cast(ar1.analysis_id as VARCHAR) + '-' + aa1.analysis_name + '; theres a 100% change in monthly count of events' AS ACHILLES_HEEL_warning,
-  22 as rule_id,
-  NULL as record_count
+  22 as rule_id
+  
 FROM @results_database_schema.ACHILLES_analysis aa1
 INNER JOIN @results_database_schema.ACHILLES_results ar1
 	ON aa1.analysis_id = ar1.analysis_id
