@@ -26,9 +26,9 @@ Getting Started
   ```r
   library(Achilles)
   connectionDetails <- createConnectionDetails(dbms="sql server", server="server.com")
-  achillesResults <- achilles(connectionDetails, "cdm4_inst", "results", cdmVersion = "cdm version")
+  achillesResults <- achilles(connectionDetails, cdmDatabaseSchema="cdm4_inst", resultsDatabaseSchema="results", sourceName="My Source Name", cdmVersion = "cdm version")
   ```
-  "cdm4_inst" and "results" are the names of the schemas holding the CDM data and target results respectively. See the [DatabaseConnector](https://github.com/OHDSI/DatabaseConnector) package for details on settings the connection details for your database, for example by typing
+  "cdm4_inst" cdmDatabaseSchema parmater and "results" resultsDatabaseSchema parameter are the names of the schemas holding the CDM data and target results respectively. See the [DatabaseConnector](https://github.com/OHDSI/DatabaseConnector) package for details on settings the connection details for your database, for example by typing
   ```r
   ?createConnectionDetails
   ```
@@ -37,7 +37,7 @@ Getting Started
 
 5. To use [AchillesWeb](https://github.com/OHDSI/AchillesWeb) to explore the Achilles statistics, you must first export the statistics to JSON files:
   ```r
-  exportToJson(connectionDetails, "cdm4_inst", "results", "c:/myPath/AchillesExport", cdmVersion = "cdm version")
+  exportToJson(connectionDetails, cdmDatabaseSchema = "cdm4_inst", resultsDatabaseSchema = "results", outputPath = "c:/myPath/AchillesExport", cdmVersion = "cdm version")
   ```
 
 Getting Started with Docker
