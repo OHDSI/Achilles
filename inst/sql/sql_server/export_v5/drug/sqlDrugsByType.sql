@@ -2,7 +2,7 @@ select c1.concept_id as drug_concept_id,
 	c2.concept_id as concept_id,
 	c2.concept_name as concept_name, 
 	ar1.count_value as count_value
-from @cdm_database_schema.ACHILLES_resultss ar1
+from @cdm_database_schema.ACHILLES_results ar1
 	inner join
 	@cdm_database_schema.concept c1
 	on ar1.stratum_1 = CAST(c1.concept_id AS VARCHAR)

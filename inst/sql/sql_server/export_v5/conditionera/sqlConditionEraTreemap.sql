@@ -3,9 +3,9 @@ select 	concept_hierarchy.concept_id,
 	ar1.count_value as num_persons, 
 	ROUND(1.0*ar1.count_value / denom.count_value,5) as percent_persons,
 	ROUND(ar2.avg_value,5) as length_of_era
-from (select * from @cdm_database_schema.ACHILLES_resultss where analysis_id = 1000) ar1
+from (select * from @cdm_database_schema.ACHILLES_results where analysis_id = 1000) ar1
 	inner join
-	(select stratum_1, avg_value from @cdm_database_schema.ACHILLES_resultss_dist where analysis_id = 1007) ar2
+	(select stratum_1, avg_value from @cdm_database_schema.ACHILLES_results_dist where analysis_id = 1007) ar2
 	on ar1.stratum_1 = ar2.stratum_1
 	inner join
   (
@@ -97,5 +97,5 @@ from (select * from @cdm_database_schema.ACHILLES_resultss where analysis_id = 1
 	) concept_hierarchy
 	on ar1.stratum_1 = cAST(concept_hierarchy.concept_id as VARCHAR)
 	,
-	(select count_value from @cdm_database_schema.ACHILLES_resultss where analysis_id = 1) denom
+	(select count_value from @cdm_database_schema.ACHILLES_results where analysis_id = 1) denom
 order by ar1.count_value desc

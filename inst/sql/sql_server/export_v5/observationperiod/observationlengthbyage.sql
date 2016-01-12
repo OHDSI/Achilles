@@ -6,5 +6,5 @@
   ard1.p75_value as p75_value,
   ard1.p90_value as p90_value,
   ard1.max_value as max_value
-from @cdm_database_schema.ACHILLES_resultss_dist ard1
+from @cdm_database_schema.ACHILLES_results_dist ard1
 where ard1.analysis_id = 107
