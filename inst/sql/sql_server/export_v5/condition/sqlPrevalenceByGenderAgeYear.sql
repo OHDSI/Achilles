@@ -13,13 +13,13 @@ FROM (
 		denom.count_value AS denom_count_value
 	FROM (
 		SELECT *
-		FROM @results_database_schema.ACHILLES_results
+		FROM @cdm_database_schema.ACHILLES_resultss
 		WHERE analysis_id = 404
 			AND stratum_3 IN ('8507', '8532')
 		) num
 	INNER JOIN (
 		SELECT *
-		FROM @results_database_schema.ACHILLES_results
+		FROM @cdm_database_schema.ACHILLES_resultss
 		WHERE analysis_id = 116
 			AND stratum_2 IN ('8507', '8532')
 		) denom

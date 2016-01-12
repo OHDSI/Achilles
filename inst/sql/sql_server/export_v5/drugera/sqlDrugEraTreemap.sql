@@ -6,9 +6,9 @@ select concept_hierarchy.rxnorm_ingredient_concept_id concept_id,
 	ar1.count_value as num_persons, 
 	1.0*ar1.count_value / denom.count_value as percent_persons,
 	ar2.avg_value as length_of_era
-from (select * from @results_database_schema.ACHILLES_results where analysis_id = 900) ar1
+from (select * from @cdm_database_schema.ACHILLES_resultss where analysis_id = 900) ar1
 	inner join
-	(select stratum_1, avg_value from @results_database_schema.ACHILLES_results_dist where analysis_id = 907) ar2
+	(select stratum_1, avg_value from @cdm_database_schema.ACHILLES_resultss_dist where analysis_id = 907) ar2
 	on ar1.stratum_1 = ar2.stratum_1
 	inner join
 	(
@@ -86,4 +86,4 @@ from (select * from @results_database_schema.ACHILLES_results where analysis_id 
 	) concept_hierarchy
 	on ar1.stratum_1 = CAST(concept_hierarchy.rxnorm_ingredient_concept_id AS VARCHAR)
 	,
-	(select count_value from @results_database_schema.ACHILLES_results where analysis_id = 1) denom
+	(select count_value from @cdm_database_schema.ACHILLES_resultss where analysis_id = 1) denom
