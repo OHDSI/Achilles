@@ -6,6 +6,6 @@
   ard1.p75_value as p75_value,
   ard1.p90_value as p90_value,
   ard1.max_value as max_value
-from ACHILLES_results_dist ard1
+from @results_database_schema.ACHILLES_results_dist ard1
 where ard1.analysis_id = 107
 order by cast(ard1.stratum_1 as int) asc

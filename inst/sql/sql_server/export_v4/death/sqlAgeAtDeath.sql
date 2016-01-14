@@ -6,7 +6,7 @@ select c2.concept_name as category,
 	ard1.p75_value as P75_value,
 	ard1.p90_value as P90_value,
 	ard1.max_value as max_value
-from ACHILLES_results_dist ard1
+from @results_database_schema.ACHILLES_results_dist ard1
 	inner join
 	@cdm_database_schema.concept c2 on CAST(ard1.stratum_1 as INT) = c2.concept_id
 where ard1.analysis_id = 506
