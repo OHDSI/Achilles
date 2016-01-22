@@ -19,17 +19,13 @@ from (select * from ACHILLES_results where analysis_id = 600) ar1
 		max(proc_hierarchy.os1_concept_name) as level4_concept_name
 	 from
 		(
-		select c1.concept_id, 
-			v1.vocabulary_name + ' ' + c1.concept_code + ': ' + c1.concept_name as proc_concept_name
-		from @cdm_database_schema.concept c1
-			inner join @cdm_database_schema.vocabulary v1
-			on c1.vocabulary_id = v1.vocabulary_id
-		where (
-			c1.vocabulary_id in ('ICD9Proc', 'HCPCS','CPT4')
-			or (c1.vocabulary_id = 'SNOMED' and c1.concept_class_id = 'Procedure')
-			)
+			select c1.concept_id, 
+				v1.vocabulary_name + ' ' + c1.concept_code + ': ' + c1.concept_name as proc_concept_name
+			from @cdm_database_schema.concept c1
+				inner join @cdm_database_schema.vocabulary v1
+				on c1.vocabulary_id = v1.vocabulary_id
+			WHERE c1.domain_id = 'Procedure'
 		) procs
-
 	left join
 		(select ca0.DESCENDANT_CONCEPT_ID, max(ca0.ancestor_concept_id) as ancestor_concept_id
 		from @cdm_database_schema.concept_ancestor ca0

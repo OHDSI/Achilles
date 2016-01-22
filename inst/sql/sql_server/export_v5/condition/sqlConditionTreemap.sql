@@ -16,9 +16,9 @@ from (select * from ACHILLES_results where analysis_id = 400) ar1
 			soc.concept_name as soc_concept_name
 		from	
 		(
-		select concept_id, concept_name
-		from @cdm_database_schema.concept
-		where vocabulary_id = 'SNOMED'
+			select concept_id, concept_name
+			from @cdm_database_schema.concept
+			where domain_id = 'Condition'
 		) snomed
 		left join
 			(select c1.concept_id as snomed_concept_id, max(c2.concept_id) as pt_concept_id
@@ -27,7 +27,7 @@ from (select * from ACHILLES_results where analysis_id = 400) ar1
 			inner join 
 			@cdm_database_schema.concept_ancestor ca1
 			on c1.concept_id = ca1.descendant_concept_id
-			and c1.vocabulary_id = 'SNOMED'
+			and c1.domain_id = 'Condition'
 			and ca1.min_levels_of_separation = 1
 			inner join 
 			@cdm_database_schema.concept c2
@@ -90,9 +90,6 @@ from (select * from ACHILLES_results where analysis_id = 400) ar1
 
 		left join @cdm_database_schema.concept soc
 		 on hlgt_to_soc.soc_concept_id = soc.concept_id
-
-
-
 	) concept_hierarchy
 	on ar1.stratum_1 = CAST(concept_hierarchy.concept_id as VARCHAR)
 	,
