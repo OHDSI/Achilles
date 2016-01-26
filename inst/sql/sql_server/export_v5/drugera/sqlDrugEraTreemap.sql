@@ -24,7 +24,7 @@ from (select * from @results_database_schema.ACHILLES_results where analysis_id 
 		from 
 			@cdm_database_schema.concept c2
 			where
-			c2.vocabulary_id = 'RxNorm'
+			c2.domain_id = 'Drug'
 			and c2.concept_class_id = 'Ingredient'
 		) rxnorm
 		left join
@@ -34,7 +34,7 @@ from (select * from @results_database_schema.ACHILLES_results where analysis_id 
 			inner join 
 			@cdm_database_schema.concept_ancestor ca1
 			on c1.concept_id = ca1.descendant_concept_id
-			and c1.vocabulary_id = 'RxNorm'
+			and c1.domain_id = 'Drug'
 			and c1.concept_class_id = 'Ingredient'
 			inner join 
 			@cdm_database_schema.concept c2
