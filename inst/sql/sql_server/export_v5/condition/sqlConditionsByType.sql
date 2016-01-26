@@ -3,7 +3,7 @@ select c1.concept_id as condition_concept_id,
        c2.concept_group_id as concept_id,
        c2.concept_group_name as concept_name, 
        sum(ar1.count_value) as count_value
-from ACHILLES_results ar1
+from @results_database_schema.ACHILLES_results ar1
        inner join
        @cdm_database_schema.concept c1
        on ar1.stratum_1 = cast(c1.concept_id as VARCHAR)

@@ -3,9 +3,9 @@ select   concept_hierarchy.concept_id,
   ar1.count_value as num_persons, 
 	round(1.0*ar1.count_value / denom.count_value,5) as percent_persons,
 	round(1.0*ar2.count_value / ar1.count_value,5) as records_per_person
-from (select * from ACHILLES_results where analysis_id = 400) ar1
+from (select * from @results_database_schema.ACHILLES_results where analysis_id = 400) ar1
 	inner join
-	(select * from ACHILLES_results where analysis_id = 401) ar2
+	(select * from @results_database_schema.ACHILLES_results where analysis_id = 401) ar2
 	on ar1.stratum_1 = ar2.stratum_1
 	inner join
 	(
@@ -100,6 +100,6 @@ from (select * from ACHILLES_results where analysis_id = 400) ar1
 	) concept_hierarchy
 	on CAST(ar1.stratum_1 AS INT) = concept_hierarchy.concept_id
 	,
-	(select count_value from ACHILLES_results where analysis_id = 1) denom
+	(select count_value from @results_database_schema.ACHILLES_results where analysis_id = 1) denom
 
 order by ar1.count_value desc
