@@ -1,0 +1,28 @@
+rule_id,rule_name,severity,rule_description
+0,Achilles Heel version 2.0,,this rule is not used for data analysis. It communicates the version of the ruleset.
+1,multiple checks,error,multiple error checks
+2,multiple checks,error,distributions where min should not be negative
+3,multiple checks,warning,death distributions where max should not be positive
+4,invalid concept_id,error,invalid concept_id
+5,invalid type concept_id,error,invalid type concept_id
+6,concept from the wrong vocabulary,error,concepts from wrong vocabulary 12 HL7
+7,concept from the wrong vocabulary,error,concept from the wrong vocabulary
+8,concept from the wrong vocabulary; race,error,concept from the wrong vocabulary; race
+9,concept from the wrong vocabulary; ethnicity,error,concept from the wrong vocabulary; ethnicity
+10,concept from the wrong vocabulary; place of service,error,concept from the wrong vocabulary; place of service
+11,incorrect terminology,error,specialty - 48 specialty
+12,Dx is not a SNOMED code,error,"concept from the wrong vocabulary; Condition Occurrence, Condition Era (SNOMED)"
+13,Drug is not RxNorm concept,error,"concept from the wrong vocabulary; Drug Exposure, Drug Era (RxNorm)"
+14,"Procedure is not CPT, ICD9Proc or HCPCS",error,procedure - 4 CPT4/5 HCPCS/3 ICD9P
+15,incorrect terminology,error,V4 only:LOINC
+16,incorrect terminology,error,v4 only:DRG
+17,incorrect terminology,error,revenue code - 43 revenue code
+18,year of birth is in the future,error,year of birth should not be in the future 
+19,year of birth is prior 1800,warning, year of birth < 1800
+20,age below 0,error,age < 0
+21,age too high,error,age > 150
+22,monthly trend,warning,monthly change > 100%
+23,monthly trend,warning,monthly change > 100% at concept level
+24,too high days_supply,warning,days_supply > 180
+25,too high number of refils,warning,refills > 10
+26,implausible quantity for drug,warning,quantity > 600
