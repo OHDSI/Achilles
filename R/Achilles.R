@@ -181,3 +181,16 @@ achillesHeel <- function (connectionDetails,
   dummy <- dbDisconnect(conn);
   writeLines(paste("Done. Achilles Heel results can now be found in",resultsDatabase))
 }
+
+#new function to extract Heel resutls now when there are extra columns from inside R
+fetchAchillesHeelResults <- function (connectionDetails, resultsDatabase){
+  connectionDetails$schema = resultsDatabase
+  conn <- connect(connectionDetails)
+  
+  
+  sql <- "SELECT * FROM ACHILLES_heel_results 
+  "
+  sql <- renderSql(sql)$sql
+  res <- dbGetQuery(conn,sql)
+  res
+}
