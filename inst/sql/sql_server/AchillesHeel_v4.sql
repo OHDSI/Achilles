@@ -59,7 +59,198 @@ CREATE TABLE @results_database_schema.ACHILLES_HEEL_results (
 
 
 
---V4 specific rules star here
+--V4 specific rules start here
+
+--concept from the wrong vocabulary
+--ruleid 7 gender  - 12 HL7
+INSERT INTO @results_database_schema.ACHILLES_HEEL_results (
+	analysis_id,
+	ACHILLES_HEEL_warning,
+	rule_id,
+	record_count
+	)
+SELECT or1.analysis_id,
+	'ERROR: ' + cast(or1.analysis_id as VARCHAR) + '-' + oa1.analysis_name + '; ' + cast(COUNT_BIG(DISTINCT stratum_1) AS VARCHAR) + ' concepts in data are not in correct vocabulary' AS ACHILLES_HEEL_warning,
+  7 as rule_id,
+  COUNT_BIG(DISTINCT stratum_1) as record_count
+FROM @results_database_schema.ACHILLES_results or1
+INNER JOIN @results_database_schema.ACHILLES_analysis oa1
+	ON or1.analysis_id = oa1.analysis_id
+INNER JOIN @cdm_database_schema.concept c1
+	ON or1.stratum_1 = CAST(c1.concept_id AS VARCHAR)
+WHERE or1.analysis_id IN (2)
+	AND or1.stratum_1 IS NOT NULL
+	AND c1.concept_id <> 0 
+  and c1.vocabulary_id NOT IN (0,12)
+GROUP BY or1.analysis_id,
+	oa1.analysis_name;
+
+--ruleid 8 race  - 13 CDC Race
+INSERT INTO @results_database_schema.ACHILLES_HEEL_results (
+	analysis_id,
+	ACHILLES_HEEL_warning,
+	rule_id,
+	record_count
+	)
+SELECT or1.analysis_id,
+	'ERROR: ' + cast(or1.analysis_id as VARCHAR) + '-' + oa1.analysis_name + '; ' + cast(COUNT_BIG(DISTINCT stratum_1) AS VARCHAR) + ' concepts in data are not in correct vocabulary' AS ACHILLES_HEEL_warning,
+  8 as rule_id,
+  COUNT_BIG(DISTINCT stratum_1) as record_count
+FROM @results_database_schema.ACHILLES_results or1
+INNER JOIN @results_database_schema.ACHILLES_analysis oa1
+	ON or1.analysis_id = oa1.analysis_id
+INNER JOIN @cdm_database_schema.concept c1
+	ON or1.stratum_1 = CAST(c1.concept_id AS VARCHAR)
+WHERE or1.analysis_id IN (4)
+	AND or1.stratum_1 IS NOT NULL
+	AND c1.concept_id <> 0
+	AND c1.vocabulary_id NOT IN (0,13)
+GROUP BY or1.analysis_id,
+	oa1.analysis_name;
+
+--ruleid 9 ethnicity - 44 ethnicity
+INSERT INTO @results_database_schema.ACHILLES_HEEL_results (
+	analysis_id,
+	ACHILLES_HEEL_warning,
+	rule_id,
+	record_count
+	)
+SELECT or1.analysis_id,
+	'ERROR: ' + cast(or1.analysis_id as VARCHAR) + '-' + oa1.analysis_name + '; ' + cast(COUNT_BIG(DISTINCT stratum_1) AS VARCHAR) + ' concepts in data are not in correct vocabulary (CMS Ethnicity)' AS ACHILLES_HEEL_warning,
+  9 as rule_id,
+  COUNT_BIG(DISTINCT stratum_1) as record_count
+FROM @results_database_schema.ACHILLES_results or1
+INNER JOIN @results_database_schema.ACHILLES_analysis oa1
+	ON or1.analysis_id = oa1.analysis_id
+INNER JOIN @cdm_database_schema.concept c1
+	ON or1.stratum_1 = CAST(c1.concept_id AS VARCHAR)
+WHERE or1.analysis_id IN (5)
+	AND or1.stratum_1 IS NOT NULL
+	AND c1.concept_id <> 0 
+  AND c1.vocabulary_id NOT IN (0,44)
+GROUP BY or1.analysis_id,
+	oa1.analysis_name;
+
+--ruleid 10 place of service - 14 CMS place of service, 24 OMOP visit
+INSERT INTO @results_database_schema.ACHILLES_HEEL_results (
+	analysis_id,
+	ACHILLES_HEEL_warning,
+	rule_id,
+	record_count
+	)
+SELECT or1.analysis_id,
+	'ERROR: ' + cast(or1.analysis_id as VARCHAR) + '-' + oa1.analysis_name + '; ' + cast(COUNT_BIG(DISTINCT stratum_1) AS VARCHAR) + ' concepts in data are not in correct vocabulary' AS ACHILLES_HEEL_warning,
+  10 as rule_id,
+  COUNT_BIG(DISTINCT stratum_1) as record_count
+FROM @results_database_schema.ACHILLES_results or1
+INNER JOIN @results_database_schema.ACHILLES_analysis oa1
+	ON or1.analysis_id = oa1.analysis_id
+INNER JOIN @cdm_database_schema.concept c1
+	ON or1.stratum_1 = CAST(c1.concept_id AS VARCHAR)
+WHERE or1.analysis_id IN (202)
+	AND or1.stratum_1 IS NOT NULL
+	AND c1.concept_id <> 0 
+  and c1.vocabulary_id NOT IN (0,14,24)
+GROUP BY or1.analysis_id,
+	oa1.analysis_name;
+
+--ruleid 11 specialty - 48 specialty
+INSERT INTO @results_database_schema.ACHILLES_HEEL_results (
+	analysis_id,
+	ACHILLES_HEEL_warning,
+	rule_id,
+	record_count
+	)
+SELECT or1.analysis_id,
+	'ERROR: ' + cast(or1.analysis_id as VARCHAR) + '-' + oa1.analysis_name + '; ' + cast(COUNT_BIG(DISTINCT stratum_1) AS VARCHAR) + ' concepts in data are not in correct vocabulary (Specialty)' AS ACHILLES_HEEL_warning,
+  11 as rule_id,
+  COUNT_BIG(DISTINCT stratum_1) as record_count
+FROM @results_database_schema.ACHILLES_results or1
+INNER JOIN @results_database_schema.ACHILLES_analysis oa1
+	ON or1.analysis_id = oa1.analysis_id
+INNER JOIN @cdm_database_schema.concept c1
+	ON or1.stratum_1 = CAST(c1.concept_id AS VARCHAR)
+WHERE or1.analysis_id IN (301)
+	AND or1.stratum_1 IS NOT NULL
+	AND c1.concept_id <> 0 
+  AND c1.vocabulary_id NOT IN (0,48)
+GROUP BY or1.analysis_id,
+	oa1.analysis_name;
+
+--ruleid 12 condition occurrence, era - 1 SNOMED
+INSERT INTO @results_database_schema.ACHILLES_HEEL_results (
+	analysis_id,
+	ACHILLES_HEEL_warning,
+	rule_id,
+	record_count
+	)
+SELECT or1.analysis_id,
+	'ERROR: ' + cast(or1.analysis_id as VARCHAR) + '-' + oa1.analysis_name + '; ' + cast(COUNT_BIG(DISTINCT stratum_1) AS VARCHAR) + ' concepts in data are not in correct vocabulary' AS ACHILLES_HEEL_warning,
+  12 as rule_id,
+  COUNT_BIG(DISTINCT stratum_1) as record_count
+FROM @results_database_schema.ACHILLES_results or1
+INNER JOIN @results_database_schema.ACHILLES_analysis oa1
+	ON or1.analysis_id = oa1.analysis_id
+INNER JOIN @cdm_database_schema.concept c1
+	ON or1.stratum_1 = CAST(c1.concept_id AS VARCHAR)
+WHERE or1.analysis_id IN (
+		400,
+		1000
+		)
+	AND or1.stratum_1 IS NOT NULL
+	AND c1.concept_id <> 0 
+  AND c1.vocabular_id NOT IN (0,1)
+GROUP BY or1.analysis_id,
+	oa1.analysis_name;
+
+--ruleid 13 drug exposure - 8 RxNorm
+INSERT INTO @results_database_schema.ACHILLES_HEEL_results (
+	analysis_id,
+	ACHILLES_HEEL_warning,
+	rule_id,
+	record_count
+	)
+SELECT or1.analysis_id,
+	'ERROR: ' + cast(or1.analysis_id as VARCHAR) + '-' + oa1.analysis_name + '; ' + cast(COUNT_BIG(DISTINCT stratum_1) AS VARCHAR) + ' concepts in data are not in correct vocabulary' AS ACHILLES_HEEL_warning,
+  13 as rule_id,
+  COUNT_BIG(DISTINCT stratum_1) as record_count
+FROM @results_database_schema.ACHILLES_results or1
+INNER JOIN @results_database_schema.ACHILLES_analysis oa1
+	ON or1.analysis_id = oa1.analysis_id
+INNER JOIN @cdm_database_schema.concept c1
+	ON or1.stratum_1 = CAST(c1.concept_id AS VARCHAR)
+WHERE or1.analysis_id IN (
+		700,
+		900
+		)
+	AND or1.stratum_1 IS NOT NULL
+	AND c1.concept_id <> 0 
+  AND c1.vocabulary_id NOT IN (0,8)
+GROUP BY or1.analysis_id,
+	oa1.analysis_name;
+
+--ruleid 14 procedure - 4 CPT4/5 HCPCS/3 ICD9P
+INSERT INTO @results_database_schema.ACHILLES_HEEL_results (
+	analysis_id,
+	ACHILLES_HEEL_warning,
+	rule_id,
+	record_count
+	)
+SELECT or1.analysis_id,
+	'ERROR: ' + cast(or1.analysis_id as VARCHAR) + '-' + oa1.analysis_name + '; ' + cast(COUNT_BIG(DISTINCT stratum_1) AS VARCHAR) + ' concepts in data are not in correct vocabulary' AS ACHILLES_HEEL_warning,
+  14 as rule_id,
+  COUNT_BIG(DISTINCT stratum_1) as record_count
+FROM @results_database_schema.ACHILLES_results or1
+INNER JOIN @results_database_schema.ACHILLES_analysis oa1
+	ON or1.analysis_id = oa1.analysis_id
+INNER JOIN @cdm_database_schema.concept c1
+	ON or1.stratum_1 = CAST(c1.concept_id AS VARCHAR)
+WHERE or1.analysis_id IN (600)
+	AND or1.stratum_1 IS NOT NULL
+	AND c1.concept_id <> 0 
+  AND c1.vocabulary_id NOT IN (0,3,4,5)
+GROUP BY or1.analysis_id,
+	oa1.analysis_name;
 
 --ruleid 15   observation  - 6 LOINC
 INSERT INTO @results_database_schema.ACHILLES_HEEL_results (
@@ -79,10 +270,7 @@ INNER JOIN @cdm_database_schema.concept c1
 	ON or1.stratum_1 = CAST(c1.concept_id AS VARCHAR)
 WHERE or1.analysis_id IN (800)
 	AND or1.stratum_1 IS NOT NULL
-	AND c1.vocabulary_id NOT IN (
-		0,
-		6
-		)
+	AND c1.vocabulary_id NOT IN (0,6)
 GROUP BY or1.analysis_id,
 	oa1.analysis_name;
 
@@ -113,19 +301,7 @@ GROUP BY or1.analysis_id,
 	oa1.analysis_name;
 
 	
-	
-	
-	
-	
-
-	
-	
 --copy of rules from v5 file that also aply to v4
-
-
-
-
-
 
 
 --ruleid 1 check for non-zero counts from checks of improper data (invalid ids, out-of-bound data, inconsistent dates)
@@ -365,201 +541,7 @@ WHERE or1.analysis_id IN (
 GROUP BY or1.analysis_id,
 	oa1.analysis_name;
 
---concept from the wrong vocabulary
---ruleid 7 gender  - 12 HL7
-INSERT INTO @results_database_schema.ACHILLES_HEEL_results (
-	analysis_id,
-	ACHILLES_HEEL_warning,
-	rule_id,
-	record_count
-	)
-SELECT or1.analysis_id,
-	'ERROR: ' + cast(or1.analysis_id as VARCHAR) + '-' + oa1.analysis_name + '; ' + cast(COUNT_BIG(DISTINCT stratum_1) AS VARCHAR) + ' concepts in data are not in correct vocabulary' AS ACHILLES_HEEL_warning,
-  7 as rule_id,
-  COUNT_BIG(DISTINCT stratum_1) as record_count
-FROM @results_database_schema.ACHILLES_results or1
-INNER JOIN @results_database_schema.ACHILLES_analysis oa1
-	ON or1.analysis_id = oa1.analysis_id
-INNER JOIN @cdm_database_schema.concept c1
-	ON or1.stratum_1 = CAST(c1.concept_id AS VARCHAR)
-WHERE or1.analysis_id IN (2)
-	AND or1.stratum_1 IS NOT NULL
-	AND c1.concept_id <> 0 
-  AND lower(c1.domain_id) NOT IN ('gender')
-GROUP BY or1.analysis_id,
-	oa1.analysis_name;
-
---ruleid 8 race  - 13 CDC Race
-INSERT INTO @results_database_schema.ACHILLES_HEEL_results (
-	analysis_id,
-	ACHILLES_HEEL_warning,
-	rule_id,
-	record_count
-	)
-SELECT or1.analysis_id,
-	'ERROR: ' + cast(or1.analysis_id as VARCHAR) + '-' + oa1.analysis_name + '; ' + cast(COUNT_BIG(DISTINCT stratum_1) AS VARCHAR) + ' concepts in data are not in correct vocabulary' AS ACHILLES_HEEL_warning,
-  8 as rule_id,
-  COUNT_BIG(DISTINCT stratum_1) as record_count
-FROM @results_database_schema.ACHILLES_results or1
-INNER JOIN @results_database_schema.ACHILLES_analysis oa1
-	ON or1.analysis_id = oa1.analysis_id
-INNER JOIN @cdm_database_schema.concept c1
-	ON or1.stratum_1 = CAST(c1.concept_id AS VARCHAR)
-WHERE or1.analysis_id IN (4)
-	AND or1.stratum_1 IS NOT NULL
-	AND c1.concept_id <> 0 
-  AND lower(c1.domain_id) NOT IN ('race')
-GROUP BY or1.analysis_id,
-	oa1.analysis_name;
-
---ruleid 9 ethnicity - 44 ethnicity
-INSERT INTO @results_database_schema.ACHILLES_HEEL_results (
-	analysis_id,
-	ACHILLES_HEEL_warning,
-	rule_id,
-	record_count
-	)
-SELECT or1.analysis_id,
-	'ERROR: ' + cast(or1.analysis_id as VARCHAR) + '-' + oa1.analysis_name + '; ' + cast(COUNT_BIG(DISTINCT stratum_1) AS VARCHAR) + ' concepts in data are not in correct vocabulary (CMS Ethnicity)' AS ACHILLES_HEEL_warning,
-  9 as rule_id,
-  COUNT_BIG(DISTINCT stratum_1) as record_count
-FROM @results_database_schema.ACHILLES_results or1
-INNER JOIN @results_database_schema.ACHILLES_analysis oa1
-	ON or1.analysis_id = oa1.analysis_id
-INNER JOIN @cdm_database_schema.concept c1
-	ON or1.stratum_1 = CAST(c1.concept_id AS VARCHAR)
-WHERE or1.analysis_id IN (5)
-	AND or1.stratum_1 IS NOT NULL
-	AND c1.concept_id <> 0 
-  AND lower(c1.domain_id) NOT IN ('ethnicity')
-GROUP BY or1.analysis_id,
-	oa1.analysis_name;
-
---ruleid 10 place of service - 14 CMS place of service, 24 OMOP visit
-INSERT INTO @results_database_schema.ACHILLES_HEEL_results (
-	analysis_id,
-	ACHILLES_HEEL_warning,
-	rule_id,
-	record_count
-	)
-SELECT or1.analysis_id,
-	'ERROR: ' + cast(or1.analysis_id as VARCHAR) + '-' + oa1.analysis_name + '; ' + cast(COUNT_BIG(DISTINCT stratum_1) AS VARCHAR) + ' concepts in data are not in correct vocabulary' AS ACHILLES_HEEL_warning,
-  10 as rule_id,
-  COUNT_BIG(DISTINCT stratum_1) as record_count
-FROM @results_database_schema.ACHILLES_results or1
-INNER JOIN @results_database_schema.ACHILLES_analysis oa1
-	ON or1.analysis_id = oa1.analysis_id
-INNER JOIN @cdm_database_schema.concept c1
-	ON or1.stratum_1 = CAST(c1.concept_id AS VARCHAR)
-WHERE or1.analysis_id IN (202)
-	AND or1.stratum_1 IS NOT NULL
-	AND c1.concept_id <> 0 
-  AND lower(c1.domain_id) NOT IN ('visit')
-GROUP BY or1.analysis_id,
-	oa1.analysis_name;
-
---ruleid 11 specialty - 48 specialty
-INSERT INTO @results_database_schema.ACHILLES_HEEL_results (
-	analysis_id,
-	ACHILLES_HEEL_warning,
-	rule_id,
-	record_count
-	)
-SELECT or1.analysis_id,
-	'ERROR: ' + cast(or1.analysis_id as VARCHAR) + '-' + oa1.analysis_name + '; ' + cast(COUNT_BIG(DISTINCT stratum_1) AS VARCHAR) + ' concepts in data are not in correct vocabulary (Specialty)' AS ACHILLES_HEEL_warning,
-  11 as rule_id,
-  COUNT_BIG(DISTINCT stratum_1) as record_count
-FROM @results_database_schema.ACHILLES_results or1
-INNER JOIN @results_database_schema.ACHILLES_analysis oa1
-	ON or1.analysis_id = oa1.analysis_id
-INNER JOIN @cdm_database_schema.concept c1
-	ON or1.stratum_1 = CAST(c1.concept_id AS VARCHAR)
-WHERE or1.analysis_id IN (301)
-	AND or1.stratum_1 IS NOT NULL
-	AND c1.concept_id <> 0 
-  AND lower(c1.domain_id) NOT IN ('provider specialty')
-GROUP BY or1.analysis_id,
-	oa1.analysis_name;
-
---ruleid 12 condition occurrence, era - 1 SNOMED
-INSERT INTO @results_database_schema.ACHILLES_HEEL_results (
-	analysis_id,
-	ACHILLES_HEEL_warning,
-	rule_id,
-	record_count
-	)
-SELECT or1.analysis_id,
-	'ERROR: ' + cast(or1.analysis_id as VARCHAR) + '-' + oa1.analysis_name + '; ' + cast(COUNT_BIG(DISTINCT stratum_1) AS VARCHAR) + ' concepts in data are not in correct vocabulary' AS ACHILLES_HEEL_warning,
-  12 as rule_id,
-  COUNT_BIG(DISTINCT stratum_1) as record_count
-FROM @results_database_schema.ACHILLES_results or1
-INNER JOIN @results_database_schema.ACHILLES_analysis oa1
-	ON or1.analysis_id = oa1.analysis_id
-INNER JOIN @cdm_database_schema.concept c1
-	ON or1.stratum_1 = CAST(c1.concept_id AS VARCHAR)
-WHERE or1.analysis_id IN (
-		400,
-		1000
-		)
-	AND or1.stratum_1 IS NOT NULL
-	AND c1.concept_id <> 0 
-  AND lower(c1.domain_id) NOT IN ('condition','condition/drug', 'condition/meas', 'condition/obs', 'condition/procedure')
-GROUP BY or1.analysis_id,
-	oa1.analysis_name;
-
---ruleid 13 drug exposure - 8 RxNorm
-INSERT INTO @results_database_schema.ACHILLES_HEEL_results (
-	analysis_id,
-	ACHILLES_HEEL_warning,
-	rule_id,
-	record_count
-	)
-SELECT or1.analysis_id,
-	'ERROR: ' + cast(or1.analysis_id as VARCHAR) + '-' + oa1.analysis_name + '; ' + cast(COUNT_BIG(DISTINCT stratum_1) AS VARCHAR) + ' concepts in data are not in correct vocabulary' AS ACHILLES_HEEL_warning,
-  13 as rule_id,
-  COUNT_BIG(DISTINCT stratum_1) as record_count
-FROM @results_database_schema.ACHILLES_results or1
-INNER JOIN @results_database_schema.ACHILLES_analysis oa1
-	ON or1.analysis_id = oa1.analysis_id
-INNER JOIN @cdm_database_schema.concept c1
-	ON or1.stratum_1 = CAST(c1.concept_id AS VARCHAR)
-WHERE or1.analysis_id IN (
-		700,
-		900
-		)
-	AND or1.stratum_1 IS NOT NULL
-	AND c1.concept_id <> 0 
-  AND lower(c1.domain_id) NOT IN ('drug','condition/drug', 'device/drug', 'drug/measurement', 'drug/obs', 'drug/procedure')
-GROUP BY or1.analysis_id,
-	oa1.analysis_name;
-
---ruleid 14 procedure - 4 CPT4/5 HCPCS/3 ICD9P
-INSERT INTO @results_database_schema.ACHILLES_HEEL_results (
-	analysis_id,
-	ACHILLES_HEEL_warning,
-	rule_id,
-	record_count
-	)
-SELECT or1.analysis_id,
-	'ERROR: ' + cast(or1.analysis_id as VARCHAR) + '-' + oa1.analysis_name + '; ' + cast(COUNT_BIG(DISTINCT stratum_1) AS VARCHAR) + ' concepts in data are not in correct vocabulary' AS ACHILLES_HEEL_warning,
-  14 as rule_id,
-  COUNT_BIG(DISTINCT stratum_1) as record_count
-FROM @results_database_schema.ACHILLES_results or1
-INNER JOIN @results_database_schema.ACHILLES_analysis oa1
-	ON or1.analysis_id = oa1.analysis_id
-INNER JOIN @cdm_database_schema.concept c1
-	ON or1.stratum_1 = CAST(c1.concept_id AS VARCHAR)
-WHERE or1.analysis_id IN (600)
-	AND or1.stratum_1 IS NOT NULL
-	AND c1.concept_id <> 0 
-  AND lower(c1.domain_id) NOT IN ('procedure','condition/procedure', 'device/procedure', 'drug/procedure', 'obs/procedure')
-GROUP BY or1.analysis_id,
-	oa1.analysis_name;
-
---15 observation  - 6 LOINC
-
 --NOT APPLICABLE IN CDMv5
-
 
 --16 disease class - 40 DRG
 
@@ -584,7 +566,7 @@ INNER JOIN @cdm_database_schema.concept c1
 WHERE or1.analysis_id IN (1610)
 	AND or1.stratum_1 IS NOT NULL
 	AND c1.concept_id <> 0 
-  AND lower(c1.domain_id) NOT IN ('revenue code')
+  AND c1.vocabulary_id NOT IN (0,43)
 GROUP BY or1.analysis_id,
 	oa1.analysis_name;
 
@@ -680,7 +662,6 @@ INSERT INTO @results_database_schema.ACHILLES_HEEL_results (
 SELECT DISTINCT ar1.analysis_id,
 	'WARNING: ' + cast(ar1.analysis_id as VARCHAR) + '-' + aa1.analysis_name + '; theres a 100% change in monthly count of events' AS ACHILLES_HEEL_warning,
   22 as rule_id
-  
 FROM @results_database_schema.ACHILLES_analysis aa1
 INNER JOIN @results_database_schema.ACHILLES_results ar1
 	ON aa1.analysis_id = ar1.analysis_id
