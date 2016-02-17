@@ -54,7 +54,7 @@ CREATE TABLE @results_database_schema.ACHILLES_HEEL_results (
   analysis_id INT,
 	ACHILLES_HEEL_warning VARCHAR(255),
 	rule_id INT,
-	record_count INT
+	record_count BIGINT
 );
 
 
