@@ -8,6 +8,6 @@ from
 	(select * from @results_database_schema.ACHILLES_results where analysis_id = 116) denom on num.stratum_1 = denom.stratum_1  --calendar year
 		and num.stratum_2 = denom.stratum_2 --gender
 		and num.stratum_3 = denom.stratum_3 --age decile
-	inner join @cdm_database_schema.concept c2 on CAST(num.stratum_2 as INT) = c2.concept_id
+	inner join @vocab_database_schema.concept c2 on CAST(num.stratum_2 as INT) = c2.concept_id
 where c2.concept_id in (8507, 8532)
 ORDER BY CAST(num.stratum_1 as INT)

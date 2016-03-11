@@ -5,7 +5,7 @@ select c1.concept_id as condition_concept_id,
        sum(ar1.count_value) as count_value
 from @results_database_schema.ACHILLES_results ar1
        inner join
-       @cdm_database_schema.concept c1
+       @vocab_database_schema.concept c1
        on ar1.stratum_1 = cast(c1.concept_id as VARCHAR)
        inner join
        (
@@ -26,7 +26,7 @@ from @results_database_schema.ACHILLES_results ar1
                     case when (concept_name like 'Inpatient%' or concept_name like 'Outpatient%' ) and (concept_name like '%primary%' or concept_name like '%1st position%') then 'Primary diagnosis'
                     when (concept_name like 'Inpatient%' or concept_name like 'Outpatient%' ) and (concept_name not like '%primary%' and concept_name not like '%1st position%') then 'Secondary diagnosis'
                     else '' end as concept_group_name
-       from @cdm_database_schema.concept
+       from @vocab_database_schema.concept
        where lower(domain_id) = 'condition type' 
        
        ) c2
