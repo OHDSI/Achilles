@@ -27,9 +27,9 @@ FROM (
 			AND num.stratum_3 = denom.stratum_2
 			AND num.stratum_4 = denom.stratum_3
 	) tmp
-INNER JOIN @cdm_database_schema.concept c1
+INNER JOIN @vocab_database_schema.concept c1
 	ON num_stratum_1 = c1.concept_id
-INNER JOIN @cdm_database_schema.concept c2
+INNER JOIN @vocab_database_schema.concept c2
 	ON num_stratum_3 = c2.concept_id
 ORDER BY c1.concept_id,
 	num_stratum_2

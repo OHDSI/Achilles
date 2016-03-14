@@ -6,5 +6,5 @@ from
 	(select * from @results_database_schema.ACHILLES_results where analysis_id = 1802) num
 	inner join
 	(select * from @results_database_schema.ACHILLES_results where analysis_id = 117) denom on num.stratum_2 = denom.stratum_1  --calendar year
-	inner join @cdm_database_schema.concept c1 on num.stratum_1 = CAST(c1.concept_id as VARCHAR)
+	inner join @vocab_database_schema.concept c1 on num.stratum_1 = CAST(c1.concept_id as VARCHAR)
 

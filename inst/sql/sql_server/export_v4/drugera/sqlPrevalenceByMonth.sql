@@ -7,6 +7,6 @@ from
 	(select * from @results_database_schema.ACHILLES_results where analysis_id = 117) denom
 	on num.stratum_2 = denom.stratum_1  
 	inner join
-	@cdm_database_schema.concept c1
+	@vocab_database_schema.concept c1
 	on num.stratum_1 = CAST(c1.concept_id as VARCHAR)
 ORDER BY CAST(num.stratum_2 as INT)

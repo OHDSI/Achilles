@@ -8,7 +8,7 @@ select c1.concept_id as concept_id,
 	ard1.p90_value as p90_value,
 	ard1.max_value as max_value
 from @results_database_schema.ACHILLES_results_dist ard1
-	inner join @cdm_database_schema.concept c1 on CAST(ard1.stratum_1 as INT) = c1.concept_id
+	inner join @vocab_database_schema.concept c1 on CAST(ard1.stratum_1 as INT) = c1.concept_id
 where ard1.analysis_id = 1007 and ard1.count_value > 0
 
 

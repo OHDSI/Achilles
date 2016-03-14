@@ -25,11 +25,11 @@ from (select * from @results_database_schema.ACHILLES_results where analysis_id 
 			c1.concept_name, 
 			c2.concept_id as rxnorm_ingredient_concept_id, 
 			c2.concept_name as RxNorm_ingredient_concept_name
-		from @cdm_database_schema.concept c1
-			inner join @cdm_database_schema.concept_ancestor ca1
+		from @vocab_database_schema.concept c1
+			inner join @vocab_database_schema.concept_ancestor ca1
 			on c1.concept_id = ca1.descendant_concept_id
 			and c1.vocabulary_id = 8
-			inner join @cdm_database_schema.concept c2
+			inner join @vocab_database_schema.concept c2
 			on ca1.ancestor_concept_id = c2.concept_id
 			and c2.vocabulary_id = 8
 			and c2.concept_class = 'Ingredient'
@@ -37,14 +37,14 @@ from (select * from @results_database_schema.ACHILLES_results where analysis_id 
 		left join
 			(select c1.concept_id as rxnorm_ingredient_concept_id, max(c2.concept_id) as atc5_concept_id
 			from
-			@cdm_database_schema.concept c1
+			@vocab_database_schema.concept c1
 			inner join 
-			@cdm_database_schema.concept_ancestor ca1
+			@vocab_database_schema.concept_ancestor ca1
 			on c1.concept_id = ca1.descendant_concept_id
 			and c1.vocabulary_id = 8
 			and c1.concept_class = 'Ingredient'
 			inner join 
-			@cdm_database_schema.concept c2
+			@vocab_database_schema.concept c2
 			on ca1.ancestor_concept_id = c2.concept_id
 			and c2.vocabulary_id = 21
 			and len(c2.concept_code) = 5
@@ -55,14 +55,14 @@ from (select * from @results_database_schema.ACHILLES_results where analysis_id 
 		left join
 			(select c1.concept_id as atc5_concept_id, c1.concept_name as atc5_concept_name, max(c2.concept_id) as atc3_concept_id
 			from
-			@cdm_database_schema.concept c1
+			@vocab_database_schema.concept c1
 			inner join 
-			@cdm_database_schema.concept_ancestor ca1
+			@vocab_database_schema.concept_ancestor ca1
 			on c1.concept_id = ca1.descendant_concept_id
 			and c1.vocabulary_id = 21
 			and len(c1.concept_code) = 5
 			inner join 
-			@cdm_database_schema.concept c2
+			@vocab_database_schema.concept c2
 			on ca1.ancestor_concept_id = c2.concept_id
 			and c2.vocabulary_id = 21
 			and len(c2.concept_code) = 3
@@ -73,14 +73,14 @@ from (select * from @results_database_schema.ACHILLES_results where analysis_id 
 		left join
 			(select c1.concept_id as atc3_concept_id, c1.concept_name as atc3_concept_name, max(c2.concept_id) as atc1_concept_id
 			from
-			@cdm_database_schema.concept c1
+			@vocab_database_schema.concept c1
 			inner join 
-			@cdm_database_schema.concept_ancestor ca1
+			@vocab_database_schema.concept_ancestor ca1
 			on c1.concept_id = ca1.descendant_concept_id
 			and c1.vocabulary_id = 21
 			and len(c1.concept_code) = 3
 			inner join 
-			@cdm_database_schema.concept c2
+			@vocab_database_schema.concept c2
 			on ca1.ancestor_concept_id = c2.concept_id
 			and c2.vocabulary_id = 21
 			and len(c2.concept_code) = 1
@@ -88,7 +88,7 @@ from (select * from @results_database_schema.ACHILLES_results where analysis_id 
 			) atc3_to_atc1
 		on atc5_to_atc3.atc3_concept_id = atc3_to_atc1.atc3_concept_id
 
-		left join @cdm_database_schema.concept atc1
+		left join @vocab_database_schema.concept atc1
 		 on atc3_to_atc1.atc1_concept_id = atc1.concept_id
 	) concept_hierarchy
 	on ar1.stratum_1 = CAST(concept_hierarchy.concept_id AS VARCHAR)

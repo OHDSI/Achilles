@@ -44,7 +44,7 @@ getAnalysisDetails <- function() {
 #' \code{achilles} creates descriptive statistics summary for an entire OMOP CDM instance.
 #' 
 #' @param connectionDetails  An R object of type ConnectionDetail (details for the function that contains server info, database type, optionally username/password, port)
-#' @param cdmDatabaseSchema    	string name of database schema that contains OMOP CDM and vocabulary. On SQL Server, this should specifiy both the database and the schema, so for example 'cdm_instance.dbo'.
+#' @param cdmDatabaseSchema    	string name of database schema that contains OMOP CDM. On SQL Server, this should specifiy both the database and the schema, so for example 'cdm_instance.dbo'.
 #' @param oracleTempSchema    For Oracle only: the name of the database schema where you want all temporary tables to be managed. Requires create/insert permissions to this database. 
 #' @param resultsDatabaseSchema		string name of database schema that we can write results to. Default is cdmDatabaseSchema. On SQL Server, this should specifiy both the database and the schema, so for example 'results.dbo'.
 #' @param sourceName		string name of the database, as recorded in results
@@ -55,11 +55,12 @@ getAnalysisDetails <- function() {
 #' @param cdmVersion     Define the OMOP CDM version used:  currently support "4" and "5".  Default = "4"
 #' @param runHeel     Boolean to determine if Achilles Heel data quality reporting will be produced based on the summary statistics.  Default = TRUE
 #' @param validateSchema     Boolean to determine if CDM Schema Validation should be run. This could be very slow.  Default = FALSE
+#' @param vocabDatabaseSchema		string name of database schema that contains OMOP Vocabulary. Default is cdmDatabaseSchema. On SQL Server, this should specifiy both the database and the schema, so for example 'results.dbo'.
 #' 
 #' @return An object of type \code{achillesResults} containing details for connecting to the database containing the results 
 #' @examples \dontrun{
 #'   connectionDetails <- createConnectionDetails(dbms="sql server", server="RNDUSRDHIT07.jnj.com")
-#'   achillesResults <- achilles(connectionDetails, cdmDatabaseSchema="cdm4_sim", resultsDatabaseSchema="scratch", sourceName="TestDB", validateSchema="TRUE")
+#'   achillesResults <- achilles(connectionDetails, cdmDatabaseSchema="cdm4_sim", resultsDatabaseSchema="scratch", sourceName="TestDB", validateSchema="TRUE", vocabDatabaseSchema="vocabulary")
 #'   fetchAchillesAnalysisResults(connectionDetails, "scratch", 106)
 #' }
 #' @export
@@ -73,7 +74,8 @@ achilles <- function (connectionDetails,
                       smallcellcount = 5, 
                       cdmVersion = "4", 
                       runHeel = TRUE,
-                      validateSchema = FALSE){
+                      validateSchema = FALSE,
+                      vocabDatabaseSchema = cdmDatabaseSchema){
   
   if (cdmVersion == "4")  {
     achillesFile <- "Achilles_v4.sql"
@@ -90,6 +92,7 @@ achilles <- function (connectionDetails,
   
   cdmDatabase <- strsplit(cdmDatabaseSchema ,"\\.")[[1]][1]
   resultsDatabase <- strsplit(resultsDatabaseSchema ,"\\.")[[1]][1]
+  vocabDatabase <- strsplit(vocabDatabaseSchema ,"\\.")[[1]][1]
   
   achillesSql <- loadRenderTranslateSql(sqlFilename = achillesFile,
                                         packageName = "Achilles",
@@ -103,7 +106,9 @@ achilles <- function (connectionDetails,
                                         list_of_analysis_ids = analysisIds,
                                         createTable = createTable,
                                         smallcellcount = smallcellcount,
-                                        validateSchema = validateSchema
+                                        validateSchema = validateSchema,
+                                        vocab_database = vocabDatabase,
+                                        vocab_database_schema = vocabDatabaseSchema
   )
   
   conn <- connect(connectionDetails)
@@ -123,7 +128,9 @@ achilles <- function (connectionDetails,
                                       source_name = sourceName, 
                                       list_of_analysis_ids = analysisIds,
                                       createTable = createTable,
-                                      smallcellcount = smallcellcount
+                                      smallcellcount = smallcellcount,
+                                      vocab_database = vocabDatabase,
+                                      vocab_database_schema = vocabDatabaseSchema
     )
     
     writeLines("Executing Achilles Heel. This could take a while")
@@ -154,9 +161,11 @@ achillesHeel <- function (connectionDetails,
                       cdmDatabaseSchema, 
                       oracleTempSchema = cdmDatabaseSchema,
                       resultsDatabaseSchema = cdmDatabaseSchema,
-                      cdmVersion = "4"){
+                      cdmVersion = "4",
+                      vocabDatabaseSchema = cdmDatabaseSchema){
   
   resultsDatabase <- strsplit(resultsDatabaseSchema ,"\\.")[[1]][1]
+  vocabDatabase <- strsplit(vocabDatabaseSchema ,"\\.")[[1]][1]
   
   if (cdmVersion == "4")  {
     heelFile <- "AchillesHeel_v4.sql"
@@ -172,7 +181,9 @@ achillesHeel <- function (connectionDetails,
                                     oracleTempSchema = oracleTempSchema,
                                     cdm_database_schema = cdmDatabaseSchema,
                                     results_database = resultsDatabase,
-                                    results_database_schema = resultsDatabaseSchema
+                                    results_database_schema = resultsDatabaseSchema,
+                                    vocab_database = vocabDatabase,
+                                    vocab_database_schema = vocabDatabaseSchema
   );
   
   conn <- connect(connectionDetails);

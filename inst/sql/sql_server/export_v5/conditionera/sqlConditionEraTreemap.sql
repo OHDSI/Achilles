@@ -18,20 +18,20 @@ from (select * from @results_database_schema.ACHILLES_results where analysis_id 
 		from	
 		(
 			select concept_id, concept_name
-			from @cdm_database_schema.concept
+			from @vocab_database_schema.concept
 			where domain_id = 'Condition'
 		) snomed
 		left join
 			(select c1.concept_id as snomed_concept_id, max(c2.concept_id) as pt_concept_id
 			from
-			@cdm_database_schema.concept c1
+			@vocab_database_schema.concept c1
 			inner join 
-			@cdm_database_schema.concept_ancestor ca1
+			@vocab_database_schema.concept_ancestor ca1
 			on c1.concept_id = ca1.descendant_concept_id
 			and c1.domain_id = 'Condition'
 			and ca1.min_levels_of_separation = 1
 			inner join 
-			@cdm_database_schema.concept c2
+			@vocab_database_schema.concept c2
 			on ca1.ancestor_concept_id = c2.concept_id
 			and c2.vocabulary_id = 'MedDRA'
 			group by c1.concept_id
@@ -41,14 +41,14 @@ from (select * from @results_database_schema.ACHILLES_results where analysis_id 
 		left join
 			(select c1.concept_id as pt_concept_id, c1.concept_name as pt_concept_name, max(c2.concept_id) as hlt_concept_id
 			from
-			@cdm_database_schema.concept c1
+			@vocab_database_schema.concept c1
 			inner join 
-			@cdm_database_schema.concept_ancestor ca1
+			@vocab_database_schema.concept_ancestor ca1
 			on c1.concept_id = ca1.descendant_concept_id
 			and c1.vocabulary_id = 'MedDRA'
 			and ca1.min_levels_of_separation = 1
 			inner join 
-			@cdm_database_schema.concept c2
+			@vocab_database_schema.concept c2
 			on ca1.ancestor_concept_id = c2.concept_id
 			and c2.vocabulary_id = 'MedDRA'
 			group by c1.concept_id, c1.concept_name
@@ -58,14 +58,14 @@ from (select * from @results_database_schema.ACHILLES_results where analysis_id 
 		left join
 			(select c1.concept_id as hlt_concept_id, c1.concept_name as hlt_concept_name, max(c2.concept_id) as hlgt_concept_id
 			from
-			@cdm_database_schema.concept c1
+			@vocab_database_schema.concept c1
 			inner join 
-			@cdm_database_schema.concept_ancestor ca1
+			@vocab_database_schema.concept_ancestor ca1
 			on c1.concept_id = ca1.descendant_concept_id
 			and c1.vocabulary_id = 'MedDRA'
 			and ca1.min_levels_of_separation = 1
 			inner join 
-			@cdm_database_schema.concept c2
+			@vocab_database_schema.concept c2
 			on ca1.ancestor_concept_id = c2.concept_id
 			and c2.vocabulary_id = 'MedDRA'
 			group by c1.concept_id, c1.concept_name
@@ -75,21 +75,21 @@ from (select * from @results_database_schema.ACHILLES_results where analysis_id 
 		left join
 			(select c1.concept_id as hlgt_concept_id, c1.concept_name as hlgt_concept_name, max(c2.concept_id) as soc_concept_id
 			from
-			@cdm_database_schema.concept c1
+			@vocab_database_schema.concept c1
 			inner join 
-			@cdm_database_schema.concept_ancestor ca1
+			@vocab_database_schema.concept_ancestor ca1
 			on c1.concept_id = ca1.descendant_concept_id
 			and c1.vocabulary_id = 'MedDRA'
 			and ca1.min_levels_of_separation = 1
 			inner join 
-			@cdm_database_schema.concept c2
+			@vocab_database_schema.concept c2
 			on ca1.ancestor_concept_id = c2.concept_id
 			and c2.vocabulary_id = 'MedDRA'
 			group by c1.concept_id, c1.concept_name
 			) hlgt_to_soc
 		on hlt_to_hlgt.hlgt_concept_id = hlgt_to_soc.hlgt_concept_id
 
-		left join @cdm_database_schema.concept soc
+		left join @vocab_database_schema.concept soc
 		 on hlgt_to_soc.soc_concept_id = soc.concept_id
 
 
