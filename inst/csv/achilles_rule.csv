@@ -1,5 +1,5 @@
 rule_id,rule_name,severity,rule_description
-0,Achilles Heel version 2.0,,this rule is not used for data analysis. It communicates the version of the ruleset.
+0,Achilles Heel version 1.2,,this rule is not used for data analysis. It communicates the version of the ruleset.
 1,multiple checks,error,multiple error checks
 2,multiple checks,error,distributions where min should not be negative
 3,multiple checks,warning,death distributions where max should not be positive
