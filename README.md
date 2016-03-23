@@ -56,6 +56,21 @@ This is an alternative method for running Achilles that does not require R and J
 
 6. Run Achilles in the background with `docker-compose run -d achilles`.
 
+Alternatively, you can run it with one long command line, like in the following example:
+
+```bash
+docker run \
+  --rm \
+  --net=host \
+  -v "$(pwd)"/output:/opt/app/output \
+  -e ACHILLES_SOURCE=DEFAULT \
+  -e ACHILLES_DB_URI=postgresql://webapi:webapi@localhost:5432/ohdsi \
+  -e ACHILLES_CDM_SCHEMA=cdm5 \
+  -e ACHILLES_VOCAB_SCHEMA=cdm5 \
+  -e ACHILLES_RES_SCHEMA=webapi \
+  -e ACHILLES_CDM_VERSION=5 \
+  <image name>
+```
 
 License
 =======
