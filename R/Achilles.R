@@ -137,7 +137,7 @@ achilles <- function (connectionDetails,
     executeSql(conn,heelSql)
     writeLines(paste("Done. Achilles Heel results can now be found in",resultsDatabase))    
     
-  }
+  } else heelSql='HEEL EXECUTION SKIPPED PER USER REQUEST'
   
   dummy <- dbDisconnect(conn)
   
@@ -150,7 +150,7 @@ achilles <- function (connectionDetails,
                  sourceName = sourceName,
                  analysisIds = analysisIds,
                  AchillesSql = achillesSql,
-                 HeelSql = heelSql,
+                 HeelSql = heelSql, #if runHeel is false -  this assignment fails - causes error of the  whole function  (adding else)
                  call = match.call())
   class(result) <- "achillesResults"
   result
