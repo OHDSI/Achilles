@@ -7,7 +7,7 @@ Getting Started
 ===============
 (Please review the [Achilles Wiki](https://github.com/OHDSI/Achilles/wiki/Additional-instructions-for-Linux) for specific details for Linux)
 
-1. Make sure you have your data in the [OMOP CDM v4/v5 format](http://omop.org/cdm).
+1. Make sure you have your data in the OMOP CDM v4/v5 format  (v4 link http://omop.org/cdm v5 link:http://www.ohdsi.org/web/wiki/doku.php?id=documentation:cdm).
 
 2. Make sure that you have Java installed. If you don't have Java already intalled on your computed (on most computers it already is installed), go to [java.com](http://java.com) to get the latest version.  (If you have trouble building with rJava below, be sure on Windows that your Path variable includes the path to jvm.dll (Windows Button --> type "path" --> Edit Environmental Variables --> Edit PATH variable, add to end ;C:/Program Files/Java/jre/bin/server) or wherever it is on your system.)
 
