@@ -26,7 +26,9 @@ Getting Started
   ```r
   library(Achilles)
   connectionDetails <- createConnectionDetails(dbms="sql server", server="server.com")
-  achillesResults <- achilles(connectionDetails, cdmDatabaseSchema="cdm4_inst", resultsDatabaseSchema="results", sourceName="My Source Name", cdmVersion = "cdm version", vocabDatabaseSchema="vocabulary")
+  achillesResults <- achilles(connectionDetails, cdmDatabaseSchema="cdm4_inst", 
+                              resultsDatabaseSchema="results", sourceName="My Source Name", 
+                              cdmVersion = "cdm version", vocabDatabaseSchema="vocabulary")
   ```
   "cdm4_inst" cdmDatabaseSchema parmater, "results" resultsDatabaseSchema parameter, and "vocabulary" vocabDatabaseSchema are the names of the schemas holding the CDM data, targeted for result writing, and holding the Vocabulary data respectively. See the [DatabaseConnector](https://github.com/OHDSI/DatabaseConnector) package for details on settings the connection details for your database, for example by typing
   ```r
