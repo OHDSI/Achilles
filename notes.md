@@ -35,8 +35,24 @@ e.g., analysis_id 7,8,9,207
 
 
 #Analyzing Heel Results
-###Simple rules: There are  simple rules that generate a single error or warning
+###Simple rules: 
+There are  simple rules that generate a single error or warning.
 
-###Complex rules: However, some rules (e.g., rule_id 6) can generate multiple rows. The true primary key for output is combination of rule_id and analysis_id
+###Complex rules
+However, some rules (e.g., rule_id 6) can generate multiple rows. The true primary key for output is combination of rule_id and analysis_id
+
+
+#Possible outputs 
+##Heel
+All errors encoutered
+
+##Full Data characterization
+Full listing of AchillesResults and AchillesResultsDist tables
+
+##Describe
+We propose a new output table for Achilles that we refer to as AchillesDescribe 
+This can be a subset of full output tables that removes some elements (e.g., frequency data that are sensitive to a data partner within a consortium/study).
+
+
 
 
