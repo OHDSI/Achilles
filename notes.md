@@ -1,3 +1,21 @@
+
+#make Achilles finish earlier
+```
+#get all possible analyses first
+allAnalyses=getAnalysisDetails()$ANALYSIS_ID
+
+#cost analyses may take 15+ hours and may not be always necessary
+longAnalyses1=c(1500:1699)
+
+#exclude them
+subSet1=setdiff(allAnalyses,longAnalyses1)
+
+#run heen with this subSet1
+achillesResults <- achilles(connectionDetails, resultsDatabaseSchema = resDb,cdmDatabaseSchema =  myCdm,cdmVersion = "5",analysisIds = subSet1)
+```
+
+
+#Data Quality Model
 These notes relate Achilles and Achilles Heel to Data Quality Model (DQM)
 
 DQM terminology is slightly different
