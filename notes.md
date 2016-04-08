@@ -10,7 +10,7 @@ longAnalyses1=c(1500:1699)
 #exclude them
 subSet1=setdiff(allAnalyses,longAnalyses1)
 
-#run heen with this subSet1
+#run Achilles (and Heel)  with this subSet1 only
 achillesResults <- achilles(connectionDetails, resultsDatabaseSchema = resDb,cdmDatabaseSchema =  myCdm,cdmVersion = "5",analysisIds = subSet1)
 ```
 
