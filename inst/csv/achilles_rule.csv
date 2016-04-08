@@ -26,3 +26,5 @@ rule_id,rule_name,severity,rule_description
 24,too high days_supply,warning,days_supply > 180
 25,too high number of refils,warning,refills > 10
 26,implausible quantity for drug,warning,quantity > 600
+27,more than 1 percent of unmapped rows (concept_0 rows),warning,for multiple analyses (4xx;6xx;7xx;8xx;18xx)
+28,percentage of deceased patients,warning,fires if (deceased/all person count * 100)  is less than 1 (anusual if dataset represents a general healthcare data warehouse)
