@@ -5,7 +5,7 @@ rule_id,rule_name,severity,rule_description
 3,multiple checks,warning,death distributions where max should not be positive
 4,invalid concept_id,error,invalid concept_id
 5,invalid type concept_id,error,invalid type concept_id
-6,concept from the wrong vocabulary,error,concepts from wrong vocabulary 12 HL7
+6,data with unmapped concepts,warning,for multiple analyses
 7,concept from the wrong vocabulary,error,concept from the wrong vocabulary
 8,concept from the wrong vocabulary; race,error,concept from the wrong vocabulary; race
 9,concept from the wrong vocabulary; ethnicity,error,concept from the wrong vocabulary; ethnicity
