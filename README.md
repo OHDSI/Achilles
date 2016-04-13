@@ -25,7 +25,8 @@ Getting Started
 
   ```r
   library(Achilles)
-  connectionDetails <- createConnectionDetails(dbms="redshift", server="server.com", schema="cdm5_inst", port="5439")
+  connectionDetails <- createConnectionDetails(dbms="redshift", server="server.com", user="secret",
+                              password='secret', schema="cdm5_inst", port="5439")
   achillesResults <- achilles(connectionDetails, cdmDatabaseSchema="cdm5_inst", 
                               resultsDatabaseSchema="results", sourceName="My Source Name", 
                               cdmVersion = "cdm version", vocabDatabaseSchema="vocabulary")
