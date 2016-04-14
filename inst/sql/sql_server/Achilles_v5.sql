@@ -1184,6 +1184,10 @@ insert into @results_database_schema.ACHILLES_analysis (analysis_id, analysis_na
 insert into @results_database_schema.ACHILLES_analysis (analysis_id, analysis_name, stratum_1_name)
 	values (1820, 'Number of measurement records  by measurement start month', 'calendar month');
 
+insert into @results_database_schema.ACHILLES_analysis (analysis_id, analysis_name)
+	values (1821, 'Number of measurement records with no numeric value');
+
+
 --} : {else if not createTable
 delete from @results_database_schema.ACHILLES_results where analysis_id IN (@list_of_analysis_ids);
 delete from @results_database_schema.ACHILLES_results_dist where analysis_id IN (@list_of_analysis_ids);
@@ -6973,7 +6977,7 @@ where m.visit_occurrence_id is not null
 --{1814 IN (@list_of_analysis_ids)}?{
 -- 1814	Number of measurement records with no value (numeric or concept)
 insert into @results_database_schema.ACHILLES_results (analysis_id, count_value)
-select 814 as analysis_id,  
+select 1814 as analysis_id,  
 	COUNT_BIG(m.PERSON_ID) as count_value
 from
 	@cdm_database_schema.measurement m
@@ -7234,7 +7238,20 @@ group by YEAR(measurement_date)*100 + month(measurement_date)
 ;
 --}
 
+--{1821 IN (@list_of_analysis_ids)}?{
+-- 1821	Number of measurement records with no numeric value
+insert into @results_database_schema.ACHILLES_results (analysis_id, count_value)
+select 1821 as analysis_id,  
+	COUNT_BIG(m.PERSON_ID) as count_value
+from
+	@cdm_database_schema.measurement m
+where m.value_as_number is null
+;
+--}
 
+--end of measurment analyses
+
+--final processing of results
 delete from @results_database_schema.ACHILLES_results where count_value <= @smallcellcount;
 delete from @results_database_schema.ACHILLES_results_dist where count_value <= @smallcellcount;
 
