@@ -196,3 +196,4 @@
 1817,"Distribution of high range, by measurement_concept_id and unit_concept_id",NA,NA,NA,NA,NA
 1818,"Number of measurement records below/within/above normal range, by measurement_concept_id and unit_concept_id",NA,NA,NA,NA,NA
 1820,"Number of measurement records by measurement start month","calendar month",NA,NA,NA,NA
+1821,"Number of measurement records with no numeric value",NA,NA,NA,NA,NA
