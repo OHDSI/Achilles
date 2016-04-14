@@ -1,5 +1,22 @@
+#How to run Achilles Heel only 
 
-#make Achilles finish earlier
+Execution of all analyses computations is not necessary if all you want to do is to run new data quality measures in a revised version of Heel. Instead of 10+ hours, you can be done in few minutes with running just heel
+```
+#initialize your connectionDetails as usual
+#set your schema names for where is data and where to store results
+  myCdm='cdm5_inst';resDb='results'
+
+#run heel only like this
+  heel<-achillesHeel(connectionDetails,cdmDatabaseSchema = myCdm, resultsDatabaseSchema = resDb,cdmVersion = "5")
+
+#optionally - get heel errors and warnings as a small CSV file
+  heelRes<-fetchAchillesHeelResults(connectionDetails,resDb)
+  write.csv(heelRes,paste0(myCdm,'-01-heel-res.csv'),row.names = F,na = '')
+
+```
+
+#How to save time on running full Achilles - make it finish much earlier
+If you are willing to skip cost analyses (not used very often), this smaller set of analyses will finish much earlier
 ```
 #get all possible analyses first
 allAnalyses=getAnalysisDetails()$ANALYSIS_ID
@@ -10,9 +27,17 @@ longAnalyses1=c(1500:1699)
 #exclude them
 subSet1=setdiff(allAnalyses,longAnalyses1)
 
-#run Achilles (and Heel)  with this subSet1 only
-achillesResults <- achilles(connectionDetails, resultsDatabaseSchema = resDb,cdmDatabaseSchema =  myCdm,cdmVersion = "5",analysisIds = subSet1)
+
+#create connection details (modify for your server)
+connectionDetails <- createConnectionDetails(dbms="redshift", server="server.com", user="secret",
+                            password='secret', schema="cdm5_inst", port="5439")
+
+#run Achilles (and Heel)  with this smaller subSet1 only (this will save several hours (or days) of your execution time)
+achillesResults <- achilles(connectionDetails, cdmDatabaseSchema="cdm5_inst", 
+                            resultsDatabaseSchema="results", sourceName="My Source Name", 
+                            vocabDatabaseSchema="vocabulary",cdmVersion = "5",analysisIds = subSet1)
 ```
+
 
 
 #Data Quality Model
