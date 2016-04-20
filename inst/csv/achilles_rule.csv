@@ -28,3 +28,4 @@ rule_id,rule_name,severity,rule_description
 26,implausible quantity for drug,warning,quantity > 600
 27,more than 1 percent of unmapped rows (concept_0 rows),warning,for multiple analyses (4xx;6xx;7xx;8xx;18xx)
 28,percentage of deceased patients,warning,fires if (deceased/all person count * 100)  is less than 1 (anusual if dataset represents a general healthcare data warehouse)
+34,percentage of unmapped rows,
