@@ -49,6 +49,7 @@ SQL for OMOP CDM v5
 IF OBJECT_ID('@results_database_schema.ACHILLES_report', 'U') IS NOT NULL
   drop table @results_database_schema.ACHILLES_report;
 
+--better names and schema will be created later (once multiple (additional) reports are suggested)
 create table @results_database_schema.ACHILLES_report
 (
 	--analysis_id int,
@@ -75,13 +76,13 @@ use @cdm_database_schema;
 
 INSERT INTO @results_database_schema.ACHILLES_report (table_name,source_value,cnt)
 select * from (
-select 'measurement' as table_name,measurement_source_value as source_value, count(*) as cnt from measurement where measurement_concept_id = 0 group by measurement_source_value 
+select 'measurement' as table_name,measurement_source_value as source_value, COUNT_BIG(*) as cnt from measurement where measurement_concept_id = 0 group by measurement_source_value 
 union
-select 'procedure_occurrence' as table_name,procedure_source_value as source_value, count(*) as cnt from procedure_occurrence where procedure_concept_id = 0 group by procedure_source_value 
+select 'procedure_occurrence' as table_name,procedure_source_value as source_value, COUNT_BIG(*) as cnt from procedure_occurrence where procedure_concept_id = 0 group by procedure_source_value 
 union
-select 'drug_exposure' as table_name,drug_source_value as source_value, count(*) as cnt from drug_exposure where drug_concept_id = 0 group by drug_source_value 
+select 'drug_exposure' as table_name,drug_source_value as source_value, COUNT_BIG(*) as cnt from drug_exposure where drug_concept_id = 0 group by drug_source_value 
 union
-select 'condition_occurrence' as table_name,condition_source_value as source_value, count(*) as cnt from condition_occurrence where condition_concept_id = 0 group by condition_source_value 
+select 'condition_occurrence' as table_name,condition_source_value as source_value, COUNT_BIG(*) as cnt from condition_occurrence where condition_concept_id = 0 group by condition_source_value 
 ) a
 where cnt >= 1000 --use other threshold if needed (e.g., 10)
 order by a.table_name desc, cnt desc

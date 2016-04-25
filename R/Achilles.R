@@ -219,7 +219,7 @@ achillesReport <- function (connectionDetails,
   
   
   if (cdmVersion == "5")  {
-    reportFile <- "Achilles_report.sql"
+    reportFile <- "AchillesReport_v5.sql"
   }  else  {
     stop("Error: Invalid CDM Version number")
   }
@@ -239,5 +239,5 @@ achillesReport <- function (connectionDetails,
   writeLines("Executing Achilles Report. This could take a while");
   executeSql(conn,reportSql);
   dummy <- dbDisconnect(conn);
-  writeLines(paste("Done. Achilles Reports results can now be found in",resultsDatabase))
+  writeLines(paste("Done. Achilles Reports results can now be found in",resultsDatabaseSchema))
 }
