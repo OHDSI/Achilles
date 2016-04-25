@@ -3,3 +3,4 @@
 .RData
 env_vars
 docker-compose.yml
+errorReport.txt

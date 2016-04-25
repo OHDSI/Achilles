@@ -206,32 +206,33 @@ fetchAchillesHeelResults <- function (connectionDetails, resultsDatabase){
   res
 }
 
-
-achillesReports <- function (connectionDetails, 
-                          cdmDatabaseSchema, 
-                          oracleTempSchema = cdmDatabaseSchema,
-                          resultsDatabaseSchema = cdmDatabaseSchema,
-                          cdmVersion = "5",
-                          vocabDatabaseSchema = cdmDatabaseSchema){
+#new report function
+achillesReport <- function (connectionDetails, 
+                             cdmDatabaseSchema, 
+                             oracleTempSchema = cdmDatabaseSchema,
+                             resultsDatabaseSchema = cdmDatabaseSchema,
+                             cdmVersion = "5",
+                             vocabDatabaseSchema = cdmDatabaseSchema){
   
-  resultsDatabase <- strsplit(resultsDatabaseSchema ,"\\.")[[1]][1]
-  vocabDatabase <- strsplit(vocabDatabaseSchema ,"\\.")[[1]][1]
+  #resultsDatabase <- strsplit(resultsDatabaseSchema ,"\\.")[[1]][1]
+  #vocabDatabase <- strsplit(vocabDatabaseSchema ,"\\.")[[1]][1]
+  
   
   if (cdmVersion == "5")  {
-    reportFile <- "AchillesReport.sql"
+    reportFile <- "Achilles_report.sql"
   }  else  {
     stop("Error: Invalid CDM Version number")
   }
   
   reportSql <- loadRenderTranslateSql(sqlFilename = reportFile,
-                                    packageName = "Achilles",
-                                    dbms = connectionDetails$dbms,
-                                    oracleTempSchema = oracleTempSchema,
-                                    cdm_database_schema = cdmDatabaseSchema,
-                                    results_database = resultsDatabase,
-                                    results_database_schema = resultsDatabaseSchema,
-                                    vocab_database = vocabDatabase,
-                                    vocab_database_schema = vocabDatabaseSchema
+                                      packageName = "Achilles",
+                                      dbms = connectionDetails$dbms,
+                                      oracleTempSchema = oracleTempSchema,
+                                      cdm_database_schema = cdmDatabaseSchema,
+                                      #results_database = resultsDatabase,
+                                      results_database_schema = resultsDatabaseSchema,
+                                      #vocab_database = vocabDatabase,
+                                      vocab_database_schema = vocabDatabaseSchema
   );
   
   conn <- connect(connectionDetails);
