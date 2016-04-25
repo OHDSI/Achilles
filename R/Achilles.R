@@ -205,3 +205,39 @@ fetchAchillesHeelResults <- function (connectionDetails, resultsDatabase){
   res <- dbGetQuery(conn,sql)
   res
 }
+
+#new report function
+achillesReport <- function (connectionDetails, 
+                             cdmDatabaseSchema, 
+                             oracleTempSchema = cdmDatabaseSchema,
+                             resultsDatabaseSchema = cdmDatabaseSchema,
+                             cdmVersion = "5",
+                             vocabDatabaseSchema = cdmDatabaseSchema){
+  
+  #resultsDatabase <- strsplit(resultsDatabaseSchema ,"\\.")[[1]][1]
+  #vocabDatabase <- strsplit(vocabDatabaseSchema ,"\\.")[[1]][1]
+  
+  
+  if (cdmVersion == "5")  {
+    reportFile <- "AchillesReport_v5.sql"
+  }  else  {
+    stop("Error: Invalid CDM Version number")
+  }
+  
+  reportSql <- loadRenderTranslateSql(sqlFilename = reportFile,
+                                      packageName = "Achilles",
+                                      dbms = connectionDetails$dbms,
+                                      oracleTempSchema = oracleTempSchema,
+                                      cdm_database_schema = cdmDatabaseSchema,
+                                      #results_database = resultsDatabase,
+                                      results_database_schema = resultsDatabaseSchema,
+                                      #vocab_database = vocabDatabase,
+                                      vocab_database_schema = vocabDatabaseSchema
+  );
+  
+  conn <- connect(connectionDetails);
+  writeLines("Executing Achilles Report. This could take a while");
+  executeSql(conn,reportSql);
+  dummy <- dbDisconnect(conn);
+  writeLines(paste("Done. Achilles Reports results can now be found in",resultsDatabaseSchema))
+}
