@@ -1,6 +1,6 @@
 /******************************************************************
 
-# @file ACHILLES_v5.SQL
+# @file ACHILLESReport_v5.SQL
 #
 # Copyright 2014 Observational Health Data Sciences and Informatics
 #
