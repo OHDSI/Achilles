@@ -43,6 +43,8 @@ SQL for ACHILLES results (for either OMOP CDM v4 or OMOP CDM v5)
 
  
 --@results_database_schema.ACHILLES_Heel part:
+
+--prepare the tables first
 USE @results_database;
 
 IF OBJECT_ID('@results_database_schema.ACHILLES_HEEL_results', 'U') IS NOT NULL
@@ -54,6 +56,24 @@ CREATE TABLE @results_database_schema.ACHILLES_HEEL_results (
 	rule_id INT,
 	record_count BIGINT
 );
+
+
+--new part of Heel requires derived tables (per suggestion of Patrick)
+--table structure is up for discussion
+--computation is quick so the whole table gets wiped every time Heel is executed
+
+IF OBJECT_ID('@results_database_schema.ACHILLES_analysis_derived', 'U') IS NOT NULL
+  drop table @results_database_schema.ACHILLES_results_derived;
+
+create table @results_database_schema.ACHILLES_results_derived
+(
+	analysis_id int,
+	statistic_type varchar(255),
+	statistic_value float
+);
+
+
+--actual rules start here
 
 --ruleid 1 check for non-zero counts from checks of improper data (invalid ids, out-of-bound data, inconsistent dates)
 INSERT INTO @results_database_schema.ACHILLES_HEEL_results (
@@ -759,10 +779,9 @@ from added;
 
 
 --put the results into derived table
---the folowing code is commented out because in case whole achilles is not
---re-executed - the derived table will not exist
 
---  insert into @results_database_schema.ACHILLES_results_derived (analysis_id, statistic_value)    select * from #tempResults;
+  insert into @results_database_schema.ACHILLES_results_derived (analysis_id, statistic_value)    
+  select * from #tempResults;
 
 
 --do the actual rule27 logic
@@ -774,9 +793,9 @@ SELECT
   'WARNING: percentage of unmapped rows in drug_exposure table  exceeds threshold (concept_0 rows)' as ACHILLES_HEEL_warning,
 	27 as rule_id
 FROM #tempResults t
-WHERE t.analysis_id IN (100730)
+WHERE t.analysis_id IN (100730,100430)
 --the intended threshold is 1 percent, this value is there to get pilot data from early adopters
-	AND r.statistic_value >= 1
+	AND t.statistic_value >= 0.001
 ;
 
 

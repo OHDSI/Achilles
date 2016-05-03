@@ -524,19 +524,6 @@ create table @results_database_schema.ACHILLES_results_dist
 
 
 
-
-IF OBJECT_ID('@results_database_schema.ACHILLES_analysis_derived', 'U') IS NOT NULL
-  drop table @results_database_schema.ACHILLES_analysis_derived;
-
-create table @results_database_schema.ACHILLES_analysis_derived
-(
-	analysis_id int,
-	statistic_type varchar(255),
-	statistic_value float
-);
-
-
-
 --end of creating tables
 
 
