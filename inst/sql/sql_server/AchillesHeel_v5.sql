@@ -43,6 +43,8 @@ SQL for ACHILLES results (for either OMOP CDM v4 or OMOP CDM v5)
 
  
 --@results_database_schema.ACHILLES_Heel part:
+
+--prepare the tables first
 USE @results_database;
 
 IF OBJECT_ID('@results_database_schema.ACHILLES_HEEL_results', 'U') IS NOT NULL
@@ -54,6 +56,24 @@ CREATE TABLE @results_database_schema.ACHILLES_HEEL_results (
 	rule_id INT,
 	record_count BIGINT
 );
+
+
+--new part of Heel requires derived tables (per suggestion of Patrick)
+--table structure is up for discussion
+--computation is quick so the whole table gets wiped every time Heel is executed
+
+IF OBJECT_ID('@results_database_schema.ACHILLES_analysis_derived', 'U') IS NOT NULL
+  drop table @results_database_schema.ACHILLES_results_derived;
+
+create table @results_database_schema.ACHILLES_results_derived
+(
+	analysis_id int,
+	statistic_type varchar(255),
+	statistic_value float
+);
+
+
+--actual rules start here
 
 --ruleid 1 check for non-zero counts from checks of improper data (invalid ids, out-of-bound data, inconsistent dates)
 INSERT INTO @results_database_schema.ACHILLES_HEEL_results (
@@ -716,3 +736,115 @@ WHERE ord1.analysis_id IN (717)
 	AND ord1.max_value > 600
 GROUP BY ord1.analysis_id, oa1.analysis_name;
 
+
+
+--rules may require first a derived measure and the subsequent data quality 
+--check is simpler to implement
+--also results are accessible even if the rule did not generate a warning
+
+--rule 27 % of unmapped rows (previous rule is only binary, rows present or not)
+--this tries to quantify the problem as % of rows and % of distinct source values
+--derive the measure first
+
+
+--this query only temporarily introduces some IDs that live in contrained table 
+--(in the with part of the query; called added
+--they can not colide with existing ones
+
+
+
+--t1 obtains all counts (FOR CONSIDERATION: may be derived measure as well)
+--t2 obtains concept 0 counts  (FOR CONSIDERATION: may be derived measure as well)
+with t1 as 	(
+	  select analysis_id,sum(count_value) as all_cnt from @results_database_schema.achilles_results where analysis_id in (401,601,701,801,1801) group by analysis_id
+  	),
+t2 as (
+			select analysis_id,count_value as concept_zero_cnt from @results_database_schema.achilles_results where analysis_id in (401,601,701,801,1801) and stratum_1 = 0
+			),
+added as (
+    --count of unmapped rows (analysis xxxx98)
+              --select t2.analysis_id+28 as analysis_id,t2.Concept_zero_cnt as count_value  from t2
+              --UNION
+    --percentage of unmapped rows (analysis 100xxx30)
+    --FOR CONSIDERATION:suggest a better solution
+    select 100000+t1.analysis_id+29 as analysis_id,
+    ((1.0*concept_zero_cnt)/all_cnt)*100 as statistic_value 
+    from t1 left outer join t2 on t1.analysis_id = t2.analysis_id
+)
+-- this throws error on RedShift: INSERT INTO @results_database_schema.ACHILLES_results_derived (analysis_id,statistic_value)
+--instead - the solution is to use tempTable (as done in other queries in Achilles )
+select * 
+into #tempResults
+from added;
+
+
+--put the results into derived table
+
+  insert into @results_database_schema.ACHILLES_results_derived (analysis_id, statistic_value)    
+  select * from #tempResults;
+
+
+--do the actual rule27 logic
+--written now as a single problem rule (not an umbrella rule)
+--(FOR CONSIDERATION: how to best implement (as umbrella or set of 4 individual rules)
+
+INSERT INTO @results_database_schema.ACHILLES_HEEL_results (ACHILLES_HEEL_warning,rule_id)
+SELECT 
+  'WARNING: percentage of unmapped rows in drug_exposure table  exceeds threshold (concept_0 rows)' as ACHILLES_HEEL_warning,
+	27 as rule_id
+FROM #tempResults t
+--WHERE t.analysis_id IN (100730,100430) --umbrella version
+WHERE t.analysis_id IN (100730)
+--the intended threshold is 1 percent, this value is there to get pilot data from early adopters
+	AND t.statistic_value >= 0.001
+;
+
+
+--clean up temp tables for rule 27
+truncate table #tempResults;
+drop table #tempResults;
+
+
+--end of rule27
+
+
+
+--rule28
+--are all values (or more than threshold) in measurement table non numerical?
+--(count of Measurment records with no numerical value is in analysis_id 1821)
+
+
+
+with t1 as 
+  (select sum(count_value) as all_count from achilles_results where analysis_id = 1820) 
+  --count of all meas rows (I wish this would also be a measure) (1820 is count by month)
+select 100000 as analysis_id,
+'percentage' as statistic_type,
+(select count_value from achilles_results where analysis_id = 1821)*100.0/all_count as statistic_value 
+into #tempResults 
+from t1;
+
+
+insert into @results_database_schema.ACHILLES_results_derived (analysis_id, statistic_type,statistic_value)    
+  select * from #tempResults;
+
+
+
+INSERT INTO @results_database_schema.ACHILLES_HEEL_results (ACHILLES_HEEL_warning,rule_id)
+SELECT 
+  'WARNING: percentage of non-numerical measurement records exceeds general population threshold ' as ACHILLES_HEEL_warning,
+	28 as rule_id
+FROM #tempResults t
+--WHERE t.analysis_id IN (100730,100430) --umbrella version
+WHERE t.analysis_id IN (100000)
+--the intended threshold is 1 percent, this value is there to get pilot data from early adopters
+	AND t.statistic_value >= 80
+;
+
+
+--clean up temp tables for rule 28
+truncate table #tempResults;
+drop table #tempResults;
+
+
+--end of rule 28
