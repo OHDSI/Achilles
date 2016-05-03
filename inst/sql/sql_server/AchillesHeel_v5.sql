@@ -793,7 +793,8 @@ SELECT
   'WARNING: percentage of unmapped rows in drug_exposure table  exceeds threshold (concept_0 rows)' as ACHILLES_HEEL_warning,
 	27 as rule_id
 FROM #tempResults t
-WHERE t.analysis_id IN (100730,100430)
+--WHERE t.analysis_id IN (100730,100430) --umbrella version
+WHERE t.analysis_id IN (100730)
 --the intended threshold is 1 percent, this value is there to get pilot data from early adopters
 	AND t.statistic_value >= 0.001
 ;
@@ -810,7 +811,40 @@ drop table #tempResults;
 
 --rule28
 --are all values (or more than threshold) in measurement table non numerical?
---(count of those is in analysis_id 1821)
+--(count of Measurment records with no numerical value is in analysis_id 1821)
 
 
 
+with t1 as 
+  (select sum(count_value) as all_count from achilles_results where analysis_id = 1820) 
+  --count of all meas rows (I wish this would also be a measure) (1820 is count by month)
+select 100000 as analysis_id,
+'percentage' as statistic_type,
+(select count_value from achilles_results where analysis_id = 1821)*100.0/all_count as statistic_value 
+into #tempResults 
+from t1;
+
+
+insert into @results_database_schema.ACHILLES_results_derived (analysis_id, statistic_type,statistic_value)    
+  select * from #tempResults;
+
+
+
+INSERT INTO @results_database_schema.ACHILLES_HEEL_results (ACHILLES_HEEL_warning,rule_id)
+SELECT 
+  'WARNING: percentage of non-numerical measurement records exceeds general population threshold ' as ACHILLES_HEEL_warning,
+	28 as rule_id
+FROM #tempResults t
+--WHERE t.analysis_id IN (100730,100430) --umbrella version
+WHERE t.analysis_id IN (100000)
+--the intended threshold is 1 percent, this value is there to get pilot data from early adopters
+	AND t.statistic_value >= 80
+;
+
+
+--clean up temp tables for rule 28
+truncate table #tempResults;
+drop table #tempResults;
+
+
+--end of rule 28
