@@ -1,4 +1,4 @@
-#How to run Achilles Heel only 
+#How to run Achilles Heel only: 
 
 Execution of all analyses computations is not necessary if all you want to do is to run new data quality measures in a revised version of Heel. Instead of 10+ hours, you can be done in few minutes with running just heel
 ```
