@@ -43,39 +43,46 @@ SQL for OMOP CDM v5
 
   
 
+
 --{@createTable}?{
 
+IF OBJECT_ID('@results_database_schema.ACHILLES_analysis', 'U') IS NOT NULL
+  drop table @results_database_schema.ACHILLES_analysis;
 
-IF OBJECT_ID('@results_database_schema.ACHILLES_report', 'U') IS NOT NULL
-  drop table @results_database_schema.ACHILLES_report;
-
---better names and schema will be created later (once multiple (additional) reports are suggested)
-create table @results_database_schema.ACHILLES_report
+create table @results_database_schema.ACHILLES_analysis
 (
-	--analysis_id int,
-	table_name varchar(255),
-	source_value varchar(255),
-	cnt bigint
+	analysis_id int,
+	analysis_name varchar(255),
+	stratum_1_name varchar(255),
+	stratum_2_name varchar(255),
+	stratum_3_name varchar(255),
+	stratum_4_name varchar(255),
+	stratum_5_name varchar(255)
 );
 
 
+--populate lkup table for analysis_id  (ideally the CSV would be the single source for this :-(  )
+--1900. reports
+
+--insert into @results_database_schema.ACHILLES_analysis (analysis_id, analysis_name)
+--	values (1, 'Number of persons');
 
 --} : {else if not createTable
-delete from @results_database_schema.ACHILLES_report;
---}
-
-/****
-7. do reports
+delete from @results_database_schema.ACHILLES_results where analysis_id IN (1900);
+--delete from @results_database_schema.ACHILLES_results_dist where analysis_id IN (@list_of_analysis_ids);
+}
 
 
-****/
+--start of actual code
+
 
 use @cdm_database_schema;
 
---report
 
-INSERT INTO @results_database_schema.ACHILLES_report (table_name,source_value,cnt)
-select * from (
+
+INSERT INTO @results_database_schema.ACHILLES_results (analysis_id, stratum_1, count_value)
+select 1900 as analysis_id, table_name as stratum_1, cnt as count_value
+ from (
 select 'measurement' as table_name,measurement_source_value as source_value, COUNT_BIG(*) as cnt from measurement where measurement_concept_id = 0 group by measurement_source_value 
 union
 select 'procedure_occurrence' as table_name,procedure_source_value as source_value, COUNT_BIG(*) as cnt from procedure_occurrence where procedure_concept_id = 0 group by procedure_source_value 
@@ -84,8 +91,6 @@ select 'drug_exposure' as table_name,drug_source_value as source_value, COUNT_BI
 union
 select 'condition_occurrence' as table_name,condition_source_value as source_value, COUNT_BIG(*) as cnt from condition_occurrence where condition_concept_id = 0 group by condition_source_value 
 ) a
-where cnt >= 1000 --use other threshold if needed (e.g., 10)
+where cnt >= 1 --use other threshold if needed (e.g., 10)
 order by a.table_name desc, cnt desc
 ;
-
-

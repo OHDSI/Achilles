@@ -194,25 +194,28 @@ achillesHeel <- function (connectionDetails,
 }
 
 #new function to extract Heel resutls now when there are extra columns from inside R
+#internal function  call with tripple semicolon if needed
 fetchAchillesHeelResults <- function (connectionDetails, resultsDatabase){
   connectionDetails$schema = resultsDatabase
   conn <- connect(connectionDetails)
-  
-  
-  sql <- "SELECT * FROM ACHILLES_heel_results 
-  "
+
+  sql <- "SELECT * FROM ACHILLES_heel_results"
   sql <- renderSql(sql)$sql
   res <- dbGetQuery(conn,sql)
   res
 }
 
 #new report function
+#' @export
 achillesReport <- function (connectionDetails, 
                              cdmDatabaseSchema, 
                              oracleTempSchema = cdmDatabaseSchema,
                              resultsDatabaseSchema = cdmDatabaseSchema,
                              cdmVersion = "5",
                              vocabDatabaseSchema = cdmDatabaseSchema){
+  
+  #the code below is, I think, no longer needed, change in rules for naming the resultsDatabaseSchema to include .dbo
+  #for some db engines
   
   #resultsDatabase <- strsplit(resultsDatabaseSchema ,"\\.")[[1]][1]
   #vocabDatabase <- strsplit(vocabDatabaseSchema ,"\\.")[[1]][1]
