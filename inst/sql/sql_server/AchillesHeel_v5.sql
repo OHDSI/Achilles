@@ -716,3 +716,82 @@ WHERE ord1.analysis_id IN (717)
 	AND ord1.max_value > 600
 GROUP BY ord1.analysis_id, oa1.analysis_name;
 
+
+
+--rules may require first a derived measure and the subsequent data quality 
+--check is simpler to implement
+--also results are accessible even if the rule did not generate a warning
+
+--rule 27 % of unmapped rows (previous rule is only binary, rows present or not)
+--this tries to quantify the problem as % of rows and % of distinct source values
+--derive the measure first
+
+
+--this query only temporarily introduces some IDs that live in contrained table 
+--(in the with part of the query; called added
+--they can not colide with existing ones
+
+
+
+--t1 obtains all counts (FOR CONSIDERATION: may be derived measure as well)
+--t2 obtains concept 0 counts  (FOR CONSIDERATION: may be derived measure as well)
+with t1 as 	(
+	  select analysis_id,sum(count_value) as all_cnt from @results_database_schema.achilles_results where analysis_id in (401,601,701,801,1801) group by analysis_id
+  	),
+t2 as (
+			select analysis_id,count_value as concept_zero_cnt from @results_database_schema.achilles_results where analysis_id in (401,601,701,801,1801) and stratum_1 = 0
+			),
+added as (
+    --count of unmapped rows (analysis xxxx98)
+              --select t2.analysis_id+28 as analysis_id,t2.Concept_zero_cnt as count_value  from t2
+              --UNION
+    --percentage of unmapped rows (analysis 100xxx30)
+    --FOR CONSIDERATION:suggest a better solution
+    select 100000+t1.analysis_id+29 as analysis_id,
+    ((1.0*concept_zero_cnt)/all_cnt)*100 as statistic_value 
+    from t1 left outer join t2 on t1.analysis_id = t2.analysis_id
+)
+-- this throws error on RedShift: INSERT INTO @results_database_schema.ACHILLES_results_derived (analysis_id,statistic_value)
+--instead - the solution is to use tempTable (as done in other queries in Achilles )
+select * 
+into #tempResults
+from added;
+
+
+--put the results into derived table
+--the folowing code is commented out because in case whole achilles is not
+--re-executed - the derived table will not exist
+
+--  insert into @results_database_schema.ACHILLES_results_derived (analysis_id, statistic_value)    select * from #tempResults;
+
+
+--do the actual rule27 logic
+--written now as a single problem rule (not an umbrella rule)
+--(FOR CONSIDERATION: how to best implement (as umbrella or set of 4 individual rules)
+
+INSERT INTO @results_database_schema.ACHILLES_HEEL_results (ACHILLES_HEEL_warning,rule_id)
+SELECT 
+  'WARNING: percentage of unmapped rows in drug_exposure table  exceeds threshold (concept_0 rows)' as ACHILLES_HEEL_warning,
+	27 as rule_id
+FROM #tempResults t
+WHERE t.analysis_id IN (100730)
+--the intended threshold is 1 percent, this value is there to get pilot data from early adopters
+	AND r.statistic_value >= 1
+;
+
+
+--clean up temp tables for rule 27
+truncate table #tempResults;
+drop table #tempResults;
+
+
+--end of rule27
+
+
+
+--rule28
+--are all values (or more than threshold) in measurement table non numerical?
+--(count of those is in analysis_id 1821)
+
+
+

@@ -522,6 +522,26 @@ create table @results_database_schema.ACHILLES_results_dist
 	p90_value float
 );
 
+
+
+
+IF OBJECT_ID('@results_database_schema.ACHILLES_analysis_derived', 'U') IS NOT NULL
+  drop table @results_database_schema.ACHILLES_analysis_derived;
+
+create table @results_database_schema.ACHILLES_analysis_derived
+(
+	analysis_id int,
+	statistic_type varchar(255),
+	statistic_value float
+);
+
+
+
+--end of creating tables
+
+
+--populate the tables with names of analyses
+
 insert into @results_database_schema.ACHILLES_analysis (analysis_id, analysis_name)
 	values (0, 'Source name');
 
@@ -1187,6 +1207,24 @@ insert into @results_database_schema.ACHILLES_analysis (analysis_id, analysis_na
 insert into @results_database_schema.ACHILLES_analysis (analysis_id, analysis_name)
 	values (1821, 'Number of measurement records with no numeric value');
 
+--1900 REPORTS
+
+insert into @results_database_schema.ACHILLES_analysis (analysis_id, analysis_name, stratum_1_name, stratum_2_name)
+	values (1900, 'Source values mapped to concept_id 0 by table, by source_value', 'table_name', 'source_value');
+
+
+--2000 Iris (and possibly other new measures) integrated into Achilles
+
+insert into @results_database_schema.ACHILLES_analysis (analysis_id, analysis_name)
+	values (2000, 'Number of patients with at least 1 Dx and 1 Rx');
+
+insert into @results_database_schema.ACHILLES_analysis (analysis_id, analysis_name)
+	values (2001, 'Number of patients with at least 1 Dx and 1 Proc');
+
+insert into @results_database_schema.ACHILLES_analysis (analysis_id, analysis_name)
+	values (2003, 'Number of patients with at least 1 Meas, 1 Dx and 1 Rx');
+
+--end of importing values into analysis lookup table
 
 --} : {else if not createTable
 delete from @results_database_schema.ACHILLES_results where analysis_id IN (@list_of_analysis_ids);
@@ -7250,6 +7288,69 @@ where m.value_as_number is null
 --}
 
 --end of measurment analyses
+
+
+
+/********************************************
+
+ACHILLES Iris Analyses 
+
+*********************************************/
+--starting at id 2000
+
+--{2000 IN (@list_of_analysis_ids)}?{
+-- 2000	patients with at least 1 Dx and 1 Rx
+insert into @results_database_schema.ACHILLES_results (analysis_id, count_value)
+select 2000 as analysis_id,  
+--gender_concept_id as stratum_1, COUNT_BIG(distinct person_id) as count_value
+        CAST(a.cnt AS BIGINT) AS count_value
+    FROM (
+                select COUNT_BIG(*) cnt from (
+                    select distinct person_id from @cdm_database_schema.condition_occurrence
+                    intersect
+                    select distinct person_id from @cdm_database_schema.drug_exposure
+                ) b
+         ) a
+         ;
+--}
+
+
+
+--{2001 IN (@list_of_analysis_ids)}?{
+-- 2001	patients with at least 1 Dx and 1 Proc
+insert into @results_database_schema.ACHILLES_results (analysis_id, count_value)
+select 2001 as analysis_id,  
+--gender_concept_id as stratum_1, COUNT_BIG(distinct person_id) as count_value
+        CAST(a.cnt AS BIGINT) AS count_value
+    FROM (
+                select COUNT_BIG(*) cnt from (
+                    select distinct person_id from @cdm_database_schema.condition_occurrence
+                    intersect
+                    select distinct person_id from @cdm_database_schema.procedure_occurrence
+                ) b
+         ) a
+         ;
+--}
+
+
+
+--{2002 IN (@list_of_analysis_ids)}?{
+-- 2002	patients with at least 1 Mes and 1 Dx and 1 Rx
+insert into @results_database_schema.ACHILLES_results (analysis_id, count_value)
+select 2002 as analysis_id,  
+--gender_concept_id as stratum_1, COUNT_BIG(distinct person_id) as count_value
+        CAST(a.cnt AS BIGINT) AS count_value
+    FROM (
+                select COUNT_BIG(*) cnt from (
+                    select distinct person_id from @cdm_database_schema.measurement
+                    intersect
+                    select distinct person_id from @cdm_database_schema.condition_occurrence
+                    intersect
+                    select distinct person_id from @cdm_database_schema.drug_exposure
+                ) b
+         ) a
+         ;
+--}
 
 --final processing of results
 delete from @results_database_schema.ACHILLES_results where count_value <= @smallcellcount;

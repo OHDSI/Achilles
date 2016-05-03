@@ -81,7 +81,7 @@ use @cdm_database_schema;
 
 
 INSERT INTO @results_database_schema.ACHILLES_results (analysis_id, stratum_1, count_value)
-select 1900 as analysis_id, table_name as stratum_1, cnt as count_value
+select 1900 as analysis_id, table_name as stratum_1, source_value as stratum_2, cnt as count_value
  from (
 select 'measurement' as table_name,measurement_source_value as source_value, COUNT_BIG(*) as cnt from measurement where measurement_concept_id = 0 group by measurement_source_value 
 union
