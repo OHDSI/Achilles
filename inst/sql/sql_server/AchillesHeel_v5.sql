@@ -43,6 +43,8 @@ SQL for ACHILLES results (for either OMOP CDM v4 or OMOP CDM v5)
 
  
 --@results_database_schema.ACHILLES_Heel part:
+
+--prepare the tables first
 USE @results_database;
 
 IF OBJECT_ID('@results_database_schema.ACHILLES_HEEL_results', 'U') IS NOT NULL
@@ -54,6 +56,24 @@ CREATE TABLE @results_database_schema.ACHILLES_HEEL_results (
 	rule_id INT,
 	record_count BIGINT
 );
+
+
+--new part of Heel requires derived tables (per suggestion of Patrick)
+--table structure is up for discussion
+--computation is quick so the whole table gets wiped every time Heel is executed
+
+IF OBJECT_ID('@results_database_schema.ACHILLES_results_derived', 'U') IS NOT NULL
+  drop table @results_database_schema.ACHILLES_results_derived;
+
+create table @results_database_schema.ACHILLES_results_derived
+(
+	analysis_id int,
+	statistic_type varchar(255),
+	statistic_value float
+);
+
+
+--actual rules start here
 
 --ruleid 1 check for non-zero counts from checks of improper data (invalid ids, out-of-bound data, inconsistent dates)
 INSERT INTO @results_database_schema.ACHILLES_HEEL_results (
@@ -716,3 +736,50 @@ WHERE ord1.analysis_id IN (717)
 	AND ord1.max_value > 600
 GROUP BY ord1.analysis_id, oa1.analysis_name;
 
+
+
+--rules may require first a derived measure and the subsequent data quality 
+--check is simpler to implement
+--also results are accessible even if the rule did not generate a warning
+
+
+
+--rule28
+--are all values (or more than threshold) in measurement table non numerical?
+--(count of Measurment records with no numerical value is in analysis_id 1821)
+
+
+
+with t1 (all_count) as 
+  (select sum(count_value) as all_count from achilles_results where analysis_id = 1820) 
+  --count of all meas rows (I wish this would also be a measure) (1820 is count by month)
+select 100000 as analysis_id,
+'percentage' as statistic_type,
+(select count_value from achilles_results where analysis_id = 1821)*100.0/all_count as statistic_value 
+into #tempResults 
+from t1;
+
+
+insert into @results_database_schema.ACHILLES_results_derived (analysis_id, statistic_type,statistic_value)    
+  select analysis_id, statistic_type,statistic_value from #tempResults;
+
+
+
+INSERT INTO @results_database_schema.ACHILLES_HEEL_results (ACHILLES_HEEL_warning,rule_id)
+SELECT 
+  'WARNING: percentage of non-numerical measurement records exceeds general population threshold ' as ACHILLES_HEEL_warning,
+	28 as rule_id
+FROM #tempResults t
+--WHERE t.analysis_id IN (100730,100430) --umbrella version
+WHERE t.analysis_id IN (100000)
+--the intended threshold is 1 percent, this value is there to get pilot data from early adopters
+	AND t.statistic_value >= 80
+;
+
+
+--clean up temp tables for rule 28
+truncate table #tempResults;
+drop table #tempResults;
+
+
+--end of rule 28
