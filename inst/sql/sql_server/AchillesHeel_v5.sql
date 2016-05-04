@@ -755,33 +755,35 @@ GROUP BY ord1.analysis_id, oa1.analysis_name;
 
 --t1 obtains all counts (FOR CONSIDERATION: may be derived measure as well)
 --t2 obtains concept 0 counts  (FOR CONSIDERATION: may be derived measure as well)
-with t1 as 	(
+with t1 (analysis_id,all_cnt) as (
 	  select analysis_id,sum(count_value) as all_cnt from @results_database_schema.achilles_results where analysis_id in (401,601,701,801,1801) group by analysis_id
   	),
-t2 as (
+t2 (analysis_id, concept_zero_cnt) as (
 			select analysis_id,count_value as concept_zero_cnt from @results_database_schema.achilles_results where analysis_id in (401,601,701,801,1801) and stratum_1 = 0
 			),
-added as (
+added (analysis_id,statistic_value) as (
     --count of unmapped rows (analysis xxxx98)
               --select t2.analysis_id+28 as analysis_id,t2.Concept_zero_cnt as count_value  from t2
               --UNION
     --percentage of unmapped rows (analysis 100xxx30)
     --FOR CONSIDERATION:suggest a better solution
     select cast(100000+t1.analysis_id+29 as int) as analysis_id,
-    ((1.0*concept_zero_cnt)/all_cnt)*100 as statistic_value 
+    --TODO
+    cast(((1.0*concept_zero_cnt)/all_cnt)*100 as float) as statistic_value 
+    --70 as statistic_value 
     from t1 left outer join t2 on t1.analysis_id = t2.analysis_id
 )
 -- this throws error on RedShift: INSERT INTO @results_database_schema.ACHILLES_results_derived (analysis_id,statistic_value)
 --instead - the solution is to use tempTable (as done in other queries in Achilles )
-select * 
+select a.analysis_id, a.statistic_value 
 into #tempResults
-from added;
+from added a;
 
 
 --put the results into derived table
 
-  insert into @results_database_schema.ACHILLES_results_derived (analysis_id, statistic_value)    
-  select * from #tempResults;
+--  insert into @results_database_schema.ACHILLES_results_derived (analysis_id, statistic_value)    
+--  select analysis_id, statistic_value from #tempResults;
 
 
 --do the actual rule27 logic
@@ -815,7 +817,7 @@ drop table #tempResults;
 
 
 
-with t1 as 
+with t1 (all_count) as 
   (select sum(count_value) as all_count from achilles_results where analysis_id = 1820) 
   --count of all meas rows (I wish this would also be a measure) (1820 is count by month)
 select 100000 as analysis_id,
@@ -826,7 +828,7 @@ from t1;
 
 
 insert into @results_database_schema.ACHILLES_results_derived (analysis_id, statistic_type,statistic_value)    
-  select * from #tempResults;
+  select analysis_id, statistic_type,statistic_value from #tempResults;
 
 
 
