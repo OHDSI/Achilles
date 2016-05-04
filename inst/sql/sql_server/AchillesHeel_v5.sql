@@ -62,7 +62,7 @@ CREATE TABLE @results_database_schema.ACHILLES_HEEL_results (
 --table structure is up for discussion
 --computation is quick so the whole table gets wiped every time Heel is executed
 
-IF OBJECT_ID('@results_database_schema.ACHILLES_analysis_derived', 'U') IS NOT NULL
+IF OBJECT_ID('@results_database_schema.ACHILLES_results_derived', 'U') IS NOT NULL
   drop table @results_database_schema.ACHILLES_results_derived;
 
 create table @results_database_schema.ACHILLES_results_derived
