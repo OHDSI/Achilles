@@ -767,7 +767,7 @@ added as (
               --UNION
     --percentage of unmapped rows (analysis 100xxx30)
     --FOR CONSIDERATION:suggest a better solution
-    select 100000+t1.analysis_id+29 as analysis_id,
+    select cast(100000+t1.analysis_id+29 as int) as analysis_id,
     ((1.0*concept_zero_cnt)/all_cnt)*100 as statistic_value 
     from t1 left outer join t2 on t1.analysis_id = t2.analysis_id
 )
