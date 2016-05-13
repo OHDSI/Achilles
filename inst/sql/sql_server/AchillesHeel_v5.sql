@@ -68,6 +68,7 @@ IF OBJECT_ID('@results_database_schema.ACHILLES_results_derived', 'U') IS NOT NU
 create table @results_database_schema.ACHILLES_results_derived
 (
 	analysis_id int,
+	stratum_1 varchar(255),
 	statistic_type varchar(255),
 	statistic_value float
 );
@@ -742,7 +743,9 @@ GROUP BY ord1.analysis_id, oa1.analysis_name;
 --check is simpler to implement
 --also results are accessible even if the rule did not generate a warning
 
-
+--rule27
+--due to most likely missint sql cast errors it was removed from this release
+--will be included after more testing
 
 --rule28
 --are all values (or more than threshold) in measurement table non numerical?
@@ -767,7 +770,7 @@ insert into @results_database_schema.ACHILLES_results_derived (analysis_id, stat
 
 INSERT INTO @results_database_schema.ACHILLES_HEEL_results (ACHILLES_HEEL_warning,rule_id)
 SELECT 
-  'WARNING: percentage of non-numerical measurement records exceeds general population threshold ' as ACHILLES_HEEL_warning,
+  'NOTIFICATION: percentage of non-numerical measurement records exceeds general population threshold ' as ACHILLES_HEEL_warning,
 	28 as rule_id
 FROM #tempResults t
 --WHERE t.analysis_id IN (100730,100430) --umbrella version
@@ -781,5 +784,35 @@ WHERE t.analysis_id IN (100000)
 truncate table #tempResults;
 drop table #tempResults;
 
-
 --end of rule 28
+
+--rule29
+--unusual diagnosis present, this rule is terminology dependend
+
+with tempcnt as(
+	select sum(count_value) as pt_cnt from achilles_results 
+	where analysis_id = 404 --dx by decile
+	and stratum_1 = '195075' --meconium
+	--and stratum_3 = '8507' --possible limit to males only
+	and cast(stratum_4 as int) >= 5 --fifth decile or more
+)
+select pt_cnt as record_count 
+into #tempResults
+--set threshold here, currently it is zero
+from tempcnt where pt_cnt > 0;
+
+
+--using temp table because with clause that occurs prior insert into is causing problems 
+--and with clause makes the code more readable
+INSERT INTO @results_database_schema.ACHILLES_HEEL_results (ACHILLES_HEEL_warning,rule_id,record_count)
+SELECT 
+ 'WARNING:[PLAUSIBILITY] infant-age diagnosis (195075) at age 50+' as ACHILLES_HEEL_warning,
+  29 as rule_id,
+  record_count
+FROM #tempResults t;
+
+truncate table #tempResults;
+drop table #tempResults;
+--end of rule29
+
+
