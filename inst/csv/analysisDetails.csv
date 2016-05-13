@@ -1,201 +1,198 @@
-"ANALYSIS_ID","ANALYSIS_NAME","STRATUM_1_NAME","STRATUM_2_NAME","STRATUM_3_NAME","STRATUM_4_NAME","STRATUM_5_NAME"
-0,"Source name",NA,NA,NA,NA,NA
-1,"Number of persons",NA,NA,NA,NA,NA
-2,"Number of persons by gender","gender_concept_id",NA,NA,NA,NA
-3,"Number of persons by year of birth","year_of_birth",NA,NA,NA,NA
-4,"Number of persons by race","race_concept_id",NA,NA,NA,NA
-5,"Number of persons by ethnicity","ethnicity_concept_id",NA,NA,NA,NA
-7,"Number of persons with invalid provider_id",NA,NA,NA,NA,NA
-8,"Number of persons with invalid location_id",NA,NA,NA,NA,NA
-9,"Number of persons with invalid care_site_id",NA,NA,NA,NA,NA
-101,"Number of persons by age, with age at first observation period","age",NA,NA,NA,NA
-102,"Number of persons by gender by age, with age at first observation period","gender_concept_id","age",NA,NA,NA
-103,"Distribution of age at first observation period",NA,NA,NA,NA,NA
-104,"Distribution of age at first observation period by gender","gender_concept_id",NA,NA,NA,NA
-105,"Length of observation (days) of first observation period",NA,NA,NA,NA,NA
-106,"Length of observation (days) of first observation period by gender","gender_concept_id",NA,NA,NA,NA
-107,"Length of observation (days) of first observation period by age decile","age decile",NA,NA,NA,NA
-108,"Number of persons by length of observation period, in 30d increments","Observation period length 30d increments",NA,NA,NA,NA
-109,"Number of persons with continuous observation in each year","calendar year",NA,NA,NA,NA
-110,"Number of persons with continuous observation in each month","calendar month",NA,NA,NA,NA
-111,"Number of persons by observation period start month","calendar month",NA,NA,NA,NA
-112,"Number of persons by observation period end month","calendar month",NA,NA,NA,NA
-113,"Number of persons by number of observation periods","number of observation periods",NA,NA,NA,NA
-114,"Number of persons with observation period before year-of-birth",NA,NA,NA,NA,NA
-115,"Number of persons with observation period end < observation period start",NA,NA,NA,NA,NA
-116,"Number of persons with at least one day of observation in each year by gender and age decile","calendar year","gender_concept_id","age decile",NA,NA
-117,"Number of persons with at least one day of observation in each month","calendar month",NA,NA,NA,NA
-118,"Number of observation periods with invalid person_id",NA,NA,NA,NA,NA
-200,"Number of persons with at least one visit occurrence, by visit_concept_id","visit_concept_id",NA,NA,NA,NA
-201,"Number of visit occurrence records, by visit_concept_id","visit_concept_id",NA,NA,NA,NA
-202,"Number of persons by visit occurrence start month, by visit_concept_id","visit_concept_id","calendar month",NA,NA,NA
-203,"Number of distinct visit occurrence concepts per person",NA,NA,NA,NA,NA
-204,"Number of persons with at least one visit occurrence, by visit_concept_id by calendar year by gender by age decile","visit_concept_id","calendar year","gender_concept_id","age decile",NA
-206,"Distribution of age by visit_concept_id","visit_concept_id","gender_concept_id",NA,NA,NA
-207,"Number of visit records with invalid person_id",NA,NA,NA,NA,NA
-208,"Number of visit records outside valid observation period",NA,NA,NA,NA,NA
-209,"Number of visit records with end date < start date",NA,NA,NA,NA,NA
-210,"Number of visit records with invalid care_site_id",NA,NA,NA,NA,NA
-211,"Distribution of length of stay by visit_concept_id","visit_concept_id",NA,NA,NA,NA
-220,"Number of visit occurrence records by visit occurrence start month","calendar month",NA,NA,NA,NA
-300,"Number of providers",NA,NA,NA,NA,NA
-301,"Number of providers by specialty concept_id","specialty_concept_id",NA,NA,NA,NA
-302,"Number of providers with invalid care site id",NA,NA,NA,NA,NA
-400,"Number of persons with at least one condition occurrence, by condition_concept_id","condition_concept_id",NA,NA,NA,NA
-401,"Number of condition occurrence records, by condition_concept_id","condition_concept_id",NA,NA,NA,NA
-402,"Number of persons by condition occurrence start month, by condition_concept_id","condition_concept_id","calendar month",NA,NA,NA
-403,"Number of distinct condition occurrence concepts per person",NA,NA,NA,NA,NA
-404,"Number of persons with at least one condition occurrence, by condition_concept_id by calendar year by gender by age decile","condition_concept_id","calendar year","gender_concept_id","age decile",NA
-405,"Number of condition occurrence records, by condition_concept_id by condition_type_concept_id","condition_concept_id","condition_type_concept_id",NA,NA,NA
-406,"Distribution of age by condition_concept_id","condition_concept_id","gender_concept_id",NA,NA,NA
-409,"Number of condition occurrence records with invalid person_id",NA,NA,NA,NA,NA
-410,"Number of condition occurrence records outside valid observation period",NA,NA,NA,NA,NA
-411,"Number of condition occurrence records with end date < start date",NA,NA,NA,NA,NA
-412,"Number of condition occurrence records with invalid provider_id",NA,NA,NA,NA,NA
-413,"Number of condition occurrence records with invalid visit_id",NA,NA,NA,NA,NA
-420,"Number of condition occurrence records by condition occurrence start month","calendar month",NA,NA,NA,NA
-500,"Number of persons with death, by cause_of_death_concept_id","cause_of_death_concept_id",NA,NA,NA,NA
-501,"Number of records of death, by cause_of_death_concept_id","cause_of_death_concept_id",NA,NA,NA,NA
-502,"Number of persons by death month","calendar month",NA,NA,NA,NA
-504,"Number of persons with a death, by calendar year by gender by age decile","calendar year","gender_concept_id","age decile",NA,NA
-505,"Number of death records, by death_type_concept_id","death_type_concept_id",NA,NA,NA,NA
-506,"Distribution of age at death by gender","gender_concept_id",NA,NA,NA,NA
-509,"Number of death records with invalid person_id",NA,NA,NA,NA,NA
-510,"Number of death records outside valid observation period",NA,NA,NA,NA,NA
-511,"Distribution of time from death to last condition",NA,NA,NA,NA,NA
-512,"Distribution of time from death to last drug",NA,NA,NA,NA,NA
-513,"Distribution of time from death to last visit",NA,NA,NA,NA,NA
-514,"Distribution of time from death to last procedure",NA,NA,NA,NA,NA
-515,"Distribution of time from death to last observation",NA,NA,NA,NA,NA
-600,"Number of persons with at least one procedure occurrence, by procedure_concept_id","procedure_concept_id",NA,NA,NA,NA
-601,"Number of procedure occurrence records, by procedure_concept_id","procedure_concept_id",NA,NA,NA,NA
-602,"Number of persons by procedure occurrence start month, by procedure_concept_id","procedure_concept_id","calendar month",NA,NA,NA
-603,"Number of distinct procedure occurrence concepts per person",NA,NA,NA,NA,NA
-604,"Number of persons with at least one procedure occurrence, by procedure_concept_id by calendar year by gender by age decile","procedure_concept_id","calendar year","gender_concept_id","age decile",NA
-605,"Number of procedure occurrence records, by procedure_concept_id by procedure_type_concept_id","procedure_concept_id","procedure_type_concept_id",NA,NA,NA
-606,"Distribution of age by procedure_concept_id","procedure_concept_id","gender_concept_id",NA,NA,NA
-609,"Number of procedure occurrence records with invalid person_id",NA,NA,NA,NA,NA
-610,"Number of procedure occurrence records outside valid observation period",NA,NA,NA,NA,NA
-612,"Number of procedure occurrence records with invalid provider_id",NA,NA,NA,NA,NA
-613,"Number of procedure occurrence records with invalid visit_id",NA,NA,NA,NA,NA
-620,"Number of procedure occurrence records  by procedure occurrence start month","calendar month",NA,NA,NA,NA
-700,"Number of persons with at least one drug exposure, by drug_concept_id","drug_concept_id",NA,NA,NA,NA
-701,"Number of drug exposure records, by drug_concept_id","drug_concept_id",NA,NA,NA,NA
-702,"Number of persons by drug exposure start month, by drug_concept_id","drug_concept_id","calendar month",NA,NA,NA
-703,"Number of distinct drug exposure concepts per person",NA,NA,NA,NA,NA
-704,"Number of persons with at least one drug exposure, by drug_concept_id by calendar year by gender by age decile","drug_concept_id","calendar year","gender_concept_id","age decile",NA
-705,"Number of drug exposure records, by drug_concept_id by drug_type_concept_id","drug_concept_id","drug_type_concept_id",NA,NA,NA
-706,"Distribution of age by drug_concept_id","drug_concept_id","gender_concept_id",NA,NA,NA
-709,"Number of drug exposure records with invalid person_id",NA,NA,NA,NA,NA
-710,"Number of drug exposure records outside valid observation period",NA,NA,NA,NA,NA
-711,"Number of drug exposure records with end date < start date",NA,NA,NA,NA,NA
-712,"Number of drug exposure records with invalid provider_id",NA,NA,NA,NA,NA
-713,"Number of drug exposure records with invalid visit_id",NA,NA,NA,NA,NA
-715,"Distribution of days_supply by drug_concept_id","drug_concept_id",NA,NA,NA,NA
-716,"Distribution of refills by drug_concept_id","drug_concept_id",NA,NA,NA,NA
-717,"Distribution of quantity by drug_concept_id","drug_concept_id",NA,NA,NA,NA
-720,"Number of drug exposure records  by drug exposure start month","calendar month",NA,NA,NA,NA
-800,"Number of persons with at least one observation occurrence, by observation_concept_id","observation_concept_id",NA,NA,NA,NA
-801,"Number of observation occurrence records, by observation_concept_id","observation_concept_id",NA,NA,NA,NA
-802,"Number of persons by observation occurrence start month, by observation_concept_id","observation_concept_id","calendar month",NA,NA,NA
-803,"Number of distinct observation occurrence concepts per person",NA,NA,NA,NA,NA
-804,"Number of persons with at least one observation occurrence, by observation_concept_id by calendar year by gender by age decile","observation_concept_id","calendar year","gender_concept_id","age decile",NA
-805,"Number of observation occurrence records, by observation_concept_id by observation_type_concept_id","observation_concept_id","observation_type_concept_id",NA,NA,NA
-806,"Distribution of age by observation_concept_id","observation_concept_id","gender_concept_id",NA,NA,NA
-807,"Number of observation occurrence records, by observation_concept_id and unit_concept_id","observation_concept_id","unit_concept_id",NA,NA,NA
-809,"Number of observation records with invalid person_id",NA,NA,NA,NA,NA
-810,"Number of observation records outside valid observation period",NA,NA,NA,NA,NA
-812,"Number of observation records with invalid provider_id",NA,NA,NA,NA,NA
-813,"Number of observation records with invalid visit_id",NA,NA,NA,NA,NA
-814,"Number of observation records with no value (numeric, string, or concept)",NA,NA,NA,NA,NA
-815,"Distribution of numeric values, by observation_concept_id and unit_concept_id",NA,NA,NA,NA,NA
-816,"Distribution of low range, by observation_concept_id and unit_concept_id",NA,NA,NA,NA,NA
-817,"Distribution of high range, by observation_concept_id and unit_concept_id",NA,NA,NA,NA,NA
-818,"Number of observation records below/within/above normal range, by observation_concept_id and unit_concept_id",NA,NA,NA,NA,NA
-820,"Number of observation records  by observation start month","calendar month",NA,NA,NA,NA
-900,"Number of persons with at least one drug era, by drug_concept_id","drug_concept_id",NA,NA,NA,NA
-901,"Number of drug era records, by drug_concept_id","drug_concept_id",NA,NA,NA,NA
-902,"Number of persons by drug era start month, by drug_concept_id","drug_concept_id","calendar month",NA,NA,NA
-903,"Number of distinct drug era concepts per person",NA,NA,NA,NA,NA
-904,"Number of persons with at least one drug era, by drug_concept_id by calendar year by gender by age decile","drug_concept_id","calendar year","gender_concept_id","age decile",NA
-906,"Distribution of age by drug_concept_id","drug_concept_id","gender_concept_id",NA,NA,NA
-907,"Distribution of drug era length, by drug_concept_id","drug_concept_id",NA,NA,NA,NA
-908,"Number of drug eras without valid person",NA,NA,NA,NA,NA
-909,"Number of drug eras outside valid observation period",NA,NA,NA,NA,NA
-910,"Number of drug eras with end date < start date",NA,NA,NA,NA,NA
-920,"Number of drug era records  by drug era start month","calendar month",NA,NA,NA,NA
-1000,"Number of persons with at least one condition era, by condition_concept_id","condition_concept_id",NA,NA,NA,NA
-1001,"Number of condition era records, by condition_concept_id","condition_concept_id",NA,NA,NA,NA
-1002,"Number of persons by condition era start month, by condition_concept_id","condition_concept_id","calendar month",NA,NA,NA
-1003,"Number of distinct condition era concepts per person",NA,NA,NA,NA,NA
-1004,"Number of persons with at least one condition era, by condition_concept_id by calendar year by gender by age decile","condition_concept_id","calendar year","gender_concept_id","age decile",NA
-1006,"Distribution of age by condition_concept_id","condition_concept_id","gender_concept_id",NA,NA,NA
-1007,"Distribution of condition era length, by condition_concept_id","condition_concept_id",NA,NA,NA,NA
-1008,"Number of condition eras without valid person",NA,NA,NA,NA,NA
-1009,"Number of condition eras outside valid observation period",NA,NA,NA,NA,NA
-1010,"Number of condition eras with end date < start date",NA,NA,NA,NA,NA
-1020,"Number of condition era records by condition era start month","calendar month",NA,NA,NA,NA
-1100,"Number of persons by location 3-digit zip","3-digit zip",NA,NA,NA,NA
-1101,"Number of persons by location state","state",NA,NA,NA,NA
-1102,"Number of care sites by location 3-digit zip","3-digit zip",NA,NA,NA,NA
-1103,"Number of care sites by location state","state",NA,NA,NA,NA
-1200,"Number of persons by place of service","place_of_service_concept_id",NA,NA,NA,NA
-1201,"Number of visits by place of service","place_of_service_concept_id",NA,NA,NA,NA
-1202,"Number of care sites by place of service","place_of_service_concept_id",NA,NA,NA,NA
-1300,"Number of organizations by place of service","place_of_service_concept_id",NA,NA,NA,NA
-1406,"Length of payer plan (days) of first payer plan period by gender","gender_concept_id",NA,NA,NA,NA
-1407,"Length of payer plan (days) of first payer plan period by age decile","age_decile",NA,NA,NA,NA
-1408,"Number of persons by length of payer plan period, in 30d increments","payer plan period length 30d increments",NA,NA,NA,NA
-1409,"Number of persons with continuous payer plan in each year","calendar year",NA,NA,NA,NA
-1410,"Number of persons with continuous payer plan in each month","calendar month",NA,NA,NA,NA
-1411,"Number of persons by payer plan period start month","calendar month",NA,NA,NA,NA
-1412,"Number of persons by payer plan period end month","calendar month",NA,NA,NA,NA
-1413,"Number of persons by number of payer plan periods","number of payer plan periods",NA,NA,NA,NA
-1414,"Number of persons with payer plan period before year-of-birth",NA,NA,NA,NA,NA
-1415,"Number of persons with payer plan period end < payer plan period start",NA,NA,NA,NA,NA
-1500,"Number of drug cost records with invalid drug exposure id",NA,NA,NA,NA,NA
-1501,"Number of drug cost records with invalid payer plan period id",NA,NA,NA,NA,NA
-1502,"Distribution of paid copay, by drug_concept_id","drug_concept_id",NA,NA,NA,NA
-1503,"Distribution of paid coinsurance, by drug_concept_id","drug_concept_id",NA,NA,NA,NA
-1504,"Distribution of paid toward deductible, by drug_concept_id","drug_concept_id",NA,NA,NA,NA
-1505,"Distribution of paid by payer, by drug_concept_id","drug_concept_id",NA,NA,NA,NA
-1506,"Distribution of paid by coordination of benefit, by drug_concept_id","drug_concept_id",NA,NA,NA,NA
-1507,"Distribution of total out-of-pocket, by drug_concept_id","drug_concept_id",NA,NA,NA,NA
-1508,"Distribution of total paid, by drug_concept_id","drug_concept_id",NA,NA,NA,NA
-1509,"Distribution of ingredient_cost, by drug_concept_id","drug_concept_id",NA,NA,NA,NA
-1510,"Distribution of dispensing fee, by drug_concept_id","drug_concept_id",NA,NA,NA,NA
-1511,"Distribution of average wholesale price, by drug_concept_id","drug_concept_id",NA,NA,NA,NA
-1600,"Number of procedure cost records with invalid procedure occurrence id",NA,NA,NA,NA,NA
-1601,"Number of procedure cost records with invalid payer plan period id",NA,NA,NA,NA,NA
-1602,"Distribution of paid copay, by procedure_concept_id","procedure_concept_id",NA,NA,NA,NA
-1603,"Distribution of paid coinsurance, by procedure_concept_id","procedure_concept_id",NA,NA,NA,NA
-1604,"Distribution of paid toward deductible, by procedure_concept_id","procedure_concept_id",NA,NA,NA,NA
-1605,"Distribution of paid by payer, by procedure_concept_id","procedure_concept_id",NA,NA,NA,NA
-1606,"Distribution of paid by coordination of benefit, by procedure_concept_id","procedure_concept_id",NA,NA,NA,NA
-1607,"Distribution of total out-of-pocket, by procedure_concept_id","procedure_concept_id",NA,NA,NA,NA
-1608,"Distribution of total paid, by procedure_concept_id","procedure_concept_id",NA,NA,NA,NA
-1609,"Number of records by disease_class_concept_id","disease_class_concept_id",NA,NA,NA,NA
-1610,"Number of records by revenue_code_concept_id","revenue_code_concept_id",NA,NA,NA,NA
-1700,"Number of records by cohort_concept_id","cohort_concept_id",NA,NA,NA,NA
-1701,"Number of records with cohort end date < cohort start date",NA,NA,NA,NA,NA
-1800,"Number of persons with at least one measurement, by measurement_concept_id","measurement_concept_id",NA,NA,NA,NA
-1801,"Number of measurement occurrence records, by measurement_concept_id","measurement_concept_id",NA,NA,NA,NA
-1802,"Number of persons by measurement start month, by measurement_concept_id","measurement_concept_id","calendar month",NA,NA,NA
-1803,"Number of distinct measurement concepts per person",NA,NA,NA,NA,NA
-1804,"Number of persons with at least one measurement, by measurement_concept_id by calendar year by gender by age decile","measurement_concept_id","calendar year","gender_concept_id","age decile",NA
-1805,"Number of measurement records, by measurement_concept_id by measurement_type_concept_id","measurement_concept_id","measurement_type_concept_id",NA,NA,NA
-1806,"Distribution of age by measurement_concept_id","measurement_concept_id","gender_concept_id",NA,NA,NA
-1807,"Number of measurement records, by measurement_concept_id and unit_concept_id","measurement_concept_id","unit_concept_id",NA,NA,NA
-1809,"Number of measurement records with invalid person_id",NA,NA,NA,NA,NA
-1810,"Number of measurement records outside valid observation period",NA,NA,NA,NA,NA
-1812,"Number of measurement records with invalid provider_id",NA,NA,NA,NA,NA
-1813,"Number of measurement records with invalid visit_id",NA,NA,NA,NA,NA
-1814,"Number of measurement records with no value (numeric, string, or concept)",NA,NA,NA,NA,NA
-1815,"Distribution of numeric values, by measurement_concept_id and unit_concept_id",NA,NA,NA,NA,NA
-1816,"Distribution of low range, by measurement_concept_id and unit_concept_id",NA,NA,NA,NA,NA
-1817,"Distribution of high range, by measurement_concept_id and unit_concept_id",NA,NA,NA,NA,NA
-1818,"Number of measurement records below/within/above normal range, by measurement_concept_id and unit_concept_id",NA,NA,NA,NA,NA
-1820,"Number of measurement records by measurement start month","calendar month",NA,NA,NA,NA
-1821,"Number of measurement records with no numeric value",NA,NA,NA,NA,NA
-2000,"Number of patients with at least 1 Dx and 1 Rx",NA,NA,NA,NA,NA
-2001,"Number of patients with at least 1 Dx and 1 Proc",NA,NA,NA,NA,NA
+"analysis_id","analysis_name","stratum_1_name","stratum_2_name","stratum_3_name","stratum_4_name","stratum_5_name"
+0,"Source name",,,,,
+1,"Number of persons",,,,,
+2,"Number of persons by gender","gender_concept_id",,,,
+3,"Number of persons by year of birth","year_of_birth",,,,
+4,"Number of persons by race","race_concept_id",,,,
+5,"Number of persons by ethnicity","ethnicity_concept_id",,,,
+7,"Number of persons with invalid provider_id",,,,,
+8,"Number of persons with invalid location_id",,,,,
+9,"Number of persons with invalid care_site_id",,,,,
+101,"Number of persons by age, with age at first observation period","age",,,,
+102,"Number of persons by gender by age, with age at first observation period","gender_concept_id","age",,,
+103,"Distribution of age at first observation period",,,,,
+104,"Distribution of age at first observation period by gender","gender_concept_id",,,,
+105,"Length of observation (days) of first observation period",,,,,
+106,"Length of observation (days) of first observation period by gender","gender_concept_id",,,,
+107,"Length of observation (days) of first observation period by age decile","age decile",,,,
+108,"Number of persons by length of observation period, in 30d increments","Observation period length 30d increments",,,,
+109,"Number of persons with continuous observation in each year","calendar year",,,,
+110,"Number of persons with continuous observation in each month","calendar month",,,,
+111,"Number of persons by observation period start month","calendar month",,,,
+112,"Number of persons by observation period end month","calendar month",,,,
+113,"Number of persons by number of observation periods","number of observation periods",,,,
+114,"Number of persons with observation period before year-of-birth",,,,,
+115,"Number of persons with observation period end < observation period start",,,,,
+116,"Number of persons with at least one day of observation in each year by gender and age decile","calendar year","gender_concept_id","age decile",,
+117,"Number of persons with at least one day of observation in each month","calendar month",,,,
+118,"Number of observation periods with invalid person_id",,,,,
+200,"Number of persons with at least one visit occurrence, by visit_concept_id","visit_concept_id",,,,
+201,"Number of visit occurrence records, by visit_concept_id","visit_concept_id",,,,
+202,"Number of persons by visit occurrence start month, by visit_concept_id","visit_concept_id","calendar month",,,
+203,"Number of distinct visit occurrence concepts per person",,,,,
+204,"Number of persons with at least one visit occurrence, by visit_concept_id by calendar year by gender by age decile","visit_concept_id","calendar year","gender_concept_id","age decile",
+206,"Distribution of age by visit_concept_id","visit_concept_id","gender_concept_id",,,
+207,"Number of visit records with invalid person_id",,,,,
+208,"Number of visit records outside valid observation period",,,,,
+209,"Number of visit records with end date < start date",,,,,
+210,"Number of visit records with invalid care_site_id",,,,,
+211,"Distribution of length of stay by visit_concept_id","visit_concept_id",,,,
+220,"Number of visit occurrence records by visit occurrence start month","calendar month",,,,
+300,"Number of providers",,,,,
+301,"Number of providers by specialty concept_id","specialty_concept_id",,,,
+302,"Number of providers with invalid care site id",,,,,
+400,"Number of persons with at least one condition occurrence, by condition_concept_id","condition_concept_id",,,,
+401,"Number of condition occurrence records, by condition_concept_id","condition_concept_id",,,,
+402,"Number of persons by condition occurrence start month, by condition_concept_id","condition_concept_id","calendar month",,,
+403,"Number of distinct condition occurrence concepts per person",,,,,
+404,"Number of persons with at least one condition occurrence, by condition_concept_id by calendar year by gender by age decile","condition_concept_id","calendar year","gender_concept_id","age decile",
+405,"Number of condition occurrence records, by condition_concept_id by condition_type_concept_id","condition_concept_id","condition_type_concept_id",,,
+406,"Distribution of age by condition_concept_id","condition_concept_id","gender_concept_id",,,
+409,"Number of condition occurrence records with invalid person_id",,,,,
+410,"Number of condition occurrence records outside valid observation period",,,,,
+411,"Number of condition occurrence records with end date < start date",,,,,
+412,"Number of condition occurrence records with invalid provider_id",,,,,
+413,"Number of condition occurrence records with invalid visit_id",,,,,
+420,"Number of condition occurrence records by condition occurrence start month","calendar month",,,,
+500,"Number of persons with death, by cause_concept_id","cause_concept_id",,,,
+501,"Number of records of death, by cause_concept_id","cause_concept_id",,,,
+502,"Number of persons by death month","calendar month",,,,
+504,"Number of persons with a death, by calendar year by gender by age decile","calendar year","gender_concept_id","age decile",,
+505,"Number of death records, by death_type_concept_id","death_type_concept_id",,,,
+506,"Distribution of age at death by gender","gender_concept_id",,,,
+509,"Number of death records with invalid person_id",,,,,
+510,"Number of death records outside valid observation period",,,,,
+511,"Distribution of time from death to last condition",,,,,
+512,"Distribution of time from death to last drug",,,,,
+513,"Distribution of time from death to last visit",,,,,
+514,"Distribution of time from death to last procedure",,,,,
+515,"Distribution of time from death to last observation",,,,,
+600,"Number of persons with at least one procedure occurrence, by procedure_concept_id","procedure_concept_id",,,,
+601,"Number of procedure occurrence records, by procedure_concept_id","procedure_concept_id",,,,
+602,"Number of persons by procedure occurrence start month, by procedure_concept_id","procedure_concept_id","calendar month",,,
+603,"Number of distinct procedure occurrence concepts per person",,,,,
+604,"Number of persons with at least one procedure occurrence, by procedure_concept_id by calendar year by gender by age decile","procedure_concept_id","calendar year","gender_concept_id","age decile",
+605,"Number of procedure occurrence records, by procedure_concept_id by procedure_type_concept_id","procedure_concept_id","procedure_type_concept_id",,,
+606,"Distribution of age by procedure_concept_id","procedure_concept_id","gender_concept_id",,,
+609,"Number of procedure occurrence records with invalid person_id",,,,,
+610,"Number of procedure occurrence records outside valid observation period",,,,,
+612,"Number of procedure occurrence records with invalid provider_id",,,,,
+613,"Number of procedure occurrence records with invalid visit_id",,,,,
+620,"Number of procedure occurrence records  by procedure occurrence start month","calendar month",,,,
+700,"Number of persons with at least one drug exposure, by drug_concept_id","drug_concept_id",,,,
+701,"Number of drug exposure records, by drug_concept_id","drug_concept_id",,,,
+702,"Number of persons by drug exposure start month, by drug_concept_id","drug_concept_id","calendar month",,,
+703,"Number of distinct drug exposure concepts per person",,,,,
+704,"Number of persons with at least one drug exposure, by drug_concept_id by calendar year by gender by age decile","drug_concept_id","calendar year","gender_concept_id","age decile",
+705,"Number of drug exposure records, by drug_concept_id by drug_type_concept_id","drug_concept_id","drug_type_concept_id",,,
+706,"Distribution of age by drug_concept_id","drug_concept_id","gender_concept_id",,,
+709,"Number of drug exposure records with invalid person_id",,,,,
+710,"Number of drug exposure records outside valid observation period",,,,,
+711,"Number of drug exposure records with end date < start date",,,,,
+712,"Number of drug exposure records with invalid provider_id",,,,,
+713,"Number of drug exposure records with invalid visit_id",,,,,
+715,"Distribution of days_supply by drug_concept_id","drug_concept_id",,,,
+716,"Distribution of refills by drug_concept_id","drug_concept_id",,,,
+717,"Distribution of quantity by drug_concept_id","drug_concept_id",,,,
+720,"Number of drug exposure records  by drug exposure start month","calendar month",,,,
+800,"Number of persons with at least one observation occurrence, by observation_concept_id","observation_concept_id",,,,
+801,"Number of observation occurrence records, by observation_concept_id","observation_concept_id",,,,
+802,"Number of persons by observation occurrence start month, by observation_concept_id","observation_concept_id","calendar month",,,
+803,"Number of distinct observation occurrence concepts per person",,,,,
+804,"Number of persons with at least one observation occurrence, by observation_concept_id by calendar year by gender by age decile","observation_concept_id","calendar year","gender_concept_id","age decile",
+805,"Number of observation occurrence records, by observation_concept_id by observation_type_concept_id","observation_concept_id","observation_type_concept_id",,,
+806,"Distribution of age by observation_concept_id","observation_concept_id","gender_concept_id",,,
+807,"Number of observation occurrence records, by observation_concept_id and unit_concept_id","observation_concept_id","unit_concept_id",,,
+809,"Number of observation records with invalid person_id",,,,,
+810,"Number of observation records outside valid observation period",,,,,
+812,"Number of observation records with invalid provider_id",,,,,
+813,"Number of observation records with invalid visit_id",,,,,
+814,"Number of observation records with no value (numeric, string, or concept)",,,,,
+815,"Distribution of numeric values, by observation_concept_id and unit_concept_id",,,,,
+820,"Number of observation records  by observation start month","calendar month",,,,
+900,"Number of persons with at least one drug era, by drug_concept_id","drug_concept_id",,,,
+901,"Number of drug era records, by drug_concept_id","drug_concept_id",,,,
+902,"Number of persons by drug era start month, by drug_concept_id","drug_concept_id","calendar month",,,
+903,"Number of distinct drug era concepts per person",,,,,
+904,"Number of persons with at least one drug era, by drug_concept_id by calendar year by gender by age decile","drug_concept_id","calendar year","gender_concept_id","age decile",
+906,"Distribution of age by drug_concept_id","drug_concept_id","gender_concept_id",,,
+907,"Distribution of drug era length, by drug_concept_id","drug_concept_id",,,,
+908,"Number of drug eras without valid person",,,,,
+909,"Number of drug eras outside valid observation period",,,,,
+910,"Number of drug eras with end date < start date",,,,,
+920,"Number of drug era records  by drug era start month","calendar month",,,,
+1000,"Number of persons with at least one condition era, by condition_concept_id","condition_concept_id",,,,
+1001,"Number of condition era records, by condition_concept_id","condition_concept_id",,,,
+1002,"Number of persons by condition era start month, by condition_concept_id","condition_concept_id","calendar month",,,
+1003,"Number of distinct condition era concepts per person",,,,,
+1004,"Number of persons with at least one condition era, by condition_concept_id by calendar year by gender by age decile","condition_concept_id","calendar year","gender_concept_id","age decile",
+1006,"Distribution of age by condition_concept_id","condition_concept_id","gender_concept_id",,,
+1007,"Distribution of condition era length, by condition_concept_id","condition_concept_id",,,,
+1008,"Number of condition eras without valid person",,,,,
+1009,"Number of condition eras outside valid observation period",,,,,
+1010,"Number of condition eras with end date < start date",,,,,
+1020,"Number of condition era records by condition era start month","calendar month",,,,
+1100,"Number of persons by location 3-digit zip","3-digit zip",,,,
+1101,"Number of persons by location state","state",,,,
+1102,"Number of care sites by location 3-digit zip","3-digit zip",,,,
+1103,"Number of care sites by location state","state",,,,
+1200,"Number of persons by place of service","place_of_service_concept_id",,,,
+1201,"Number of visits by place of service","place_of_service_concept_id",,,,
+1202,"Number of care sites by place of service","place_of_service_concept_id",,,,
+1406,"Length of payer plan (days) of first payer plan period by gender","gender_concept_id",,,,
+1407,"Length of payer plan (days) of first payer plan period by age decile","age_decile",,,,
+1408,"Number of persons by length of payer plan period, in 30d increments","payer plan period length 30d increments",,,,
+1409,"Number of persons with continuous payer plan in each year","calendar year",,,,
+1410,"Number of persons with continuous payer plan in each month","calendar month",,,,
+1411,"Number of persons by payer plan period start month","calendar month",,,,
+1412,"Number of persons by payer plan period end month","calendar month",,,,
+1413,"Number of persons by number of payer plan periods","number of payer plan periods",,,,
+1414,"Number of persons with payer plan period before year-of-birth",,,,,
+1415,"Number of persons with payer plan period end < payer plan period start",,,,,
+1500,"Number of drug cost records with invalid drug exposure id",,,,,
+1501,"Number of drug cost records with invalid payer plan period id",,,,,
+1502,"Distribution of paid copay, by drug_concept_id","drug_concept_id",,,,
+1503,"Distribution of paid coinsurance, by drug_concept_id","drug_concept_id",,,,
+1504,"Distribution of paid toward deductible, by drug_concept_id","drug_concept_id",,,,
+1505,"Distribution of paid by payer, by drug_concept_id","drug_concept_id",,,,
+1506,"Distribution of paid by coordination of benefit, by drug_concept_id","drug_concept_id",,,,
+1507,"Distribution of total out-of-pocket, by drug_concept_id","drug_concept_id",,,,
+1508,"Distribution of total paid, by drug_concept_id","drug_concept_id",,,,
+1509,"Distribution of ingredient_cost, by drug_concept_id","drug_concept_id",,,,
+1510,"Distribution of dispensing fee, by drug_concept_id","drug_concept_id",,,,
+1511,"Distribution of average wholesale price, by drug_concept_id","drug_concept_id",,,,
+1600,"Number of procedure cost records with invalid procedure occurrence id",,,,,
+1601,"Number of procedure cost records with invalid payer plan period id",,,,,
+1602,"Distribution of paid copay, by procedure_concept_id","procedure_concept_id",,,,
+1603,"Distribution of paid coinsurance, by procedure_concept_id","procedure_concept_id",,,,
+1604,"Distribution of paid toward deductible, by procedure_concept_id","procedure_concept_id",,,,
+1605,"Distribution of paid by payer, by procedure_concept_id","procedure_concept_id",,,,
+1606,"Distribution of paid by coordination of benefit, by procedure_concept_id","procedure_concept_id",,,,
+1607,"Distribution of total out-of-pocket, by procedure_concept_id","procedure_concept_id",,,,
+1608,"Distribution of total paid, by procedure_concept_id","procedure_concept_id",,,,
+1610,"Number of records by revenue_code_concept_id","revenue_code_concept_id",,,,
+1700,"Number of records by cohort_concept_id","cohort_concept_id",,,,
+1701,"Number of records with cohort end date < cohort start date",,,,,
+1800,"Number of persons with at least one measurement occurrence, by measurement_concept_id","measurement_concept_id",,,,
+1801,"Number of measurement occurrence records, by observation_concept_id","measurement_concept_id",,,,
+1802,"Number of persons by measurement occurrence start month, by observation_concept_id","measurement_concept_id","calendar month",,,
+1803,"Number of distinct observation occurrence concepts per person",,,,,
+1804,"Number of persons with at least one observation occurrence, by observation_concept_id by calendar year by gender by age decile","measurement_concept_id","calendar year","gender_concept_id","age decile",
+1805,"Number of observation occurrence records, by measurement_concept_id by measurement_type_concept_id","measurement_concept_id","measurement_type_concept_id",,,
+1806,"Distribution of age by observation_concept_id","observation_concept_id","gender_concept_id",,,
+1807,"Number of measurement occurrence records, by measurement_concept_id and unit_concept_id","measurement_concept_id","unit_concept_id",,,
+1809,"Number of measurement records with invalid person_id",,,,,
+1810,"Number of measurement records outside valid observation period",,,,,
+1812,"Number of measurement records with invalid provider_id",,,,,
+1813,"Number of measurement records with invalid visit_id",,,,,
+1814,"Number of measurement records with no value (numeric, string, or concept)",,,,,
+1815,"Distribution of numeric values, by measurement_concept_id and unit_concept_id",,,,,
+1816,"Distribution of low range, by measurement_concept_id and unit_concept_id",,,,,
+1817,"Distribution of high range, by observation_concept_id and unit_concept_id",,,,,
+1818,"Number of measurement records below/within/above normal range, by measurement_concept_id and unit_concept_id",,,,,
+1820,"Number of measurement records  by measurement start month","calendar month",,,,
+1821,"Number of measurement records with no numeric value",,,,,
+1900,"Source values mapped to concept_id 0 by table, by source_value","table_name","source_value",,,
+2000,"Number of patients with at least 1 Dx and 1 Rx",,,,,
+2001,"Number of patients with at least 1 Dx and 1 Proc",,,,,
+2003,"Number of patients with at least 1 Meas, 1 Dx and 1 Rx",,,,,

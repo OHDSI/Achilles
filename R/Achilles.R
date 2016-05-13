@@ -90,24 +90,24 @@ achilles <- function (connectionDetails,
   if (missing(analysisIds))
     analysisIds = getAnalysisDetails()$ANALYSIS_ID
   
-  cdmDatabase <- strsplit(cdmDatabaseSchema ,"\\.")[[1]][1]
-  resultsDatabase <- strsplit(resultsDatabaseSchema ,"\\.")[[1]][1]
-  vocabDatabase <- strsplit(vocabDatabaseSchema ,"\\.")[[1]][1]
+#   cdmDatabase <- strsplit(cdmDatabaseSchema ,"\\.")[[1]][1]
+#   resultsDatabase <- strsplit(resultsDatabaseSchema ,"\\.")[[1]][1]
+#   vocabDatabase <- strsplit(vocabDatabaseSchema ,"\\.")[[1]][1]
   
   achillesSql <- loadRenderTranslateSql(sqlFilename = achillesFile,
                                         packageName = "Achilles",
                                         dbms = connectionDetails$dbms,
                                         oracleTempSchema = oracleTempSchema,
-                                        cdm_database = cdmDatabase,
+                                        # cdm_database = cdmDatabase,
                                         cdm_database_schema = cdmDatabaseSchema,
-                                        results_database = resultsDatabase, 
+                                        # results_database = resultsDatabase, 
                                         results_database_schema = resultsDatabaseSchema,
                                         source_name = sourceName, 
                                         list_of_analysis_ids = analysisIds,
                                         createTable = createTable,
                                         smallcellcount = smallcellcount,
                                         validateSchema = validateSchema,
-                                        vocab_database = vocabDatabase,
+                                        # vocab_database = vocabDatabase,
                                         vocab_database_schema = vocabDatabaseSchema
   )
   
@@ -115,7 +115,7 @@ achilles <- function (connectionDetails,
   
   writeLines("Executing multiple queries. This could take a while")
   executeSql(conn,achillesSql)
-  writeLines(paste("Done. Achilles results can now be found in",resultsDatabase))
+  writeLines(paste("Done. Achilles results can now be found in",resultsDatabaseSchema))
   
   if (runHeel) {
     heelSql <- loadRenderTranslateSql(sqlFilename = heelFile,
@@ -123,19 +123,19 @@ achilles <- function (connectionDetails,
                                       dbms = connectionDetails$dbms,
                                       oracleTempSchema = oracleTempSchema,
                                       cdm_database_schema = cdmDatabaseSchema,
-                                      results_database = resultsDatabase,
+                                      # results_database = resultsDatabase,
                                       results_database_schema = resultsDatabaseSchema,
                                       source_name = sourceName, 
                                       list_of_analysis_ids = analysisIds,
                                       createTable = createTable,
                                       smallcellcount = smallcellcount,
-                                      vocab_database = vocabDatabase,
+                                      # vocab_database = vocabDatabase,
                                       vocab_database_schema = vocabDatabaseSchema
     )
     
     writeLines("Executing Achilles Heel. This could take a while")
     executeSql(conn,heelSql)
-    writeLines(paste("Done. Achilles Heel results can now be found in",resultsDatabase))    
+    writeLines(paste("Done. Achilles Heel results can now be found in",resultsDatabaseSchema))    
     
   } else heelSql='HEEL EXECUTION SKIPPED PER USER REQUEST'
   
@@ -161,11 +161,11 @@ achillesHeel <- function (connectionDetails,
                       cdmDatabaseSchema, 
                       oracleTempSchema = cdmDatabaseSchema,
                       resultsDatabaseSchema = cdmDatabaseSchema,
-                      cdmVersion = "4",
+                      cdmVersion = "5",
                       vocabDatabaseSchema = cdmDatabaseSchema){
   
-  resultsDatabase <- strsplit(resultsDatabaseSchema ,"\\.")[[1]][1]
-  vocabDatabase <- strsplit(vocabDatabaseSchema ,"\\.")[[1]][1]
+#   resultsDatabase <- strsplit(resultsDatabaseSchema ,"\\.")[[1]][1]
+#   vocabDatabase <- strsplit(vocabDatabaseSchema ,"\\.")[[1]][1]
   
   if (cdmVersion == "4")  {
     heelFile <- "AchillesHeel_v4.sql"
@@ -180,9 +180,9 @@ achillesHeel <- function (connectionDetails,
                                     dbms = connectionDetails$dbms,
                                     oracleTempSchema = oracleTempSchema,
                                     cdm_database_schema = cdmDatabaseSchema,
-                                    results_database = resultsDatabase,
+                                    # results_database = resultsDatabase,
                                     results_database_schema = resultsDatabaseSchema,
-                                    vocab_database = vocabDatabase,
+                                    # vocab_database = vocabDatabase,
                                     vocab_database_schema = vocabDatabaseSchema
   );
   
@@ -190,7 +190,7 @@ achillesHeel <- function (connectionDetails,
   writeLines("Executing Achilles Heel. This could take a while");
   executeSql(conn,heelSql);
   dummy <- dbDisconnect(conn);
-  writeLines(paste("Done. Achilles Heel results can now be found in",resultsDatabase))
+  writeLines(paste("Done. Achilles Heel results can now be found in",resultsDatabaseSchema))
 }
 
 #new function to extract Heel resutls now when there are extra columns from inside R
