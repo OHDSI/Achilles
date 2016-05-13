@@ -38,6 +38,22 @@ achillesResults <- achilles(connectionDetails, cdmDatabaseSchema="cdm5_inst",
                             vocabDatabaseSchema="vocabulary",cdmVersion = "5",analysisIds = subSet1)
 ```
 
+#Execute only few new analyses
+Achilles can take a long time to execute. To see new analyses, it is possible to only execute those new analyses. E.g., newly integrated Iris analyses.
+Use the following code that specifies a set of analysis_id's.
+The key is to specify which anlayses to run, and to specify createTables to FALSE so that this execution will preserve results previously executed.
+```R
+cdmDatabaseSchema='ccae_v5'    #change to yours
+resultsDatabaseSchema='nih'    #change to yours
+vocabDatabaseSchema='ccae_v5'  #change to yours
+achillesResults <- achilles(connectionDetails,cdmDatabaseSchema=cdmDatabaseSchema,
+                            resultsDatabaseSchema=resultsDatabaseSchema,
+                            sourceName="My Source Name", 
+                            vocabDatabaseSchema=vocabDatabaseSchema,
+                            cdmVersion = "5",
+                            createTable = F,analysisIds = c(2000,2001))
+                            
+```
 
 
 #Data Quality Model

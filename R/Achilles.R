@@ -194,8 +194,9 @@ achillesHeel <- function (connectionDetails,
 }
 
 #new function to extract Heel resutls now when there are extra columns from inside R
-fetchAchillesHeelResults <- function (connectionDetails, resultsDatabase){
-  connectionDetails$schema = resultsDatabase
+#' @export
+fetchAchillesHeelResults <- function (connectionDetails, resultsDatabaseSchema){
+  connectionDetails$schema = resultsDatabaseSchema
   conn <- connect(connectionDetails)
   
   

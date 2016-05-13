@@ -197,3 +197,5 @@
 1818,"Number of measurement records below/within/above normal range, by measurement_concept_id and unit_concept_id",NA,NA,NA,NA,NA
 1820,"Number of measurement records by measurement start month","calendar month",NA,NA,NA,NA
 1821,"Number of measurement records with no numeric value",NA,NA,NA,NA,NA
+2000,"Number of patients with at least 1 Dx and 1 Rx",NA,NA,NA,NA,NA
+2001,"Number of patients with at least 1 Dx and 1 Proc",NA,NA,NA,NA,NA

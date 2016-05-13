@@ -11,7 +11,7 @@ Getting Started
 
 2. Make sure that you have Java installed. If you don't have Java already intalled on your computed (on most computers it already is installed), go to [java.com](http://java.com) to get the latest version.  (If you have trouble building with rJava below, be sure on Windows that your Path variable includes the path to jvm.dll (Windows Button --> type "path" --> Edit Environmental Variables --> Edit PATH variable, add to end ;C:/Program Files/Java/jre/bin/server) or wherever it is on your system.)
 
-3. in R, use the following commands to install Achilles:
+3. in R, use the following commands to install Achilles (if you have prior package installations of aony of these packages, you may need to first unistall them using the command remove.packages()).
 
   ```r
   install.packages("devtools")
@@ -32,6 +32,8 @@ Getting Started
                               cdmVersion = "cdm version", vocabDatabaseSchema="vocabulary")
   ```
   "cdm4_inst" cdmDatabaseSchema parmater, "results" resultsDatabaseSchema parameter, and "vocabulary" vocabDatabaseSchema are the names of the schemas holding the CDM data, targeted for result writing, and holding the Vocabulary data respectively. See the [DatabaseConnector](https://github.com/OHDSI/DatabaseConnector) package for details on settings the connection details for your database, for example by typing
+  
+  Execution of all Achilles pre-computations may take a long time. See notes.md file to find out how some analyses can be excluded to make the execution faster (excluding cost pre-computations) 
   ```r
   ?createConnectionDetails
   ```
@@ -41,6 +43,11 @@ Getting Started
 5. To use [AchillesWeb](https://github.com/OHDSI/AchillesWeb) to explore the Achilles statistics, you must first export the statistics to JSON files:
   ```r
   exportToJson(connectionDetails, cdmDatabaseSchema = "cdm4_inst", resultsDatabaseSchema = "results", outputPath = "c:/myPath/AchillesExport", cdmVersion = "cdm version", vocabDatabaseSchema = "vocabulary")
+  ```
+
+6. To run only Achilles Heel (component of Achilles), use the following command:
+  ```r
+  achillesHeel(connectionDetails, cdmDatabaseSchema = "cdm4_inst", resultsDatabaseSchema = "results", cdmVersion = "cdm version", vocabDatabaseSchema = "vocabulary")
   ```
 
 Getting Started with Docker
