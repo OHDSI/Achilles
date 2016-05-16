@@ -16,3 +16,4 @@ Suggests:
     testthat
 License: Apache License
 Roxygen: list(wrap = TRUE)
+RoxygenNote: 5.0.1

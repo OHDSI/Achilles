@@ -27,7 +27,7 @@ from @results_database_schema.ACHILLES_results ar1
                     when (concept_name like 'Inpatient%' or concept_name like 'Outpatient%' ) and (concept_name not like '%primary%' and concept_name not like '%1st position%') then 'Secondary diagnosis'
                     else '' end as concept_group_name
        from @vocab_database_schema.concept
-       where lower(domain_id) = 'condition type' 
+       where lower(concept_class_id) = 'condition type' 
        
        ) c2
        on ar1.stratum_2 = cast(c2.concept_id as VARCHAR)
