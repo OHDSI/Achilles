@@ -751,11 +751,11 @@ GROUP BY ord1.analysis_id, oa1.analysis_name;
 
 
 with t1 (all_count) as 
-  (select sum(count_value) as all_count from achilles_results where analysis_id = 1820) 
+  (select sum(count_value) as all_count from @results_database_schema.achilles_results where analysis_id = 1820)
   --count of all meas rows (I wish this would also be a measure) (1820 is count by month)
 select 100000 as analysis_id,
 'percentage' as statistic_type,
-(select count_value from achilles_results where analysis_id = 1821)*100.0/all_count as statistic_value 
+(select count_value from @results_database_schema.achilles_results where analysis_id = 1821)*100.0/all_count as statistic_value
 into #tempResults 
 from t1;
 
