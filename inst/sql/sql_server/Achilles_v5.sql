@@ -5041,7 +5041,7 @@ insert into @results_database_schema.ACHILLES_results (analysis_id, stratum_1, c
 select 1103 as analysis_id,  
 	l1.state as stratum_1, COUNT_BIG(distinct care_site_id) as count_value
 from @cdm_database_schema.care_site cs1
-	inner join LOCATION l1
+	inner join @cdm_database_schema.LOCATION l1
 	on cs1.location_id = l1.location_id
 where cs1.location_id is not null
 	and l1.state is not null
