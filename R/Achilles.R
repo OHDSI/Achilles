@@ -115,7 +115,7 @@ achilles <- function (connectionDetails,
   
   writeLines("Executing multiple queries. This could take a while")
   executeSql(conn,achillesSql)
-  writeLines(paste("Done. Achilles results can now be found in",resultsDatabase))
+  writeLines(paste("Done. Achilles results can now be found in",resultsDatabaseSchema))
   
   if (runHeel) {
     heelSql <- loadRenderTranslateSql(sqlFilename = heelFile,
