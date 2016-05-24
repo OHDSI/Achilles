@@ -36,7 +36,6 @@ SQL for ACHILLES results (for either OMOP CDM v4 or OMOP CDM v5)
 *******************************************************************/
 
 {DEFAULT @cdm_database_schema = 'CDM.dbo'}
-{DEFAULT @results_database = 'scratch'}
 {DEFAULT @source_name = 'CDM NAME'}
 {DEFAULT @smallcellcount = 5}
 {DEFAULT @createTable = TRUE}
@@ -45,7 +44,6 @@ SQL for ACHILLES results (for either OMOP CDM v4 or OMOP CDM v5)
 --@results_database_schema.ACHILLES_Heel part:
 
 --prepare the tables first
-USE @results_database_schema;
 
 IF OBJECT_ID('@results_database_schema.ACHILLES_HEEL_results', 'U') IS NOT NULL
   DROP TABLE @results_database_schema.ACHILLES_HEEL_results;
@@ -790,7 +788,7 @@ drop table #tempResults;
 --unusual diagnosis present, this rule is terminology dependend
 
 with tempcnt as(
-	select sum(count_value) as pt_cnt from achilles_results 
+	select sum(count_value) as pt_cnt from @results_database_schema.achilles_results 
 	where analysis_id = 404 --dx by decile
 	and stratum_1 = '195075' --meconium
 	--and stratum_3 = '8507' --possible limit to males only

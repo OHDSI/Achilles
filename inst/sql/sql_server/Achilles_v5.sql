@@ -1224,9 +1224,6 @@ delete from @results_database_schema.ACHILLES_results_dist where analysis_id IN 
 
 ****/
 
-use @cdm_database;
-
-
 --{0 IN (@list_of_analysis_ids)}?{
 -- 0	Number of persons
 insert into @results_database_schema.ACHILLES_results (analysis_id, stratum_1, count_value)

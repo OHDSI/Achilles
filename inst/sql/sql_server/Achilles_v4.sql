@@ -412,8 +412,6 @@ DROP TABLE #TableCheck;
 
 --}
 
-use @results_database;
-
 --{@createTable}?{
 
 IF OBJECT_ID('@results_database_schema.ACHILLES_analysis', 'U') IS NOT NULL

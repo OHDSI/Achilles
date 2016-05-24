@@ -45,8 +45,6 @@ SQL for ACHILLES results (for either OMOP CDM v4)
 
  
 --Achilles_Heel part:
-USE @results_database;
-
 IF OBJECT_ID('@results_database_schema.ACHILLES_HEEL_results', 'U') IS NOT NULL
   DROP TABLE @results_database_schema.ACHILLES_HEEL_results;
 
