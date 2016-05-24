@@ -36,7 +36,6 @@ SQL for ACHILLES results (for either OMOP CDM v4 or OMOP CDM v5)
 *******************************************************************/
 
 {DEFAULT @cdm_database_schema = 'CDM.dbo'}
-{DEFAULT @results_database = 'scratch'}
 {DEFAULT @source_name = 'CDM NAME'}
 {DEFAULT @smallcellcount = 5}
 {DEFAULT @createTable = TRUE}
@@ -45,7 +44,7 @@ SQL for ACHILLES results (for either OMOP CDM v4 or OMOP CDM v5)
 --@results_database_schema.ACHILLES_Heel part:
 
 --prepare the tables first
-USE @results_database_schema;
+--USE @results_database_schema; --new convention is to avoid use statments, all tables are prefixed
 
 IF OBJECT_ID('@results_database_schema.ACHILLES_HEEL_results', 'U') IS NOT NULL
   DROP TABLE @results_database_schema.ACHILLES_HEEL_results;
@@ -754,11 +753,11 @@ GROUP BY ord1.analysis_id, oa1.analysis_name;
 
 
 with t1 (all_count) as 
-  (select sum(count_value) as all_count from achilles_results where analysis_id = 1820) 
+  (select sum(count_value) as all_count from @results_database_schema.achilles_results where analysis_id = 1820) 
   --count of all meas rows (I wish this would also be a measure) (1820 is count by month)
 select 100000 as analysis_id,
 'percentage' as statistic_type,
-(select count_value from achilles_results where analysis_id = 1821)*100.0/all_count as statistic_value 
+(select count_value from @results_database_schema.achilles_results where analysis_id = 1821)*100.0/all_count as statistic_value 
 into #tempResults 
 from t1;
 
@@ -790,7 +789,7 @@ drop table #tempResults;
 --unusual diagnosis present, this rule is terminology dependend
 
 with tempcnt as(
-	select sum(count_value) as pt_cnt from achilles_results 
+	select sum(count_value) as pt_cnt from @results_database_schema.achilles_results 
 	where analysis_id = 404 --dx by decile
 	and stratum_1 = '195075' --meconium
 	--and stratum_3 = '8507' --possible limit to males only
