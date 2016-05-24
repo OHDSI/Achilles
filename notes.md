@@ -38,10 +38,26 @@ achillesResults <- achilles(connectionDetails, cdmDatabaseSchema="cdm5_inst",
                             vocabDatabaseSchema="vocabulary",cdmVersion = "5",analysisIds = subSet1)
 ```
 
+#Execute only few new analyses
+Achilles can take a long time to execute. To see new analyses, it is possible to only execute those new analyses. E.g., newly integrated Iris analyses.
+Use the following code that specifies a set of analysis_id's.
+The key is to specify which anlayses to run, and to specify createTables to FALSE so that this execution will preserve results previously executed.
+```R
+cdmDatabaseSchema='ccae_v5'    #change to yours
+resultsDatabaseSchema='nih'    #change to yours
+vocabDatabaseSchema='ccae_v5'  #change to yours
+achillesResults <- achilles(connectionDetails,cdmDatabaseSchema=cdmDatabaseSchema,
+                            resultsDatabaseSchema=resultsDatabaseSchema,
+                            sourceName="My Source Name", 
+                            vocabDatabaseSchema=vocabDatabaseSchema,
+                            cdmVersion = "5",
+                            createTable = F,analysisIds = c(2000,2001))
+                            
+```
 
 
-#Data Quality Model
-These notes relate Achilles and Achilles Heel to Data Quality Model (DQM)
+#Data Quality CDM 
+These notes relate Achilles and Achilles Heel to Data Quality CDM (DQ CDM)
 
 DQM terminology is slightly different
 
@@ -50,8 +66,29 @@ analysis = measure
 stratum = dimension  
 rule = check
 
+##Classification of measures
+###by PURPOSE	
+- general purpose measure (% of males)
+- measure specific for DQ (count of rows with invalid provider_id)
+###by OUTPUT	
+- single row measure  (count of providers)
+- multiple rows measure  (medium, large, very large) (depends on stratification)
+###by TERMINOLOGY/MODEL	
+- terminology dependent measure/rule  (hysterectomy (using SNOMED (SCT0013513) (Athena CIDs)) (ICD9CM, 10PCS, CPT)
+- terminology independent measure/rule (eg, at least 1 numerical lab result value in 1000 person sample)
+- model independent measure/rule (eg, zombie events, prior conception events)
 
 
+
+
+#overview of analyses (analysisDetail.csv)
+This overview gets updated via insert statements in the Achilles main SQL file.
+The R code below updates the CSV file. (used by some other parts of code)
+```R
+#internal function called here but it simply executes the sql passed to it
+analyses_overview<-fetchAnySql(connectionDetails,resultsDatabaseSchema,'select * from achilles_analysis')
+write.csv(analyses_overview,file='c:/d/Achilles/inst/csv/analysisDetails.csv',row.names=F,na='')
+```
 
 #Types of analyses
 
