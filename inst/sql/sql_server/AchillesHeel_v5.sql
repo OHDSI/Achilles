@@ -58,7 +58,10 @@ CREATE TABLE @results_database_schema.ACHILLES_HEEL_results (
 
 --new part of Heel requires derived tables (per suggestion of Patrick)
 --table structure is up for discussion
+--per DQI group suggestion: measure_id is made into a string to make derivation
+--and sql authoring easy
 --computation is quick so the whole table gets wiped every time Heel is executed
+
 
 IF OBJECT_ID('@results_database_schema.ACHILLES_results_derived', 'U') IS NOT NULL
   drop table @results_database_schema.ACHILLES_results_derived;
@@ -68,11 +71,52 @@ create table @results_database_schema.ACHILLES_results_derived
 	analysis_id int,
 	stratum_1 varchar(255),
 	statistic_type varchar(255),
-	statistic_value float
+	statistic_value float,
+	measure_id varchar(255)
 );
 
 
---actual rules start here
+--general derived measures
+--non-CDM sources may generate derived measures directly
+--for CDM and Achilles: the fastest way to compute derived measures is to use
+--existing measures
+--derived measures have IDs over 100 000
+
+
+--event type derived measures analysis xx05 is often analysis by xx_type
+--generate counts for meas type, drug type, proc type, obs type
+--optional TODO: possibly rewrite this with CASE statement to better make 705 into drug, 605 into proc
+--               in measure_id column (or make that separate sql calls for each category)
+insert into @results_database_schema.ACHILLES_results_derived (analysis_id, stratum_1, statistic_value,measure_id)    
+select 
+  --100000+analysis_id, 
+  NULL as analysis_id,
+  stratum_2 as stratum_1,
+  sum(count_value) as statistic_value,
+  'ach_'+CAST(analysis_id as VARCHAR) + ':GlobalCnt' as measure_id
+from @results_database_schema.achilles_results 
+where analysis_id in(1805,705,605,805) group by analysis_id,stratum_2;
+
+
+--iris measures by percentage
+--for this part, derived table is trying to adopt DQI terminolgy 
+--and generalize analysis naming scheme (and generalize the DQ rules)
+
+insert into @results_database_schema.ACHILLES_results_derived (statistic_value,measure_id)    
+select 
+   100.0*count_value/(select count_value as total_pts from @results_database_schema.achilles_results r where analysis_id =1) as statistic_value,
+   'ach_'+CAST(analysis_id as VARCHAR) + ':Percentage' as measure_id
+  from @results_database_schema.achilles_results 
+
+  where analysis_id in (2000,2001,2002);
+  
+
+--end of derived general measures
+
+
+--actual Heel rules start from here 
+--Some rules check conformance to the CDM model, other rules look at data quality
+
 
 --ruleid 1 check for non-zero counts from checks of improper data (invalid ids, out-of-bound data, inconsistent dates)
 INSERT INTO @results_database_schema.ACHILLES_HEEL_results (
@@ -211,7 +255,7 @@ WHERE ord1.analysis_id IN (
 	AND ord1.max_value > 30
 GROUP BY ord1.analysis_id, oa1.analysis_name;
 
---ruleid 4 invalid concept_id
+--ruleid 4 CDM-conformance rule: invalid concept_id
 INSERT INTO @results_database_schema.ACHILLES_HEEL_results (
 	analysis_id,
 	ACHILLES_HEEL_warning,
@@ -249,7 +293,7 @@ WHERE or1.analysis_id IN (
 GROUP BY or1.analysis_id,
 	oa1.analysis_name;
 
---ruleid 5 invalid type concept_id
+--ruleid 5 CDM-conformance rule:invalid type concept_id
 INSERT INTO @results_database_schema.ACHILLES_HEEL_results (
 	analysis_id,
 	ACHILLES_HEEL_warning,
@@ -276,7 +320,7 @@ WHERE or1.analysis_id IN (
 GROUP BY or1.analysis_id,
 	oa1.analysis_name;
 
---ruleid 6 invalid concept_id
+--ruleid 6 CDM-conformance rule:invalid concept_id
 INSERT INTO @results_database_schema.ACHILLES_HEEL_results (
 	analysis_id,
 	ACHILLES_HEEL_warning,
@@ -312,7 +356,7 @@ GROUP BY or1.analysis_id,
 	oa1.analysis_name;
 
 --concept from the wrong vocabulary
---ruleid 7 gender  - 12 HL7
+--ruleid 7 CDM-conformance rule:gender  - 12 HL7
 INSERT INTO @results_database_schema.ACHILLES_HEEL_results (
 	analysis_id,
 	ACHILLES_HEEL_warning,
@@ -404,7 +448,7 @@ WHERE or1.analysis_id IN (202)
 GROUP BY or1.analysis_id,
 	oa1.analysis_name;
 
---ruleid 11 specialty - 48 specialty
+--ruleid 11 CDM-conformance rule:specialty - 48 specialty
 INSERT INTO @results_database_schema.ACHILLES_HEEL_results (
 	analysis_id,
 	ACHILLES_HEEL_warning,
@@ -717,7 +761,7 @@ WHERE ord1.analysis_id IN (716)
 	AND ord1.max_value > 10
 GROUP BY ord1.analysis_id, oa1.analysis_name;
 
---ruleid 26 WARNING: quantity > 600
+--ruleid 26 DQ rule: WARNING: quantity > 600
 INSERT INTO @results_database_schema.ACHILLES_HEEL_results (
 	analysis_id,
 	ACHILLES_HEEL_warning,
@@ -745,7 +789,7 @@ GROUP BY ord1.analysis_id, oa1.analysis_name;
 --due to most likely missint sql cast errors it was removed from this release
 --will be included after more testing
 
---rule28
+--rule28 DQ rule
 --are all values (or more than threshold) in measurement table non numerical?
 --(count of Measurment records with no numerical value is in analysis_id 1821)
 
@@ -754,15 +798,16 @@ GROUP BY ord1.analysis_id, oa1.analysis_name;
 with t1 (all_count) as 
   (select sum(count_value) as all_count from @results_database_schema.achilles_results where analysis_id = 1820)
   --count of all meas rows (I wish this would also be a measure) (1820 is count by month)
-select 100000 as analysis_id,
+select NULL as analysis_id,
 'percentage' as statistic_type,
-(select count_value from @results_database_schema.achilles_results where analysis_id = 1821)*100.0/all_count as statistic_value
+(select count_value from @results_database_schema.achilles_results where analysis_id = 1821)*100.0/all_count as statistic_value,
+'Meas:NoNumValue:Percentage'as measure_id
 into #tempResults 
 from t1;
 
 
-insert into @results_database_schema.ACHILLES_results_derived (analysis_id, statistic_type,statistic_value)    
-  select analysis_id, statistic_type,statistic_value from #tempResults;
+insert into @results_database_schema.ACHILLES_results_derived (analysis_id, statistic_type,statistic_value,measure_id)    
+  select analysis_id, statistic_type,statistic_value,measure_id from #tempResults;
 
 
 
@@ -772,7 +817,7 @@ SELECT
 	28 as rule_id
 FROM #tempResults t
 --WHERE t.analysis_id IN (100730,100430) --umbrella version
-WHERE t.analysis_id IN (100000)
+WHERE measure_id='Meas:NoNumValue:Percentage' --t.analysis_id IN (100000)
 --the intended threshold is 1 percent, this value is there to get pilot data from early adopters
 	AND t.statistic_value >= 80
 ;
@@ -784,7 +829,7 @@ drop table #tempResults;
 
 --end of rule 28
 
---rule29
+--rule29 DQ rule
 --unusual diagnosis present, this rule is terminology dependend
 
 with tempcnt as(
@@ -814,3 +859,18 @@ drop table #tempResults;
 --end of rule29
 
 
+--rule30 CDM-conformance rule: is CDM metadata table created at all?
+  --create a derived measure for rule30
+  --done strangly to possibly avoid from dual error on Oracle
+  --done as not null just in case sqlRender has NOT NULL  hard coded
+  --check if table exist and if yes - derive 1 for a derived measure
+IF OBJECT_ID('@cdm_database_schema.CDM_SOURCE', 'U') IS NOT NULL
+insert into @results_database_schema.ACHILLES_results_derived (statistic_value,measure_id)    
+  select distinct analysis_id as statistic_value,
+  'MetaData:TblExists' as measure_id
+  from @results_database_schema.ACHILLES_results
+  where analysis_id = 1;
+  
+  --actual rule
+
+  
