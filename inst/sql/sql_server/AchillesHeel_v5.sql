@@ -798,7 +798,7 @@ GROUP BY ord1.analysis_id, oa1.analysis_name;
 with t1 (all_count) as 
   (select sum(count_value) as all_count from @results_database_schema.achilles_results where analysis_id = 1820)
   --count of all meas rows (I wish this would also be a measure) (1820 is count by month)
-select NULL as analysis_id,
+select 
 'percentage' as statistic_type,
 (select count_value from @results_database_schema.achilles_results where analysis_id = 1821)*100.0/all_count as statistic_value,
 'Meas:NoNumValue:Percentage'as measure_id
@@ -806,8 +806,8 @@ into #tempResults
 from t1;
 
 
-insert into @results_database_schema.ACHILLES_results_derived (analysis_id, statistic_type,statistic_value,measure_id)    
-  select analysis_id, statistic_type,statistic_value,measure_id from #tempResults;
+insert into @results_database_schema.ACHILLES_results_derived (statistic_type, statistic_value, measure_id)    
+  select  statistic_type,statistic_value,measure_id from #tempResults;
 
 
 
@@ -864,13 +864,16 @@ drop table #tempResults;
   --done strangly to possibly avoid from dual error on Oracle
   --done as not null just in case sqlRender has NOT NULL  hard coded
   --check if table exist and if yes - derive 1 for a derived measure
-IF OBJECT_ID('@cdm_database_schema.CDM_SOURCE', 'U') IS NOT NULL
-insert into @results_database_schema.ACHILLES_results_derived (statistic_value,measure_id)    
-  select distinct analysis_id as statistic_value,
-  'MetaData:TblExists' as measure_id
-  from @results_database_schema.ACHILLES_results
-  where analysis_id = 1;
+  
+  --does not work on redshift :-( --commenting it out
+--IF OBJECT_ID('@cdm_database_schema.CDM_SOURCE', 'U') IS NOT NULL
+--insert into @results_database_schema.ACHILLES_results_derived (statistic_value,measure_id)    
+--  select distinct analysis_id as statistic_value,
+--  'MetaData:TblExists' as measure_id
+--  from @results_database_schema.ACHILLES_results
+--  where analysis_id = 1;
   
   --actual rule
 
-  
+
+
