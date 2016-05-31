@@ -5430,10 +5430,7 @@ where ppp1.payer_plan_period_end_date < ppp1.payer_plan_period_start_date
 ;
 --}
 
-
-
-
-
+{ @runCostAnalysis }?{
 
 /********************************************
 
@@ -5443,7 +5440,8 @@ ACHILLES Analyses on DRUG_COST table
 
 -- for performance optimization, we create a table with drug costs pre-cached for the 15XX analysis
 
--- { 1502 in (@list_of_analysis_ids) | 1503 in (@list_of_analysis_ids) | 1504 in (@list_of_analysis_ids) | 1505 in (@list_of_analysis_ids) | 1506 in (@list_of_analysis_ids) | 1507 in (@list_of_analysis_ids) | 1508 in (@list_of_analysis_ids) | 1509 in (@list_of_analysis_ids) | 1510 in (@list_of_analysis_ids) | 1511 in (@list_of_analysis_ids)}?{
+
+-- {1502 in (@list_of_analysis_ids) | 1503 in (@list_of_analysis_ids) | 1504 in (@list_of_analysis_ids) | 1505 in (@list_of_analysis_ids) | 1506 in (@list_of_analysis_ids) | 1507 in (@list_of_analysis_ids) | 1508 in (@list_of_analysis_ids) | 1509 in (@list_of_analysis_ids) | 1510 in (@list_of_analysis_ids) | 1511 in (@list_of_analysis_ids)}?{
 
 IF OBJECT_ID('@results_database_schema.ACHILLES_drug_cost_raw', 'U') IS NOT NULL
   DROP TABLE @results_database_schema.ACHILLES_drug_cost_raw;
@@ -6142,17 +6140,19 @@ drop table #tempResults;
 
 --}
 
--- clean up cached table if exists
-IF OBJECT_ID('@results_database_schema.ACHILLES_drug_cost_raw', 'U') IS NOT NULL
-  DROP TABLE @results_database_schema.ACHILLES_drug_cost_raw;
+{1502 in (@list_of_analysis_ids) | 1503 in (@list_of_analysis_ids) | 1504 in (@list_of_analysis_ids) | 1505 in (@list_of_analysis_ids) | 1506 in (@list_of_analysis_ids) | 1507 in (@list_of_analysis_ids) | 1508 in (@list_of_analysis_ids) | 1509 in (@list_of_analysis_ids) | 1510 in (@list_of_analysis_ids) | 1511 in (@list_of_analysis_ids)}?{
+-- clean up cached table
+DROP TABLE @results_database_schema.ACHILLES_drug_cost_raw;
+}
 
 /********************************************
 
 ACHILLES Analyses on PROCEDURE_COST table
 
 *********************************************/
+}
 
--- { 1602 in (@list_of_analysis_ids) | 1603 in (@list_of_analysis_ids) | 1604 in (@list_of_analysis_ids) | 1605 in (@list_of_analysis_ids) | 1606 in (@list_of_analysis_ids) | 1607 in (@list_of_analysis_ids) | 1608 in (@list_of_analysis_ids)}?{
+{(1602 in (@list_of_analysis_ids) | 1603 in (@list_of_analysis_ids) | 1604 in (@list_of_analysis_ids) | 1605 in (@list_of_analysis_ids) | 1606 in (@list_of_analysis_ids) | 1607 in (@list_of_analysis_ids) | 1608 in (@list_of_analysis_ids))}?{
 
 IF OBJECT_ID('@results_database_schema.ACHILLES_procedure_cost_raw', 'U') IS NOT NULL
   DROP TABLE @results_database_schema.ACHILLES_procedure_cost_raw;
@@ -6169,7 +6169,8 @@ INTO @results_database_schema.ACHILLES_procedure_cost_raw
 from @cdm_database_schema.procedure_cost pc1
 join @cdm_database_schema.procedure_occurrence po1 on pc1.procedure_occurrence_id = po1.procedure_occurrence_id and procedure_concept_id <> 0
 ;
---}
+}
+
 
 --{1600 IN (@list_of_analysis_ids)}?{
 -- 1600	Number of procedure cost records with invalid procedure exposure id
@@ -6670,16 +6671,20 @@ group by revenue_code_concept_id
 ;
 --}
 
--- clean up cached table if exists
-IF OBJECT_ID('@results_database_schema.ACHILLES_procedure_cost_raw', 'U') IS NOT NULL
-  DROP TABLE @results_database_schema.ACHILLES_procedure_cost_raw;
+{(1602 in (@list_of_analysis_ids) | 1603 in (@list_of_analysis_ids) | 1604 in (@list_of_analysis_ids) | 1605 in (@list_of_analysis_ids) | 1606 in (@list_of_analysis_ids) | 1607 in (@list_of_analysis_ids) | 1608 in (@list_of_analysis_ids))}?{
+-- clean up cached table
+DROP TABLE @results_database_schema.ACHILLES_procedure_cost_raw;
+}
 
+-- End Cost Analysis
+}
 
 /********************************************
 
 ACHILLES Analyses on COHORT table
 
 *********************************************/
+
 
 --{1700 IN (@list_of_analysis_ids)}?{
 -- 1700	Number of records by cohort_concept_id

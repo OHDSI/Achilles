@@ -9,7 +9,7 @@ achilles(connectionDetails, cdmDatabaseSchema,
   resultsDatabaseSchema = cdmDatabaseSchema, sourceName = "", analysisIds,
   createTable = TRUE, smallcellcount = 5, cdmVersion = "4",
   runHeel = TRUE, validateSchema = FALSE,
-  vocabDatabaseSchema = cdmDatabaseSchema)
+  vocabDatabaseSchema = cdmDatabaseSchema, runCostAnalysis = FALSE)
 }
 \arguments{
   \item{connectionDetails}{An R object of type
@@ -47,6 +47,9 @@ achilles(connectionDetails, cdmDatabaseSchema,
   database schema that contains OMOP Vocabulary. Default is
   cdmDatabaseSchema. On SQL Server, this should specifiy both
   the database and the schema, so for example 'results.dbo'.}
+  \item{runCostAnalysis}{Boolean to determine if cost analysis
+  should be run. Note: only works on CDM v5.0 style cost
+  tables.}
 }
 \value{
 An object of type \code{achillesResults} containing details

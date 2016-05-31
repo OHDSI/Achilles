@@ -56,6 +56,7 @@ getAnalysisDetails <- function() {
 #' @param runHeel     Boolean to determine if Achilles Heel data quality reporting will be produced based on the summary statistics.  Default = TRUE
 #' @param validateSchema     Boolean to determine if CDM Schema Validation should be run. This could be very slow.  Default = FALSE
 #' @param vocabDatabaseSchema		string name of database schema that contains OMOP Vocabulary. Default is cdmDatabaseSchema. On SQL Server, this should specifiy both the database and the schema, so for example 'results.dbo'.
+#' @param runCostAnalysis Boolean to determine if cost analysis should be run. Note: only works on CDM v5.0 style cost tables.
 #' 
 #' @return An object of type \code{achillesResults} containing details for connecting to the database containing the results 
 #' @examples \dontrun{
@@ -75,7 +76,8 @@ achilles <- function (connectionDetails,
                       cdmVersion = "4", 
                       runHeel = TRUE,
                       validateSchema = FALSE,
-                      vocabDatabaseSchema = cdmDatabaseSchema){
+                      vocabDatabaseSchema = cdmDatabaseSchema,
+                      runCostAnalysis = FALSE){
   
   if (cdmVersion == "4")  {
     achillesFile <- "Achilles_v4.sql"
@@ -108,7 +110,8 @@ achilles <- function (connectionDetails,
                                         smallcellcount = smallcellcount,
                                         validateSchema = validateSchema,
                                         # vocab_database = vocabDatabase,
-                                        vocab_database_schema = vocabDatabaseSchema
+                                        vocab_database_schema = vocabDatabaseSchema,
+                                        runCostAnalysis = runCostAnalysis
   )
   
   conn <- connect(connectionDetails)
@@ -200,8 +203,7 @@ fetchAchillesHeelResults <- function (connectionDetails, resultsDatabaseSchema){
   conn <- connect(connectionDetails)
   
   
-  sql <- "SELECT * FROM ACHILLES_heel_results 
-  "
+  sql <- "SELECT * FROM ACHILLES_heel_results"
   sql <- renderSql(sql)$sql
   res <- dbGetQuery(conn,sql)
   res
