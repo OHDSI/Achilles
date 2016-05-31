@@ -6150,7 +6150,6 @@ DROP TABLE @results_database_schema.ACHILLES_drug_cost_raw;
 ACHILLES Analyses on PROCEDURE_COST table
 
 *********************************************/
-}
 
 {(1602 in (@list_of_analysis_ids) | 1603 in (@list_of_analysis_ids) | 1604 in (@list_of_analysis_ids) | 1605 in (@list_of_analysis_ids) | 1606 in (@list_of_analysis_ids) | 1607 in (@list_of_analysis_ids) | 1608 in (@list_of_analysis_ids))}?{
 

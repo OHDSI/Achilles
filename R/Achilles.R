@@ -117,6 +117,7 @@ achilles <- function (connectionDetails,
   conn <- connect(connectionDetails)
   
   writeLines("Executing multiple queries. This could take a while")
+  #writeSql(achillesSql, 'achillesDebug.sql');
   executeSql(conn,achillesSql)
   writeLines(paste("Done. Achilles results can now be found in",resultsDatabaseSchema))
   
