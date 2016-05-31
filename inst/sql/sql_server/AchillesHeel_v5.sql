@@ -876,4 +876,23 @@ drop table #tempResults;
   --actual rule
 
 
+--rule31 DQ rule
+--ratio of providers to total patients
+
+--compute a derived reatio
+--TODO if provider count is zero it will generate division by zero (not sure how dirrerent db engins will react)
+insert into @results_database_schema.ACHILLES_results_derived (statistic_value,measure_id)    
+    select  1.0*(select count_value as total_pts from @results_database_schema.achilles_results r where analysis_id =1)/count_value as statistic_value,
+    'Provider:PatientProviderRatio' as measure_id
+    from @results_database_schema.achilles_results where analysis_id = 300
+;
+
+INSERT INTO @results_database_schema.ACHILLES_HEEL_results (ACHILLES_HEEL_warning,rule_id)
+SELECT 
+ 'NOTIFICATION:[PLAUSIBILITY] database has too few providers defined (given the total patient number)' as ACHILLES_HEEL_warning,
+  31 as rule_id
+FROM @results_database_schema.ACHILLES_results_derived d
+where d.measure_id = 'Provider:PatientProviderRatio'
+and d.statistic_value > 10000  --thresholds will be decided in the ongoing DQ-Study2
+;
 
