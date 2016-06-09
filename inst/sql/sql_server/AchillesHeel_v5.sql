@@ -80,12 +80,12 @@ create table @results_database_schema.ACHILLES_results_derived
 --non-CDM sources may generate derived measures directly
 --for CDM and Achilles: the fastest way to compute derived measures is to use
 --existing measures
---derived measures have IDs over 100 000
+--derived measures have IDs over 100 000 (not any more, instead, they use measure_id as their id)
 
 
 --event type derived measures analysis xx05 is often analysis by xx_type
 --generate counts for meas type, drug type, proc type, obs type
---optional TODO: possibly rewrite this with CASE statement to better make 705 into drug, 605 into proc
+--optional TODO: possibly rewrite this with CASE statement to better make 705 into drug, 605 into proc ...etc
 --               in measure_id column (or make that separate sql calls for each category)
 insert into @results_database_schema.ACHILLES_results_derived (analysis_id, stratum_1, statistic_value,measure_id)    
 select 
@@ -95,7 +95,33 @@ select
   sum(count_value) as statistic_value,
   'ach_'+CAST(analysis_id as VARCHAR) + ':GlobalCnt' as measure_id
 from @results_database_schema.achilles_results 
-where analysis_id in(1805,705,605,805) group by analysis_id,stratum_2;
+where analysis_id in(1805,705,605,805,405) group by analysis_id,stratum_2;
+
+
+
+
+--total number of rows per domain
+--this derived measure is used for later measure of % of unmapped rows
+--this produces a total count of rows in condition table, procedure table etc.
+--used as denominator in later measures
+    insert into @results_database_schema.ACHILLES_results_derived (statistic_value,measure_id)    
+    select sum(count_value) as statistic_value, 
+           'ach_'+CAST(analysis_id as VARCHAR) + ':GlobalRowCnt' as measure_id
+    from @results_database_schema.achilles_results 
+    where analysis_id in (401,601,701,801,1801) group by analysis_id
+    ;
+
+--concept_0 global row  Counts per domain
+--this is numerator for percentage value of unmapped rows (per domain)
+insert into @results_database_schema.ACHILLES_results_derived (statistic_value,measure_id)    
+    select count_value as statistic_value, 
+           'UnmappedData:ach_'+CAST(analysis_id as VARCHAR) + ':GlobalRowCnt' as measure_id
+    from @results_database_schema.achilles_results 
+    --TODO:stratum_1 is varchar and this comparison may fail on some db engines
+    --indeed, mysql got error, changed to a string comparison
+    where analysis_id in (401,601,701,801,1801) and stratum_1 = '0' 
+    ;
+    
 
 
 --iris measures by percentage
@@ -108,13 +134,40 @@ select
    'ach_'+CAST(analysis_id as VARCHAR) + ':Percentage' as measure_id
   from @results_database_schema.achilles_results 
 
-  where analysis_id in (2000,2001,2002);
+  where analysis_id in (2000,2001,2002,2003);
   
+--iris derived measure from visit data
+--insert into @results_database_schema.ACHILLES_results_derived (statistic_value,measure_id)    
+--    select sum(count_value) as statistic_value, 
+--           'Visit:PersonCnt' as measure_id
+-- from @results_database_schema.achilles_results where analysis_id = 200;
+-- WRONG (has more patients than total)
+
+
+
+--this is also in dist measure 203
+--insert into @results_database_schema.ACHILLES_results_derived (statistic_value,measure_id)    
+--    select sum(count_value) as statistic_value, 
+--           'Visit:InstanceCnt' as measure_id
+-- from @results_database_schema.achilles_results where analysis_id = 201;
+
 
 --end of derived general measures
 
 
---actual Heel rules start from here 
+
+
+
+
+
+--actual Heel rules start from here *****************************************
+
+
+
+
+
+
+
 --Some rules check conformance to the CDM model, other rules look at data quality
 
 
@@ -788,6 +841,57 @@ GROUP BY ord1.analysis_id, oa1.analysis_name;
 --rule27
 --due to most likely missint sql cast errors it was removed from this release
 --will be included after more testing
+--being fixed in this update
+
+--compute derived measure first
+insert into @results_database_schema.ACHILLES_results_derived (statistic_value,stratum_1,measure_id)    
+select
+  100.0*(select statistic_value from @results_database_schema.achilles_results_derived where measure_id like 'UnmappedData:ach_401:GlobalRowCnt')/statistic_value as statistic_value,
+  'Condition' as stratum_1,
+  'UnmappedData:byDomain:Percentage' as measure_id
+from @results_database_schema.achilles_results_derived where measure_id ='ach_401:GlobalRowCnt';
+
+insert into @results_database_schema.ACHILLES_results_derived (statistic_value,stratum_1,measure_id)    
+select
+  100.0*(select statistic_value from @results_database_schema.achilles_results_derived where measure_id = 'UnmappedData:ach_601:GlobalRowCnt')/statistic_value as statistic_value,
+  'Procedure' as stratum_1,
+  'UnmappedData:byDomain:Percentage' as measure_id
+from @results_database_schema.achilles_results_derived where measure_id ='ach_601:GlobalRowCnt';
+
+insert into @results_database_schema.ACHILLES_results_derived (statistic_value,stratum_1,measure_id)    
+select
+  100.0*(select statistic_value from @results_database_schema.achilles_results_derived where measure_id = 'UnmappedData:ach_701:GlobalRowCnt')/statistic_value as statistic_value,
+  'DrugExposure' as stratum_1,
+  'UnmappedData:byDomain:Percentage' as measure_id
+from @results_database_schema.achilles_results_derived where measure_id ='ach_701:GlobalRowCnt';
+
+insert into @results_database_schema.ACHILLES_results_derived (statistic_value,stratum_1,measure_id)    
+select
+  100.0*(select statistic_value from @results_database_schema.achilles_results_derived where measure_id = 'UnmappedData:ach_801:GlobalRowCnt')/statistic_value as statistic_value,
+  'Observation' as stratum_1,
+  'UnmappedData:byDomain:Percentage' as measure_id
+from @results_database_schema.achilles_results_derived where measure_id ='ach_801:GlobalRowCnt';
+
+insert into @results_database_schema.ACHILLES_results_derived (statistic_value,stratum_1,measure_id)    
+select
+  100.0*(select statistic_value from @results_database_schema.achilles_results_derived where measure_id = 'UnmappedData:ach_1801:GlobalRowCnt')/statistic_value as statistic_value,
+  'Measurement' as stratum_1,
+  'UnmappedData:byDomain:Percentage' as measure_id
+from @results_database_schema.achilles_results_derived where measure_id ='ach_1801:GlobalRowCnt';
+
+
+--actual rule27
+
+  INSERT INTO @results_database_schema.ACHILLES_HEEL_results (ACHILLES_HEEL_warning,rule_id)
+  SELECT 
+   'NOTIFICATION:Unmapped data over percentage threshold in:' + cast(d.stratum_1 as varchar) as ACHILLES_HEEL_warning,
+    27 as rule_id
+  FROM @results_database_schema.ACHILLES_results_derived d
+  where d.measure_id = 'UnmappedData:byDomain:Percentage'
+  and d.statistic_value > 0.1  --thresholds will be decided in the ongoing DQ-Study2
+  ;
+
+--end of rule27
 
 --rule28 DQ rule
 --are all values (or more than threshold) in measurement table non numerical?
@@ -873,7 +977,9 @@ drop table #tempResults;
 --  from @results_database_schema.ACHILLES_results
 --  where analysis_id = 1;
   
-  --actual rule
+  --actual rule30
+  
+--end of rule30
 
 
 --rule31 DQ rule
@@ -887,6 +993,7 @@ insert into @results_database_schema.ACHILLES_results_derived (statistic_value,m
     from @results_database_schema.achilles_results where analysis_id = 300
 ;
 
+--actual rule
 INSERT INTO @results_database_schema.ACHILLES_HEEL_results (ACHILLES_HEEL_warning,rule_id)
 SELECT 
  'NOTIFICATION:[PLAUSIBILITY] database has too few providers defined (given the total patient number)' as ACHILLES_HEEL_warning,
@@ -894,5 +1001,18 @@ SELECT
 FROM @results_database_schema.ACHILLES_results_derived d
 where d.measure_id = 'Provider:PatientProviderRatio'
 and d.statistic_value > 10000  --thresholds will be decided in the ongoing DQ-Study2
+;
+
+--rule32 DQ rule
+--usis iris: patietnts with at least one visit visit 
+--does 100-THE IRIS MEASURE to check for percentage of patients with no visits
+
+INSERT INTO @results_database_schema.ACHILLES_HEEL_results (ACHILLES_HEEL_warning,rule_id)
+SELECT 
+ 'NOTIFICATION: Percentage of patients with no visits exceeds threshold' as ACHILLES_HEEL_warning,
+  32 as rule_id
+FROM @results_database_schema.ACHILLES_results_derived d
+where d.measure_id = 'ach_2003:Percentage'
+and 100-d.statistic_value > 5  --thresholds will be decided in the ongoing DQ-Study2
 ;
 
