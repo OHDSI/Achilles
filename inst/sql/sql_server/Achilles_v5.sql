@@ -1209,7 +1209,11 @@ insert into @results_database_schema.ACHILLES_analysis (analysis_id, analysis_na
 	values (2001, 'Number of patients with at least 1 Dx and 1 Proc');
 
 insert into @results_database_schema.ACHILLES_analysis (analysis_id, analysis_name)
-	values (2003, 'Number of patients with at least 1 Meas, 1 Dx and 1 Rx');
+	values (2002, 'Number of patients with at least 1 Meas, 1 Dx and 1 Rx');
+	
+insert into @results_database_schema.ACHILLES_analysis (analysis_id, analysis_name)
+	values (2003, 'Number of patients with at least 1 Visit');
+
 
 --end of importing values into analysis lookup table
 
@@ -7339,6 +7343,15 @@ select 2002 as analysis_id,
          ) a
          ;
 --}
+
+
+--{2003 IN (@list_of_analysis_ids)}?{
+-- 2003	Patients with at least one visit
+insert into @results_database_schema.ACHILLES_results (analysis_id, count_value)
+select 2003 as analysis_id,  COUNT_BIG(distinct person_id) as count_value
+from @cdm_database_schema.visit_occurrence;
+--}
+
 
 --final processing of results
 delete from @results_database_schema.ACHILLES_results where count_value <= @smallcellcount;

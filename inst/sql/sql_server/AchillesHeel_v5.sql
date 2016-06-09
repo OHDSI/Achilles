@@ -85,7 +85,7 @@ create table @results_database_schema.ACHILLES_results_derived
 
 --event type derived measures analysis xx05 is often analysis by xx_type
 --generate counts for meas type, drug type, proc type, obs type
---optional TODO: possibly rewrite this with CASE statement to better make 705 into drug, 605 into proc
+--optional TODO: possibly rewrite this with CASE statement to better make 705 into drug, 605 into proc ...etc
 --               in measure_id column (or make that separate sql calls for each category)
 insert into @results_database_schema.ACHILLES_results_derived (analysis_id, stratum_1, statistic_value,measure_id)    
 select 
@@ -95,7 +95,8 @@ select
   sum(count_value) as statistic_value,
   'ach_'+CAST(analysis_id as VARCHAR) + ':GlobalCnt' as measure_id
 from @results_database_schema.achilles_results 
-where analysis_id in(1805,705,605,805) group by analysis_id,stratum_2;
+where analysis_id in(1805,705,605,805,405) group by analysis_id,stratum_2;
+
 
 
 
@@ -133,8 +134,23 @@ select
    'ach_'+CAST(analysis_id as VARCHAR) + ':Percentage' as measure_id
   from @results_database_schema.achilles_results 
 
-  where analysis_id in (2000,2001,2002);
+  where analysis_id in (2000,2001,2002,2003);
   
+--iris derived measure from visit data
+--insert into @results_database_schema.ACHILLES_results_derived (statistic_value,measure_id)    
+--    select sum(count_value) as statistic_value, 
+--           'Visit:PersonCnt' as measure_id
+-- from @results_database_schema.achilles_results where analysis_id = 200;
+-- WRONG (has more patients than total)
+
+
+
+--this is also in dist measure 203
+--insert into @results_database_schema.ACHILLES_results_derived (statistic_value,measure_id)    
+--    select sum(count_value) as statistic_value, 
+--           'Visit:InstanceCnt' as measure_id
+-- from @results_database_schema.achilles_results where analysis_id = 201;
+
 
 --end of derived general measures
 
@@ -985,5 +1001,18 @@ SELECT
 FROM @results_database_schema.ACHILLES_results_derived d
 where d.measure_id = 'Provider:PatientProviderRatio'
 and d.statistic_value > 10000  --thresholds will be decided in the ongoing DQ-Study2
+;
+
+--rule32 DQ rule
+--usis iris: patietnts with at least one visit visit 
+--does 100-THE IRIS MEASURE to check for percentage of patients with no visits
+
+INSERT INTO @results_database_schema.ACHILLES_HEEL_results (ACHILLES_HEEL_warning,rule_id)
+SELECT 
+ 'NOTIFICATION: Percentage of patients with no visits exceeds threshold' as ACHILLES_HEEL_warning,
+  32 as rule_id
+FROM @results_database_schema.ACHILLES_results_derived d
+where d.measure_id = 'ach_2003:Percentage'
+and 100-d.statistic_value > 5  --thresholds will be decided in the ongoing DQ-Study2
 ;
 
