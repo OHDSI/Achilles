@@ -136,23 +136,62 @@ select
 
   where analysis_id in (2000,2001,2002,2003);
   
---iris derived measure from visit data
---insert into @results_database_schema.ACHILLES_results_derived (statistic_value,measure_id)    
---    select sum(count_value) as statistic_value, 
---           'Visit:PersonCnt' as measure_id
--- from @results_database_schema.achilles_results where analysis_id = 200;
--- WRONG (has more patients than total)
 
 
+insert into @results_database_schema.ACHILLES_results_derived (statistic_value,measure_id)    
+    select sum(count_value) as statistic_value, 
+           'Visit:InstanceCnt' as measure_id
+ from @results_database_schema.achilles_results where analysis_id = 201;
+ 
+ --in dist analysis/measure 203 - a number similar to that is computed above but it is on person level 
 
---this is also in dist measure 203
---insert into @results_database_schema.ACHILLES_results_derived (statistic_value,measure_id)    
---    select sum(count_value) as statistic_value, 
---           'Visit:InstanceCnt' as measure_id
--- from @results_database_schema.achilles_results where analysis_id = 201;
+
+--age at first observation by decile
+insert into @results_database_schema.ACHILLES_results_derived (stratum_1,statistic_value,measure_id)    
+select cast(floor(cast(stratum_1 as int)/10) as varchar) as stratum_1,
+  sum(count_value) as statistic_value,
+  'AgeAtFirstObsByDecile:PersonCnt' as measure_id
+  from @results_database_schema.achilles_results where analysis_id = 101
+group by floor(cast(stratum_1 as int)/10);
+
+--count whether all deciles from 0 to 8 are there  (has later a rule: if less the threshold, issue notification)
+insert into @results_database_schema.ACHILLES_results_derived (statistic_value,measure_id)    
+select count(*) as statistic_value,
+ 'AgeAtFirstObsByDecile:DecileCnt' as measure_id
+from @results_database_schema.ACHILLES_results_derived
+where measure_id = 'AgeAtFirstObsByDecile:PersonCnt' 
+and cast(stratum_1 as int) <=8;
 
 
---end of derived general measures
+--data density measures
+--for drug (exposure and eras)
+insert into @results_database_schema.ACHILLES_results_derived (statistic_value,measure_id)    
+select count(*) as statistic_value, 'DrugExposure:ConceptCnt' as measure_id 
+from @results_database_schema.ACHILLES_results where analysis_id = 701;
+
+insert into @results_database_schema.ACHILLES_results_derived (statistic_value,measure_id)    
+select count(*) as statistic_value, 'DrugEra:ConceptCnt' as measure_id 
+from @results_database_schema.ACHILLES_results where analysis_id = 901;
+
+
+--unmapped data (concept_0) derived measures (focusing on source values)
+
+insert into @results_database_schema.ACHILLES_results_derived (stratum_1,statistic_value,measure_id)    
+select stratum_1,
+count(*) as statistic_value,
+'UnmappedDataByDomain:SourceValueCnt' as measure_id
+from @results_database_schema.achilles_results where analysis_id = 1900 group by stratum_1;
+
+
+--count of specialties in the provider table 
+--(subsequent rule can check if this count is > trehshold) (general population dataset only))
+insert into @results_database_schema.ACHILLES_results_derived (statistic_value,measure_id)    
+select 
+count(*) as statistic_value,
+'Provider:SpeciatlyCnt' as measure_id
+from @results_database_schema.achilles_results where analysis_id = 301;
+
+--end of derived general measures ********************************************************************
 
 
 
@@ -1004,7 +1043,7 @@ and d.statistic_value > 10000  --thresholds will be decided in the ongoing DQ-St
 ;
 
 --rule32 DQ rule
---usis iris: patietnts with at least one visit visit 
+--uses iris: patients with at least one visit visit 
 --does 100-THE IRIS MEASURE to check for percentage of patients with no visits
 
 INSERT INTO @results_database_schema.ACHILLES_HEEL_results (ACHILLES_HEEL_warning,rule_id)
@@ -1015,4 +1054,37 @@ FROM @results_database_schema.ACHILLES_results_derived d
 where d.measure_id = 'ach_2003:Percentage'
 and 100-d.statistic_value > 5  --thresholds will be decided in the ongoing DQ-Study2
 ;
+
+--rule33 DQ rule (for general population only)
+--NOTIFICATION: database does not have all age 0-80 represented
+
+
+INSERT INTO @results_database_schema.ACHILLES_HEEL_results (ACHILLES_HEEL_warning,rule_id)
+SELECT 
+ 'NOTIFICATION: [GeneralPopulationOnly] Not all deciles represented at first observation' as ACHILLES_HEEL_warning,
+  33 as rule_id
+FROM @results_database_schema.ACHILLES_results_derived d
+where d.measure_id = 'AgeAtFirstObsByDecile:DecileCnt' 
+and d.statistic_value <9  --we expect deciles 0,1,2,3,4,5,6,7,8 
+;
+
+ 
+--rule34 DQ rule
+--NOTIFICATION: number of unmapped source values exceeds threshold
+--related to rule 27 that looks at percentage of unmapped rows (rows as focus)
+--this rule is looking at source values (as focus)
+
+
+INSERT INTO @results_database_schema.ACHILLES_HEEL_results (ACHILLES_HEEL_warning,rule_id,record_count)
+SELECT 
+ 'NOTIFICATION: Count of unmapped source values exceeds threshold in: ' +cast(stratum_1 as varchar) as ACHILLES_HEEL_warning,
+  34 as rule_id,
+  cast(statistic_value as int) as record_count
+FROM @results_database_schema.ACHILLES_results_derived d
+where measure_id = 'UnmappedDataByDomain:SourceValueCnt'
+and statistic_value > 1000; --threshold will be decided in DQ study 2
+
+
+
+
 

@@ -615,6 +615,10 @@ insert into @results_database_schema.ACHILLES_analysis (analysis_id, analysis_na
 insert into @results_database_schema.ACHILLES_analysis (analysis_id, analysis_name)
   values (118, 'Number of observation periods with invalid person_id');
 
+insert into @results_database_schema.ACHILLES_analysis (analysis_id, analysis_name, stratum_1_name)
+  values (119, 'Number of observation period records by period_type_concept_id','period_type_concept_id');
+
+
 
 
 --200- VISIT_OCCURRENCE
@@ -1943,6 +1947,18 @@ where p1.person_id is null
 ;
 --}
 
+--{119 IN (@list_of_analysis_ids)}?{
+-- 119  Number of observation period records by period_type_concept_id
+insert into @results_database_schema.ACHILLES_results (analysis_id, stratum_1,count_value)
+select 119 as analysis_id,
+  op1.period_type_concept_id as stratum_1,
+  COUNT_BIG(*) as count_value
+from
+  @cdm_database_schema.observation_period op1
+group by op1.period_type_concept_id
+;
+--}
+
 
 /********************************************
 
@@ -2277,6 +2293,23 @@ from
 group by YEAR(visit_start_date)*100 + month(visit_start_date)
 ;
 --}
+
+
+--{221 IN (@list_of_analysis_ids)}?{
+-- 221	Number of persons by visit start year 
+insert into @results_database_schema.ACHILLES_results (analysis_id, stratum_1, count_value)
+select 221 as analysis_id,   
+	YEAR(visit_start_date) as stratum_1, 
+	COUNT_BIG(distinct PERSON_ID) as count_value
+from
+@cdm_database_schema.visit_occurrence vo1
+group by YEAR(visit_start_date)
+;
+--}
+
+
+
+
 
 /********************************************
 
@@ -7281,6 +7314,31 @@ where m.value_as_number is null
 
 --end of measurment analyses
 
+/********************************************
+
+Reports 
+
+*********************************************/
+
+
+--{1900 IN (@list_of_analysis_ids)}?{
+-- 1900	concept_0 report
+
+INSERT INTO @results_database_schema.ACHILLES_results (analysis_id, stratum_1, stratum_2, count_value)
+select 1900 as analysis_id, table_name as stratum_1, source_value as stratum_2, cnt as count_value
+ from (
+select 'measurement' as table_name,measurement_source_value as source_value, COUNT_BIG(*) as cnt from @cdm_database_schema.measurement where measurement_concept_id = 0 group by measurement_source_value 
+union
+select 'procedure_occurrence' as table_name,procedure_source_value as source_value, COUNT_BIG(*) as cnt from @cdm_database_schema.procedure_occurrence where procedure_concept_id = 0 group by procedure_source_value 
+union
+select 'drug_exposure' as table_name,drug_source_value as source_value, COUNT_BIG(*) as cnt from @cdm_database_schema.drug_exposure where drug_concept_id = 0 group by drug_source_value 
+union
+select 'condition_occurrence' as table_name,condition_source_value as source_value, COUNT_BIG(*) as cnt from @cdm_database_schema.condition_occurrence where condition_concept_id = 0 group by condition_source_value 
+) a
+where cnt >= 1 --use other threshold if needed (e.g., 10)
+order by a.table_name desc, cnt desc
+;
+--}
 
 
 /********************************************
@@ -7347,6 +7405,8 @@ select 2002 as analysis_id,
 
 --{2003 IN (@list_of_analysis_ids)}?{
 -- 2003	Patients with at least one visit
+-- this analysis is in fact redundant, since it is possible to get it via
+-- dist analysis 203 and query select count_value from achilles_results_dist where analysis_id = 203;
 insert into @results_database_schema.ACHILLES_results (analysis_id, count_value)
 select 2003 as analysis_id,  COUNT_BIG(distinct person_id) as count_value
 from @cdm_database_schema.visit_occurrence;
