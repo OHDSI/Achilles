@@ -34,14 +34,30 @@ connectionDetails <- createConnectionDetails(
     server=server, schema=db_conf$path, port=db_conf$port
 )
 
-# Run Achilles report and generate data in the results schema.
-achillesResults <- achilles(
-    connectionDetails, cdmDatabaseSchema=env_vars$ACHILLES_CDM_SCHEMA,
-    resultsDatabaseSchema=env_vars$ACHILLES_RES_SCHEMA,
-    vocabDatabaseSchema=env_vars$ACHILLES_VOCAB_SCHEMA,
-    sourceName=env_vars$ACHILLES_SOURCE,
-    cdmVersion=env_vars$ACHILLES_CDM_VERSION
-)
+args <- commandArgs(trailingOnly = TRUE)
+
+if (length(args) == 0 || args[1] != "heel") {
+
+    # Run Achilles report and generate data in the results schema.
+    achillesResults <- achilles(
+        connectionDetails, cdmDatabaseSchema=env_vars$ACHILLES_CDM_SCHEMA,
+        resultsDatabaseSchema=env_vars$ACHILLES_RES_SCHEMA,
+        vocabDatabaseSchema=env_vars$ACHILLES_VOCAB_SCHEMA,
+        sourceName=env_vars$ACHILLES_SOURCE,
+        cdmVersion=env_vars$ACHILLES_CDM_VERSION
+    )
+    
+} else {
+
+    # Run Achilles Heel only
+    achillesHeel(
+	connectionDetails,
+	cdmDatabaseSchema=env_vars$ACHILLES_CDM_SCHEMA,
+        resultsDatabaseSchema=env_vars$ACHILLES_RES_SCHEMA,
+        vocabDatabaseSchema=env_vars$ACHILLES_VOCAB_SCHEMA,
+        cdmVersion=env_vars$ACHILLES_CDM_VERSION)
+
+}
 
 # Export Achilles results to output path in JSON format.
 exportToJson(
