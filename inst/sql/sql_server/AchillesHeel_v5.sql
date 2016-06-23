@@ -942,9 +942,9 @@ with t1 (all_count) as
   (select sum(count_value) as all_count from @results_database_schema.achilles_results where analysis_id = 1820)
   --count of all meas rows (I wish this would also be a measure) (1820 is count by month)
 select 
-'percentage' as statistic_type,
+CAST('percentage' AS VARCHAR(100)) as statistic_type,
 (select count_value from @results_database_schema.achilles_results where analysis_id = 1821)*100.0/all_count as statistic_value,
-'Meas:NoNumValue:Percentage'as measure_id
+CAST('Meas:NoNumValue:Percentage' AS VARCHAR(100)) as measure_id
 into #tempResults 
 from t1;
 
