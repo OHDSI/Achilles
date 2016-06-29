@@ -13,7 +13,6 @@ A data.frame with the analysis details.
 Get all analysis details
 }
 \details{
-Get a list of all analyses with their analysis IDs and
-strata.
+Get a list of all analyses with their analysis IDs and strata.
 }
 

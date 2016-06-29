@@ -10,14 +10,11 @@ showReportTypes()
 none (opens the allReports vector in a View() display)
 }
 \description{
-\code{showReportTypes} Displays the Report Types that can be
-passed as vector values to exportToJson.
+\code{showReportTypes} Displays the Report Types that can be passed as vector values to exportToJson.
 }
 \details{
 exportToJson supports the following report types:
-"CONDITION","CONDITION_ERA", "DASHBOARD", "DATA_DENSITY",
-"DEATH", "DRUG", "DRUG_ERA", "HEEL", "OBSERVATION",
-"OBSERVATION_PERIOD", "PERSON", "PROCEDURE","VISIT"
+"CONDITION","CONDITION_ERA", "DASHBOARD", "DATA_DENSITY", "DEATH", "DRUG", "DRUG_ERA", "HEEL", "OBSERVATION", "OBSERVATION_PERIOD", "PERSON", "PROCEDURE","VISIT"
 }
 \examples{
 \dontrun{

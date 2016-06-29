@@ -7,25 +7,19 @@
 fetchAchillesHeelResults(connectionDetails, resultsDatabase)
 }
 \arguments{
-  \item{connectionDetails}{An R object of type
-  ConnectionDetail (details for the function that contains
-  server info, database type, optionally username/password,
-  port)} \item{resultsDatabase}{Name of database containing
-  the Achilles descriptive statistics.}
+\item{connectionDetails}{An R object of type ConnectionDetail (details for the function that contains server info, database type, optionally username/password, port)}
+
+\item{resultsDatabase}{Name of database containing the Achilles descriptive statistics.}
 }
 \value{
 A table listing all identified issues
 }
 \description{
-\code{fetchAchillesHeelResults} retrieves the AchillesHeel
-results for the AChilles analysis to identify potential data
-quality issues.
+\code{fetchAchillesHeelResults} retrieves the AchillesHeel results for the AChilles analysis to identify potential data quality issues.
 }
 \details{
-AchillesHeel is a part of the Achilles analysis aimed at
-identifying potential data quality issues. It will list
-errors (things that should really be fixed) and warnings
-(things that should at least be investigated).
+AchillesHeel is a part of the Achilles analysis aimed at identifying potential data quality issues. It will list errors (things
+that should really be fixed) and warnings (things that should at least be investigated).
 }
 \examples{
 \dontrun{

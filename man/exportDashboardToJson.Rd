@@ -9,32 +9,25 @@ exportDashboardToJson(connectionDetails, cdmDatabaseSchema,
   vocabDatabaseSchema = cdmDatabaseSchema)
 }
 \arguments{
-  \item{connectionDetails}{An R object of type
-  ConnectionDetail (details for the function that contains
-  server info, database type, optionally username/
-  password, port)} \item{cdmDatabaseSchema}{Name of the
-  database schema that contains the vocabulary files}
-  \item{resultsDatabaseSchema}{Name of the database schema
-  that contains the Achilles analysis files. Default is
-  cdmDatabaseSchema} \item{outputPath}{A folder location to
-  save the JSON files. Default is current working folder}
-  \item{vocabDatabaseSchema}{string name of database schema
-  that contains OMOP Vocabulary. Default is cdmDatabaseSchema.
-  On SQL Server, this should specifiy both the database and
-  the schema, so for example 'results.dbo'.}
+\item{connectionDetails}{An R object of type ConnectionDetail (details for the function that contains server info, database type, optionally username/password, port)}
+
+\item{cdmDatabaseSchema}{Name of the database schema that contains the vocabulary files}
+
+\item{resultsDatabaseSchema}{Name of the database schema that contains the Achilles analysis files. Default is cdmDatabaseSchema}
+
+\item{outputPath}{A folder location to save the JSON files. Default is current working folder}
+
+\item{vocabDatabaseSchema}{string name of database schema that contains OMOP Vocabulary. Default is cdmDatabaseSchema. On SQL Server, this should specifiy both the database and the schema, so for example 'results.dbo'.}
 }
 \value{
 none
 }
 \description{
-\code{exportDashboardToJson} Exports Achilles Dashboard
-report into a JSON form for reports.
+\code{exportDashboardToJson} Exports Achilles Dashboard report into a JSON form for reports.
 }
 \details{
-Creates individual files for Dashboard report found in
-Achilles.Web. NOTE: This function reads the results from
-the other exports and aggregates them into a single file. If
-other reports are not genreated, this function will fail.
+Creates individual files for Dashboard report found in Achilles.Web. NOTE: This function reads the results
+from the other exports and aggregates them into a single file. If other reports are not genreated, this function will fail.
 }
 \examples{
 \dontrun{

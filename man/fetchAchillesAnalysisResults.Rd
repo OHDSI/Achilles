@@ -7,23 +7,20 @@
 fetchAchillesAnalysisResults(connectionDetails, resultsDatabase, analysisId)
 }
 \arguments{
-  \item{connectionDetails}{An R object of type
-  ConnectionDetail (details for the function that contains
-  server info, database type, optionally username/password,
-  port)} \item{resultsDatabase}{Name of database containing
-  the Achilles descriptive statistics.} \item{analysisId}{A
-  single analysisId}
+\item{connectionDetails}{An R object of type ConnectionDetail (details for the function that contains server info, database type, optionally username/password, port)}
+
+\item{resultsDatabase}{Name of database containing the Achilles descriptive statistics.}
+
+\item{analysisId}{A single analysisId}
 }
 \value{
 An object of type \code{achillesAnalysisResults}
 }
 \description{
-\code{fetchAchillesAnalysisResults} returns the results for
-one Achilles analysis Id.
+\code{fetchAchillesAnalysisResults} returns the results for one Achilles analysis Id.
 }
 \details{
-See \code{data(analysesDetails)} for a list of all Achilles
-analyses and their Ids.
+See \code{data(analysesDetails)} for a list of all Achilles analyses and their Ids.
 }
 \examples{
 \dontrun{

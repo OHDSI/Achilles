@@ -12,56 +12,41 @@ achilles(connectionDetails, cdmDatabaseSchema,
   vocabDatabaseSchema = cdmDatabaseSchema, runCostAnalysis = FALSE)
 }
 \arguments{
-  \item{connectionDetails}{An R object of type
-  ConnectionDetail (details for the function that contains
-  server info, database type, optionally username/password,
-  port)} \item{cdmDatabaseSchema}{string name of database
-  schema that contains OMOP CDM. On SQL Server, this should
-  specifiy both the database and the schema, so for example
-  'cdm_instance.dbo'.} \item{oracleTempSchema}{For Oracle
-  only: the name of the database schema where you want all
-  temporary tables to be managed. Requires create/insert
-  permissions to this database.} \item{resultsDatabaseSchema}
-  {string name of database schema that we can write results
-  to. Default is cdmDatabaseSchema. On SQL Server, this
-  should specifiy both the database and the schema, so for
-  example 'results.dbo'.} \item{sourceName}{string name of
-  the database, as recorded in results} \item{analysisIds}
-  {(optional) a vector containing the set of Achilles
-  analysisIds for which results will be generated. If
-  not specified, all analyses will be executed. Use
-  \code{\link{getAnalysisDetails}} to get a list of all
-  Achilles analyses and their Ids.} \item{createTable}{If
-  true, new results tables will be created in the results
-  schema. If not, the tables are assumed to already exists,
-  and analysis results will be added} \item{smallcellcount}
-  {To avoid patient identifiability, cells with small
-  counts (<= smallcellcount) are deleted.} \item{cdmVersion}
-  {Define the OMOP CDM version used: currently support
-  "4" and "5". Default = "4"} \item{runHeel}{Boolean to
-  determine if Achilles Heel data quality reporting will
-  be produced based on the summary statistics. Default =
-  TRUE} \item{validateSchema}{Boolean to determine if CDM
-  Schema Validation should be run. This could be very slow.
-  Default = FALSE} \item{vocabDatabaseSchema}{string name of
-  database schema that contains OMOP Vocabulary. Default is
-  cdmDatabaseSchema. On SQL Server, this should specifiy both
-  the database and the schema, so for example 'results.dbo'.}
-  \item{runCostAnalysis}{Boolean to determine if cost analysis
-  should be run. Note: only works on CDM v5.0 style cost
-  tables.}
+\item{connectionDetails}{An R object of type ConnectionDetail (details for the function that contains server info, database type, optionally username/password, port)}
+
+\item{cdmDatabaseSchema}{string name of database schema that contains OMOP CDM. On SQL Server, this should specifiy both the database and the schema, so for example 'cdm_instance.dbo'.}
+
+\item{oracleTempSchema}{For Oracle only: the name of the database schema where you want all temporary tables to be managed. Requires create/insert permissions to this database.}
+
+\item{resultsDatabaseSchema}{string name of database schema that we can write results to. Default is cdmDatabaseSchema. On SQL Server, this should specifiy both the database and the schema, so for example 'results.dbo'.}
+
+\item{sourceName}{string name of the database, as recorded in results}
+
+\item{analysisIds}{(optional) a vector containing the set of Achilles analysisIds for which results will be generated.
+If not specified, all analyses will be executed. Use \code{\link{getAnalysisDetails}} to get a list of all Achilles analyses and their Ids.}
+
+\item{createTable}{If true, new results tables will be created in the results schema. If not, the tables are assumed to already exists, and analysis results will be added}
+
+\item{smallcellcount}{To avoid patient identifiability, cells with small counts (<= smallcellcount) are deleted.}
+
+\item{cdmVersion}{Define the OMOP CDM version used:  currently support "4" and "5".  Default = "4"}
+
+\item{runHeel}{Boolean to determine if Achilles Heel data quality reporting will be produced based on the summary statistics.  Default = TRUE}
+
+\item{validateSchema}{Boolean to determine if CDM Schema Validation should be run. This could be very slow.  Default = FALSE}
+
+\item{vocabDatabaseSchema}{string name of database schema that contains OMOP Vocabulary. Default is cdmDatabaseSchema. On SQL Server, this should specifiy both the database and the schema, so for example 'results.dbo'.}
+
+\item{runCostAnalysis}{Boolean to determine if cost analysis should be run. Note: only works on CDM v5.0 style cost tables.}
 }
 \value{
-An object of type \code{achillesResults} containing details
-for connecting to the database containing the results
+An object of type \code{achillesResults} containing details for connecting to the database containing the results
 }
 \description{
-\code{achilles} creates descriptive statistics summary for
-an entire OMOP CDM instance.
+\code{achilles} creates descriptive statistics summary for an entire OMOP CDM instance.
 }
 \details{
-\code{achilles} creates descriptive statistics summary for
-an entire OMOP CDM instance.
+\code{achilles} creates descriptive statistics summary for an entire OMOP CDM instance.
 }
 \examples{
 \dontrun{
