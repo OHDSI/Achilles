@@ -15,5 +15,5 @@ Depends:
 Suggests:
     testthat
 License: Apache License
-Roxygen: list(wrap = TRUE)
+Roxygen: list(wrap = FALSE)
 RoxygenNote: 5.0.1
