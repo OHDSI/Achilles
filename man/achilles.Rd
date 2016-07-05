@@ -9,7 +9,8 @@ achilles(connectionDetails, cdmDatabaseSchema,
   resultsDatabaseSchema = cdmDatabaseSchema, sourceName = "", analysisIds,
   createTable = TRUE, smallcellcount = 5, cdmVersion = "4",
   runHeel = TRUE, validateSchema = FALSE,
-  vocabDatabaseSchema = cdmDatabaseSchema, runCostAnalysis = FALSE)
+  vocabDatabaseSchema = cdmDatabaseSchema, runCostAnalysis = FALSE,
+  sqlOnly = FALSE)
 }
 \arguments{
 \item{connectionDetails}{An R object of type ConnectionDetail (details for the function that contains server info, database type, optionally username/password, port)}

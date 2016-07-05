@@ -77,7 +77,8 @@ achilles <- function (connectionDetails,
                       runHeel = TRUE,
                       validateSchema = FALSE,
                       vocabDatabaseSchema = cdmDatabaseSchema,
-                      runCostAnalysis = FALSE){
+                      runCostAnalysis = FALSE,
+                      sqlOnly = FALSE){
   
   if (cdmVersion == "4")  {
     achillesFile <- "Achilles_v4.sql"
@@ -114,12 +115,23 @@ achilles <- function (connectionDetails,
                                         runCostAnalysis = runCostAnalysis
   )
   
-  conn <- connect(connectionDetails)
+  if (sqlOnly) {
+    outputFolder <- "output";
   
-  writeLines("Executing multiple queries. This could take a while")
-  #writeSql(achillesSql, 'achillesDebug.sql');
-  executeSql(conn,achillesSql)
-  writeLines(paste("Done. Achilles results can now be found in",resultsDatabaseSchema))
+    if (!file.exists(outputFolder))
+      dir.create(outputFolder);
+    writeSql(achillesSql,paste(outputFolder, achillesFile, sep="/"));
+    
+    writeLines(paste("Achilles sql generated in: ", paste(outputFolder, achillesFile, sep="/")));
+    
+    return();
+  } else {
+    conn <- connect(connectionDetails)
+    writeLines("Executing multiple queries. This could take a while")
+    #writeSql(achillesSql, 'achillesDebug.sql');
+    executeSql(conn,achillesSql)
+    writeLines(paste("Done. Achilles results can now be found in",resultsDatabaseSchema))
+  }
   
   if (runHeel) {
     heelSql <- loadRenderTranslateSql(sqlFilename = heelFile,
