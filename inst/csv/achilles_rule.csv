@@ -28,5 +28,8 @@ rule_id,rule_name,severity,rule_description
 26,implausible quantity for drug,warning,quantity > 600
 27,more than 1 percent of unmapped rows (concept_0 rows),warning,for multiple analyses (4xx;6xx;7xx;8xx;18xx)
 28,percentage of deceased patients,warning,fires if (deceased/all person count * 100)  is less than 1 (anusual if dataset represents a general healthcare data warehouse)
-29,infant diagnosis at senior age,error,mecconium condition
+29,infant diagnosis at senior age of over 50yo,error,mecconium condition 195075; This rule is example of a terminology depended data quality tool
 31,ratio of providers to total patients,notification,ratio
+32,NOTIFICATION: Percentage of patients with no visits exceeds threshold,notification, checks if there are too many patients with no visits
+33,NOTIFICATION: [GeneralPopulationOnly] Not all deciles represented at first observation,notification, the rule only applies to general population datasets
+34,NOTIFICATION: Count of unmapped source values in a domain exceeds threshold,notification,looks at values that are mapped to concept0 and their source values by table
