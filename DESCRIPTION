@@ -3,7 +3,7 @@ Type: Package
 Title: Creates descriptive statistics summary for an entire OMOP CDM instance.
 Version: 1.3
 Date: 2016-06-10
-Author: Patrick Ryan, Martijn Schuemie
+Author: Patrick Ryan, Martijn Schuemie, Vojtech Huser, Chris Knoll
 Maintainer: Patrick Ryan <ryan@ohdsi.org>
 LazyData: true
 Description: creates descriptive statistics summary for an entire OMOP CDM
