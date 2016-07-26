@@ -172,6 +172,27 @@ achilles <- function (connectionDetails,
   result
 }
 
+#' execution of data quality rules 
+#'
+#' @description
+#' \code{achillesHeel} executes data quality rules (or checks) on pre-computed analyses (or measures).
+#'
+#' @details
+#' \code{achillesHeel} contains number of rules (authored in SQL) that are executed againts achilles results tables.
+#' 
+#' @param connectionDetails  An R object of type ConnectionDetail (details for the function that contains server info, database type, optionally username/password, port)
+#' @param cdmDatabaseSchema    	string name of database schema that contains OMOP CDM. On SQL Server, this should specifiy both the database and the schema, so for example 'cdm_instance.dbo'.
+#' @param oracleTempSchema    For Oracle only: the name of the database schema where you want all temporary tables to be managed. Requires create/insert permissions to this database. 
+#' @param resultsDatabaseSchema		string name of database schema that we can write results to. Default is cdmDatabaseSchema. On SQL Server, this should specifiy both the database and the schema, so for example 'results.dbo'.
+#' @param sourceName		string name of the database, as recorded in results
+#' @param cdmVersion     Define the OMOP CDM version used:  currently support "4" and "5".  Default = "4"
+#' @param vocabDatabaseSchema		string name of database schema that contains OMOP Vocabulary. Default is cdmDatabaseSchema. On SQL Server, this should specifiy both the database and the schema, so for example 'results.dbo'.
+#' 
+#' @return nothing is returned
+#' @examples \dontrun{
+#'   connectionDetails <- createConnectionDetails(dbms="sql server", server="RNDUSRDHIT07.jnj.com")
+#'   achillesHeel <- achilles(connectionDetails, cdmDatabaseSchema="mycdm", resultsDatabaseSchema="scratch", vocabDatabaseSchema="vocabulary")
+#' }
 #' @export
 achillesHeel <- function (connectionDetails, 
                       cdmDatabaseSchema, 
