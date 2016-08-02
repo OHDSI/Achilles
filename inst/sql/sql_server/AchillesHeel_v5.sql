@@ -75,7 +75,7 @@ create table @results_database_schema.ACHILLES_results_derived
 	measure_id varchar(255)
 );
 
-
+ 
 --general derived measures
 --non-CDM sources may generate derived measures directly
 --for CDM and Achilles: the fastest way to compute derived measures is to use
@@ -1086,5 +1086,25 @@ and statistic_value > 1000; --threshold will be decided in DQ study 2
 
 
 
+--rule35 DQ rule, NOTIFICATION
+--this rule analyzes Units recorded for measurement
+
+INSERT INTO @results_database_schema.ACHILLES_HEEL_results (ACHILLES_HEEL_warning,rule_id,record_count)
+ SELECT
+ 'NOTIFICATION: Count of measurement_ids with more than 5 distinct units  exceeds threshold' as ACHILLES_HEEL_warning,
+  35 as rule_id,
+  cast(meas_concept_id_cnt as int) as record_count
+  from (
+        select meas_concept_id_cnt from (select sum(freq) as meas_concept_id_cnt from
+                        (select u_cnt, count(*) as freq from 
+                                (select stratum_1, count(*) as u_cnt
+                                    from @results_database_schema.achilles_results where analysis_id = 1807 group by stratum_1) a 
+                                    group by u_cnt
+                        ) b 
+                where u_cnt >= 5 --threshold one for the rule
+            ) c
+           where meas_concept_id_cnt >= 10 --threshold two for the rule
+       ) d 
+;       
 
 

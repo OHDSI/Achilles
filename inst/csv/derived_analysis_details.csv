@@ -1,0 +1,6 @@
+measure_id,name,statistic_value_name,stratum_1_name,description,associated_rules
+UnmappedDataByDomain:SourceValueCnt,Count of source values in unmapped data,count of source values,domain,The measure analyzes how many source codes are unmapped.,34
+AgeAtFirstObsByDecile:DecileCnt,Count of deciles appearing in the data (at first observation),count of deciles,,"The measure analyzes deciles of patients at their first observation. If only certain age groups are being observed, the count of deciles will be low.",33
+Provider:PatientProviderRatio,Patient Provider Ratio,ratio,,"The measure looks at how many patients and how many providers are defined in the data. For example, the ratio may indicate abnormaly low number of providers.",31
+Meas:NoNumValue:Percentage,Percentage of rows in MEASUREMENT table that have NULL recorded as numerical value,percentage,,The measure looks at data recorded in MESUREMENT table. A significant percentage of such rows typically contain a numerical result.,28
+UnmappedData:byDomain:Percentage,Percentage of rows that are unmapped,percentage,domain,The measure looks at relative size of unmapped data.,27

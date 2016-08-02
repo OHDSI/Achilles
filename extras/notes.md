@@ -55,6 +55,24 @@ achillesResults <- achilles(connectionDetails,cdmDatabaseSchema=cdmDatabaseSchem
                             
 ```
 
+#overview html files 
+The code below updates html files that show content overview. Use rawgit.com/OHDSI/... to view it nicely.
+```R
+tempf<-tempfile(pattern = 'temp', fileext = '.Rmd')
+writeLines('---\ntitle: "Rules"\n---\n```{r, echo=FALSE}\n rules<-read.csv(system.file("csv","achilles_rule.csv",package="Achilles"),as.is=T);knitr::kable(rules)\n```',tempf)
+rmarkdown::render(tempf,output_file = 'c:/temp/Heel-Rules.html',rmarkdown::html_document(toc = F, fig_caption = TRUE))
+
+
+tempf<-tempfile(pattern = 'temp', fileext = '.Rmd')
+writeLines('---\ntitle: "Overview"\n---\n```{r, echo=FALSE}\n rules<-read.csv(system.file("csv","derived_analysis_details.csv",package="Achilles"),as.is=T);knitr::kable(rules)\n```',tempf)
+rmarkdown::render(tempf,output_file = 'c:/temp/Derived-Analyses.html',rmarkdown::html_document(toc = F, fig_caption = TRUE))
+
+tempf<-tempfile(pattern = 'temp', fileext = '.Rmd')
+writeLines('---\ntitle: "Overview"\n---\n```{r, echo=FALSE}\n rules<-read.csv(system.file("csv","rule_drill_down.csv",package="Achilles"),as.is=T);knitr::kable(rules)\n```',tempf)
+rmarkdown::render(tempf,output_file = 'c:/temp/Rule-Drill-Down.html',rmarkdown::html_document(toc = F, fig_caption = TRUE))
+```
+
+
 
 #Data Quality CDM 
 These notes relate Achilles and Achilles Heel to Data Quality CDM (DQ CDM)
@@ -80,25 +98,13 @@ rule = check
 
 
 
-
-#overview of analyses (analysisDetail.csv)
-This overview gets updated via insert statements in the Achilles main SQL file.
-The R code below updates the CSV file. (used by some other parts of code)
-```R
-#internal function called here but it simply executes the sql passed to it
-analyses_overview<-fetchAnySql(connectionDetails,resultsDatabaseSchema,'select * from achilles_analysis')
-write.csv(analyses_overview,file='c:/d/Achilles/inst/csv/analysisDetails.csv',row.names=F,na='')
-```
-
-#Types of analyses
-
 ##By outputed results
 ###Stratified analyses
 
-use table ACHILLES_results
+These anlyses use table ACHILLES_results
 
 ###distributions 
-use table ACHILLES_results_dist
+Such analyses use table ACHILLES_results_dist
 e.g., 103,104,105,106,107,203,206,211,403,406,506,511,512,513,514,515,603,606,704,706,715,716,717,803,806,815
 
 ##By nature
@@ -112,27 +118,9 @@ e.g., analysis_id 7,8,9,207
 
 
 
-
-
 #Analyzing Heel Results
 ###Simple rules: 
 There are  simple rules that generate a single error or warning.
 
 ###Complex rules
 However, some rules (e.g., rule_id 6) can generate multiple rows. The true primary key for output is combination of rule_id and analysis_id
-
-
-#Possible outputs 
-##Heel
-All errors encoutered
-
-##Full Data characterization
-Full listing of AchillesResults and AchillesResultsDist tables
-
-##Describe
-We propose a new output table for Achilles that we refer to as AchillesDescribe 
-This can be a subset of full output tables that removes some elements (e.g., frequency data that are sensitive to a data partner within a consortium/study).
-
-
-
-
