@@ -2,6 +2,7 @@
 
 export(achilles)
 export(achillesHeel)
+export(addDatasource)
 export(exportConditionEraToJson)
 export(exportConditionToJson)
 export(exportDashboardToJson)
