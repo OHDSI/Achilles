@@ -4,3 +4,6 @@ AgeAtFirstObsByDecile:DecileCnt,Count of deciles appearing in the data (at first
 Provider:PatientProviderRatio,Patient Provider Ratio,ratio,,"The measure looks at how many patients and how many providers are defined in the data. For example, the ratio may indicate abnormaly low number of providers.",31
 Meas:NoNumValue:Percentage,Percentage of rows in MEASUREMENT table that have NULL recorded as numerical value,percentage,,The measure looks at data recorded in MESUREMENT table. A significant percentage of such rows typically contain a numerical result.,28
 UnmappedData:byDomain:Percentage,Percentage of rows that are unmapped,percentage,domain,The measure looks at relative size of unmapped data.,27
+Provider:SpeciatlyCnt,Count of specialties found in the provider table,count of specialties,,"The measure looks at how many different specialties are present. For general datasets, we expect at least some minimum number of specialties.",
+DrugExposure:ConceptCnt,Count of distinct drug_concept_ids (drug_exposure),count of concepts,,"Count of distinct drugs. For most datasets, a low number may indicate a data quality problem.",
+DrugEra:ConceptCnt,Count of distinct drug_concept_ids (drug_era),count of concepts,,Count of distinct drugs.,

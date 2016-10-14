@@ -173,6 +173,42 @@ insert into @results_database_schema.ACHILLES_results_derived (statistic_value,m
 select count(*) as statistic_value, 'DrugEra:ConceptCnt' as measure_id 
 from @results_database_schema.ACHILLES_results where analysis_id = 901;
 
+insert into @results_database_schema.ACHILLES_results_derived (statistic_value,measure_id)    
+select count(*) as statistic_value, 'Condition:ConceptCnt' as measure_id 
+from @results_database_schema.ACHILLES_results where analysis_id = 401;
+
+insert into @results_database_schema.ACHILLES_results_derived (statistic_value,measure_id)    
+select count(*) as statistic_value, 'Procedure:ConceptCnt' as measure_id 
+from @results_database_schema.ACHILLES_results where analysis_id = 601;
+
+insert into @results_database_schema.ACHILLES_results_derived (statistic_value,measure_id)    
+select count(*) as statistic_value, 'Observation:ConceptCnt' as measure_id 
+from @results_database_schema.ACHILLES_results where analysis_id = 801;
+
+insert into @results_database_schema.ACHILLES_results_derived (statistic_value,measure_id)    
+select count(*) as statistic_value, 'Measurement:ConceptCnt' as measure_id 
+from @results_database_schema.ACHILLES_results where analysis_id = 1801;
+
+insert into @results_database_schema.ACHILLES_results_derived (statistic_value,measure_id)    
+select count(*) as statistic_value, 'Visit:ConceptCnt' as measure_id 
+from @results_database_schema.ACHILLES_results where analysis_id = 201;
+
+insert into @results_database_schema.ACHILLES_results_derived (statistic_value,measure_id)    
+select count(*) as statistic_value, 'Death:DeathType:ConceptCnt' as measure_id 
+from @results_database_schema.ACHILLES_results where analysis_id = 505;
+
+insert into @results_database_schema.ACHILLES_results_derived (statistic_value,measure_id)    
+select count(*) as statistic_value, 'Death:DeathCause:ConceptCnt' as measure_id 
+from @results_database_schema.ACHILLES_results where analysis_id = 501;
+
+insert into @results_database_schema.ACHILLES_results_derived (statistic_value,measure_id)    
+select count(*) as statistic_value, 'Person:Race:ConceptCnt' as measure_id 
+from @results_database_schema.ACHILLES_results where analysis_id = 4;
+
+insert into @results_database_schema.ACHILLES_results_derived (statistic_value,measure_id)    
+select count(*) as statistic_value, 'Person:Ethnicity:ConceptCnt' as measure_id 
+from @results_database_schema.ACHILLES_results where analysis_id = 5;
+
 
 --unmapped data (concept_0) derived measures (focusing on source values)
 
