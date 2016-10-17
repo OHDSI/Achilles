@@ -558,6 +558,15 @@ insert into @results_database_schema.ACHILLES_analysis (analysis_id, analysis_na
 insert into @results_database_schema.ACHILLES_analysis (analysis_id, analysis_name)
 	values (9, 'Number of persons with invalid care_site_id');
 
+insert into @results_database_schema.ACHILLES_analysis (analysis_id, analysis_name, stratum_1_name, stratum_2_name)
+	values (10, 'Number of all persons by year of birth by gender', 'year_of_birth', 'gender_concept_id');
+
+insert into @results_database_schema.ACHILLES_analysis (analysis_id, analysis_name, stratum_1_name, stratum_2_name)
+	values (11, 'Number of non-deceased persons by year of birth by gender', 'year_of_birth', 'gender_concept_id');
+	
+insert into @results_database_schema.ACHILLES_analysis (analysis_id, analysis_name, stratum_1_name, stratum_2_name)
+  values (12, 'Number of persons by race and ethnicity','race_concept_id','ethnicity_concept_id');
+
 
 --100. OBSERVATION_PERIOD (joined to PERSON)
 
@@ -1251,6 +1260,8 @@ ACHILLES Analyses on PERSON table
 
 *********************************************/
 
+
+
 --{1 IN (@list_of_analysis_ids)}?{
 -- 1	Number of persons
 insert into @results_database_schema.ACHILLES_results (analysis_id, count_value)
@@ -1341,9 +1352,37 @@ where p1.care_site_id is not null
 
 
 
+--{10 IN (@list_of_analysis_ids)}?{
+-- 10	Number of all persons by year of birth and by gender
+insert into @results_database_schema.ACHILLES_results (analysis_id, stratum_1, stratum_2, count_value)
+select 10 as analysis_id,  year_of_birth as stratum_1, 
+  gender_concept_id as stratum_2,
+  COUNT_BIG(distinct person_id) as count_value
+from @cdm_database_schema.PERSON
+group by YEAR_OF_BIRTH, gender_concept_id;
+--}
+
+
+--{11 IN (@list_of_analysis_ids)}?{
+-- 11	Number of non-deceased persons by year of birth and by gender
+insert into @results_database_schema.ACHILLES_results (analysis_id, stratum_1, stratum_2, count_value)
+select 11 as analysis_id,  year_of_birth as stratum_1, 
+  gender_concept_id as stratum_2,
+  COUNT_BIG(distinct person_id) as count_value
+from @cdm_database_schema.PERSON
+where person_id not in (select person_id from @cdm_database_schema.DEATH)
+group by YEAR_OF_BIRTH, gender_concept_id;
+--}
 
 
 
+--{12 IN (@list_of_analysis_ids)}?{
+-- 12	Number of persons by race and ethnicity
+insert into @results_database_schema.ACHILLES_results (analysis_id, stratum_1, stratum_2, count_value)
+select 12 as analysis_id, RACE_CONCEPT_ID as stratum_1, ETHNICITY_CONCEPT_ID as stratum_2, COUNT_BIG(distinct person_id) as count_value
+from @cdm_database_schema.PERSON
+group by RACE_CONCEPT_ID,ETHNICITY_CONCEPT_ID;
+--}
 
 /********************************************
 
