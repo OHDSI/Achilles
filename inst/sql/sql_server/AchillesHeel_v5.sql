@@ -39,6 +39,7 @@ SQL for ACHILLES results (for either OMOP CDM v4 or OMOP CDM v5)
 {DEFAULT @source_name = 'CDM NAME'}
 {DEFAULT @smallcellcount = 5}
 {DEFAULT @createTable = TRUE}
+{DEFAULT @derivedDataSmPtCount = 11} 
 
  
 --@results_database_schema.ACHILLES_Heel part:
@@ -164,7 +165,7 @@ and cast(stratum_1 as int) <=8;
 
 
 --data density measures
---for drug (exposure and eras)
+
 insert into @results_database_schema.ACHILLES_results_derived (statistic_value,measure_id)    
 select count(*) as statistic_value, 'DrugExposure:ConceptCnt' as measure_id 
 from @results_database_schema.ACHILLES_results where analysis_id = 701;
@@ -172,6 +173,42 @@ from @results_database_schema.ACHILLES_results where analysis_id = 701;
 insert into @results_database_schema.ACHILLES_results_derived (statistic_value,measure_id)    
 select count(*) as statistic_value, 'DrugEra:ConceptCnt' as measure_id 
 from @results_database_schema.ACHILLES_results where analysis_id = 901;
+
+insert into @results_database_schema.ACHILLES_results_derived (statistic_value,measure_id)    
+select count(*) as statistic_value, 'Condition:ConceptCnt' as measure_id 
+from @results_database_schema.ACHILLES_results where analysis_id = 401;
+
+insert into @results_database_schema.ACHILLES_results_derived (statistic_value,measure_id)    
+select count(*) as statistic_value, 'Procedure:ConceptCnt' as measure_id 
+from @results_database_schema.ACHILLES_results where analysis_id = 601;
+
+insert into @results_database_schema.ACHILLES_results_derived (statistic_value,measure_id)    
+select count(*) as statistic_value, 'Observation:ConceptCnt' as measure_id 
+from @results_database_schema.ACHILLES_results where analysis_id = 801;
+
+insert into @results_database_schema.ACHILLES_results_derived (statistic_value,measure_id)    
+select count(*) as statistic_value, 'Measurement:ConceptCnt' as measure_id 
+from @results_database_schema.ACHILLES_results where analysis_id = 1801;
+
+insert into @results_database_schema.ACHILLES_results_derived (statistic_value,measure_id)    
+select count(*) as statistic_value, 'Visit:ConceptCnt' as measure_id 
+from @results_database_schema.ACHILLES_results where analysis_id = 201;
+
+insert into @results_database_schema.ACHILLES_results_derived (statistic_value,measure_id)    
+select count(*) as statistic_value, 'Death:DeathType:ConceptCnt' as measure_id 
+from @results_database_schema.ACHILLES_results where analysis_id = 505;
+
+insert into @results_database_schema.ACHILLES_results_derived (statistic_value,measure_id)    
+select count(*) as statistic_value, 'Death:DeathCause:ConceptCnt' as measure_id 
+from @results_database_schema.ACHILLES_results where analysis_id = 501;
+
+insert into @results_database_schema.ACHILLES_results_derived (statistic_value,measure_id)    
+select count(*) as statistic_value, 'Person:Race:ConceptCnt' as measure_id 
+from @results_database_schema.ACHILLES_results where analysis_id = 4;
+
+insert into @results_database_schema.ACHILLES_results_derived (statistic_value,measure_id)    
+select count(*) as statistic_value, 'Person:Ethnicity:ConceptCnt' as measure_id 
+from @results_database_schema.ACHILLES_results where analysis_id = 5;
 
 
 --unmapped data (concept_0) derived measures (focusing on source values)
@@ -190,6 +227,34 @@ select
 count(*) as statistic_value,
 'Provider:SpeciatlyCnt' as measure_id
 from @results_database_schema.achilles_results where analysis_id = 301;
+
+
+
+--derived data that are safe to share (greater aggregation and small patient count discarded at query level)
+-- in derived result table; not at the end of the script
+
+
+insert into @results_database_schema.ACHILLES_results_derived (stratum_1,statistic_value,measure_id)    
+select decade as stratum_1,temp_cnt as statistic_value,
+'Death:byDecade:SafePatientCnt' as measure_id
+from
+   (select left(stratum_1,3) as decade,sum(count_value) as temp_cnt from  @results_database_schema.achilles_results where analysis_id = 504  group by left(stratum_1,3)
+   )a
+where temp_cnt >= @derivedDataSmPtCount;
+
+
+
+insert into @results_database_schema.ACHILLES_results_derived (stratum_1,statistic_value,measure_id)    
+select stratum_1,temp_cnt as statistic_value,
+'Death:byYear:SafePatientCnt' as measure_id
+from
+   (select stratum_1,sum(count_value) as temp_cnt from  @results_database_schema.achilles_results where analysis_id = 504  group by stratum_1
+   )a
+where temp_cnt >= @derivedDataSmPtCount;
+
+
+
+
 
 --end of derived general measures ********************************************************************
 
