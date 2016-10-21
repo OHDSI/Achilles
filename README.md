@@ -71,7 +71,7 @@ To get description of derived measures, run `read.csv(system.file("csv","derived
 Similarly, for overview of rules, run  
 `read.csv(system.file("csv","achilles_rule.csv",package="Achilles"),as.is=T)`
 
-Also see [notes.md](notes.md) for more information (in the extras folder).
+Also see [notes.md](extras/notes.md) for more information (in the extras folder).
 
 
 Getting Started with Docker
