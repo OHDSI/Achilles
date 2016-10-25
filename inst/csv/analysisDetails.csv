@@ -1,4 +1,4 @@
-"analysis_id","analysis_name","stratum_1_name","stratum_2_name","stratum_3_name","stratum_4_name","stratum_5_name"
+"ANALYSIS_ID","ANALYSIS_NAME","STRATUM_1_NAME","STRATUM_2_NAME","STRATUM_3_NAME","STRATUM_4_NAME","STRATUM_5_NAME"
 0,"Source name",,,,,
 1,"Number of persons",,,,,
 2,"Number of persons by gender","gender_concept_id",,,,
