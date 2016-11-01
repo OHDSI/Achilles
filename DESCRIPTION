@@ -1,13 +1,14 @@
 Package: Achilles
 Type: Package
 Title: Creates descriptive statistics summary for an entire OMOP CDM instance.
-Version: 1.3
-Date: 2016-06-10
+Version: 1.4
+Date: 2016-10-20
 Author: Patrick Ryan, Martijn Schuemie, Vojtech Huser, Chris Knoll
 Maintainer: Patrick Ryan <ryan@ohdsi.org>
 LazyData: true
 Description: creates descriptive statistics summary for an entire OMOP CDM
-    instance.
+    instance. Since Aug 2016 only CDM v5 is actively being extended. Achilles
+    Heel component does data quality assesment.
 Depends:
     SqlRender,
     DatabaseConnector,

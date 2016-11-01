@@ -1,36 +1,37 @@
-rule_id,rule_name,severity,rule_type,rule_description,threshold,rule_classification,rule_scope
-0,Achilles Heel version 1.3,,,this rule is not used for data analysis. It communicates the version of the ruleset.,,,
-1,multiple checks for greater than zero,error,DQ,umbrella rule: this rule includes multiple error checks on over 35 analysis_ids,>0,complex,
-2,multiple checks where minimum value of a measure should not be negative,error,DQ,umbrella rule: this rule includes multiple error checks on over 20 analysis_ids where min value in distribution should not be negative,,complex,
-3,multiple checks related to death data where maximum value of a measure should not be positive,warning,DQ,death distributions where max should not be positive (using anlyses 511;512;513;514;515),,plausibility,
-4,invalid concept_id,error,CDM conformance,invalid concept_id,,,
-5,invalid type concept_id,error,CDM conformance,invalid type concept_id,,,
-6,data with unmapped concepts,warning,DQ,for multiple analyses,,,
-7,concept from the wrong vocabulary,error,CDM conformance,concept from the wrong vocabulary,,,
-8,concept from the wrong vocabulary; race,error,CDM conformance,concept from the wrong vocabulary; race,,,
-9,concept from the wrong vocabulary; ethnicity,error,CDM conformance,concept from the wrong vocabulary; ethnicity,,,
-10,concept from the wrong vocabulary; place of service,error,CDM conformance,concept from the wrong vocabulary; place of service,,,
-11,incorrect terminology,error,CDM conformance,specialty - 48 specialty,,,
-12,Dx is not a SNOMED code,error,CDM conformance,"concept from the wrong vocabulary; Condition Occurrence, Condition Era (SNOMED)",,,
-13,Drug is not RxNorm concept,error,CDM conformance,"concept from the wrong vocabulary; Drug Exposure, Drug Era (RxNorm)",,,
-14,"Procedure is not CPT, ICD9Proc or HCPCS",error,CDM conformance,procedure - 4 CPT4/5 HCPCS/3 ICD9P,,,
-15,incorrect terminology,error,CDM conformance,CDM V4 only:LOINC,,,
-16,incorrect terminology,error,CDM conformance,CDM v4 only:DRG,,,
-17,incorrect terminology,error,CDM conformance,revenue code - 43 revenue code,,,
-18,year of birth is in the future,error,DQ,year of birth should not be in the future ,,plausibility,
-19,year of birth is prior 1800,warning,DQ, year of birth < 1800,<1800,plausibility,
-20,age below 0,error,DQ,age < 0,<0,plausibility,
-21,age too high,error,DQ,age > 150,>150,plausibility,
-22,monthly trend,warning,DQ,monthly change > 100%,,fidelity,
-23,monthly trend,warning,DQ,monthly change > 100% at concept level,,fidelity,
-24,too high days_supply,warning,DQ,days_supply > 180,,plausibility,
-25,too high number of refils,warning,DQ,refills > 10,>10,plausibility,
-26,implausible quantity for drug,warning,DQ,quantity > 600,>600,plausibility,
-27,more than 1 percent of unmapped rows (concept_0 rows),warning,DQ,for multiple analyses (4xx;6xx;7xx;8xx;18xx),>1,completeness,
-28,percentage of non-numerical measurement records exceeds general population threshold,warning,DQ,"typically, measurement data contans a significant proportion of rows with numerical result. This rule looks at rows in MEASUREMENT and alerts the user if a large proportion of rows lack any numerical result",>=80,completeness,GeneralPopulationOnly
-29,infant diagnosis at senior age of over 50yo,error,DQ,mecconium condition 195075; This rule is example of a terminology depended data quality tool,,plausibility,
-31,ratio of providers to total patients,notification,DQ,This rules fires if data indicate a high number of patients and only a few providers exist. ,,plausibility,
-32,Percentage of patients with no visits exceeds threshold,notification,DQ,checks if the percentage of patients with no visits exceeds threshold,>5,plausibility,
-33,[GeneralPopulationOnly] Not all deciles represented at first observation,notification,DQ,"in a general population, a database would observe first visit across all age groups. We at least expect deciles 0 to 8. Rule looks at the count of deciles.",<9,completeness,GeneralPopulationOnly
-34,Count of unmapped source values in a domain exceeds threshold,notification,DQ,"looks at values that are mapped to concept0 and their source values by table, rule 6 is related to this rule but it does not look at the size of the problem (only if unmapped data are present or not present)",,completeness,
-35,Count of measurement_ids with more than 5 distinct units  exceeds threshold,notification,DQ,"Idealy, each measurement would use only one unit. For example, kg for weight. This rule notifies the user if database has measurements that have 5 or more units. This rule has technically thresholds. ",>=5;>=10,fidelity,
+rule_id,rule_name,severity,rule_type,rule_description,threshold,rule_classification,rule_scope,linked_measure
+0,Achilles Heel version 1.3,,,this rule is not used for data analysis. It communicates the version of the ruleset.,,,,
+1,multiple checks for greater than zero,error,DQ,umbrella rule: this rule includes multiple error checks on over 35 analysis_ids,>0,complex,,
+2,multiple checks where minimum value of a measure should not be negative,error,DQ,umbrella rule: this rule includes multiple error checks on over 20 analysis_ids where min value in distribution should not be negative,,complex,,
+3,multiple checks related to death data where maximum value of a measure should not be positive,warning,DQ,death distributions where max should not be positive (using anlyses 511;512;513;514;515),,plausibility,,
+4,invalid concept_id,error,CDM conformance,invalid concept_id,,,,
+5,invalid type concept_id,error,CDM conformance,invalid type concept_id,,,,
+6,data with unmapped concepts,warning,DQ,for multiple analyses,,,,
+7,concept from the wrong vocabulary,error,CDM conformance,concept from the wrong vocabulary,,,,2
+8,concept from the wrong vocabulary; race,error,CDM conformance,concept from the wrong vocabulary; race,,,,4
+9,concept from the wrong vocabulary; ethnicity,error,CDM conformance,concept from the wrong vocabulary; ethnicity,,,,5
+10,concept from the wrong vocabulary; place of service,error,CDM conformance,concept from the wrong vocabulary; place of service,,,,202
+11,incorrect terminology,error,CDM conformance,specialty - 48 specialty,,,,301
+12,Dx is not a SNOMED code,error,CDM conformance,"concept from the wrong vocabulary; Condition Occurrence, Condition Era (SNOMED)",,,,400;1000
+13,Drug is not RxNorm concept,error,CDM conformance,"concept from the wrong vocabulary; Drug Exposure, Drug Era (RxNorm)",,,,700;900
+14,"Procedure is not CPT, ICD9Proc or HCPCS",error,CDM conformance,procedure - 4 CPT4/5 HCPCS/3 ICD9P,,,,600
+15,incorrect terminology,error,CDM conformance,CDM V4 only:LOINC,,,,
+16,incorrect terminology,error,CDM conformance,CDM v4 only:DRG,,,,
+17,incorrect terminology,error,CDM conformance,revenue code - 43 revenue code,,,,1610
+18,year of birth is in the future,error,DQ,year of birth should not be in the future ,,plausibility,,3
+19,year of birth is prior 1800,warning,DQ, year of birth < 1800,<1800,plausibility,,3
+20,age below 0,error,DQ,age < 0,<0,plausibility,,101
+21,age too high,error,DQ,age > 150,>150,plausibility,,101
+22,monthly trend,warning,DQ,monthly change > 100%,,fidelity,,
+23,monthly trend,warning,DQ,monthly change > 100% at concept level,,fidelity,,
+24,too high days_supply,warning,DQ,days_supply > 180,,plausibility,,
+25,too high number of refils,warning,DQ,refills > 10,>10,plausibility,,716
+26,implausible quantity for drug,warning,DQ,quantity > 600,>600,plausibility,,717
+27,more than 1 percent of unmapped rows (concept_0 rows),warning,DQ,for multiple analyses (4xx;6xx;7xx;8xx;18xx),>1,completeness,,UnmappedData:byDomain:Percentage
+28,percentage of non-numerical measurement records exceeds general population threshold,warning,DQ,"typically, measurement data contans a significant proportion of rows with numerical result. This rule looks at rows in MEASUREMENT and alerts the user if a large proportion of rows lack any numerical result",>=80,completeness,GeneralPopulationOnly,Meas:NoNumValue:Percentage
+29,infant diagnosis at senior age of over 50yo,error,DQ,mecconium condition 195075; This rule is example of a terminology depended data quality tool,,plausibility,,404
+31,ratio of providers to total patients,notification,DQ,This rules fires if data indicate a high number of patients and only a few providers exist. ,,plausibility,,Provider:PatientProviderRatio
+32,Percentage of patients with no visits exceeds threshold,notification,DQ,checks if the percentage of patients with no visits exceeds threshold,>5,plausibility,,ach_2003:Percentage
+33,[GeneralPopulationOnly] Not all deciles represented at first observation,notification,DQ,"in a general population, a database would observe first visit across all age groups. We at least expect deciles 0 to 8. Rule looks at the count of deciles.",<9,completeness,GeneralPopulationOnly,AgeAtFirstObsByDecile:DecileCnt
+34,Count of unmapped source values in a domain exceeds threshold,notification,DQ,"looks at values that are mapped to concept0 and their source values by table, rule 6 is related to this rule but it does not look at the size of the problem (only if unmapped data are present or not present)",,completeness,,UnmappedDataByDomain:SourceValueCnt
+35,Count of measurement_ids with more than 5 distinct units  exceeds threshold,notification,DQ,"Idealy, each measurement would use only one unit. For example, kg for weight. This rule notifies the user if database has measurements that have 5 or more units. This rule has technically thresholds. ",>=5;>=10,fidelity,,1807
+36,age too high2,warning,DQ,age > 125; same as rule 21 but as warning flavor; same threshold is used by Sentinel DQA,>125,plausibility:temporal,,101

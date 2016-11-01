@@ -40,6 +40,7 @@ SQL for ACHILLES results (for either OMOP CDM v4 or OMOP CDM v5)
 {DEFAULT @smallcellcount = 5}
 {DEFAULT @createTable = TRUE}
 {DEFAULT @derivedDataSmPtCount = 11} 
+{DEFAULT @ThresholdAgeWarning = 125} 
 
  
 --@results_database_schema.ACHILLES_Heel part:
@@ -210,6 +211,14 @@ insert into @results_database_schema.ACHILLES_results_derived (statistic_value,m
 select count(*) as statistic_value, 'Person:Ethnicity:ConceptCnt' as measure_id 
 from @results_database_schema.ACHILLES_results where analysis_id = 5;
 
+
+insert into @results_database_schema.ACHILLES_results_derived (statistic_value,measure_id)    
+select count(*) as statistic_value, 'Device:ConceptCnt' as measure_id 
+from @results_database_schema.ACHILLES_results where analysis_id = 2101;
+
+insert into @results_database_schema.ACHILLES_results_derived (statistic_value,measure_id)    
+select count(*) as statistic_value, 'Note:ConceptCnt' as measure_id 
+from @results_database_schema.ACHILLES_results where analysis_id = 2201;
 
 --unmapped data (concept_0) derived measures (focusing on source values)
 
@@ -1173,3 +1182,23 @@ INSERT INTO @results_database_schema.ACHILLES_HEEL_results (ACHILLES_HEEL_warnin
 ;       
 
 
+
+--ruleid 36 WARNING: age > 125   (related to an error grade rule 21 that has higher threshold)
+INSERT INTO @results_database_schema.ACHILLES_HEEL_results (
+	analysis_id,
+	ACHILLES_HEEL_warning,
+	rule_id,
+	record_count
+	)
+SELECT or1.analysis_id,
+	'WARNING: ' + cast(or1.analysis_id as VARCHAR) + '-' + oa1.analysis_name + '; should not have age > @ThresholdAgeWarning, (n=' + cast(sum(or1.count_value) as VARCHAR) + ')' AS ACHILLES_HEEL_warning,
+  36 as rule_id,
+  sum(or1.count_value) as record_count
+FROM @results_database_schema.ACHILLES_results or1
+INNER JOIN @results_database_schema.ACHILLES_analysis oa1
+	ON or1.analysis_id = oa1.analysis_id
+WHERE or1.analysis_id IN (101)
+	AND CAST(or1.stratum_1 AS INT) > @ThresholdAgeWarning
+	AND or1.count_value > 0
+GROUP BY or1.analysis_id,
+  oa1.analysis_name;
