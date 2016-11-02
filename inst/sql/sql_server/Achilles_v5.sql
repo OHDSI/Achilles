@@ -42,6 +42,7 @@ SQL for OMOP CDM v5
 {DEFAULT @smallcellcount = 5}
 {DEFAULT @createTable = TRUE}
 {DEFAULT @validateSchema = FALSE}
+{DEFAULT @deleteFromTable = TRUE}
 
   /****
     developer comment about general ACHILLES calculation process:  
@@ -7452,7 +7453,10 @@ from @cdm_database_schema.visit_occurrence;
 --}
 
 
+--{@deleteFromTable}?{
+
 --final processing of results
 delete from @results_database_schema.ACHILLES_results where count_value <= @smallcellcount;
 delete from @results_database_schema.ACHILLES_results_dist where count_value <= @smallcellcount;
 
+--}
