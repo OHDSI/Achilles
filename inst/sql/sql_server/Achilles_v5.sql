@@ -1245,11 +1245,12 @@ delete from @results_database_schema.ACHILLES_results_dist where analysis_id IN 
 --{0 IN (@list_of_analysis_ids)}?{
 -- 0	Number of persons
 insert into @results_database_schema.ACHILLES_results (analysis_id, stratum_1, count_value)
-select 0 as analysis_id,  '@source_name' as stratum_1, COUNT_BIG(distinct person_id) as count_value
+select 0 as analysis_id,  CAST('@source_name' AS VARCHAR(255)) as stratum_1, COUNT_BIG
+(distinct person_id) as count_value
 from @cdm_database_schema.PERSON;
 
 insert into @results_database_schema.ACHILLES_results_dist (analysis_id, stratum_1, count_value)
-select 0 as analysis_id, '@source_name' as stratum_1, COUNT_BIG(distinct person_id) as count_value
+select 0 as analysis_id, CAST('@source_name' AS VARCHAR(255)) as stratum_1, COUNT_BIG(distinct person_id) as count_value
 from @cdm_database_schema.PERSON;
 
 --}

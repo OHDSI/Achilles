@@ -67,6 +67,17 @@ achillesResults <- achilles(connectionDetails, cdmDatabaseSchema="omop_cdm",
                             cdmVersion = "5", vocabDatabaseSchema="omop_cdm", analysisIds = c(105))
 ```
 
+More analyses (doesn't yet work):
+
+```r
+allAnalyses=getAnalysisDetails()$ANALYSIS_ID
+longAnalyses1=c(1500:1699)
+subSet1=setdiff(allAnalyses,longAnalyses1)
+achillesResults <- achilles(connectionDetails, cdmDatabaseSchema="omop_cdm",
+                            resultsDatabaseSchema="achilles", sourceName="Impala trial", deleteFromTable = FALSE, runHeel = FALSE,
+                            cdmVersion = "5", vocabDatabaseSchema="omop_cdm", analysisIds = subSet1)
+```
+
 You can uninstall packages with 
 ```r
 remove.packages("Achilles")
