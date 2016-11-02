@@ -1463,8 +1463,8 @@ select p.person_id,
 ),
 overallStats (avg_value, stdev_value, min_value, max_value, total) as
 (
-  select avg(1.0 * age_value) as avg_value,
-  stdev(age_value) as stdev_value,
+  select CAST(avg(1.0 * age_value) AS FLOAT) as avg_value,
+  CAST(stdev(age_value) AS FLOAT) as stdev_value,
   min(age_value) as min_value,
   max(age_value) as max_value,
   count_big(*) as total
@@ -1523,8 +1523,8 @@ with rawData (gender_concept_id, age_value) as
 overallStats (gender_concept_id, avg_value, stdev_value, min_value, max_value, total) as
 (
   select gender_concept_id,
-  avg(1.0 *age_value) as avg_value,
-  stdev(age_value) as stdev_value,
+  CAST(avg(1.0 * age_value) AS FLOAT) as avg_value,
+  CAST(stdev(age_value) AS FLOAT) as stdev_value,
   min(age_value) as min_value,
   max(age_value) as max_value,
   count_big(*) as total
@@ -1586,8 +1586,8 @@ with rawData (count_value) as
 ),
 overallStats (avg_value, stdev_value, min_value, max_value, total) as
 (
-  select avg(1.0 * count_value) as avg_value,
-  stdev(count_value) as stdev_value,
+  select CAST(avg(1.0 * count_value) AS FLOAT) as avg_value,
+  CAST(stdev(count_value) AS FLOAT) as stdev_value,
   min(count_value) as min_value,
   max(count_value) as max_value,
   count_big(*) as total
@@ -1656,8 +1656,8 @@ with rawData(gender_concept_id, count_value) as
 overallStats (gender_concept_id, avg_value, stdev_value, min_value, max_value, total) as
 (
   select gender_concept_id,
-    avg(1.0 * count_value) as avg_value,
-    stdev(count_value) as stdev_value,
+    CAST(avg(1.0 * count_value) AS FLOAT) as avg_value,
+    CAST(stdev(count_value) AS FLOAT) as stdev_value,
     min(count_value) as min_value,
     max(count_value) as max_value,
     count_big(*) as total
@@ -1726,8 +1726,8 @@ with rawData (age_decile, count_value) as
 overallStats (age_decile, avg_value, stdev_value, min_value, max_value, total) as
 (
   select age_decile,
-    avg(1.0 * count_value) as avg_value,
-    stdev(count_value) as stdev_value,
+    CAST(avg(1.0 * count_value) AS FLOAT) as avg_value,
+    CAST(stdev(count_value) AS FLOAT) as stdev_value,
     min(count_value) as min_value,
     max(count_value) as max_value,
     count_big(*) as total
@@ -2098,8 +2098,8 @@ with rawData(person_id, count_value) as
 ),
 overallStats (avg_value, stdev_value, min_value, max_value, total) as
 (
-  select avg(1.0 * count_value) as avg_value,
-    stdev(count_value) as stdev_value,
+  select CAST(avg(1.0 * count_value) AS FLOAT) as avg_value,
+    CAST(stdev(count_value) AS FLOAT) as stdev_value,
     min(count_value) as min_value,
     max(count_value) as max_value,
     count_big(*) as total
@@ -2193,8 +2193,8 @@ overallStats (stratum1_id, stratum2_id, avg_value, stdev_value, min_value, max_v
 (
   select stratum1_id,
     stratum2_id,
-    avg(1.0 * count_value) as avg_value,
-    stdev(count_value) as stdev_value,
+    CAST(avg(1.0 * count_value) AS FLOAT) as avg_value,
+    CAST(stdev(count_value) AS FLOAT) as stdev_value,
     min(count_value) as min_value,
     max(count_value) as max_value,
     count_big(*) as total
@@ -2309,8 +2309,8 @@ with rawData(stratum_id, count_value) as
 overallStats (stratum_id, avg_value, stdev_value, min_value, max_value, total) as
 (
   select stratum_id,
-    avg(1.0 * count_value) as avg_value,
-    stdev(count_value) as stdev_value,
+    CAST(avg(1.0 * count_value) AS FLOAT) as avg_value,
+    CAST(stdev(count_value) AS FLOAT) as stdev_value,
     min(count_value) as min_value,
     max(count_value) as max_value,
     count_big(*) as total
@@ -2505,8 +2505,8 @@ with rawData(person_id, count_value) as
 ),
 overallStats (avg_value, stdev_value, min_value, max_value, total) as
 (
-  select avg(1.0 * count_value) as avg_value,
-    stdev(count_value) as stdev_value,
+  select CAST(avg(1.0 * count_value) AS FLOAT) as avg_value,
+    CAST(stdev(count_value) AS FLOAT) as stdev_value,
     min(count_value) as min_value,
     max(count_value) as max_value,
     count_big(*) as total
@@ -2611,8 +2611,8 @@ with overallStats (stratum1_id, stratum2_id, avg_value, stdev_value, min_value, 
 (
   select subject_id as stratum1_id,
     gender_concept_id as stratum2_id,
-    avg(1.0 * count_value) as avg_value,
-    stdev(count_value) as stdev_value,
+    CAST(avg(1.0 * count_value) AS FLOAT) as avg_value,
+    CAST(stdev(count_value) AS FLOAT) as stdev_value,
     min(count_value) as min_value,
     max(count_value) as max_value,
     count_big(*) as total
@@ -2848,8 +2848,8 @@ with rawData(stratum_id, count_value) as
 overallStats (stratum_id, avg_value, stdev_value, min_value, max_value, total) as
 (
   select stratum_id,
-    avg(1.0 * count_value) as avg_value,
-    stdev(count_value) as stdev_value,
+    CAST(avg(1.0 * count_value) AS FLOAT) as avg_value,
+    CAST(stdev(count_value) AS FLOAT) as stdev_value,
     min(count_value) as min_value,
     max(count_value) as max_value,
     count_big(*) as total
@@ -2937,8 +2937,8 @@ select 511 as analysis_id,
   COUNT_BIG(count_value) as count_value,
 	min(count_value) as min_value,
 	max(count_value) as max_value,
-	avg(1.0*count_value) as avg_value,
-	stdev(count_value) as stdev_value,
+	CAST(avg(1.0*count_value) AS FLOAT) as avg_value,
+	CAST(stdev(count_value) AS FLOAT) as stdev_value,
 	max(case when p1<=0.50 then count_value else -9999 end) as median_value,
 	max(case when p1<=0.10 then count_value else -9999 end) as p10_value,
 	max(case when p1<=0.25 then count_value else -9999 end) as p25_value,
@@ -2976,8 +2976,8 @@ with rawData(count_value) as
 ),
 overallStats (avg_value, stdev_value, min_value, max_value, total) as
 (
-  select avg(1.0 * count_value) as avg_value,
-    stdev(count_value) as stdev_value,
+  select CAST(avg(1.0 * count_value) AS FLOAT) as avg_value,
+    CAST(stdev(count_value) AS FLOAT) as stdev_value,
     min(count_value) as min_value,
     max(count_value) as max_value,
     count_big(*) as total
@@ -3044,8 +3044,8 @@ with rawData(count_value) as
 ),
 overallStats (avg_value, stdev_value, min_value, max_value, total) as
 (
-  select avg(1.0 * count_value) as avg_value,
-    stdev(count_value) as stdev_value,
+  select CAST(avg(1.0 * count_value) AS FLOAT) as avg_value,
+    CAST(stdev(count_value) AS FLOAT) as stdev_value,
     min(count_value) as min_value,
     max(count_value) as max_value,
     count_big(*) as total
@@ -3111,8 +3111,8 @@ with rawData(count_value) as
 ),
 overallStats (avg_value, stdev_value, min_value, max_value, total) as
 (
-  select avg(1.0 * count_value) as avg_value,
-    stdev(count_value) as stdev_value,
+  select CAST(avg(1.0 * count_value) AS FLOAT) as avg_value,
+    CAST(stdev(count_value) AS FLOAT) as stdev_value,
     min(count_value) as min_value,
     max(count_value) as max_value,
     count_big(*) as total
@@ -3178,8 +3178,8 @@ with rawData(count_value) as
 ),
 overallStats (avg_value, stdev_value, min_value, max_value, total) as
 (
-  select avg(1.0 * count_value) as avg_value,
-    stdev(count_value) as stdev_value,
+  select CAST(avg(1.0 * count_value) AS FLOAT) as avg_value,
+    CAST(stdev(count_value) AS FLOAT) as stdev_value,
     min(count_value) as min_value,
     max(count_value) as max_value,
     count_big(*) as total
@@ -3291,8 +3291,8 @@ with rawData(count_value) as
 ),
 overallStats (avg_value, stdev_value, min_value, max_value, total) as
 (
-  select avg(1.0 * count_value) as avg_value,
-    stdev(count_value) as stdev_value,
+  select CAST(avg(1.0 * count_value) AS FLOAT) as avg_value,
+    CAST(stdev(count_value) AS FLOAT) as stdev_value,
     min(count_value) as min_value,
     max(count_value) as max_value,
     count_big(*) as total
@@ -3398,8 +3398,8 @@ with overallStats (stratum1_id, stratum2_id, avg_value, stdev_value, min_value, 
 (
   select subject_id as stratum1_id,
     gender_concept_id as stratum2_id,
-    avg(1.0 * count_value) as avg_value,
-    stdev(count_value) as stdev_value,
+    CAST(avg(1.0 * count_value) AS FLOAT) as avg_value,
+    CAST(stdev(count_value) AS FLOAT) as stdev_value,
     min(count_value) as min_value,
     max(count_value) as max_value,
     count_big(*) as total
@@ -3590,8 +3590,8 @@ with rawData(count_value) as
 ),
 overallStats (avg_value, stdev_value, min_value, max_value, total) as
 (
-  select avg(1.0 * count_value) as avg_value,
-    stdev(count_value) as stdev_value,
+  select CAST(avg(1.0 * count_value) AS FLOAT) as avg_value,
+    CAST(stdev(count_value) AS FLOAT) as stdev_value,
     min(count_value) as min_value,
     max(count_value) as max_value,
     count_big(*) as total
@@ -3696,8 +3696,8 @@ with overallStats (stratum1_id, stratum2_id, avg_value, stdev_value, min_value, 
 (
   select subject_id as stratum1_id,
     gender_concept_id as stratum2_id,
-    avg(1.0 * count_value) as avg_value,
-    stdev(count_value) as stdev_value,
+    CAST(avg(1.0 * count_value) AS FLOAT) as avg_value,
+    CAST(stdev(count_value) AS FLOAT) as stdev_value,
     min(count_value) as min_value,
     max(count_value) as max_value,
     count_big(*) as total
@@ -3836,8 +3836,8 @@ with rawData(stratum_id, count_value) as
 overallStats (stratum_id, avg_value, stdev_value, min_value, max_value, total) as
 (
   select stratum_id,
-    avg(1.0 * count_value) as avg_value,
-    stdev(count_value) as stdev_value,
+    CAST(avg(1.0 * count_value) AS FLOAT) as avg_value,
+    CAST(stdev(count_value) AS FLOAT) as stdev_value,
     min(count_value) as min_value,
     max(count_value) as max_value,
     count_big(*) as total
@@ -3898,8 +3898,8 @@ with rawData(stratum_id, count_value) as
 overallStats (stratum_id, avg_value, stdev_value, min_value, max_value, total) as
 (
   select stratum_id,
-    avg(1.0 * count_value) as avg_value,
-    stdev(count_value) as stdev_value,
+    CAST(avg(1.0 * count_value) AS FLOAT) as avg_value,
+    CAST(stdev(count_value) AS FLOAT) as stdev_value,
     min(count_value) as min_value,
     max(count_value) as max_value,
     count_big(*) as total
@@ -3961,8 +3961,8 @@ with rawData(stratum_id, count_value) as
 overallStats (stratum_id, avg_value, stdev_value, min_value, max_value, total) as
 (
   select stratum_id,
-    avg(1.0 * count_value) as avg_value,
-    stdev(count_value) as stdev_value,
+    CAST(avg(1.0 * count_value) AS FLOAT) as avg_value,
+    CAST(stdev(count_value) AS FLOAT) as stdev_value,
     min(count_value) as min_value,
     max(count_value) as max_value,
     count_big(*) as total
@@ -4090,8 +4090,8 @@ with rawData(count_value) as
 ),
 overallStats (avg_value, stdev_value, min_value, max_value, total) as
 (
-  select avg(1.0 * count_value) as avg_value,
-    stdev(count_value) as stdev_value,
+  select CAST(avg(1.0 * count_value) AS FLOAT) as avg_value,
+    CAST(stdev(count_value) AS FLOAT) as stdev_value,
     min(count_value) as min_value,
     max(count_value) as max_value,
     count_big(*) as total
@@ -4199,8 +4199,8 @@ with overallStats (stratum1_id, stratum2_id, avg_value, stdev_value, min_value, 
 (
   select subject_id as stratum1_id,
     gender_concept_id as stratum2_id,
-    avg(1.0 * count_value) as avg_value,
-    stdev(count_value) as stdev_value,
+    CAST(avg(1.0 * count_value) AS FLOAT) as avg_value,
+    CAST(stdev(count_value) AS FLOAT) as stdev_value,
     min(count_value) as min_value,
     max(count_value) as max_value,
     count_big(*) as total
@@ -4360,8 +4360,8 @@ with overallStats (stratum1_id, stratum2_id, avg_value, stdev_value, min_value, 
 (
   select subject_id as stratum1_id,
     unit_concept_id as stratum2_id,
-    avg(1.0 * count_value) as avg_value,
-    stdev(count_value) as stdev_value,
+    CAST(avg(1.0 * count_value) AS FLOAT) as avg_value,
+    CAST(stdev(count_value) AS FLOAT) as stdev_value,
     min(count_value) as min_value,
     max(count_value) as max_value,
     count_big(*) as total
@@ -4515,8 +4515,8 @@ with rawData(count_value) as
 ),
 overallStats (avg_value, stdev_value, min_value, max_value, total) as
 (
-  select avg(1.0 * count_value) as avg_value,
-    stdev(count_value) as stdev_value,
+  select CAST(avg(1.0 * count_value) AS FLOAT) as avg_value,
+    CAST(stdev(count_value) AS FLOAT) as stdev_value,
     min(count_value) as min_value,
     max(count_value) as max_value,
     count_big(*) as total
@@ -4609,8 +4609,8 @@ with overallStats (stratum1_id, stratum2_id, avg_value, stdev_value, min_value, 
 (
   select subject_id as stratum1_id,
     gender_concept_id as stratum2_id,
-    avg(1.0 * count_value) as avg_value,
-    stdev(count_value) as stdev_value,
+    CAST(avg(1.0 * count_value) AS FLOAT) as avg_value,
+    CAST(stdev(count_value) AS FLOAT) as stdev_value,
     min(count_value) as min_value,
     max(count_value) as max_value,
     count_big(*) as total
@@ -4674,8 +4674,8 @@ with rawData(stratum1_id, count_value) as
 overallStats (stratum1_id, avg_value, stdev_value, min_value, max_value, total) as
 (
   select stratum1_id, 
-  	avg(1.0 * count_value) as avg_value,
-    stdev(count_value) as stdev_value,
+  	CAST(avg(1.0 * count_value) AS FLOAT) as avg_value,
+    CAST(stdev(count_value) AS FLOAT) as stdev_value,
     min(count_value) as min_value,
     max(count_value) as max_value,
     count_big(*) as total
@@ -4847,8 +4847,8 @@ with rawData(count_value) as
 ),
 overallStats (avg_value, stdev_value, min_value, max_value, total) as
 (
-  select avg(1.0 * count_value) as avg_value,
-    stdev(count_value) as stdev_value,
+  select CAST(avg(1.0 * count_value) AS FLOAT) as avg_value,
+    CAST(stdev(count_value) AS FLOAT) as stdev_value,
     min(count_value) as min_value,
     max(count_value) as max_value,
     count_big(*) as total
@@ -4940,8 +4940,8 @@ with overallStats (stratum1_id, stratum2_id, avg_value, stdev_value, min_value, 
 (
   select subject_id as stratum1_id,
     gender_concept_id as stratum2_id,
-    avg(1.0 * count_value) as avg_value,
-    stdev(count_value) as stdev_value,
+    CAST(avg(1.0 * count_value) AS FLOAT) as avg_value,
+    CAST(stdev(count_value) AS FLOAT) as stdev_value,
     min(count_value) as min_value,
     max(count_value) as max_value,
     count_big(*) as total
@@ -5006,8 +5006,8 @@ with rawData(stratum1_id, count_value) as
 overallStats (stratum1_id, avg_value, stdev_value, min_value, max_value, total) as
 (
   select stratum1_id, 
-    avg(1.0 * count_value) as avg_value,
-    stdev(count_value) as stdev_value,
+    CAST(avg(1.0 * count_value) AS FLOAT) as avg_value,
+    CAST(stdev(count_value) AS FLOAT) as stdev_value,
     min(count_value) as min_value,
     max(count_value) as max_value,
     count_big(*) as total
@@ -5271,8 +5271,8 @@ with rawData(stratum1_id, count_value) as
 overallStats (stratum1_id, avg_value, stdev_value, min_value, max_value, total) as
 (
   select stratum1_id, 
-    avg(1.0 * count_value) as avg_value,
-    stdev(count_value) as stdev_value,
+    CAST(avg(1.0 * count_value) AS FLOAT) as avg_value,
+    CAST(stdev(count_value) AS FLOAT) as stdev_value,
     min(count_value) as min_value,
     max(count_value) as max_value,
     count_big(*) as total
@@ -5346,8 +5346,8 @@ with rawData(stratum_id, count_value) as
 overallStats (stratum_id, avg_value, stdev_value, min_value, max_value, total) as
 (
   select stratum_id,
-    avg(1.0 * count_value) as avg_value,
-    stdev(count_value) as stdev_value,
+    CAST(avg(1.0 * count_value) AS FLOAT) as avg_value,
+    CAST(stdev(count_value) AS FLOAT) as stdev_value,
     min(count_value) as min_value,
     max(count_value) as max_value,
     count_big(*) as total
@@ -5639,8 +5639,8 @@ with rawData(stratum1_id, count_value) as
 overallStats (stratum1_id, avg_value, stdev_value, min_value, max_value, total) as
 (
   select stratum1_id, 
-    avg(1.0 * count_value) as avg_value,
-    stdev(count_value) as stdev_value,
+    CAST(avg(1.0 * count_value) AS FLOAT) as avg_value,
+    CAST(stdev(count_value) AS FLOAT) as stdev_value,
     min(count_value) as min_value,
     max(count_value) as max_value,
     count_big(*) as total
@@ -5705,8 +5705,8 @@ with rawData(stratum1_id, count_value) as
 overallStats (stratum1_id, avg_value, stdev_value, min_value, max_value, total) as
 (
   select stratum1_id, 
-    avg(1.0 * count_value) as avg_value,
-    stdev(count_value) as stdev_value,
+    CAST(avg(1.0 * count_value) AS FLOAT) as avg_value,
+    CAST(stdev(count_value) AS FLOAT) as stdev_value,
     min(count_value) as min_value,
     max(count_value) as max_value,
     count_big(*) as total
@@ -5770,8 +5770,8 @@ with rawData(stratum1_id, count_value) as
 overallStats (stratum1_id, avg_value, stdev_value, min_value, max_value, total) as
 (
   select stratum1_id, 
-    avg(1.0 * count_value) as avg_value,
-    stdev(count_value) as stdev_value,
+    CAST(avg(1.0 * count_value) AS FLOAT) as avg_value,
+    CAST(stdev(count_value) AS FLOAT) as stdev_value,
     min(count_value) as min_value,
     max(count_value) as max_value,
     count_big(*) as total
@@ -5835,8 +5835,8 @@ with rawData(stratum1_id, count_value) as
 overallStats (stratum1_id, avg_value, stdev_value, min_value, max_value, total) as
 (
   select stratum1_id, 
-    avg(1.0 * count_value) as avg_value,
-    stdev(count_value) as stdev_value,
+    CAST(avg(1.0 * count_value) AS FLOAT) as avg_value,
+    CAST(stdev(count_value) AS FLOAT) as stdev_value,
     min(count_value) as min_value,
     max(count_value) as max_value,
     count_big(*) as total
@@ -5900,8 +5900,8 @@ with rawData(stratum1_id, count_value) as
 overallStats (stratum1_id, avg_value, stdev_value, min_value, max_value, total) as
 (
   select stratum1_id, 
-    avg(1.0 * count_value) as avg_value,
-    stdev(count_value) as stdev_value,
+    CAST(avg(1.0 * count_value) AS FLOAT) as avg_value,
+    CAST(stdev(count_value) AS FLOAT) as stdev_value,
     min(count_value) as min_value,
     max(count_value) as max_value,
     count_big(*) as total
@@ -5964,8 +5964,8 @@ with rawData(stratum1_id, count_value) as
 overallStats (stratum1_id, avg_value, stdev_value, min_value, max_value, total) as
 (
   select stratum1_id, 
-    avg(1.0 * count_value) as avg_value,
-    stdev(count_value) as stdev_value,
+    CAST(avg(1.0 * count_value) AS FLOAT) as avg_value,
+    CAST(stdev(count_value) AS FLOAT) as stdev_value,
     min(count_value) as min_value,
     max(count_value) as max_value,
     count_big(*) as total
@@ -6029,8 +6029,8 @@ with rawData(stratum1_id, count_value) as
 overallStats (stratum1_id, avg_value, stdev_value, min_value, max_value, total) as
 (
   select stratum1_id, 
-    avg(1.0 * count_value) as avg_value,
-    stdev(count_value) as stdev_value,
+    CAST(avg(1.0 * count_value) AS FLOAT) as avg_value,
+    CAST(stdev(count_value) AS FLOAT) as stdev_value,
     min(count_value) as min_value,
     max(count_value) as max_value,
     count_big(*) as total
@@ -6094,8 +6094,8 @@ with rawData(stratum1_id, count_value) as
 overallStats (stratum1_id, avg_value, stdev_value, min_value, max_value, total) as
 (
   select stratum1_id, 
-    avg(1.0 * count_value) as avg_value,
-    stdev(count_value) as stdev_value,
+    CAST(avg(1.0 * count_value) AS FLOAT) as avg_value,
+    CAST(stdev(count_value) AS FLOAT) as stdev_value,
     min(count_value) as min_value,
     max(count_value) as max_value,
     count_big(*) as total
@@ -6158,8 +6158,8 @@ with rawData(stratum1_id, count_value) as
 overallStats (stratum1_id, avg_value, stdev_value, min_value, max_value, total) as
 (
   select stratum1_id, 
-    avg(1.0 * count_value) as avg_value,
-    stdev(count_value) as stdev_value,
+    CAST(avg(1.0 * count_value) AS FLOAT) as avg_value,
+    CAST(stdev(count_value) AS FLOAT) as stdev_value,
     min(count_value) as min_value,
     max(count_value) as max_value,
     count_big(*) as total
@@ -6221,8 +6221,8 @@ with rawData(stratum1_id, count_value) as
 overallStats (stratum1_id, avg_value, stdev_value, min_value, max_value, total) as
 (
   select stratum1_id, 
-    avg(1.0 * count_value) as avg_value,
-    stdev(count_value) as stdev_value,
+    CAST(avg(1.0 * count_value) AS FLOAT) as avg_value,
+    CAST(stdev(count_value) AS FLOAT) as stdev_value,
     min(count_value) as min_value,
     max(count_value) as max_value,
     count_big(*) as total
@@ -6345,8 +6345,8 @@ with rawData(stratum1_id, count_value) as
 overallStats (stratum1_id, avg_value, stdev_value, min_value, max_value, total) as
 (
   select stratum1_id, 
-    avg(1.0 * count_value) as avg_value,
-    stdev(count_value) as stdev_value,
+    CAST(avg(1.0 * count_value) AS FLOAT) as avg_value,
+    CAST(stdev(count_value) AS FLOAT) as stdev_value,
     min(count_value) as min_value,
     max(count_value) as max_value,
     count_big(*) as total
@@ -6410,8 +6410,8 @@ with rawData(stratum1_id, count_value) as
 overallStats (stratum1_id, avg_value, stdev_value, min_value, max_value, total) as
 (
   select stratum1_id, 
-    avg(1.0 * count_value) as avg_value,
-    stdev(count_value) as stdev_value,
+    CAST(avg(1.0 * count_value) AS FLOAT) as avg_value,
+    CAST(stdev(count_value) AS FLOAT) as stdev_value,
     min(count_value) as min_value,
     max(count_value) as max_value,
     count_big(*) as total
@@ -6474,8 +6474,8 @@ with rawData(stratum1_id, count_value) as
 overallStats (stratum1_id, avg_value, stdev_value, min_value, max_value, total) as
 (
   select stratum1_id, 
-    avg(1.0 * count_value) as avg_value,
-    stdev(count_value) as stdev_value,
+    CAST(avg(1.0 * count_value) AS FLOAT) as avg_value,
+    CAST(stdev(count_value) AS FLOAT) as stdev_value,
     min(count_value) as min_value,
     max(count_value) as max_value,
     count_big(*) as total
@@ -6538,8 +6538,8 @@ with rawData(stratum1_id, count_value) as
 overallStats (stratum1_id, avg_value, stdev_value, min_value, max_value, total) as
 (
   select stratum1_id, 
-    avg(1.0 * count_value) as avg_value,
-    stdev(count_value) as stdev_value,
+    CAST(avg(1.0 * count_value) AS FLOAT) as avg_value,
+    CAST(stdev(count_value) AS FLOAT) as stdev_value,
     min(count_value) as min_value,
     max(count_value) as max_value,
     count_big(*) as total
@@ -6602,8 +6602,8 @@ with rawData(stratum1_id, count_value) as
 overallStats (stratum1_id, avg_value, stdev_value, min_value, max_value, total) as
 (
   select stratum1_id, 
-    avg(1.0 * count_value) as avg_value,
-    stdev(count_value) as stdev_value,
+    CAST(avg(1.0 * count_value) AS FLOAT) as avg_value,
+    CAST(stdev(count_value) AS FLOAT) as stdev_value,
     min(count_value) as min_value,
     max(count_value) as max_value,
     count_big(*) as total
@@ -6666,8 +6666,8 @@ with rawData(stratum1_id, count_value) as
 overallStats (stratum1_id, avg_value, stdev_value, min_value, max_value, total) as
 (
   select stratum1_id, 
-    avg(1.0 * count_value) as avg_value,
-    stdev(count_value) as stdev_value,
+    CAST(avg(1.0 * count_value) AS FLOAT) as avg_value,
+    CAST(stdev(count_value) AS FLOAT) as stdev_value,
     min(count_value) as min_value,
     max(count_value) as max_value,
     count_big(*) as total
@@ -6731,8 +6731,8 @@ with rawData(stratum1_id, count_value) as
 overallStats (stratum1_id, avg_value, stdev_value, min_value, max_value, total) as
 (
   select stratum1_id, 
-    avg(1.0 * count_value) as avg_value,
-    stdev(count_value) as stdev_value,
+    CAST(avg(1.0 * count_value) AS FLOAT) as avg_value,
+    CAST(stdev(count_value) AS FLOAT) as stdev_value,
     min(count_value) as min_value,
     max(count_value) as max_value,
     count_big(*) as total
@@ -6909,8 +6909,8 @@ with rawData(count_value) as
 ),
 overallStats (avg_value, stdev_value, min_value, max_value, total) as
 (
-  select avg(1.0 * count_value) as avg_value,
-    stdev(count_value) as stdev_value,
+  select CAST(avg(1.0 * count_value) AS FLOAT) as avg_value,
+    CAST(stdev(count_value) AS FLOAT) as stdev_value,
     min(count_value) as min_value,
     max(count_value) as max_value,
     count_big(*) as total
@@ -7015,8 +7015,8 @@ with overallStats (stratum1_id, stratum2_id, avg_value, stdev_value, min_value, 
 (
   select subject_id as stratum1_id,
     gender_concept_id as stratum2_id,
-    avg(1.0 * count_value) as avg_value,
-    stdev(count_value) as stdev_value,
+    CAST(avg(1.0 * count_value) AS FLOAT) as avg_value,
+    CAST(stdev(count_value) AS FLOAT) as stdev_value,
     min(count_value) as min_value,
     max(count_value) as max_value,
     count_big(*) as total
@@ -7162,8 +7162,8 @@ with overallStats (stratum1_id, stratum2_id, avg_value, stdev_value, min_value, 
 (
   select subject_id as stratum1_id,
     unit_concept_id as stratum2_id,
-    avg(1.0 * count_value) as avg_value,
-    stdev(count_value) as stdev_value,
+    CAST(avg(1.0 * count_value) AS FLOAT) as avg_value,
+    CAST(stdev(count_value) AS FLOAT) as stdev_value,
     min(count_value) as min_value,
     max(count_value) as max_value,
     count_big(*) as total
@@ -7233,8 +7233,8 @@ with overallStats (stratum1_id, stratum2_id, avg_value, stdev_value, min_value, 
 (
   select subject_id as stratum1_id,
     unit_concept_id as stratum2_id,
-    avg(1.0 * count_value) as avg_value,
-    stdev(count_value) as stdev_value,
+    CAST(avg(1.0 * count_value) AS FLOAT) as avg_value,
+    CAST(stdev(count_value) AS FLOAT) as stdev_value,
     min(count_value) as min_value,
     max(count_value) as max_value,
     count_big(*) as total
@@ -7304,8 +7304,8 @@ with overallStats (stratum1_id, stratum2_id, avg_value, stdev_value, min_value, 
 (
   select subject_id as stratum1_id,
     unit_concept_id as stratum2_id,
-    avg(1.0 * count_value) as avg_value,
-    stdev(count_value) as stdev_value,
+    CAST(avg(1.0 * count_value) AS FLOAT) as avg_value,
+    CAST(stdev(count_value) AS FLOAT) as stdev_value,
     min(count_value) as min_value,
     max(count_value) as max_value,
     count_big(*) as total
