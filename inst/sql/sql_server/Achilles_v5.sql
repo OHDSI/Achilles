@@ -1556,7 +1556,7 @@ overallStats (avg_value, stdev_value, min_value, max_value, total) as
   count_big(*) as total
   from rawData
 ),
-stats (count_value, total, rn) as
+statsView (count_value, total, rn) as
 (
   select count_value, count_big(*) as total, row_number() over (order by count_value) as rn
   FROM
@@ -1571,8 +1571,8 @@ stats (count_value, total, rn) as
 priorStats (count_value, total, accumulated) as
 (
   select s.count_value, s.total, sum(p.total) as accumulated
-  from stats s
-  join stats p on p.rn <= s.rn
+  from statsView s
+  join statsView p on p.rn <= s.rn
   group by s.count_value, s.total, s.rn
 )
 select 105 as analysis_id,
@@ -1627,7 +1627,7 @@ overallStats (gender_concept_id, avg_value, stdev_value, min_value, max_value, t
   FROM rawData
   group by gender_concept_id
 ),
-stats (gender_concept_id, count_value, total, rn) as
+statsView (gender_concept_id, count_value, total, rn) as
 (
   select gender_concept_id, count_value, count_big(*) as total, row_number() over (order by count_value) as rn
   FROM rawData
@@ -1636,8 +1636,8 @@ stats (gender_concept_id, count_value, total, rn) as
 priorStats (gender_concept_id,count_value, total, accumulated) as
 (
   select s.gender_concept_id, s.count_value, s.total, sum(p.total) as accumulated
-  from stats s
-  join stats p on s.gender_concept_id = p.gender_concept_id and p.rn <= s.rn
+  from statsView s
+  join statsView p on s.gender_concept_id = p.gender_concept_id and p.rn <= s.rn
   group by s.gender_concept_id, s.count_value, s.total, s.rn
 )
 select 106 as analysis_id,
@@ -1697,7 +1697,7 @@ overallStats (age_decile, avg_value, stdev_value, min_value, max_value, total) a
   from rawData
   group by age_decile
 ),
-stats (age_decile, count_value, total, rn) as
+statsView (age_decile, count_value, total, rn) as
 (
   select age_decile,
     count_value, 
@@ -1709,8 +1709,8 @@ stats (age_decile, count_value, total, rn) as
 priorStats (age_decile,count_value, total, accumulated) as
 (
   select s.age_decile, s.count_value, s.total, sum(p.total) as accumulated
-  from stats s
-  join stats p on s.age_decile = p.age_decile and p.rn <= s.rn
+  from statsView s
+  join statsView p on s.age_decile = p.age_decile and p.rn <= s.rn
   group by s.age_decile, s.count_value, s.total, s.rn
 )
 select 107 as analysis_id,
@@ -2068,7 +2068,7 @@ overallStats (avg_value, stdev_value, min_value, max_value, total) as
     count_big(*) as total
   from rawData
 ),
-stats (count_value, total, rn) as
+statsView (count_value, total, rn) as
 (
   select count_value, 
   	count_big(*) as total, 
@@ -2079,8 +2079,8 @@ stats (count_value, total, rn) as
 priorStats (count_value, total, accumulated) as
 (
   select s.count_value, s.total, sum(p.total) as accumulated
-  from stats s
-  join stats p on p.rn <= s.rn
+  from statsView s
+  join statsView p on p.rn <= s.rn
   group by s.count_value, s.total, s.rn
 )
 select 203 as analysis_id,
@@ -2164,7 +2164,7 @@ overallStats (stratum1_id, stratum2_id, avg_value, stdev_value, min_value, max_v
   FROM rawData
 	group by stratum1_id, stratum2_id
 ),
-stats (stratum1_id, stratum2_id, count_value, total, rn) as
+statsView (stratum1_id, stratum2_id, count_value, total, rn) as
 (
   select stratum1_id, stratum2_id, count_value, count_big(*) as total, row_number() over (partition by stratum1_id, stratum2_id order by count_value) as rn
   FROM rawData
@@ -2173,8 +2173,8 @@ stats (stratum1_id, stratum2_id, count_value, total, rn) as
 priorStats (stratum1_id, stratum2_id, count_value, total, accumulated) as
 (
   select s.stratum1_id, s.stratum2_id, s.count_value, s.total, sum(p.total) as accumulated
-  from stats s
-  join stats p on s.stratum1_id = p.stratum1_id and s.stratum2_id = p.stratum2_id and p.rn <= s.rn
+  from statsView s
+  join statsView p on s.stratum1_id = p.stratum1_id and s.stratum2_id = p.stratum2_id and p.rn <= s.rn
   group by s.stratum1_id, s.stratum2_id, s.count_value, s.total, s.rn
 )
 select 206 as analysis_id,
@@ -2280,7 +2280,7 @@ overallStats (stratum_id, avg_value, stdev_value, min_value, max_value, total) a
   FROM rawData
   group by stratum_id
 ),
-stats (stratum_id, count_value, total, rn) as
+statsView (stratum_id, count_value, total, rn) as
 (
   select stratum_id, count_value, count_big(*) as total, row_number() over (order by count_value) as rn
   FROM rawData
@@ -2289,8 +2289,8 @@ stats (stratum_id, count_value, total, rn) as
 priorStats (stratum_id, count_value, total, accumulated) as
 (
   select s.stratum_id, s.count_value, s.total, sum(p.total) as accumulated
-  from stats s
-  join stats p on s.stratum_id = p.stratum_id and p.rn <= s.rn
+  from statsView s
+  join statsView p on s.stratum_id = p.stratum_id and p.rn <= s.rn
   group by s.stratum_id, s.count_value, s.total, s.rn
 )
 select 211 as analysis_id,
@@ -2455,7 +2455,7 @@ overallStats (avg_value, stdev_value, min_value, max_value, total) as
     count_big(*) as total
   from rawData
 ),
-stats (count_value, total, rn) as
+statsView (count_value, total, rn) as
 (
   select count_value, 
   	count_big(*) as total, 
@@ -2466,8 +2466,8 @@ stats (count_value, total, rn) as
 priorStats (count_value, total, accumulated) as
 (
   select s.count_value, s.total, sum(p.total) as accumulated
-  from stats s
-  join stats p on p.rn <= s.rn
+  from statsView s
+  join statsView p on p.rn <= s.rn
   group by s.count_value, s.total, s.rn
 )
 select 403 as analysis_id,
@@ -2562,7 +2562,7 @@ with overallStats (stratum1_id, stratum2_id, avg_value, stdev_value, min_value, 
   FROM #rawData_406
 	group by subject_id, gender_concept_id
 ),
-stats (stratum1_id, stratum2_id, count_value, total, rn) as
+statsView (stratum1_id, stratum2_id, count_value, total, rn) as
 (
   select subject_id as stratum1_id, gender_concept_id as stratum2_id, count_value, count_big(*) as total, row_number() over (partition by subject_id, gender_concept_id order by count_value) as rn
   FROM #rawData_406
@@ -2571,8 +2571,8 @@ stats (stratum1_id, stratum2_id, count_value, total, rn) as
 priorStats (stratum1_id, stratum2_id, count_value, total, accumulated) as
 (
   select s.stratum1_id, s.stratum2_id, s.count_value, s.total, sum(p.total) as accumulated
-  from stats s
-  join stats p on s.stratum1_id = p.stratum1_id and s.stratum2_id = p.stratum2_id and p.rn <= s.rn
+  from statsView s
+  join statsView p on s.stratum1_id = p.stratum1_id and s.stratum2_id = p.stratum2_id and p.rn <= s.rn
   group by s.stratum1_id, s.stratum2_id, s.count_value, s.total, s.rn
 )
 select 406 as analysis_id,
@@ -2799,7 +2799,7 @@ overallStats (stratum_id, avg_value, stdev_value, min_value, max_value, total) a
   FROM rawData
   group by stratum_id
 ),
-stats (stratum_id, count_value, total, rn) as
+statsView (stratum_id, count_value, total, rn) as
 (
   select stratum_id, count_value, count_big(*) as total, row_number() over (order by count_value) as rn
   FROM rawData
@@ -2808,8 +2808,8 @@ stats (stratum_id, count_value, total, rn) as
 priorStats (stratum_id, count_value, total, accumulated) as
 (
   select s.stratum_id, s.count_value, s.total, sum(p.total) as accumulated
-  from stats s
-  join stats p on s.stratum_id = p.stratum_id and p.rn <= s.rn
+  from statsView s
+  join statsView p on s.stratum_id = p.stratum_id and p.rn <= s.rn
   group by s.stratum_id, s.count_value, s.total, s.rn
 )
 select 506 as analysis_id,
@@ -2926,7 +2926,7 @@ overallStats (avg_value, stdev_value, min_value, max_value, total) as
     count_big(*) as total
   from rawData
 ),
-stats (count_value, total, rn) as
+statsView (count_value, total, rn) as
 (
   select count_value, 
   	count_big(*) as total, 
@@ -2937,8 +2937,8 @@ stats (count_value, total, rn) as
 priorStats (count_value, total, accumulated) as
 (
   select s.count_value, s.total, sum(p.total) as accumulated
-  from stats s
-  join stats p on p.rn <= s.rn
+  from statsView s
+  join statsView p on p.rn <= s.rn
   group by s.count_value, s.total, s.rn
 )
 select 512 as analysis_id,
@@ -2994,7 +2994,7 @@ overallStats (avg_value, stdev_value, min_value, max_value, total) as
     count_big(*) as total
   from rawData
 ),
-stats (count_value, total, rn) as
+statsView (count_value, total, rn) as
 (
   select count_value, 
   	count_big(*) as total, 
@@ -3005,8 +3005,8 @@ stats (count_value, total, rn) as
 priorStats (count_value, total, accumulated) as
 (
   select s.count_value, s.total, sum(p.total) as accumulated
-  from stats s
-  join stats p on p.rn <= s.rn
+  from statsView s
+  join statsView p on p.rn <= s.rn
   group by s.count_value, s.total, s.rn
 )
 select 513 as analysis_id,
@@ -3061,7 +3061,7 @@ overallStats (avg_value, stdev_value, min_value, max_value, total) as
     count_big(*) as total
   from rawData
 ),
-stats (count_value, total, rn) as
+statsView (count_value, total, rn) as
 (
   select count_value, 
   	count_big(*) as total, 
@@ -3072,8 +3072,8 @@ stats (count_value, total, rn) as
 priorStats (count_value, total, accumulated) as
 (
   select s.count_value, s.total, sum(p.total) as accumulated
-  from stats s
-  join stats p on p.rn <= s.rn
+  from statsView s
+  join statsView p on p.rn <= s.rn
   group by s.count_value, s.total, s.rn
 )
 select 514 as analysis_id,
@@ -3128,7 +3128,7 @@ overallStats (avg_value, stdev_value, min_value, max_value, total) as
     count_big(*) as total
   from rawData
 ),
-stats (count_value, total, rn) as
+statsView (count_value, total, rn) as
 (
   select count_value, 
   	count_big(*) as total, 
@@ -3139,8 +3139,8 @@ stats (count_value, total, rn) as
 priorStats (count_value, total, accumulated) as
 (
   select s.count_value, s.total, sum(p.total) as accumulated
-  from stats s
-  join stats p on p.rn <= s.rn
+  from statsView s
+  join statsView p on p.rn <= s.rn
   group by s.count_value, s.total, s.rn
 )
 select 515 as analysis_id,
@@ -3241,7 +3241,7 @@ overallStats (avg_value, stdev_value, min_value, max_value, total) as
     count_big(*) as total
   from rawData
 ),
-stats (count_value, total, rn) as
+statsView (count_value, total, rn) as
 (
   select count_value, 
   	count_big(*) as total, 
@@ -3252,8 +3252,8 @@ stats (count_value, total, rn) as
 priorStats (count_value, total, accumulated) as
 (
   select s.count_value, s.total, sum(p.total) as accumulated
-  from stats s
-  join stats p on p.rn <= s.rn
+  from statsView s
+  join statsView p on p.rn <= s.rn
   group by s.count_value, s.total, s.rn
 )
 select 603 as analysis_id,
@@ -3349,7 +3349,7 @@ with overallStats (stratum1_id, stratum2_id, avg_value, stdev_value, min_value, 
   FROM #rawData_606
 	group by subject_id, gender_concept_id
 ),
-stats (stratum1_id, stratum2_id, count_value, total, rn) as
+statsView (stratum1_id, stratum2_id, count_value, total, rn) as
 (
   select subject_id as stratum1_id, gender_concept_id as stratum2_id, count_value, count_big(*) as total, row_number() over (partition by subject_id, gender_concept_id order by count_value) as rn
   FROM #rawData_606
@@ -3358,8 +3358,8 @@ stats (stratum1_id, stratum2_id, count_value, total, rn) as
 priorStats (stratum1_id, stratum2_id, count_value, total, accumulated) as
 (
   select s.stratum1_id, s.stratum2_id, s.count_value, s.total, sum(p.total) as accumulated
-  from stats s
-  join stats p on s.stratum1_id = p.stratum1_id and s.stratum2_id = p.stratum2_id and p.rn <= s.rn
+  from statsView s
+  join statsView p on s.stratum1_id = p.stratum1_id and s.stratum2_id = p.stratum2_id and p.rn <= s.rn
   group by s.stratum1_id, s.stratum2_id, s.count_value, s.total, s.rn
 )
 select 606 as analysis_id,
@@ -3540,7 +3540,7 @@ overallStats (avg_value, stdev_value, min_value, max_value, total) as
     count_big(*) as total
   from rawData
 ),
-stats (count_value, total, rn) as
+statsView (count_value, total, rn) as
 (
   select count_value, 
   	count_big(*) as total, 
@@ -3551,8 +3551,8 @@ stats (count_value, total, rn) as
 priorStats (count_value, total, accumulated) as
 (
   select s.count_value, s.total, sum(p.total) as accumulated
-  from stats s
-  join stats p on p.rn <= s.rn
+  from statsView s
+  join statsView p on p.rn <= s.rn
   group by s.count_value, s.total, s.rn
 )
 select 703 as analysis_id,
@@ -3647,7 +3647,7 @@ with overallStats (stratum1_id, stratum2_id, avg_value, stdev_value, min_value, 
   FROM #rawData_706
 	group by subject_id, gender_concept_id
 ),
-stats (stratum1_id, stratum2_id, count_value, total, rn) as
+statsView (stratum1_id, stratum2_id, count_value, total, rn) as
 (
   select subject_id as stratum1_id, gender_concept_id as stratum2_id, count_value, count_big(*) as total, row_number() over (partition by subject_id, gender_concept_id order by count_value) as rn
   FROM #rawData_706
@@ -3656,8 +3656,8 @@ stats (stratum1_id, stratum2_id, count_value, total, rn) as
 priorStats (stratum1_id, stratum2_id, count_value, total, accumulated) as
 (
   select s.stratum1_id, s.stratum2_id, s.count_value, s.total, sum(p.total) as accumulated
-  from stats s
-  join stats p on s.stratum1_id = p.stratum1_id and s.stratum2_id = p.stratum2_id and p.rn <= s.rn
+  from statsView s
+  join statsView p on s.stratum1_id = p.stratum1_id and s.stratum2_id = p.stratum2_id and p.rn <= s.rn
   group by s.stratum1_id, s.stratum2_id, s.count_value, s.total, s.rn
 )
 select 706 as analysis_id,
@@ -3787,7 +3787,7 @@ overallStats (stratum_id, avg_value, stdev_value, min_value, max_value, total) a
   FROM rawData
 	group by stratum_id
 ),
-stats (stratum_id, count_value, total, rn) as
+statsView (stratum_id, count_value, total, rn) as
 (
   select stratum_id, count_value, count_big(*) as total, row_number() over (order by count_value) as rn
   FROM rawData
@@ -3796,8 +3796,8 @@ stats (stratum_id, count_value, total, rn) as
 priorStats (stratum_id, count_value, total, accumulated) as
 (
   select s.stratum_id, s.count_value, s.total, sum(p.total) as accumulated
-  from stats s
-  join stats p on s.stratum_id = p.stratum_id and p.rn <= s.rn
+  from statsView s
+  join statsView p on s.stratum_id = p.stratum_id and p.rn <= s.rn
   group by s.stratum_id, s.count_value, s.total, s.rn
 )
 select 715 as analysis_id,
@@ -3849,7 +3849,7 @@ overallStats (stratum_id, avg_value, stdev_value, min_value, max_value, total) a
   FROM rawData
 	group by stratum_id
 ),
-stats (stratum_id, count_value, total, rn) as
+statsView (stratum_id, count_value, total, rn) as
 (
   select stratum_id, count_value, count_big(*) as total, row_number() over (order by count_value) as rn
   FROM rawData
@@ -3858,8 +3858,8 @@ stats (stratum_id, count_value, total, rn) as
 priorStats (stratum_id, count_value, total, accumulated) as
 (
   select s.stratum_id, s.count_value, s.total, sum(p.total) as accumulated
-  from stats s
-  join stats p on s.stratum_id = p.stratum_id and p.rn <= s.rn
+  from statsView s
+  join statsView p on s.stratum_id = p.stratum_id and p.rn <= s.rn
   group by s.stratum_id, s.count_value, s.total, s.rn
 )
 select 716 as analysis_id,
@@ -3912,7 +3912,7 @@ overallStats (stratum_id, avg_value, stdev_value, min_value, max_value, total) a
   FROM rawData
 	group by stratum_id
 ),
-stats (stratum_id, count_value, total, rn) as
+statsView (stratum_id, count_value, total, rn) as
 (
   select stratum_id, count_value, count_big(*) as total, row_number() over (order by count_value) as rn
   FROM rawData
@@ -3921,8 +3921,8 @@ stats (stratum_id, count_value, total, rn) as
 priorStats (stratum_id, count_value, total, accumulated) as
 (
   select s.stratum_id, s.count_value, s.total, sum(p.total) as accumulated
-  from stats s
-  join stats p on s.stratum_id = p.stratum_id and p.rn <= s.rn
+  from statsView s
+  join statsView p on s.stratum_id = p.stratum_id and p.rn <= s.rn
   group by s.stratum_id, s.count_value, s.total, s.rn
 )
 select 717 as analysis_id,
@@ -4040,7 +4040,7 @@ overallStats (avg_value, stdev_value, min_value, max_value, total) as
     count_big(*) as total
   from rawData
 ),
-stats (count_value, total, rn) as
+statsView (count_value, total, rn) as
 (
   select count_value, 
   	count_big(*) as total, 
@@ -4051,8 +4051,8 @@ stats (count_value, total, rn) as
 priorStats (count_value, total, accumulated) as
 (
   select s.count_value, s.total, sum(p.total) as accumulated
-  from stats s
-  join stats p on p.rn <= s.rn
+  from statsView s
+  join statsView p on p.rn <= s.rn
   group by s.count_value, s.total, s.rn
 )
 select 803 as analysis_id,
@@ -4150,7 +4150,7 @@ with overallStats (stratum1_id, stratum2_id, avg_value, stdev_value, min_value, 
   FROM #rawData_806
 	group by subject_id, gender_concept_id
 ),
-stats (stratum1_id, stratum2_id, count_value, total, rn) as
+statsView (stratum1_id, stratum2_id, count_value, total, rn) as
 (
   select subject_id as stratum1_id, gender_concept_id as stratum2_id, count_value, count_big(*) as total, row_number() over (partition by subject_id, gender_concept_id order by count_value) as rn
   FROM #rawData_806
@@ -4159,8 +4159,8 @@ stats (stratum1_id, stratum2_id, count_value, total, rn) as
 priorStats (stratum1_id, stratum2_id, count_value, total, accumulated) as
 (
   select s.stratum1_id, s.stratum2_id, s.count_value, s.total, sum(p.total) as accumulated
-  from stats s
-  join stats p on s.stratum1_id = p.stratum1_id and s.stratum2_id = p.stratum2_id and p.rn <= s.rn
+  from statsView s
+  join statsView p on s.stratum1_id = p.stratum1_id and s.stratum2_id = p.stratum2_id and p.rn <= s.rn
   group by s.stratum1_id, s.stratum2_id, s.count_value, s.total, s.rn
 )
 select 806 as analysis_id,
@@ -4311,7 +4311,7 @@ with overallStats (stratum1_id, stratum2_id, avg_value, stdev_value, min_value, 
   FROM #rawData_815
 	group by subject_id, unit_concept_id
 ),
-stats (stratum1_id, stratum2_id, count_value, total, rn) as
+statsView (stratum1_id, stratum2_id, count_value, total, rn) as
 (
   select subject_id as stratum1_id, unit_concept_id as stratum2_id, count_value, count_big(*) as total, row_number() over (partition by subject_id, unit_concept_id order by count_value) as rn
   FROM #rawData_815
@@ -4320,8 +4320,8 @@ stats (stratum1_id, stratum2_id, count_value, total, rn) as
 priorStats (stratum1_id, stratum2_id, count_value, total, accumulated) as
 (
   select s.stratum1_id, s.stratum2_id, s.count_value, s.total, sum(p.total) as accumulated
-  from stats s
-  join stats p on s.stratum1_id = p.stratum1_id and s.stratum2_id = p.stratum2_id and p.rn <= s.rn
+  from statsView s
+  join statsView p on s.stratum1_id = p.stratum1_id and s.stratum2_id = p.stratum2_id and p.rn <= s.rn
   group by s.stratum1_id, s.stratum2_id, s.count_value, s.total, s.rn
 )
 select 815 as analysis_id,
@@ -4465,7 +4465,7 @@ overallStats (avg_value, stdev_value, min_value, max_value, total) as
     count_big(*) as total
   from rawData
 ),
-stats (count_value, total, rn) as
+statsView (count_value, total, rn) as
 (
   select count_value, 
   	count_big(*) as total, 
@@ -4476,8 +4476,8 @@ stats (count_value, total, rn) as
 priorStats (count_value, total, accumulated) as
 (
   select s.count_value, s.total, sum(p.total) as accumulated
-  from stats s
-  join stats p on p.rn <= s.rn
+  from statsView s
+  join statsView p on p.rn <= s.rn
   group by s.count_value, s.total, s.rn
 )
 select 903 as analysis_id,
@@ -4560,7 +4560,7 @@ with overallStats (stratum1_id, stratum2_id, avg_value, stdev_value, min_value, 
   FROM #rawData_906
 	group by subject_id, gender_concept_id
 ),
-stats (stratum1_id, stratum2_id, count_value, total, rn) as
+statsView (stratum1_id, stratum2_id, count_value, total, rn) as
 (
   select subject_id as stratum1_id, gender_concept_id as stratum2_id, count_value, count_big(*) as total, row_number() over (partition by subject_id, gender_concept_id order by count_value) as rn
   FROM #rawData_906
@@ -4569,8 +4569,8 @@ stats (stratum1_id, stratum2_id, count_value, total, rn) as
 priorStats (stratum1_id, stratum2_id, count_value, total, accumulated) as
 (
   select s.stratum1_id, s.stratum2_id, s.count_value, s.total, sum(p.total) as accumulated
-  from stats s
-  join stats p on s.stratum1_id = p.stratum1_id and s.stratum2_id = p.stratum2_id and p.rn <= s.rn
+  from statsView s
+  join statsView p on s.stratum1_id = p.stratum1_id and s.stratum2_id = p.stratum2_id and p.rn <= s.rn
   group by s.stratum1_id, s.stratum2_id, s.count_value, s.total, s.rn
 )
 select 906 as analysis_id,
@@ -4625,7 +4625,7 @@ overallStats (stratum1_id, avg_value, stdev_value, min_value, max_value, total) 
   from rawData
   group by stratum1_id
 ),
-stats (stratum1_id, count_value, total, rn) as
+statsView (stratum1_id, count_value, total, rn) as
 (
   select stratum1_id, 
 		count_value, 
@@ -4637,8 +4637,8 @@ stats (stratum1_id, count_value, total, rn) as
 priorStats (stratum1_id, count_value, total, accumulated) as
 (
   select s.stratum1_id, s.count_value, s.total, sum(p.total) as accumulated
-  from stats s
-  join stats p on s.stratum1_id = p.stratum1_id and p.rn <= s.rn
+  from statsView s
+  join statsView p on s.stratum1_id = p.stratum1_id and p.rn <= s.rn
   group by s.stratum1_id, s.count_value, s.total, s.rn
 )
 select 907 as analysis_id,
@@ -4797,7 +4797,7 @@ overallStats (avg_value, stdev_value, min_value, max_value, total) as
     count_big(*) as total
   from rawData
 ),
-stats (count_value, total, rn) as
+statsView (count_value, total, rn) as
 (
   select count_value, 
   	count_big(*) as total, 
@@ -4808,8 +4808,8 @@ stats (count_value, total, rn) as
 priorStats (count_value, total, accumulated) as
 (
   select s.count_value, s.total, sum(p.total) as accumulated
-  from stats s
-  join stats p on p.rn <= s.rn
+  from statsView s
+  join statsView p on p.rn <= s.rn
   group by s.count_value, s.total, s.rn
 )
 select 1003 as analysis_id,
@@ -4891,7 +4891,7 @@ with overallStats (stratum1_id, stratum2_id, avg_value, stdev_value, min_value, 
   FROM #rawData_1006
 	group by subject_id, gender_concept_id
 ),
-stats (stratum1_id, stratum2_id, count_value, total, rn) as
+statsView (stratum1_id, stratum2_id, count_value, total, rn) as
 (
   select subject_id as stratum1_id, gender_concept_id as stratum2_id, count_value, count_big(*) as total, row_number() over (partition by subject_id, gender_concept_id order by count_value) as rn
   FROM #rawData_1006
@@ -4900,8 +4900,8 @@ stats (stratum1_id, stratum2_id, count_value, total, rn) as
 priorStats (stratum1_id, stratum2_id, count_value, total, accumulated) as
 (
   select s.stratum1_id, s.stratum2_id, s.count_value, s.total, sum(p.total) as accumulated
-  from stats s
-  join stats p on s.stratum1_id = p.stratum1_id and s.stratum2_id = p.stratum2_id and p.rn <= s.rn
+  from statsView s
+  join statsView p on s.stratum1_id = p.stratum1_id and s.stratum2_id = p.stratum2_id and p.rn <= s.rn
   group by s.stratum1_id, s.stratum2_id, s.count_value, s.total, s.rn
 )
 select 1006 as analysis_id,
@@ -4957,7 +4957,7 @@ overallStats (stratum1_id, avg_value, stdev_value, min_value, max_value, total) 
   from rawData
   group by stratum1_id
 ),
-stats (stratum1_id, count_value, total, rn) as
+statsView (stratum1_id, count_value, total, rn) as
 (
   select stratum1_id, 
 		count_value, 
@@ -4969,8 +4969,8 @@ stats (stratum1_id, count_value, total, rn) as
 priorStats (stratum1_id, count_value, total, accumulated) as
 (
   select s.stratum1_id, s.count_value, s.total, sum(p.total) as accumulated
-  from stats s
-  join stats p on s.stratum1_id = p.stratum1_id and p.rn <= s.rn
+  from statsView s
+  join statsView p on s.stratum1_id = p.stratum1_id and p.rn <= s.rn
   group by s.stratum1_id, s.count_value, s.total, s.rn
 )
 select 1007 as analysis_id,
@@ -5222,7 +5222,7 @@ overallStats (stratum1_id, avg_value, stdev_value, min_value, max_value, total) 
   from rawData
   group by stratum1_id
 ),
-stats (stratum1_id, count_value, total, rn) as
+statsView (stratum1_id, count_value, total, rn) as
 (
   select stratum1_id, 
   	count_value, 
@@ -5234,8 +5234,8 @@ stats (stratum1_id, count_value, total, rn) as
 priorStats (stratum1_id, count_value, total, accumulated) as
 (
   select s.stratum1_id, s.count_value, s.total, sum(p.total) as accumulated
-  from stats s
-  join stats p on s.stratum1_id = p.stratum1_id and p.rn <= s.rn
+  from statsView s
+  join statsView p on s.stratum1_id = p.stratum1_id and p.rn <= s.rn
   group by s.stratum1_id, s.count_value, s.total, s.rn
 )
 select 1406 as analysis_id,
@@ -5297,7 +5297,7 @@ overallStats (stratum_id, avg_value, stdev_value, min_value, max_value, total) a
   FROM rawData
   group by stratum_id
 ),
-stats (stratum_id, count_value, total, rn) as
+statsView (stratum_id, count_value, total, rn) as
 (
   select stratum_id, count_value, count_big(*) as total, row_number() over (order by count_value) as rn
   FROM rawData
@@ -5306,8 +5306,8 @@ stats (stratum_id, count_value, total, rn) as
 priorStats (stratum_id, count_value, total, accumulated) as
 (
   select s.stratum_id, s.count_value, s.total, sum(p.total) as accumulated
-  from stats s
-  join stats p on s.stratum_id = p.stratum_id and p.rn <= s.rn
+  from statsView s
+  join statsView p on s.stratum_id = p.stratum_id and p.rn <= s.rn
   group by s.stratum_id, s.count_value, s.total, s.rn
 )
 select 1407 as analysis_id,
@@ -5590,7 +5590,7 @@ overallStats (stratum1_id, avg_value, stdev_value, min_value, max_value, total) 
   from rawData
   group by stratum1_id
 ),
-stats (stratum1_id, count_value, total, rn) as
+statsView (stratum1_id, count_value, total, rn) as
 (
   select stratum1_id, 
 		count_value, 
@@ -5602,8 +5602,8 @@ stats (stratum1_id, count_value, total, rn) as
 priorStats (stratum1_id, count_value, total, accumulated) as
 (
   select s.stratum1_id, s.count_value, s.total, sum(p.total) as accumulated
-  from stats s
-  join stats p on s.stratum1_id = p.stratum1_id and p.rn <= s.rn
+  from statsView s
+  join statsView p on s.stratum1_id = p.stratum1_id and p.rn <= s.rn
   group by s.stratum1_id, s.count_value, s.total, s.rn
 )
 select 1502 as analysis_id,
@@ -5656,7 +5656,7 @@ overallStats (stratum1_id, avg_value, stdev_value, min_value, max_value, total) 
   from rawData
   group by stratum1_id
 ),
-stats (stratum1_id, count_value, total, rn) as
+statsView (stratum1_id, count_value, total, rn) as
 (
   select stratum1_id, 
 		count_value, 
@@ -5668,8 +5668,8 @@ stats (stratum1_id, count_value, total, rn) as
 priorStats (stratum1_id, count_value, total, accumulated) as
 (
   select s.stratum1_id, s.count_value, s.total, sum(p.total) as accumulated
-  from stats s
-  join stats p on s.stratum1_id = p.stratum1_id and p.rn <= s.rn
+  from statsView s
+  join statsView p on s.stratum1_id = p.stratum1_id and p.rn <= s.rn
   group by s.stratum1_id, s.count_value, s.total, s.rn
 )
 select 1503 as analysis_id,
@@ -5721,7 +5721,7 @@ overallStats (stratum1_id, avg_value, stdev_value, min_value, max_value, total) 
   from rawData
   group by stratum1_id
 ),
-stats (stratum1_id, count_value, total, rn) as
+statsView (stratum1_id, count_value, total, rn) as
 (
   select stratum1_id, 
   	count_value, 
@@ -5733,8 +5733,8 @@ stats (stratum1_id, count_value, total, rn) as
 priorStats (stratum1_id, count_value, total, accumulated) as
 (
   select s.stratum1_id, s.count_value, s.total, sum(p.total) as accumulated
-  from stats s
-  join stats p on s.stratum1_id = p.stratum1_id and p.rn <= s.rn
+  from statsView s
+  join statsView p on s.stratum1_id = p.stratum1_id and p.rn <= s.rn
   group by s.stratum1_id, s.count_value, s.total, s.rn
 )
 select 1504 as analysis_id,
@@ -5786,7 +5786,7 @@ overallStats (stratum1_id, avg_value, stdev_value, min_value, max_value, total) 
   from rawData
   group by stratum1_id
 ),
-stats (stratum1_id, count_value, total, rn) as
+statsView (stratum1_id, count_value, total, rn) as
 (
   select stratum1_id, 
     count_value, 
@@ -5798,8 +5798,8 @@ stats (stratum1_id, count_value, total, rn) as
 priorStats (stratum1_id, count_value, total, accumulated) as
 (
   select s.stratum1_id, s.count_value, s.total, sum(p.total) as accumulated
-  from stats s
-  join stats p on s.stratum1_id = p.stratum1_id and p.rn <= s.rn
+  from statsView s
+  join statsView p on s.stratum1_id = p.stratum1_id and p.rn <= s.rn
   group by s.stratum1_id, s.count_value, s.total, s.rn
 )
 select 1505 as analysis_id,
@@ -5851,7 +5851,7 @@ overallStats (stratum1_id, avg_value, stdev_value, min_value, max_value, total) 
   from rawData
   group by stratum1_id
 ),
-stats (stratum1_id, count_value, total, rn) as
+statsView (stratum1_id, count_value, total, rn) as
 (
   select stratum1_id, 
     count_value, 
@@ -5863,8 +5863,8 @@ stats (stratum1_id, count_value, total, rn) as
 priorStats (stratum1_id, count_value, total, accumulated) as
 (
   select s.stratum1_id, s.count_value, s.total, sum(p.total) as accumulated
-  from stats s
-  join stats p on s.stratum1_id = p.stratum1_id and p.rn <= s.rn
+  from statsView s
+  join statsView p on s.stratum1_id = p.stratum1_id and p.rn <= s.rn
   group by s.stratum1_id, s.count_value, s.total, s.rn
 )
 select 1506 as analysis_id,
@@ -5915,7 +5915,7 @@ overallStats (stratum1_id, avg_value, stdev_value, min_value, max_value, total) 
   from rawData
   group by stratum1_id
 ),
-stats (stratum1_id, count_value, total, rn) as
+statsView (stratum1_id, count_value, total, rn) as
 (
   select stratum1_id, 
     count_value, 
@@ -5927,8 +5927,8 @@ stats (stratum1_id, count_value, total, rn) as
 priorStats (stratum1_id, count_value, total, accumulated) as
 (
   select s.stratum1_id, s.count_value, s.total, sum(p.total) as accumulated
-  from stats s
-  join stats p on s.stratum1_id = p.stratum1_id and p.rn <= s.rn
+  from statsView s
+  join statsView p on s.stratum1_id = p.stratum1_id and p.rn <= s.rn
   group by s.stratum1_id, s.count_value, s.total, s.rn
 )
 select 1507 as analysis_id,
@@ -5980,7 +5980,7 @@ overallStats (stratum1_id, avg_value, stdev_value, min_value, max_value, total) 
   from rawData
   group by stratum1_id
 ),
-stats (stratum1_id, count_value, total, rn) as
+statsView (stratum1_id, count_value, total, rn) as
 (
   select stratum1_id, 
     count_value, 
@@ -5992,8 +5992,8 @@ stats (stratum1_id, count_value, total, rn) as
 priorStats (stratum1_id, count_value, total, accumulated) as
 (
   select s.stratum1_id, s.count_value, s.total, sum(p.total) as accumulated
-  from stats s
-  join stats p on s.stratum1_id = p.stratum1_id and p.rn <= s.rn
+  from statsView s
+  join statsView p on s.stratum1_id = p.stratum1_id and p.rn <= s.rn
   group by s.stratum1_id, s.count_value, s.total, s.rn
 )
 select 1508 as analysis_id,
@@ -6045,7 +6045,7 @@ overallStats (stratum1_id, avg_value, stdev_value, min_value, max_value, total) 
   from rawData
   group by stratum1_id
 ),
-stats (stratum1_id, count_value, total, rn) as
+statsView (stratum1_id, count_value, total, rn) as
 (
   select stratum1_id, 
     count_value, 
@@ -6057,8 +6057,8 @@ stats (stratum1_id, count_value, total, rn) as
 priorStats (stratum1_id, count_value, total, accumulated) as
 (
   select s.stratum1_id, s.count_value, s.total, sum(p.total) as accumulated
-  from stats s
-  join stats p on s.stratum1_id = p.stratum1_id and p.rn <= s.rn
+  from statsView s
+  join statsView p on s.stratum1_id = p.stratum1_id and p.rn <= s.rn
   group by s.stratum1_id, s.count_value, s.total, s.rn
 )
 select 1509 as analysis_id,
@@ -6109,7 +6109,7 @@ overallStats (stratum1_id, avg_value, stdev_value, min_value, max_value, total) 
   from rawData
   group by stratum1_id
 ),
-stats (stratum1_id, count_value, total, rn) as
+statsView (stratum1_id, count_value, total, rn) as
 (
   select stratum1_id, 
     count_value, 
@@ -6121,8 +6121,8 @@ stats (stratum1_id, count_value, total, rn) as
 priorStats (stratum1_id, count_value, total, accumulated) as
 (
   select s.stratum1_id, s.count_value, s.total, sum(p.total) as accumulated
-  from stats s
-  join stats p on s.stratum1_id = p.stratum1_id and p.rn <= s.rn
+  from statsView s
+  join statsView p on s.stratum1_id = p.stratum1_id and p.rn <= s.rn
   group by s.stratum1_id, s.count_value, s.total, s.rn
 )
 select 1510 as analysis_id,
@@ -6172,7 +6172,7 @@ overallStats (stratum1_id, avg_value, stdev_value, min_value, max_value, total) 
   from rawData
   group by stratum1_id
 ),
-stats (stratum1_id, count_value, total, rn) as
+statsView (stratum1_id, count_value, total, rn) as
 (
   select stratum1_id, 
     count_value, 
@@ -6184,8 +6184,8 @@ stats (stratum1_id, count_value, total, rn) as
 priorStats (stratum1_id, count_value, total, accumulated) as
 (
   select s.stratum1_id, s.count_value, s.total, sum(p.total) as accumulated
-  from stats s
-  join stats p on s.stratum1_id = p.stratum1_id and p.rn <= s.rn
+  from statsView s
+  join statsView p on s.stratum1_id = p.stratum1_id and p.rn <= s.rn
   group by s.stratum1_id, s.count_value, s.total, s.rn
 )
 select 1511 as analysis_id,
@@ -6296,7 +6296,7 @@ overallStats (stratum1_id, avg_value, stdev_value, min_value, max_value, total) 
   from rawData
   group by stratum1_id
 ),
-stats (stratum1_id, count_value, total, rn) as
+statsView (stratum1_id, count_value, total, rn) as
 (
   select stratum1_id, 
     count_value, 
@@ -6308,8 +6308,8 @@ stats (stratum1_id, count_value, total, rn) as
 priorStats (stratum1_id, count_value, total, accumulated) as
 (
   select s.stratum1_id, s.count_value, s.total, sum(p.total) as accumulated
-  from stats s
-  join stats p on s.stratum1_id = p.stratum1_id and p.rn <= s.rn
+  from statsView s
+  join statsView p on s.stratum1_id = p.stratum1_id and p.rn <= s.rn
   group by s.stratum1_id, s.count_value, s.total, s.rn
 )
 select 1602 as analysis_id,
@@ -6361,7 +6361,7 @@ overallStats (stratum1_id, avg_value, stdev_value, min_value, max_value, total) 
   from rawData
   group by stratum1_id
 ),
-stats (stratum1_id, count_value, total, rn) as
+statsView (stratum1_id, count_value, total, rn) as
 (
   select stratum1_id, 
     count_value, 
@@ -6373,8 +6373,8 @@ stats (stratum1_id, count_value, total, rn) as
 priorStats (stratum1_id, count_value, total, accumulated) as
 (
   select s.stratum1_id, s.count_value, s.total, sum(p.total) as accumulated
-  from stats s
-  join stats p on s.stratum1_id = p.stratum1_id and p.rn <= s.rn
+  from statsView s
+  join statsView p on s.stratum1_id = p.stratum1_id and p.rn <= s.rn
   group by s.stratum1_id, s.count_value, s.total, s.rn
 )
 select 1603 as analysis_id,
@@ -6425,7 +6425,7 @@ overallStats (stratum1_id, avg_value, stdev_value, min_value, max_value, total) 
   from rawData
   group by stratum1_id
 ),
-stats (stratum1_id, count_value, total, rn) as
+statsView (stratum1_id, count_value, total, rn) as
 (
   select stratum1_id, 
     count_value, 
@@ -6437,8 +6437,8 @@ stats (stratum1_id, count_value, total, rn) as
 priorStats (stratum1_id, count_value, total, accumulated) as
 (
   select s.stratum1_id, s.count_value, s.total, sum(p.total) as accumulated
-  from stats s
-  join stats p on s.stratum1_id = p.stratum1_id and p.rn <= s.rn
+  from statsView s
+  join statsView p on s.stratum1_id = p.stratum1_id and p.rn <= s.rn
   group by s.stratum1_id, s.count_value, s.total, s.rn
 )
 select 1604 as analysis_id,
@@ -6489,7 +6489,7 @@ overallStats (stratum1_id, avg_value, stdev_value, min_value, max_value, total) 
   from rawData
   group by stratum1_id
 ),
-stats (stratum1_id, count_value, total, rn) as
+statsView (stratum1_id, count_value, total, rn) as
 (
   select stratum1_id, 
     count_value, 
@@ -6501,8 +6501,8 @@ stats (stratum1_id, count_value, total, rn) as
 priorStats (stratum1_id, count_value, total, accumulated) as
 (
   select s.stratum1_id, s.count_value, s.total, sum(p.total) as accumulated
-  from stats s
-  join stats p on s.stratum1_id = p.stratum1_id and p.rn <= s.rn
+  from statsView s
+  join statsView p on s.stratum1_id = p.stratum1_id and p.rn <= s.rn
   group by s.stratum1_id, s.count_value, s.total, s.rn
 )
 select 1605 as analysis_id,
@@ -6553,7 +6553,7 @@ overallStats (stratum1_id, avg_value, stdev_value, min_value, max_value, total) 
   from rawData
   group by stratum1_id
 ),
-stats (stratum1_id, count_value, total, rn) as
+statsView (stratum1_id, count_value, total, rn) as
 (
   select stratum1_id, 
     count_value, 
@@ -6565,8 +6565,8 @@ stats (stratum1_id, count_value, total, rn) as
 priorStats (stratum1_id, count_value, total, accumulated) as
 (
   select s.stratum1_id, s.count_value, s.total, sum(p.total) as accumulated
-  from stats s
-  join stats p on s.stratum1_id = p.stratum1_id and p.rn <= s.rn
+  from statsView s
+  join statsView p on s.stratum1_id = p.stratum1_id and p.rn <= s.rn
   group by s.stratum1_id, s.count_value, s.total, s.rn
 )
 select 1606 as analysis_id,
@@ -6617,7 +6617,7 @@ overallStats (stratum1_id, avg_value, stdev_value, min_value, max_value, total) 
   from rawData
   group by stratum1_id
 ),
-stats (stratum1_id, count_value, total, rn) as
+statsView (stratum1_id, count_value, total, rn) as
 (
   select stratum1_id, 
     count_value, 
@@ -6629,8 +6629,8 @@ stats (stratum1_id, count_value, total, rn) as
 priorStats (stratum1_id, count_value, total, accumulated) as
 (
   select s.stratum1_id, s.count_value, s.total, sum(p.total) as accumulated
-  from stats s
-  join stats p on s.stratum1_id = p.stratum1_id and p.rn <= s.rn
+  from statsView s
+  join statsView p on s.stratum1_id = p.stratum1_id and p.rn <= s.rn
   group by s.stratum1_id, s.count_value, s.total, s.rn
 )
 select 1607 as analysis_id,
@@ -6682,7 +6682,7 @@ overallStats (stratum1_id, avg_value, stdev_value, min_value, max_value, total) 
   from rawData
   group by stratum1_id
 ),
-stats (stratum1_id, count_value, total, rn) as
+statsView (stratum1_id, count_value, total, rn) as
 (
   select stratum1_id, 
     count_value, 
@@ -6694,8 +6694,8 @@ stats (stratum1_id, count_value, total, rn) as
 priorStats (stratum1_id, count_value, total, accumulated) as
 (
   select s.stratum1_id, s.count_value, s.total, sum(p.total) as accumulated
-  from stats s
-  join stats p on s.stratum1_id = p.stratum1_id and p.rn <= s.rn
+  from statsView s
+  join statsView p on s.stratum1_id = p.stratum1_id and p.rn <= s.rn
   group by s.stratum1_id, s.count_value, s.total, s.rn
 )
 select 1608 as analysis_id,
@@ -6859,7 +6859,7 @@ overallStats (avg_value, stdev_value, min_value, max_value, total) as
     count_big(*) as total
   from rawData
 ),
-stats (count_value, total, rn) as
+statsView (count_value, total, rn) as
 (
   select count_value, 
   	count_big(*) as total, 
@@ -6870,8 +6870,8 @@ stats (count_value, total, rn) as
 priorStats (count_value, total, accumulated) as
 (
   select s.count_value, s.total, sum(p.total) as accumulated
-  from stats s
-  join stats p on p.rn <= s.rn
+  from statsView s
+  join statsView p on p.rn <= s.rn
   group by s.count_value, s.total, s.rn
 )
 select 1803 as analysis_id,
@@ -6966,7 +6966,7 @@ with overallStats (stratum1_id, stratum2_id, avg_value, stdev_value, min_value, 
   FROM #rawData_1806
 	group by subject_id, gender_concept_id
 ),
-stats (stratum1_id, stratum2_id, count_value, total, rn) as
+statsView (stratum1_id, stratum2_id, count_value, total, rn) as
 (
   select subject_id as stratum1_id, gender_concept_id as stratum2_id, count_value, count_big(*) as total, row_number() over (partition by subject_id, gender_concept_id order by count_value) as rn
   FROM #rawData_1806
@@ -6975,8 +6975,8 @@ stats (stratum1_id, stratum2_id, count_value, total, rn) as
 priorStats (stratum1_id, stratum2_id, count_value, total, accumulated) as
 (
   select s.stratum1_id, s.stratum2_id, s.count_value, s.total, sum(p.total) as accumulated
-  from stats s
-  join stats p on s.stratum1_id = p.stratum1_id and s.stratum2_id = p.stratum2_id and p.rn <= s.rn
+  from statsView s
+  join statsView p on s.stratum1_id = p.stratum1_id and s.stratum2_id = p.stratum2_id and p.rn <= s.rn
   group by s.stratum1_id, s.stratum2_id, s.count_value, s.total, s.rn
 )
 select 1806 as analysis_id,
@@ -7113,7 +7113,7 @@ with overallStats (stratum1_id, stratum2_id, avg_value, stdev_value, min_value, 
   FROM #rawData_1815
 	group by subject_id, unit_concept_id
 ),
-stats (stratum1_id, stratum2_id, count_value, total, rn) as
+statsView (stratum1_id, stratum2_id, count_value, total, rn) as
 (
   select subject_id as stratum1_id, unit_concept_id as stratum2_id, count_value, count_big(*) as total, row_number() over (partition by subject_id, unit_concept_id order by count_value) as rn
   FROM #rawData_1815
@@ -7122,8 +7122,8 @@ stats (stratum1_id, stratum2_id, count_value, total, rn) as
 priorStats (stratum1_id, stratum2_id, count_value, total, accumulated) as
 (
   select s.stratum1_id, s.stratum2_id, s.count_value, s.total, sum(p.total) as accumulated
-  from stats s
-  join stats p on s.stratum1_id = p.stratum1_id and s.stratum2_id = p.stratum2_id and p.rn <= s.rn
+  from statsView s
+  join statsView p on s.stratum1_id = p.stratum1_id and s.stratum2_id = p.stratum2_id and p.rn <= s.rn
   group by s.stratum1_id, s.stratum2_id, s.count_value, s.total, s.rn
 )
 select 1815 as analysis_id,
@@ -7184,7 +7184,7 @@ with overallStats (stratum1_id, stratum2_id, avg_value, stdev_value, min_value, 
   FROM #rawData_1816
 	group by subject_id, unit_concept_id
 ),
-stats (stratum1_id, stratum2_id, count_value, total, rn) as
+statsView (stratum1_id, stratum2_id, count_value, total, rn) as
 (
   select subject_id as stratum1_id, unit_concept_id as stratum2_id, count_value, count_big(*) as total, row_number() over (partition by subject_id, unit_concept_id order by count_value) as rn
   FROM #rawData_1816
@@ -7193,8 +7193,8 @@ stats (stratum1_id, stratum2_id, count_value, total, rn) as
 priorStats (stratum1_id, stratum2_id, count_value, total, accumulated) as
 (
   select s.stratum1_id, s.stratum2_id, s.count_value, s.total, sum(p.total) as accumulated
-  from stats s
-  join stats p on s.stratum1_id = p.stratum1_id and s.stratum2_id = p.stratum2_id and p.rn <= s.rn
+  from statsView s
+  join statsView p on s.stratum1_id = p.stratum1_id and s.stratum2_id = p.stratum2_id and p.rn <= s.rn
   group by s.stratum1_id, s.stratum2_id, s.count_value, s.total, s.rn
 )
 select 1816 as analysis_id,
@@ -7255,7 +7255,7 @@ with overallStats (stratum1_id, stratum2_id, avg_value, stdev_value, min_value, 
   FROM #rawData_1817
 	group by subject_id, unit_concept_id
 ),
-stats (stratum1_id, stratum2_id, count_value, total, rn) as
+statsView (stratum1_id, stratum2_id, count_value, total, rn) as
 (
   select subject_id as stratum1_id, unit_concept_id as stratum2_id, count_value, count_big(*) as total, row_number() over (partition by subject_id, unit_concept_id order by count_value) as rn
   FROM #rawData_1817
@@ -7264,8 +7264,8 @@ stats (stratum1_id, stratum2_id, count_value, total, rn) as
 priorStats (stratum1_id, stratum2_id, count_value, total, accumulated) as
 (
   select s.stratum1_id, s.stratum2_id, s.count_value, s.total, sum(p.total) as accumulated
-  from stats s
-  join stats p on s.stratum1_id = p.stratum1_id and s.stratum2_id = p.stratum2_id and p.rn <= s.rn
+  from statsView s
+  join statsView p on s.stratum1_id = p.stratum1_id and s.stratum2_id = p.stratum2_id and p.rn <= s.rn
   group by s.stratum1_id, s.stratum2_id, s.count_value, s.total, s.rn
 )
 select 1817 as analysis_id,
