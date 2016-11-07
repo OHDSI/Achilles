@@ -7,10 +7,10 @@
 achilles(connectionDetails, cdmDatabaseSchema,
   oracleTempSchema = cdmDatabaseSchema,
   resultsDatabaseSchema = cdmDatabaseSchema, sourceName = "", analysisIds,
-  createTable = TRUE, smallcellcount = 5, cdmVersion = "4",
+  createTable = TRUE, smallcellcount = 5, cdmVersion = "5",
   runHeel = TRUE, validateSchema = FALSE,
   vocabDatabaseSchema = cdmDatabaseSchema, runCostAnalysis = FALSE,
-  sqlOnly = FALSE)
+  sqlOnly = FALSE, queryProfiling = FALSE)
 }
 \arguments{
 \item{connectionDetails}{An R object of type ConnectionDetail (details for the function that contains server info, database type, optionally username/password, port)}
@@ -39,6 +39,8 @@ If not specified, all analyses will be executed. Use \code{\link{getAnalysisDeta
 \item{vocabDatabaseSchema}{string name of database schema that contains OMOP Vocabulary. Default is cdmDatabaseSchema. On SQL Server, this should specifiy both the database and the schema, so for example 'results.dbo'.}
 
 \item{runCostAnalysis}{Boolean to determine if cost analysis should be run. Note: only works on CDM v5.0 style cost tables.}
+
+\item{queryProfiling}{Boolean to determine if large set of queries should be run as one query at a time (SQL statements written into numbered files) Allows identifying slow queries.}
 }
 \value{
 An object of type \code{achillesResults} containing details for connecting to the database containing the results
