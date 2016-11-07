@@ -1809,8 +1809,8 @@ IF OBJECT_ID('tempdb..#temp_dates', 'U') IS NOT NULL
 
 SELECT DISTINCT 
   YEAR(observation_period_start_date) AS obs_year,
-  CAST(CAST(YEAR(observation_period_start_date) AS VARCHAR(4)) +  '01' + '01' AS DATE) AS obs_year_start,	
-  CAST(CAST(YEAR(observation_period_start_date) AS VARCHAR(4)) +  '12' + '31' AS DATE) AS obs_year_end
+  CAST(CONCAT(CAST(YEAR(observation_period_start_date) AS VARCHAR(4)), '01', '01') AS DATE) AS obs_year_start,
+  CAST(CONCAT(CAST(YEAR(observation_period_start_date) AS VARCHAR(4)), '12', '31') AS DATE) AS obs_year_end
 INTO
   #temp_dates
 FROM @cdm_database_schema.observation_period
@@ -1824,9 +1824,9 @@ SELECT
 FROM @cdm_database_schema.observation_period,
 	#temp_dates
 WHERE  
-		observation_period_start_date <= obs_year_start
+		CAST(observation_period_start_date AS DATE) <= obs_year_start
 	AND 
-		observation_period_end_date >= obs_year_end
+		CAST(observation_period_end_date AS DATE) >= obs_year_end
 GROUP BY 
 	obs_year
 ;
@@ -1845,8 +1845,9 @@ IF OBJECT_ID('tempdb..#temp_dates', 'U') IS NOT NULL
 
 SELECT DISTINCT 
   YEAR(observation_period_start_date)*100 + MONTH(observation_period_start_date) AS obs_month,
-  CAST(CAST(YEAR(observation_period_start_date) AS VARCHAR(4)) +  RIGHT('0' + CAST(MONTH(OBSERVATION_PERIOD_START_DATE) AS VARCHAR(2)), 2) + '01' AS DATE) AS obs_month_start,  
-  DATEADD(dd,-1,DATEADD(mm,1,CAST(CAST(YEAR(observation_period_start_date) AS VARCHAR(4)) +  RIGHT('0' + CAST(MONTH(OBSERVATION_PERIOD_START_DATE) AS VARCHAR(2)), 2) + '01' AS DATE))) AS obs_month_end
+  CAST(CONCAT(CAST(YEAR(observation_period_start_date) AS VARCHAR(4)), RIGHT(CONCAT('0', CAST(MONTH(OBSERVATION_PERIOD_START_DATE) AS VARCHAR(2))), 2), '01') AS DATE)
+  AS obs_month_start,
+  DATEADD(dd,-1,DATEADD(mm,1,CAST(CONCAT(CAST(YEAR(observation_period_start_date) AS VARCHAR(4)), RIGHT(CONCAT('0', CAST(MONTH(OBSERVATION_PERIOD_START_DATE) AS VARCHAR(2))), 2), '01') AS DATE))) AS obs_month_end
 INTO
   #temp_dates
 FROM @cdm_database_schema.observation_period
@@ -1862,9 +1863,9 @@ FROM
 	@cdm_database_schema.observation_period,
 	#temp_Dates
 WHERE 
-		observation_period_start_date <= obs_month_start
-	AND 
-		observation_period_end_date >= obs_month_end
+		CAST(observation_period_start_date AS DATE) <= obs_month_start
+	AND
+		CAST(observation_period_end_date AS DATE) >= obs_month_end
 GROUP BY 
 	obs_month
 ;
@@ -5464,8 +5465,8 @@ IF OBJECT_ID('tempdb..#temp_dates', 'U') IS NOT NULL
 
 SELECT DISTINCT 
   YEAR(payer_plan_period_start_date)*100 + MONTH(payer_plan_period_start_date) AS obs_month,
-  CAST(CAST(YEAR(payer_plan_period_start_date) AS VARCHAR(4)) +  RIGHT('0' + CAST(MONTH(payer_plan_period_start_date) AS VARCHAR(2)), 2) + '01' AS DATE) AS obs_month_start,  
-  DATEADD(dd,-1,DATEADD(mm,1,CAST(CAST(YEAR(payer_plan_period_start_date) AS VARCHAR(4)) +  RIGHT('0' + CAST(MONTH(payer_plan_period_start_date) AS VARCHAR(2)), 2) + '01' AS DATE))) AS obs_month_end
+  CAST(CONCAT(CAST(YEAR(payer_plan_period_start_date) AS VARCHAR(4)), RIGHT(CONCAT('0', CAST(MONTH(payer_plan_period_start_date) AS VARCHAR(2))), 2), '01') AS DATE) AS obs_month_start,
+  DATEADD(dd,-1,DATEADD(mm,1,CAST(CONCAT(CAST(YEAR(payer_plan_period_start_date) AS VARCHAR(4)), RIGHT(CONCAT('0', CAST(MONTH(payer_plan_period_start_date) AS VARCHAR(2))), 2), '01') AS DATE))) AS obs_month_end
 INTO
   #temp_dates
 FROM 
@@ -5484,8 +5485,8 @@ from
 	on p1.person_id = ppp1.person_id
 	,
 	#temp_dates
-where ppp1.payer_plan_period_START_DATE <= obs_month_start
-	and ppp1.payer_plan_period_END_DATE >= obs_month_end
+where CAST(ppp1.payer_plan_period_START_DATE AS DATE) <= obs_month_start
+	and CAST(ppp1.payer_plan_period_END_DATE AS DATE) >= obs_month_end
 group by obs_month
 ;
 
@@ -5499,13 +5500,13 @@ DROP TABLE #temp_dates;
 -- 1411	Number of persons by payer plan period start month
 insert into @results_database_schema.ACHILLES_results (analysis_id, stratum_1, count_value)
 select 1411 as analysis_id, 
-	cast(cast(YEAR(payer_plan_period_start_date) as varchar(4)) +  RIGHT('0' + CAST(month(payer_plan_period_START_DATE) AS VARCHAR(2)), 2) + '01' as date) as stratum_1,
+	cast(CONCAT(cast(YEAR(payer_plan_period_start_date) as varchar(4)), CONCAT(RIGHT(CONCAT('0', CAST(month(payer_plan_period_START_DATE) AS VARCHAR(2))), 2), '01')) as VARCHAR(255)) as stratum_1,
 	 COUNT_BIG(distinct p1.PERSON_ID) as count_value
 from
 	@cdm_database_schema.PERSON p1
 	inner join @cdm_database_schema.payer_plan_period ppp1
 	on p1.person_id = ppp1.person_id
-group by cast(cast(YEAR(payer_plan_period_start_date) as varchar(4)) +  RIGHT('0' + CAST(month(payer_plan_period_START_DATE) AS VARCHAR(2)), 2) + '01' as date)
+group by cast(CONCAT(cast(YEAR(payer_plan_period_start_date) as varchar(4)), CONCAT(RIGHT(CONCAT('0', CAST(month(payer_plan_period_START_DATE) AS VARCHAR(2))), 2), '01')) as VARCHAR(255))
 ;
 --}
 
@@ -5515,13 +5516,13 @@ group by cast(cast(YEAR(payer_plan_period_start_date) as varchar(4)) +  RIGHT('0
 -- 1412	Number of persons by payer plan period end month
 insert into @results_database_schema.ACHILLES_results (analysis_id, stratum_1, count_value)
 select 1412 as analysis_id,  
-	cast(cast(YEAR(payer_plan_period_end_date) as varchar(4)) +  RIGHT('0' + CAST(month(payer_plan_period_end_DATE) AS VARCHAR(2)), 2) + '01' as date) as stratum_1, 
+	cast(CONCAT(cast(YEAR(payer_plan_period_end_date) as varchar(4)), CONCAT(RIGHT(CONCAT('0', CAST(month(payer_plan_period_end_DATE) AS VARCHAR(2))), 2), '01')) as VARCHAR(255)) as stratum_1,
 	COUNT_BIG(distinct p1.PERSON_ID) as count_value
 from
 	@cdm_database_schema.PERSON p1
 	inner join @cdm_database_schema.payer_plan_period ppp1
 	on p1.person_id = ppp1.person_id
-group by cast(cast(YEAR(payer_plan_period_end_date) as varchar(4)) +  RIGHT('0' + CAST(month(payer_plan_period_end_DATE) AS VARCHAR(2)), 2) + '01' as date)
+group by cast(CONCAT(cast(YEAR(payer_plan_period_end_date) as varchar(4)), CONCAT(RIGHT(CONCAT('0', CAST(month(payer_plan_period_end_DATE) AS VARCHAR(2))), 2), '01')) as VARCHAR(255))
 ;
 --}
 
