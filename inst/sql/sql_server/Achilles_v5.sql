@@ -294,7 +294,7 @@ SELECT
 		location_source_value,
     row_number() over (order by location_id) rn
 FROM
-		@cdm_database_schema.location
+		@cdm_database_schema.`location`
 ) location
 WHERE rn = 1;
 
@@ -1368,7 +1368,7 @@ where p1.provider_id is not null
 insert into @results_database_schema.ACHILLES_results (analysis_id, count_value)
 select 8 as analysis_id,  COUNT_BIG(p1.person_id) as count_value
 from @cdm_database_schema.PERSON p1
-	left join @cdm_database_schema.location l1
+	left join @cdm_database_schema.`location` l1
 	on p1.location_id = l1.location_id
 where p1.location_id is not null
 	and l1.location_id is null
@@ -5130,7 +5130,7 @@ insert into @results_database_schema.ACHILLES_results (analysis_id, stratum_1, c
 select 1100 as analysis_id,  
 	left(l1.zip,3) as stratum_1, COUNT_BIG(distinct person_id) as count_value
 from @cdm_database_schema.PERSON p1
-	inner join @cdm_database_schema.LOCATION l1
+	inner join @cdm_database_schema.`location` l1
 	on p1.location_id = l1.location_id
 where p1.location_id is not null
 	and l1.zip is not null
@@ -5144,7 +5144,7 @@ insert into @results_database_schema.ACHILLES_results (analysis_id, stratum_1, c
 select 1101 as analysis_id,  
 	l1.state as stratum_1, COUNT_BIG(distinct person_id) as count_value
 from @cdm_database_schema.PERSON p1
-	inner join @cdm_database_schema.LOCATION l1
+	inner join @cdm_database_schema.`location` l1
 	on p1.location_id = l1.location_id
 where p1.location_id is not null
 	and l1.state is not null
@@ -5158,7 +5158,7 @@ insert into @results_database_schema.ACHILLES_results (analysis_id, stratum_1, c
 select 1102 as analysis_id,  
 	left(l1.zip,3) as stratum_1, COUNT_BIG(distinct care_site_id) as count_value
 from @cdm_database_schema.care_site cs1
-	inner join @cdm_database_schema.LOCATION l1
+	inner join @cdm_database_schema.`location` l1
 	on cs1.location_id = l1.location_id
 where cs1.location_id is not null
 	and l1.zip is not null
@@ -5172,7 +5172,7 @@ insert into @results_database_schema.ACHILLES_results (analysis_id, stratum_1, c
 select 1103 as analysis_id,  
 	l1.state as stratum_1, COUNT_BIG(distinct care_site_id) as count_value
 from @cdm_database_schema.care_site cs1
-	inner join @cdm_database_schema.LOCATION l1
+	inner join @cdm_database_schema.`location` l1
 	on cs1.location_id = l1.location_id
 where cs1.location_id is not null
 	and l1.state is not null
