@@ -1282,11 +1282,11 @@ delete from @results_database_schema.ACHILLES_results_dist where analysis_id IN 
 --{0 IN (@list_of_analysis_ids)}?{
 -- 0	cdm name, version of Achilles and date when pre-computations were executed
 insert into @results_database_schema.ACHILLES_results (analysis_id, stratum_1, stratum_2, stratum_3,count_value)
-select 0 as analysis_id,  '@source_name' as stratum_1, '@achilles_version' as stratum_2, GETDATE() as stratum_3,COUNT_BIG(distinct person_id) as count_value
+select 0 as analysis_id,  CAST('@source_name' AS VARCHAR(255)) as stratum_1, CAST('@achilles_version' AS VARCHAR(255)) as stratum_2, CAST(GETDATE() AS VARCHAR(255)) as stratum_3,COUNT_BIG(distinct person_id) as count_value
 from @cdm_database_schema.PERSON;
 
 insert into @results_database_schema.ACHILLES_results_dist (analysis_id, stratum_1, count_value)
-select 0 as analysis_id, '@source_name' as stratum_1, COUNT_BIG(distinct person_id) as count_value
+select 0 as analysis_id, CAST('@source_name' AS VARCHAR(255)) as stratum_1, COUNT_BIG(distinct person_id) as count_value
 from @cdm_database_schema.PERSON;
 
 --}
@@ -1311,7 +1311,7 @@ from @cdm_database_schema.PERSON;
 --{2 IN (@list_of_analysis_ids)}?{
 -- 2	Number of persons by gender
 insert into @results_database_schema.ACHILLES_results (analysis_id, stratum_1, count_value)
-select 2 as analysis_id,  gender_concept_id as stratum_1, COUNT_BIG(distinct person_id) as count_value
+select 2 as analysis_id,  CAST(gender_concept_id AS VARCHAR(255)) as stratum_1, COUNT_BIG(distinct person_id) as count_value
 from @cdm_database_schema.PERSON
 group by GENDER_CONCEPT_ID;
 --}
@@ -1321,7 +1321,7 @@ group by GENDER_CONCEPT_ID;
 --{3 IN (@list_of_analysis_ids)}?{
 -- 3	Number of persons by year of birth
 insert into @results_database_schema.ACHILLES_results (analysis_id, stratum_1, count_value)
-select 3 as analysis_id,  year_of_birth as stratum_1, COUNT_BIG(distinct person_id) as count_value
+select 3 as analysis_id,  CAST(year_of_birth AS VARCHAR(255)) as stratum_1, COUNT_BIG(distinct person_id) as count_value
 from @cdm_database_schema.PERSON
 group by YEAR_OF_BIRTH;
 --}
@@ -1330,7 +1330,7 @@ group by YEAR_OF_BIRTH;
 --{4 IN (@list_of_analysis_ids)}?{
 -- 4	Number of persons by race
 insert into @results_database_schema.ACHILLES_results (analysis_id, stratum_1, count_value)
-select 4 as analysis_id,  RACE_CONCEPT_ID as stratum_1, COUNT_BIG(distinct person_id) as count_value
+select 4 as analysis_id,  CAST(RACE_CONCEPT_ID AS VARCHAR(255)) as stratum_1, COUNT_BIG(distinct person_id) as count_value
 from @cdm_database_schema.PERSON
 group by RACE_CONCEPT_ID;
 --}
@@ -1340,7 +1340,7 @@ group by RACE_CONCEPT_ID;
 --{5 IN (@list_of_analysis_ids)}?{
 -- 5	Number of persons by ethnicity
 insert into @results_database_schema.ACHILLES_results (analysis_id, stratum_1, count_value)
-select 5 as analysis_id,  ETHNICITY_CONCEPT_ID as stratum_1, COUNT_BIG(distinct person_id) as count_value
+select 5 as analysis_id,  CAST(ETHNICITY_CONCEPT_ID AS VARCHAR(255)) as stratum_1, COUNT_BIG(distinct person_id) as count_value
 from @cdm_database_schema.PERSON
 group by ETHNICITY_CONCEPT_ID;
 --}
@@ -1393,8 +1393,8 @@ where p1.care_site_id is not null
 --{10 IN (@list_of_analysis_ids)}?{
 -- 10	Number of all persons by year of birth and by gender
 insert into @results_database_schema.ACHILLES_results (analysis_id, stratum_1, stratum_2, count_value)
-select 10 as analysis_id,  year_of_birth as stratum_1, 
-  gender_concept_id as stratum_2,
+select 10 as analysis_id,  CAST(year_of_birth AS VARCHAR(255)) as stratum_1,
+  CAST(gender_concept_id AS VARCHAR(255)) as stratum_2,
   COUNT_BIG(distinct person_id) as count_value
 from @cdm_database_schema.PERSON
 group by YEAR_OF_BIRTH, gender_concept_id;
@@ -1404,8 +1404,8 @@ group by YEAR_OF_BIRTH, gender_concept_id;
 --{11 IN (@list_of_analysis_ids)}?{
 -- 11	Number of non-deceased persons by year of birth and by gender
 insert into @results_database_schema.ACHILLES_results (analysis_id, stratum_1, stratum_2, count_value)
-select 11 as analysis_id,  year_of_birth as stratum_1, 
-  gender_concept_id as stratum_2,
+select 11 as analysis_id,  CAST(year_of_birth AS VARCHAR(255)) as stratum_1,
+  CAST(gender_concept_id AS VARCHAR(255)) as stratum_2,
   COUNT_BIG(distinct person_id) as count_value
 from @cdm_database_schema.PERSON
 where person_id not in (select person_id from @cdm_database_schema.DEATH)
@@ -1417,7 +1417,7 @@ group by YEAR_OF_BIRTH, gender_concept_id;
 --{12 IN (@list_of_analysis_ids)}?{
 -- 12	Number of persons by race and ethnicity
 insert into @results_database_schema.ACHILLES_results (analysis_id, stratum_1, stratum_2, count_value)
-select 12 as analysis_id, RACE_CONCEPT_ID as stratum_1, ETHNICITY_CONCEPT_ID as stratum_2, COUNT_BIG(distinct person_id) as count_value
+select 12 as analysis_id, CAST(RACE_CONCEPT_ID AS VARCHAR(255)) as stratum_1, CAST(ETHNICITY_CONCEPT_ID AS VARCHAR(255)) as stratum_2, COUNT_BIG(distinct person_id) as count_value
 from @cdm_database_schema.PERSON
 group by RACE_CONCEPT_ID,ETHNICITY_CONCEPT_ID;
 --}
@@ -1431,7 +1431,7 @@ ACHILLES Analyses on OBSERVATION_PERIOD table
 --{101 IN (@list_of_analysis_ids)}?{
 -- 101	Number of persons by age, with age at first observation period
 insert into @results_database_schema.ACHILLES_results (analysis_id, stratum_1, count_value)
-select 101 as analysis_id,   year(op1.index_date) - p1.YEAR_OF_BIRTH as stratum_1, COUNT_BIG(p1.person_id) as count_value
+select 101 as analysis_id,   CAST(year(op1.index_date) - p1.YEAR_OF_BIRTH AS VARCHAR(255)) as stratum_1, COUNT_BIG(p1.person_id) as count_value
 from @cdm_database_schema.PERSON p1
 	inner join (select person_id, MIN(observation_period_start_date) as index_date from @cdm_database_schema.OBSERVATION_PERIOD group by PERSON_ID) op1
 	on p1.PERSON_ID = op1.PERSON_ID
@@ -1443,7 +1443,7 @@ group by year(op1.index_date) - p1.YEAR_OF_BIRTH;
 --{102 IN (@list_of_analysis_ids)}?{
 -- 102	Number of persons by gender by age, with age at first observation period
 insert into @results_database_schema.ACHILLES_results (analysis_id, stratum_1, stratum_2, count_value)
-select 102 as analysis_id,  p1.gender_concept_id as stratum_1, year(op1.index_date) - p1.YEAR_OF_BIRTH as stratum_2, COUNT_BIG(p1.person_id) as count_value
+select 102 as analysis_id,  CAST(p1.gender_concept_id AS VARCHAR(255)) as stratum_1, CAST(year(op1.index_date) - p1.YEAR_OF_BIRTH AS VARCHAR(255)) as stratum_2, COUNT_BIG(p1.person_id) as count_value
 from @cdm_database_schema.PERSON p1
 	inner join (select person_id, MIN(observation_period_start_date) as index_date from @cdm_database_schema.OBSERVATION_PERIOD group by PERSON_ID) op1
 	on p1.PERSON_ID = op1.PERSON_ID
@@ -1545,7 +1545,7 @@ ageStatsPrior (gender_concept_id, age_value, total, accumulated) as
   group by s.gender_concept_id, s.age_value, s.total, s.rn
 )
 select 104 as analysis_id,
-  o.gender_concept_id as stratum_1,
+  CAST(o.gender_concept_id AS VARCHAR(255)) as stratum_1,
   o.total as count_value,
   o.min_value,
 	o.max_value,
@@ -1678,7 +1678,7 @@ priorStats (gender_concept_id,count_value, total, accumulated) as
   group by s.gender_concept_id, s.count_value, s.total, s.rn
 )
 select 106 as analysis_id,
-  o.gender_concept_id,
+  CAST(o.gender_concept_id AS VARCHAR(255)) as gender_concept_id,
   o.total as count_value,
   o.min_value,
 	o.max_value,
@@ -1751,7 +1751,7 @@ priorStats (age_decile,count_value, total, accumulated) as
   group by s.age_decile, s.count_value, s.total, s.rn
 )
 select 107 as analysis_id,
-  o.age_decile,
+  CAST(o.age_decile AS VARCHAR(255)) as age_decile,
   o.total as count_value,
   o.min_value,
 	o.max_value,
@@ -1782,7 +1782,7 @@ drop table #tempResults;
 --{108 IN (@list_of_analysis_ids)}?{
 -- 108	Number of persons by length of observation period, in 30d increments
 insert into @results_database_schema.ACHILLES_results (analysis_id, stratum_1, count_value)
-select 108 as analysis_id,  floor(DATEDIFF(dd, op1.observation_period_start_date, op1.observation_period_end_date)/30) as stratum_1, COUNT_BIG(distinct p1.person_id) as count_value
+select 108 as analysis_id,  CAST(floor(DATEDIFF(dd, op1.observation_period_start_date, op1.observation_period_end_date)/30) AS VARCHAR(255)) as stratum_1, COUNT_BIG(distinct p1.person_id) as count_value
 from @cdm_database_schema.PERSON p1
 	inner join 
 	(select person_id, 
@@ -1819,7 +1819,7 @@ FROM @cdm_database_schema.observation_period
 INSERT INTO @results_database_schema.ACHILLES_results (analysis_id, stratum_1, count_value)
 SELECT 
   109 AS analysis_id,  
-	obs_year AS stratum_1, 
+	CAST(obs_year AS VARCHAR(255)) AS stratum_1,
 	COUNT_BIG(DISTINCT person_id) AS count_value
 FROM @cdm_database_schema.observation_period,
 	#temp_dates
@@ -1856,7 +1856,7 @@ FROM @cdm_database_schema.observation_period
 INSERT INTO @results_database_schema.ACHILLES_results (analysis_id, stratum_1, count_value)
 SELECT 
   110 AS analysis_id, 
-	obs_month AS stratum_1, 
+	CAST(obs_month AS VARCHAR(255)) as stratum_1,
 	COUNT_BIG(DISTINCT person_id) AS count_value
 FROM
 	@cdm_database_schema.observation_period,
@@ -1879,7 +1879,7 @@ DROP TABLE #temp_dates;
 -- 111	Number of persons by observation period start month
 insert into @results_database_schema.ACHILLES_results (analysis_id, stratum_1, count_value)
 select 111 as analysis_id, 
-	YEAR(observation_period_start_date)*100 + month(OBSERVATION_PERIOD_START_DATE) as stratum_1, 
+	CAST(YEAR(observation_period_start_date)*100 + month(OBSERVATION_PERIOD_START_DATE) AS VARCHAR(255)) as stratum_1,
 	COUNT_BIG(distinct op1.PERSON_ID) as count_value
 from
 	@cdm_database_schema.observation_period op1
@@ -1893,7 +1893,7 @@ group by YEAR(observation_period_start_date)*100 + month(OBSERVATION_PERIOD_STAR
 -- 112	Number of persons by observation period end month
 insert into @results_database_schema.ACHILLES_results (analysis_id, stratum_1, count_value)
 select 112 as analysis_id,  
-	YEAR(observation_period_end_date)*100 + month(observation_period_end_date) as stratum_1, 
+	CAST(YEAR(observation_period_end_date)*100 + month(observation_period_end_date) AS VARCHAR(255)) as stratum_1,
 	COUNT_BIG(distinct op1.PERSON_ID) as count_value
 from
 	@cdm_database_schema.observation_period op1
@@ -1906,7 +1906,7 @@ group by YEAR(observation_period_end_date)*100 + month(observation_period_end_da
 -- 113	Number of persons by number of observation periods
 insert into @results_database_schema.ACHILLES_results (analysis_id, stratum_1, count_value)
 select 113 as analysis_id,  
-	op1.num_periods as stratum_1, COUNT_BIG(distinct op1.PERSON_ID) as count_value
+	CAST(op1.num_periods AS VARCHAR(255)) as stratum_1, COUNT_BIG(distinct op1.PERSON_ID) as count_value
 from
 	(select person_id, COUNT_BIG(OBSERVATION_period_start_date) as num_periods from @cdm_database_schema.OBSERVATION_PERIOD group by PERSON_ID) op1
 group by op1.num_periods
@@ -1956,9 +1956,9 @@ from
 
 insert into @results_database_schema.ACHILLES_results (analysis_id, stratum_1, stratum_2, stratum_3, count_value)
 select 116 as analysis_id,  
-	t1.obs_year as stratum_1, 
-	p1.gender_concept_id as stratum_2,
-	floor((t1.obs_year - p1.year_of_birth)/10) as stratum_3,
+	CAST(t1.obs_year AS VARCHAR(255)) as stratum_1,
+	CAST(p1.gender_concept_id AS VARCHAR(255)) as stratum_2,
+	CAST(floor((t1.obs_year - p1.year_of_birth)/10) AS VARCHAR(255)) as stratum_3,
 	COUNT_BIG(distinct p1.PERSON_ID) as count_value
 from
 	@cdm_database_schema.PERSON p1
@@ -1996,7 +1996,7 @@ from
 
 insert into @results_database_schema.ACHILLES_results (analysis_id, stratum_1, count_value)
 select 117 as analysis_id,  
-	t1.obs_month as stratum_1,
+	CAST(t1.obs_month AS VARCHAR(255)) as stratum_1,
 	COUNT_BIG(distinct op1.PERSON_ID) as count_value
 from
 	@cdm_database_schema.observation_period op1,
@@ -2028,7 +2028,7 @@ where p1.person_id is null
 -- 119  Number of observation period records by period_type_concept_id
 insert into @results_database_schema.ACHILLES_results (analysis_id, stratum_1,count_value)
 select 119 as analysis_id,
-  op1.period_type_concept_id as stratum_1,
+  CAST(op1.period_type_concept_id AS VARCHAR(255)) as stratum_1,
   COUNT_BIG(*) as count_value
 from
   @cdm_database_schema.observation_period op1
@@ -2048,7 +2048,7 @@ ACHILLES Analyses on VISIT_OCCURRENCE table
 -- 200	Number of persons with at least one visit occurrence, by visit_concept_id
 insert into @results_database_schema.ACHILLES_results (analysis_id, stratum_1, count_value)
 select 200 as analysis_id, 
-	vo1.visit_concept_id as stratum_1,
+	CAST(vo1.visit_concept_id AS VARCHAR(255)) as stratum_1,
 	COUNT_BIG(distinct vo1.PERSON_ID) as count_value
 from
 	@cdm_database_schema.visit_occurrence vo1
@@ -2061,7 +2061,7 @@ group by vo1.visit_concept_id
 -- 201	Number of visit occurrence records, by visit_concept_id
 insert into @results_database_schema.ACHILLES_results (analysis_id, stratum_1, count_value)
 select 201 as analysis_id, 
-	vo1.visit_concept_id as stratum_1,
+	CAST(vo1.visit_concept_id AS VARCHAR(255)) as stratum_1,
 	COUNT_BIG(vo1.PERSON_ID) as count_value
 from
 	@cdm_database_schema.visit_occurrence vo1
@@ -2075,8 +2075,8 @@ group by vo1.visit_concept_id
 -- 202	Number of persons by visit occurrence start month, by visit_concept_id
 insert into @results_database_schema.ACHILLES_results (analysis_id, stratum_1, stratum_2, count_value)
 select 202 as analysis_id,   
-	vo1.visit_concept_id as stratum_1,
-	YEAR(visit_start_date)*100 + month(visit_start_date) as stratum_2, 
+	CAST(vo1.visit_concept_id AS VARCHAR(255)) as stratum_1,
+	CAST(YEAR(visit_start_date)*100 + month(visit_start_date) AS VARCHAR(255)) as stratum_2,
 	COUNT_BIG(distinct PERSON_ID) as count_value
 from
 @cdm_database_schema.visit_occurrence vo1
@@ -2153,10 +2153,10 @@ drop table #tempResults;
 -- 204	Number of persons with at least one visit occurrence, by visit_concept_id by calendar year by gender by age decile
 insert into @results_database_schema.ACHILLES_results (analysis_id, stratum_1, stratum_2, stratum_3, stratum_4, count_value)
 select 204 as analysis_id,   
-	vo1.visit_concept_id as stratum_1,
-	YEAR(visit_start_date) as stratum_2,
-	p1.gender_concept_id as stratum_3,
-	floor((year(visit_start_date) - p1.year_of_birth)/10) as stratum_4, 
+	CAST(vo1.visit_concept_id AS VARCHAR(255)) as stratum_1,
+	CAST(YEAR(visit_start_date) AS VARCHAR(255)) as stratum_2,
+	CAST(p1.gender_concept_id AS VARCHAR(255)) as stratum_3,
+	CAST(floor((year(visit_start_date) - p1.year_of_birth)/10) AS VARCHAR(255)) as stratum_4,
 	COUNT_BIG(distinct p1.PERSON_ID) as count_value
 from @cdm_database_schema.PERSON p1
 inner join
@@ -2215,8 +2215,8 @@ priorStats (stratum1_id, stratum2_id, count_value, total, accumulated) as
   group by s.stratum1_id, s.stratum2_id, s.count_value, s.total, s.rn
 )
 select 206 as analysis_id,
-  o.stratum1_id,
-  o.stratum2_id,
+  CAST(o.stratum1_id AS VARCHAR(255)) AS stratum1_id,
+  CAST(o.stratum2_id AS VARCHAR(255)) AS stratum2_id,
   o.total as count_value,
   o.min_value,
 	o.max_value,
@@ -2331,7 +2331,7 @@ priorStats (stratum_id, count_value, total, accumulated) as
   group by s.stratum_id, s.count_value, s.total, s.rn
 )
 select 211 as analysis_id,
-  o.stratum_id,
+  CAST(o.stratum_id AS VARCHAR(255)) AS stratum_id,
   o.total as count_value,
   o.min_value,
 	o.max_value,
@@ -2383,7 +2383,7 @@ group by
 -- 220	Number of visit occurrence records by condition occurrence start month
 insert into @results_database_schema.ACHILLES_results (analysis_id, stratum_1, count_value)
 select 220 as analysis_id,   
-	YEAR(visit_start_date)*100 + month(visit_start_date) as stratum_1, 
+	CAST(YEAR(visit_start_date)*100 + month(visit_start_date) AS VARCHAR(255)) as stratum_1,
 	COUNT_BIG(PERSON_ID) as count_value
 from
 @cdm_database_schema.visit_occurrence vo1
@@ -2396,7 +2396,7 @@ group by YEAR(visit_start_date)*100 + month(visit_start_date)
 -- 221	Number of persons by visit start year 
 insert into @results_database_schema.ACHILLES_results (analysis_id, stratum_1, count_value)
 select 221 as analysis_id,   
-	YEAR(visit_start_date) as stratum_1, 
+	CAST(YEAR(visit_start_date) AS VARCHAR(255)) as stratum_1,
 	COUNT_BIG(distinct PERSON_ID) as count_value
 from
 @cdm_database_schema.visit_occurrence vo1
@@ -2426,7 +2426,7 @@ from @cdm_database_schema.provider;
 --{301 IN (@list_of_analysis_ids)}?{
 -- 301	Number of providers by specialty concept_id
 insert into @results_database_schema.ACHILLES_results (analysis_id, stratum_1, count_value)
-select 301 as analysis_id,  specialty_concept_id as stratum_1, COUNT_BIG(distinct provider_id) as count_value
+select 301 as analysis_id,  CAST(specialty_concept_id AS VARCHAR(255)) as stratum_1, COUNT_BIG(distinct provider_id) as count_value
 from @cdm_database_schema.provider
 group by specialty_CONCEPT_ID;
 --}
@@ -2456,7 +2456,7 @@ ACHILLES Analyses on CONDITION_OCCURRENCE table
 -- 400	Number of persons with at least one condition occurrence, by condition_concept_id
 insert into @results_database_schema.ACHILLES_results (analysis_id, stratum_1, count_value)
 select 400 as analysis_id, 
-	co1.condition_CONCEPT_ID as stratum_1,
+	CAST(co1.condition_CONCEPT_ID AS VARCHAR(255)) as stratum_1,
 	COUNT_BIG(distinct co1.PERSON_ID) as count_value
 from
 	@cdm_database_schema.condition_occurrence co1
@@ -2469,7 +2469,7 @@ group by co1.condition_CONCEPT_ID
 -- 401	Number of condition occurrence records, by condition_concept_id
 insert into @results_database_schema.ACHILLES_results (analysis_id, stratum_1, count_value)
 select 401 as analysis_id, 
-	co1.condition_CONCEPT_ID as stratum_1,
+	CAST(co1.condition_CONCEPT_ID AS VARCHAR(255)) as stratum_1,
 	COUNT_BIG(co1.PERSON_ID) as count_value
 from
 	@cdm_database_schema.condition_occurrence co1
@@ -2483,8 +2483,8 @@ group by co1.condition_CONCEPT_ID
 -- 402	Number of persons by condition occurrence start month, by condition_concept_id
 insert into @results_database_schema.ACHILLES_results (analysis_id, stratum_1, stratum_2, count_value)
 select 402 as analysis_id,   
-	co1.condition_concept_id as stratum_1,
-	YEAR(condition_start_date)*100 + month(condition_start_date) as stratum_2, 
+	CAST(co1.condition_concept_id AS VARCHAR(255)) as stratum_1,
+	CAST(YEAR(condition_start_date)*100 + month(condition_start_date) AS VARCHAR(255)) as stratum_2,
 	COUNT_BIG(distinct PERSON_ID) as count_value
 from
 @cdm_database_schema.condition_occurrence co1
@@ -2560,10 +2560,10 @@ drop table #tempResults;
 -- 404	Number of persons with at least one condition occurrence, by condition_concept_id by calendar year by gender by age decile
 insert into @results_database_schema.ACHILLES_results (analysis_id, stratum_1, stratum_2, stratum_3, stratum_4, count_value)
 select 404 as analysis_id,   
-	co1.condition_concept_id as stratum_1,
-	YEAR(condition_start_date) as stratum_2,
-	p1.gender_concept_id as stratum_3,
-	floor((year(condition_start_date) - p1.year_of_birth)/10) as stratum_4, 
+	CAST(co1.condition_concept_id AS VARCHAR(255)) as stratum_1,
+	CAST(YEAR(condition_start_date) AS VARCHAR(255)) as stratum_2,
+	CAST(p1.gender_concept_id AS VARCHAR(255)) as stratum_3,
+	CAST(floor((year(condition_start_date) - p1.year_of_birth)/10) AS VARCHAR(255)) as stratum_4,
 	COUNT_BIG(distinct p1.PERSON_ID) as count_value
 from @cdm_database_schema.PERSON p1
 inner join
@@ -2580,8 +2580,8 @@ group by co1.condition_concept_id,
 -- 405	Number of condition occurrence records, by condition_concept_id by condition_type_concept_id
 insert into @results_database_schema.ACHILLES_results (analysis_id, stratum_1, stratum_2, count_value)
 select 405 as analysis_id, 
-	co1.condition_CONCEPT_ID as stratum_1,
-	co1.condition_type_concept_id as stratum_2,
+	CAST(co1.condition_CONCEPT_ID AS VARCHAR(255)) as stratum_1,
+	CAST(co1.condition_type_concept_id AS VARCHAR(255)) as stratum_2,
 	COUNT_BIG(co1.PERSON_ID) as count_value
 from
 	@cdm_database_schema.condition_occurrence co1
@@ -2633,8 +2633,8 @@ priorStats (stratum1_id, stratum2_id, count_value, total, accumulated) as
   group by s.stratum1_id, s.stratum2_id, s.count_value, s.total, s.rn
 )
 select 406 as analysis_id,
-  o.stratum1_id,
-  o.stratum2_id,
+  CAST(o.stratum1_id AS VARCHAR(255)) AS stratum1_id,
+  CAST(o.stratum2_id AS VARCHAR(255)) AS stratum2_id,
   o.total as count_value,
   o.min_value,
 	o.max_value,
@@ -2739,7 +2739,7 @@ where co1.visit_occurrence_id is not null
 -- 420	Number of condition occurrence records by condition occurrence start month
 insert into @results_database_schema.ACHILLES_results (analysis_id, stratum_1, count_value)
 select 420 as analysis_id,   
-	YEAR(condition_start_date)*100 + month(condition_start_date) as stratum_1, 
+	CAST(YEAR(condition_start_date)*100 + month(condition_start_date) AS VARCHAR(255)) as stratum_1,
 	COUNT_BIG(PERSON_ID) as count_value
 from
 @cdm_database_schema.condition_occurrence co1
@@ -2761,7 +2761,7 @@ ACHILLES Analyses on DEATH table
 -- 500	Number of persons with death, by cause_concept_id
 insert into @results_database_schema.ACHILLES_results (analysis_id, stratum_1, count_value)
 select 500 as analysis_id, 
-	d1.cause_concept_id as stratum_1,
+	CAST(d1.cause_concept_id AS VARCHAR(255)) as stratum_1,
 	COUNT_BIG(distinct d1.PERSON_ID) as count_value
 from
 	@cdm_database_schema.death d1
@@ -2774,7 +2774,7 @@ group by d1.cause_concept_id
 -- 501	Number of records of death, by cause_concept_id
 insert into @results_database_schema.ACHILLES_results (analysis_id, stratum_1, count_value)
 select 501 as analysis_id, 
-	d1.cause_concept_id as stratum_1,
+	CAST(d1.cause_concept_id AS VARCHAR(255)) as stratum_1,
 	COUNT_BIG(d1.PERSON_ID) as count_value
 from
 	@cdm_database_schema.death d1
@@ -2788,7 +2788,7 @@ group by d1.cause_concept_id
 -- 502	Number of persons by condition occurrence start month
 insert into @results_database_schema.ACHILLES_results (analysis_id, stratum_1, count_value)
 select 502 as analysis_id,   
-	YEAR(death_date)*100 + month(death_date) as stratum_1, 
+	CAST(YEAR(death_date)*100 + month(death_date) AS VARCHAR(255)) as stratum_1,
 	COUNT_BIG(distinct PERSON_ID) as count_value
 from
 @cdm_database_schema.death d1
@@ -2802,9 +2802,9 @@ group by YEAR(death_date)*100 + month(death_date)
 -- 504	Number of persons with a death, by calendar year by gender by age decile
 insert into @results_database_schema.ACHILLES_results (analysis_id, stratum_1, stratum_2, stratum_3, count_value)
 select 504 as analysis_id,   
-	YEAR(death_date) as stratum_1,
-	p1.gender_concept_id as stratum_2,
-	floor((year(death_date) - p1.year_of_birth)/10) as stratum_3, 
+	CAST(YEAR(death_date) AS VARCHAR(255)) as stratum_1,
+	CAST(p1.gender_concept_id AS VARCHAR(255)) as stratum_2,
+	CAST(floor((year(death_date) - p1.year_of_birth)/10) AS VARCHAR(255)) as stratum_3,
 	COUNT_BIG(distinct p1.PERSON_ID) as count_value
 from @cdm_database_schema.PERSON p1
 inner join
@@ -2820,7 +2820,7 @@ group by YEAR(death_date),
 -- 505	Number of death records, by death_type_concept_id
 insert into @results_database_schema.ACHILLES_results (analysis_id, stratum_1, count_value)
 select 505 as analysis_id, 
-	death_type_concept_id as stratum_1,
+	CAST(death_type_concept_id AS VARCHAR(255)) as stratum_1,
 	COUNT_BIG(PERSON_ID) as count_value
 from
 	@cdm_database_schema.death d1
@@ -2870,7 +2870,7 @@ priorStats (stratum_id, count_value, total, accumulated) as
   group by s.stratum_id, s.count_value, s.total, s.rn
 )
 select 506 as analysis_id,
-  o.stratum_id,
+  CAST(o.stratum_id AS VARCHAR(255)) AS stratum_id,
   o.total as count_value,
   o.min_value,
 	o.max_value,
@@ -3242,7 +3242,7 @@ ACHILLES Analyses on PROCEDURE_OCCURRENCE table
 -- 600	Number of persons with at least one procedure occurrence, by procedure_concept_id
 insert into @results_database_schema.ACHILLES_results (analysis_id, stratum_1, count_value)
 select 600 as analysis_id, 
-	po1.procedure_CONCEPT_ID as stratum_1,
+	CAST(po1.procedure_CONCEPT_ID AS VARCHAR(255)) as stratum_1,
 	COUNT_BIG(distinct po1.PERSON_ID) as count_value
 from
 	@cdm_database_schema.procedure_occurrence po1
@@ -3255,7 +3255,7 @@ group by po1.procedure_CONCEPT_ID
 -- 601	Number of procedure occurrence records, by procedure_concept_id
 insert into @results_database_schema.ACHILLES_results (analysis_id, stratum_1, count_value)
 select 601 as analysis_id, 
-	po1.procedure_CONCEPT_ID as stratum_1,
+	CAST(po1.procedure_CONCEPT_ID AS VARCHAR(255)) as stratum_1,
 	COUNT_BIG(po1.PERSON_ID) as count_value
 from
 	@cdm_database_schema.procedure_occurrence po1
@@ -3269,8 +3269,8 @@ group by po1.procedure_CONCEPT_ID
 -- 602	Number of persons by procedure occurrence start month, by procedure_concept_id
 insert into @results_database_schema.ACHILLES_results (analysis_id, stratum_1, stratum_2, count_value)
 select 602 as analysis_id,   
-	po1.procedure_concept_id as stratum_1,
-	YEAR(procedure_date)*100 + month(procedure_date) as stratum_2, 
+	CAST(po1.procedure_concept_id AS VARCHAR(255)) as stratum_1,
+	CAST(YEAR(procedure_date)*100 + month(procedure_date) AS VARCHAR(255)) as stratum_2,
 	COUNT_BIG(distinct PERSON_ID) as count_value
 from
 @cdm_database_schema.procedure_occurrence po1
@@ -3347,10 +3347,10 @@ drop table #tempResults;
 -- 604	Number of persons with at least one procedure occurrence, by procedure_concept_id by calendar year by gender by age decile
 insert into @results_database_schema.ACHILLES_results (analysis_id, stratum_1, stratum_2, stratum_3, stratum_4, count_value)
 select 604 as analysis_id,   
-	po1.procedure_concept_id as stratum_1,
-	YEAR(procedure_date) as stratum_2,
-	p1.gender_concept_id as stratum_3,
-	floor((year(procedure_date) - p1.year_of_birth)/10) as stratum_4, 
+	CAST(po1.procedure_concept_id AS VARCHAR(255)) as stratum_1,
+	CAST(YEAR(procedure_date) AS VARCHAR(255)) as stratum_2,
+	CAST(p1.gender_concept_id AS VARCHAR(255)) as stratum_3,
+	CAST(floor((year(procedure_date) - p1.year_of_birth)/10) AS VARCHAR(255)) as stratum_4,
 	COUNT_BIG(distinct p1.PERSON_ID) as count_value
 from @cdm_database_schema.PERSON p1
 inner join
@@ -3367,8 +3367,8 @@ group by po1.procedure_concept_id,
 -- 605	Number of procedure occurrence records, by procedure_concept_id by procedure_type_concept_id
 insert into @results_database_schema.ACHILLES_results (analysis_id, stratum_1, stratum_2, count_value)
 select 605 as analysis_id, 
-	po1.procedure_CONCEPT_ID as stratum_1,
-	po1.procedure_type_concept_id as stratum_2,
+	CAST(po1.procedure_CONCEPT_ID AS VARCHAR(255)) as stratum_1,
+	CAST(po1.procedure_type_concept_id AS VARCHAR(255)) as stratum_2,
 	COUNT_BIG(po1.PERSON_ID) as count_value
 from
 	@cdm_database_schema.procedure_occurrence po1
@@ -3420,8 +3420,8 @@ priorStats (stratum1_id, stratum2_id, count_value, total, accumulated) as
   group by s.stratum1_id, s.stratum2_id, s.count_value, s.total, s.rn
 )
 select 606 as analysis_id,
-  o.stratum1_id,
-  o.stratum2_id,
+  CAST(o.stratum1_id AS VARCHAR(255)) AS stratum1_id,
+  CAST(o.stratum2_id AS VARCHAR(255)) AS stratum2_id,
   o.total as count_value,
   o.min_value,
 	o.max_value,
@@ -3514,7 +3514,7 @@ where po1.visit_occurrence_id is not null
 -- 620	Number of procedure occurrence records by condition occurrence start month
 insert into @results_database_schema.ACHILLES_results (analysis_id, stratum_1, count_value)
 select 620 as analysis_id,   
-	YEAR(procedure_date)*100 + month(procedure_date) as stratum_1, 
+	CAST(YEAR(procedure_date)*100 + month(procedure_date) AS VARCHAR(255)) as stratum_1,
 	COUNT_BIG(PERSON_ID) as count_value
 from
 @cdm_database_schema.procedure_occurrence po1
@@ -3536,7 +3536,7 @@ ACHILLES Analyses on DRUG_EXPOSURE table
 -- 700	Number of persons with at least one drug occurrence, by drug_concept_id
 insert into @results_database_schema.ACHILLES_results (analysis_id, stratum_1, count_value)
 select 700 as analysis_id, 
-	de1.drug_CONCEPT_ID as stratum_1,
+	CAST(de1.drug_CONCEPT_ID AS VARCHAR(255)) as stratum_1,
 	COUNT_BIG(distinct de1.PERSON_ID) as count_value
 from
 	@cdm_database_schema.drug_exposure de1
@@ -3549,7 +3549,7 @@ group by de1.drug_CONCEPT_ID
 -- 701	Number of drug occurrence records, by drug_concept_id
 insert into @results_database_schema.ACHILLES_results (analysis_id, stratum_1, count_value)
 select 701 as analysis_id, 
-	de1.drug_CONCEPT_ID as stratum_1,
+	CAST(de1.drug_CONCEPT_ID AS VARCHAR(255)) as stratum_1,
 	COUNT_BIG(de1.PERSON_ID) as count_value
 from
 	@cdm_database_schema.drug_exposure de1
@@ -3563,8 +3563,8 @@ group by de1.drug_CONCEPT_ID
 -- 702	Number of persons by drug occurrence start month, by drug_concept_id
 insert into @results_database_schema.ACHILLES_results (analysis_id, stratum_1, stratum_2, count_value)
 select 702 as analysis_id,   
-	de1.drug_concept_id as stratum_1,
-	YEAR(drug_exposure_start_date)*100 + month(drug_exposure_start_date) as stratum_2, 
+	CAST(de1.drug_concept_id AS VARCHAR(255)) as stratum_1,
+	CAST(YEAR(drug_exposure_start_date)*100 + month(drug_exposure_start_date) AS VARCHAR(255)) as stratum_2,
 	COUNT_BIG(distinct PERSON_ID) as count_value
 from
 @cdm_database_schema.drug_exposure de1
@@ -3645,10 +3645,10 @@ drop table #tempResults;
 -- 704	Number of persons with at least one drug occurrence, by drug_concept_id by calendar year by gender by age decile
 insert into @results_database_schema.ACHILLES_results (analysis_id, stratum_1, stratum_2, stratum_3, stratum_4, count_value)
 select 704 as analysis_id,   
-	de1.drug_concept_id as stratum_1,
-	YEAR(drug_exposure_start_date) as stratum_2,
-	p1.gender_concept_id as stratum_3,
-	floor((year(drug_exposure_start_date) - p1.year_of_birth)/10) as stratum_4, 
+	CAST(de1.drug_concept_id AS VARCHAR(255)) as stratum_1,
+	CAST(YEAR(drug_exposure_start_date) AS VARCHAR(255)) as stratum_2,
+	CAST(p1.gender_concept_id AS VARCHAR(255)) as stratum_3,
+	CAST(floor((year(drug_exposure_start_date) - p1.year_of_birth)/10) AS VARCHAR(255)) as stratum_4,
 	COUNT_BIG(distinct p1.PERSON_ID) as count_value
 from @cdm_database_schema.PERSON p1
 inner join
@@ -3665,8 +3665,8 @@ group by de1.drug_concept_id,
 -- 705	Number of drug occurrence records, by drug_concept_id by drug_type_concept_id
 insert into @results_database_schema.ACHILLES_results (analysis_id, stratum_1, stratum_2, count_value)
 select 705 as analysis_id, 
-	de1.drug_CONCEPT_ID as stratum_1,
-	de1.drug_type_concept_id as stratum_2,
+	CAST(de1.drug_CONCEPT_ID AS VARCHAR(255)) as stratum_1,
+	CAST(de1.drug_type_concept_id AS VARCHAR(255)) as stratum_2,
 	COUNT_BIG(de1.PERSON_ID) as count_value
 from
 	@cdm_database_schema.drug_exposure de1
@@ -3718,8 +3718,8 @@ priorStats (stratum1_id, stratum2_id, count_value, total, accumulated) as
   group by s.stratum1_id, s.stratum2_id, s.count_value, s.total, s.rn
 )
 select 706 as analysis_id,
-  o.stratum1_id,
-  o.stratum2_id,
+  CAST(o.stratum1_id AS VARCHAR(255)) AS stratum1_id,
+  CAST(o.stratum2_id AS VARCHAR(255)) AS stratum2_id,
   o.total as count_value,
   o.min_value,
 	o.max_value,
@@ -3858,7 +3858,7 @@ priorStats (stratum_id, count_value, total, accumulated) as
   group by s.stratum_id, s.count_value, s.total, s.rn
 )
 select 715 as analysis_id,
-  o.stratum_id,
+  CAST(o.stratum_id AS VARCHAR(255)) AS stratum_id,
   o.total as count_value,
   o.min_value,
 	o.max_value,
@@ -3920,7 +3920,7 @@ priorStats (stratum_id, count_value, total, accumulated) as
   group by s.stratum_id, s.count_value, s.total, s.rn
 )
 select 716 as analysis_id,
-  o.stratum_id,
+  CAST(o.stratum_id AS VARCHAR(255)) AS stratum_id,
   o.total as count_value,
   o.min_value,
 	o.max_value,
@@ -3983,7 +3983,7 @@ priorStats (stratum_id, count_value, total, accumulated) as
   group by s.stratum_id, s.count_value, s.total, s.rn
 )
 select 717 as analysis_id,
-  o.stratum_id,
+  CAST(o.stratum_id AS VARCHAR(255)) AS stratum_id,
   o.total as count_value,
   o.min_value,
 	o.max_value,
@@ -4016,7 +4016,7 @@ drop table #tempResults;
 -- 720	Number of drug exposure records by condition occurrence start month
 insert into @results_database_schema.ACHILLES_results (analysis_id, stratum_1, count_value)
 select 720 as analysis_id,   
-	YEAR(drug_exposure_start_date)*100 + month(drug_exposure_start_date) as stratum_1, 
+	CAST(YEAR(drug_exposure_start_date)*100 + month(drug_exposure_start_date) AS VARCHAR(255)) as stratum_1,
 	COUNT_BIG(PERSON_ID) as count_value
 from
 @cdm_database_schema.drug_exposure de1
@@ -4036,7 +4036,7 @@ ACHILLES Analyses on OBSERVATION table
 -- 800	Number of persons with at least one observation occurrence, by observation_concept_id
 insert into @results_database_schema.ACHILLES_results (analysis_id, stratum_1, count_value)
 select 800 as analysis_id, 
-	o1.observation_CONCEPT_ID as stratum_1,
+	CAST(o1.observation_CONCEPT_ID AS VARCHAR(255)) as stratum_1,
 	COUNT_BIG(distinct o1.PERSON_ID) as count_value
 from
 	@cdm_database_schema.observation o1
@@ -4049,7 +4049,7 @@ group by o1.observation_CONCEPT_ID
 -- 801	Number of observation occurrence records, by observation_concept_id
 insert into @results_database_schema.ACHILLES_results (analysis_id, stratum_1, count_value)
 select 801 as analysis_id, 
-	o1.observation_CONCEPT_ID as stratum_1,
+	CAST(o1.observation_CONCEPT_ID AS VARCHAR(255)) as stratum_1,
 	COUNT_BIG(o1.PERSON_ID) as count_value
 from
 	@cdm_database_schema.observation o1
@@ -4063,8 +4063,8 @@ group by o1.observation_CONCEPT_ID
 -- 802	Number of persons by observation occurrence start month, by observation_concept_id
 insert into @results_database_schema.ACHILLES_results (analysis_id, stratum_1, stratum_2, count_value)
 select 802 as analysis_id,   
-	o1.observation_concept_id as stratum_1,
-	YEAR(observation_date)*100 + month(observation_date) as stratum_2, 
+	CAST(o1.observation_concept_id AS VARCHAR(255)) as stratum_1,
+	CAST(YEAR(observation_date)*100 + month(observation_date) AS VARCHAR(255)) as stratum_2,
 	COUNT_BIG(distinct PERSON_ID) as count_value
 from
 @cdm_database_schema.observation o1
@@ -4147,10 +4147,10 @@ drop table #tempResults;
 -- 804	Number of persons with at least one observation occurrence, by observation_concept_id by calendar year by gender by age decile
 insert into @results_database_schema.ACHILLES_results (analysis_id, stratum_1, stratum_2, stratum_3, stratum_4, count_value)
 select 804 as analysis_id,   
-	o1.observation_concept_id as stratum_1,
-	YEAR(observation_date) as stratum_2,
-	p1.gender_concept_id as stratum_3,
-	floor((year(observation_date) - p1.year_of_birth)/10) as stratum_4, 
+	CAST(o1.observation_concept_id AS VARCHAR(255)) as stratum_1,
+	CAST(YEAR(observation_date) AS VARCHAR(255)) as stratum_2,
+	CAST(p1.gender_concept_id AS VARCHAR(255)) as stratum_3,
+	CAST(floor((year(observation_date) - p1.year_of_birth)/10) AS VARCHAR(255)) as stratum_4,
 	COUNT_BIG(distinct p1.PERSON_ID) as count_value
 from @cdm_database_schema.PERSON p1
 inner join
@@ -4167,8 +4167,8 @@ group by o1.observation_concept_id,
 -- 805	Number of observation occurrence records, by observation_concept_id by observation_type_concept_id
 insert into @results_database_schema.ACHILLES_results (analysis_id, stratum_1, stratum_2, count_value)
 select 805 as analysis_id, 
-	o1.observation_CONCEPT_ID as stratum_1,
-	o1.observation_type_concept_id as stratum_2,
+	CAST(o1.observation_CONCEPT_ID AS VARCHAR(255)) as stratum_1,
+	CAST(o1.observation_type_concept_id AS VARCHAR(255)) as stratum_2,
 	COUNT_BIG(o1.PERSON_ID) as count_value
 from
 	@cdm_database_schema.observation o1
@@ -4221,8 +4221,8 @@ priorStats (stratum1_id, stratum2_id, count_value, total, accumulated) as
   group by s.stratum1_id, s.stratum2_id, s.count_value, s.total, s.rn
 )
 select 806 as analysis_id,
-  o.stratum1_id,
-  o.stratum2_id,
+  CAST(o.stratum1_id AS VARCHAR(255)) AS stratum1_id,
+  CAST(o.stratum2_id AS VARCHAR(255)) AS stratum2_id,
   o.total as count_value,
   o.min_value,
 	o.max_value,
@@ -4257,8 +4257,8 @@ drop table #tempResults;
 -- 807	Number of observation occurrence records, by observation_concept_id and unit_concept_id
 insert into @results_database_schema.ACHILLES_results (analysis_id, stratum_1, stratum_2, count_value)
 select 807 as analysis_id, 
-	o1.observation_CONCEPT_ID as stratum_1,
-	o1.unit_concept_id as stratum_2,
+	CAST(o1.observation_CONCEPT_ID AS VARCHAR(255)) as stratum_1,
+	CAST(o1.unit_concept_id AS VARCHAR(255)) as stratum_2,
 	COUNT_BIG(o1.PERSON_ID) as count_value
 from
 	@cdm_database_schema.observation o1
@@ -4382,8 +4382,8 @@ priorStats (stratum1_id, stratum2_id, count_value, total, accumulated) as
   group by s.stratum1_id, s.stratum2_id, s.count_value, s.total, s.rn
 )
 select 815 as analysis_id,
-  o.stratum1_id,
-  o.stratum2_id,
+  CAST(o.stratum1_id AS VARCHAR(255)) AS stratum1_id,
+  CAST(o.stratum2_id AS VARCHAR(255)) AS stratum2_id,
   o.total as count_value,
   o.min_value,
 	o.max_value,
@@ -4444,7 +4444,7 @@ drop table #tempResults;
 -- 820	Number of observation records by condition occurrence start month
 insert into @results_database_schema.ACHILLES_results (analysis_id, stratum_1, count_value)
 select 820 as analysis_id,   
-	YEAR(observation_date)*100 + month(observation_date) as stratum_1, 
+	CAST(YEAR(observation_date)*100 + month(observation_date) AS VARCHAR(255)) as stratum_1,
 	COUNT_BIG(PERSON_ID) as count_value
 from
 @cdm_database_schema.observation o1
@@ -4466,7 +4466,7 @@ ACHILLES Analyses on DRUG_ERA table
 -- 900	Number of persons with at least one drug occurrence, by drug_concept_id
 insert into @results_database_schema.ACHILLES_results (analysis_id, stratum_1, count_value)
 select 900 as analysis_id, 
-	de1.drug_CONCEPT_ID as stratum_1,
+	CAST(de1.drug_CONCEPT_ID AS VARCHAR(255)) as stratum_1,
 	COUNT_BIG(distinct de1.PERSON_ID) as count_value
 from
 	@cdm_database_schema.drug_era de1
@@ -4479,7 +4479,7 @@ group by de1.drug_CONCEPT_ID
 -- 901	Number of drug occurrence records, by drug_concept_id
 insert into @results_database_schema.ACHILLES_results (analysis_id, stratum_1, count_value)
 select 901 as analysis_id, 
-	de1.drug_CONCEPT_ID as stratum_1,
+	CAST(de1.drug_CONCEPT_ID AS VARCHAR(255)) as stratum_1,
 	COUNT_BIG(de1.PERSON_ID) as count_value
 from
 	@cdm_database_schema.drug_era de1
@@ -4493,8 +4493,8 @@ group by de1.drug_CONCEPT_ID
 -- 902	Number of persons by drug occurrence start month, by drug_concept_id
 insert into @results_database_schema.ACHILLES_results (analysis_id, stratum_1, stratum_2, count_value)
 select 902 as analysis_id,   
-	de1.drug_concept_id as stratum_1,
-	YEAR(drug_era_start_date)*100 + month(drug_era_start_date) as stratum_2, 
+	CAST(de1.drug_concept_id AS VARCHAR(255)) as stratum_1,
+	CAST(YEAR(drug_era_start_date)*100 + month(drug_era_start_date) AS VARCHAR(255)) as stratum_2,
 	COUNT_BIG(distinct PERSON_ID) as count_value
 from
 @cdm_database_schema.drug_era de1
@@ -4571,10 +4571,10 @@ drop table #tempResults;
 -- 904	Number of persons with at least one drug occurrence, by drug_concept_id by calendar year by gender by age decile
 insert into @results_database_schema.ACHILLES_results (analysis_id, stratum_1, stratum_2, stratum_3, stratum_4, count_value)
 select 904 as analysis_id,   
-	de1.drug_concept_id as stratum_1,
-	YEAR(drug_era_start_date) as stratum_2,
-	p1.gender_concept_id as stratum_3,
-	floor((year(drug_era_start_date) - p1.year_of_birth)/10) as stratum_4, 
+	CAST(de1.drug_concept_id AS VARCHAR(255)) as stratum_1,
+	CAST(YEAR(drug_era_start_date) AS VARCHAR(255)) as stratum_2,
+	CAST(p1.gender_concept_id AS VARCHAR(255)) as stratum_3,
+	CAST(floor((year(drug_era_start_date) - p1.year_of_birth)/10) AS VARCHAR(255)) as stratum_4,
 	COUNT_BIG(distinct p1.PERSON_ID) as count_value
 from @cdm_database_schema.PERSON p1
 inner join
@@ -4631,8 +4631,8 @@ priorStats (stratum1_id, stratum2_id, count_value, total, accumulated) as
   group by s.stratum1_id, s.stratum2_id, s.count_value, s.total, s.rn
 )
 select 906 as analysis_id,
-  o.stratum1_id,
-  o.stratum2_id,
+  CAST(o.stratum1_id AS VARCHAR(255)) AS stratum1_id,
+  CAST(o.stratum2_id AS VARCHAR(255)) AS stratum2_id,
   o.total as count_value,
   o.min_value,
 	o.max_value,
@@ -4699,7 +4699,7 @@ priorStats (stratum1_id, count_value, total, accumulated) as
   group by s.stratum1_id, s.count_value, s.total, s.rn
 )
 select 907 as analysis_id,
-  p.stratum1_id as stratum_1,
+  CAST(p.stratum1_id AS VARCHAR(255)) as stratum_1,
   o.total as count_value,
   o.min_value,
 	o.max_value,
@@ -4775,7 +4775,7 @@ where de1.drug_era_end_date < de1.drug_era_start_date
 -- 920	Number of drug era records by drug era start month
 insert into @results_database_schema.ACHILLES_results (analysis_id, stratum_1, count_value)
 select 920 as analysis_id,   
-	YEAR(drug_era_start_date)*100 + month(drug_era_start_date) as stratum_1, 
+	CAST(YEAR(drug_era_start_date)*100 + month(drug_era_start_date) AS VARCHAR(255)) as stratum_1,
 	COUNT_BIG(PERSON_ID) as count_value
 from
 @cdm_database_schema.drug_era de1
@@ -4798,7 +4798,7 @@ ACHILLES Analyses on CONDITION_ERA table
 -- 1000	Number of persons with at least one condition occurrence, by condition_concept_id
 insert into @results_database_schema.ACHILLES_results (analysis_id, stratum_1, count_value)
 select 1000 as analysis_id, 
-	ce1.condition_CONCEPT_ID as stratum_1,
+	CAST(ce1.condition_CONCEPT_ID AS VARCHAR(255)) as stratum_1,
 	COUNT_BIG(distinct ce1.PERSON_ID) as count_value
 from
 	@cdm_database_schema.condition_era ce1
@@ -4811,7 +4811,7 @@ group by ce1.condition_CONCEPT_ID
 -- 1001	Number of condition occurrence records, by condition_concept_id
 insert into @results_database_schema.ACHILLES_results (analysis_id, stratum_1, count_value)
 select 1001 as analysis_id, 
-	ce1.condition_CONCEPT_ID as stratum_1,
+	CAST(ce1.condition_CONCEPT_ID AS VARCHAR(255)) as stratum_1,
 	COUNT_BIG(ce1.PERSON_ID) as count_value
 from
 	@cdm_database_schema.condition_era ce1
@@ -4825,8 +4825,8 @@ group by ce1.condition_CONCEPT_ID
 -- 1002	Number of persons by condition occurrence start month, by condition_concept_id
 insert into @results_database_schema.ACHILLES_results (analysis_id, stratum_1, stratum_2, count_value)
 select 1002 as analysis_id,   
-	ce1.condition_concept_id as stratum_1,
-	YEAR(condition_era_start_date)*100 + month(condition_era_start_date) as stratum_2, 
+	CAST(ce1.condition_concept_id AS VARCHAR(255)) as stratum_1,
+	CAST(YEAR(condition_era_start_date)*100 + month(condition_era_start_date) AS VARCHAR(255)) as stratum_2,
 	COUNT_BIG(distinct PERSON_ID) as count_value
 from
 @cdm_database_schema.condition_era ce1
@@ -4902,10 +4902,10 @@ drop table #tempResults;
 -- 1004	Number of persons with at least one condition occurrence, by condition_concept_id by calendar year by gender by age decile
 insert into @results_database_schema.ACHILLES_results (analysis_id, stratum_1, stratum_2, stratum_3, stratum_4, count_value)
 select 1004 as analysis_id,   
-	ce1.condition_concept_id as stratum_1,
-	YEAR(condition_era_start_date) as stratum_2,
-	p1.gender_concept_id as stratum_3,
-	floor((year(condition_era_start_date) - p1.year_of_birth)/10) as stratum_4, 
+	CAST(ce1.condition_concept_id AS VARCHAR(255)) as stratum_1,
+	CAST(YEAR(condition_era_start_date) AS VARCHAR(255)) as stratum_2,
+	CAST(p1.gender_concept_id AS VARCHAR(255)) as stratum_3,
+	CAST(floor((year(condition_era_start_date) - p1.year_of_birth)/10) AS VARCHAR(255)) as stratum_4,
 	COUNT_BIG(distinct p1.PERSON_ID) as count_value
 from @cdm_database_schema.PERSON p1
 inner join
@@ -4962,8 +4962,8 @@ priorStats (stratum1_id, stratum2_id, count_value, total, accumulated) as
   group by s.stratum1_id, s.stratum2_id, s.count_value, s.total, s.rn
 )
 select 1006 as analysis_id,
-  o.stratum1_id,
-  o.stratum2_id,
+  CAST(o.stratum1_id AS VARCHAR(255)) AS stratum1_id,
+  CAST(o.stratum2_id AS VARCHAR(255)) AS stratum2_id,
   o.total as count_value,
   o.min_value,
 	o.max_value,
@@ -5031,7 +5031,7 @@ priorStats (stratum1_id, count_value, total, accumulated) as
   group by s.stratum1_id, s.count_value, s.total, s.rn
 )
 select 1007 as analysis_id,
-  p.stratum1_id as stratum_1,
+  CAST(p.stratum1_id AS VARCHAR(255)) as stratum_1,
   o.total as count_value,
   o.min_value,
 	o.max_value,
@@ -5107,7 +5107,7 @@ where ce1.condition_era_end_date < ce1.condition_era_start_date
 -- 1020	Number of drug era records by drug era start month
 insert into @results_database_schema.ACHILLES_results (analysis_id, stratum_1, count_value)
 select 1020 as analysis_id,   
-	YEAR(condition_era_start_date)*100 + month(condition_era_start_date) as stratum_1, 
+	CAST(YEAR(condition_era_start_date)*100 + month(condition_era_start_date) AS VARCHAR(255)) as stratum_1,
 	COUNT_BIG(PERSON_ID) as count_value
 from
 @cdm_database_schema.condition_era ce1
@@ -5128,7 +5128,7 @@ ACHILLES Analyses on LOCATION table
 -- 1100	Number of persons by location 3-digit zip
 insert into @results_database_schema.ACHILLES_results (analysis_id, stratum_1, count_value)
 select 1100 as analysis_id,  
-	left(l1.zip,3) as stratum_1, COUNT_BIG(distinct person_id) as count_value
+	CAST(left(l1.zip,3) AS VARCHAR(255)) as stratum_1, COUNT_BIG(distinct person_id) as count_value
 from @cdm_database_schema.PERSON p1
 	inner join @cdm_database_schema.`location` l1
 	on p1.location_id = l1.location_id
@@ -5142,7 +5142,7 @@ group by left(l1.zip,3);
 -- 1101	Number of persons by location state
 insert into @results_database_schema.ACHILLES_results (analysis_id, stratum_1, count_value)
 select 1101 as analysis_id,  
-	l1.state as stratum_1, COUNT_BIG(distinct person_id) as count_value
+	CAST(l1.state AS VARCHAR(255)) as stratum_1, COUNT_BIG(distinct person_id) as count_value
 from @cdm_database_schema.PERSON p1
 	inner join @cdm_database_schema.`location` l1
 	on p1.location_id = l1.location_id
@@ -5156,7 +5156,7 @@ group by l1.state;
 -- 1102	Number of care sites by location 3-digit zip
 insert into @results_database_schema.ACHILLES_results (analysis_id, stratum_1, count_value)
 select 1102 as analysis_id,  
-	left(l1.zip,3) as stratum_1, COUNT_BIG(distinct care_site_id) as count_value
+	CAST(left(l1.zip,3) AS VARCHAR(255)) as stratum_1, COUNT_BIG(distinct care_site_id) as count_value
 from @cdm_database_schema.care_site cs1
 	inner join @cdm_database_schema.`location` l1
 	on cs1.location_id = l1.location_id
@@ -5170,7 +5170,7 @@ group by left(l1.zip,3);
 -- 1103	Number of care sites by location state
 insert into @results_database_schema.ACHILLES_results (analysis_id, stratum_1, count_value)
 select 1103 as analysis_id,  
-	l1.state as stratum_1, COUNT_BIG(distinct care_site_id) as count_value
+	CAST(l1.state AS VARCHAR(255)) as stratum_1, COUNT_BIG(distinct care_site_id) as count_value
 from @cdm_database_schema.care_site cs1
 	inner join @cdm_database_schema.`location` l1
 	on cs1.location_id = l1.location_id
@@ -5191,7 +5191,7 @@ ACHILLES Analyses on CARE_SITE table
 -- 1200	Number of persons by place of service
 insert into @results_database_schema.ACHILLES_results (analysis_id, stratum_1, count_value)
 select 1200 as analysis_id,  
-	cs1.place_of_service_concept_id as stratum_1, COUNT_BIG(person_id) as count_value
+	CAST(cs1.place_of_service_concept_id AS VARCHAR(255)) as stratum_1, COUNT_BIG(person_id) as count_value
 from @cdm_database_schema.PERSON p1
 	inner join @cdm_database_schema.care_site cs1
 	on p1.care_site_id = cs1.care_site_id
@@ -5205,7 +5205,7 @@ group by cs1.place_of_service_concept_id;
 -- 1201	Number of visits by place of service
 insert into @results_database_schema.ACHILLES_results (analysis_id, stratum_1, count_value)
 select 1201 as analysis_id,  
-	cs1.place_of_service_concept_id as stratum_1, COUNT_BIG(visit_occurrence_id) as count_value
+	CAST(cs1.place_of_service_concept_id AS VARCHAR(255)) as stratum_1, COUNT_BIG(visit_occurrence_id) as count_value
 from @cdm_database_schema.visit_occurrence vo1
 	inner join @cdm_database_schema.care_site cs1
 	on vo1.care_site_id = cs1.care_site_id
@@ -5219,7 +5219,7 @@ group by cs1.place_of_service_concept_id;
 -- 1202	Number of care sites by place of service
 insert into @results_database_schema.ACHILLES_results (analysis_id, stratum_1, count_value)
 select 1202 as analysis_id,  
-	cs1.place_of_service_concept_id as stratum_1, 
+	CAST(cs1.place_of_service_concept_id AS VARCHAR(255)) as stratum_1,
 	COUNT_BIG(care_site_id) as count_value
 from @cdm_database_schema.care_site cs1
 where cs1.place_of_service_concept_id is not null
@@ -5296,7 +5296,7 @@ priorStats (stratum1_id, count_value, total, accumulated) as
   group by s.stratum1_id, s.count_value, s.total, s.rn
 )
 select 1406 as analysis_id,
-  p.stratum1_id as stratum_1,
+  CAST(p.stratum1_id AS VARCHAR(255)) as stratum_1,
   o.total as count_value,
   o.min_value,
 	o.max_value,
@@ -5368,7 +5368,7 @@ priorStats (stratum_id, count_value, total, accumulated) as
   group by s.stratum_id, s.count_value, s.total, s.rn
 )
 select 1407 as analysis_id,
-  o.stratum_id,
+  CAST(o.stratum_id AS VARCHAR(255)) AS stratum_id,
   o.total as count_value,
   o.min_value,
   o.max_value,
@@ -5403,7 +5403,7 @@ drop table #tempResults;
 -- 1408	Number of persons by length of payer plan period, in 30d increments
 insert into @results_database_schema.ACHILLES_results (analysis_id, stratum_1, count_value)
 select 1408 as analysis_id,  
-	floor(DATEDIFF(dd, ppp1.payer_plan_period_start_date, ppp1.payer_plan_period_end_date)/30) as stratum_1, 
+	CAST(floor(DATEDIFF(dd, ppp1.payer_plan_period_start_date, ppp1.payer_plan_period_end_date)/30) AS VARCHAR(255)) as stratum_1,
 	COUNT_BIG(distinct p1.person_id) as count_value
 from @cdm_database_schema.PERSON p1
 	inner join 
@@ -5415,7 +5415,7 @@ from @cdm_database_schema.PERSON p1
 	) ppp1
 	on p1.PERSON_ID = ppp1.PERSON_ID
 	where ppp1.rn1 = 1
-group by floor(DATEDIFF(dd, ppp1.payer_plan_period_start_date, ppp1.payer_plan_period_end_date)/30)
+group by CAST(floor(DATEDIFF(dd, ppp1.payer_plan_period_start_date, ppp1.payer_plan_period_end_date)/30) AS VARCHAR(255))
 ;
 --}
 
@@ -5437,7 +5437,7 @@ from
 
 insert into @results_database_schema.ACHILLES_results (analysis_id, stratum_1, count_value)
 select 1409 as analysis_id,  
-	t1.obs_year as stratum_1, COUNT_BIG(distinct p1.PERSON_ID) as count_value
+	CAST(t1.obs_year AS VARCHAR(255)) as stratum_1, COUNT_BIG(distinct p1.PERSON_ID) as count_value
 from
 	@cdm_database_schema.PERSON p1
 	inner join 
@@ -5475,7 +5475,7 @@ FROM
 insert into @results_database_schema.ACHILLES_results (analysis_id, stratum_1, count_value)
 select 
   1410 as analysis_id, 
-	obs_month as stratum_1, 
+	CAST(obs_month AS VARCHAR(255)) as stratum_1,
 	COUNT_BIG(distinct p1.PERSON_ID) as count_value
 from
 	@cdm_database_schema.PERSON p1
@@ -5530,7 +5530,7 @@ group by cast(cast(YEAR(payer_plan_period_end_date) as varchar(4)) +  RIGHT('0' 
 -- 1413	Number of persons by number of payer plan periods
 insert into @results_database_schema.ACHILLES_results (analysis_id, stratum_1, count_value)
 select 1413 as analysis_id,  
-	ppp1.num_periods as stratum_1, 
+	CAST(ppp1.num_periods AS VARCHAR(255)) as stratum_1,
 	COUNT_BIG(distinct p1.PERSON_ID) as count_value
 from
 	@cdm_database_schema.PERSON p1
@@ -5664,7 +5664,7 @@ priorStats (stratum1_id, count_value, total, accumulated) as
   group by s.stratum1_id, s.count_value, s.total, s.rn
 )
 select 1502 as analysis_id,
-  p.stratum1_id as stratum_1,
+  CAST(p.stratum1_id AS VARCHAR(255)) as stratum_1,
   o.total as count_value,
   o.min_value,
 	o.max_value,
@@ -5730,7 +5730,7 @@ priorStats (stratum1_id, count_value, total, accumulated) as
   group by s.stratum1_id, s.count_value, s.total, s.rn
 )
 select 1503 as analysis_id,
-  p.stratum1_id as stratum_1,
+  CAST(p.stratum1_id AS VARCHAR(255)) as stratum_1,
   o.total as count_value,
   o.min_value,
 	o.max_value,
@@ -5795,7 +5795,7 @@ priorStats (stratum1_id, count_value, total, accumulated) as
   group by s.stratum1_id, s.count_value, s.total, s.rn
 )
 select 1504 as analysis_id,
-  p.stratum1_id as stratum_1,
+  CAST(p.stratum1_id AS VARCHAR(255)) as stratum_1,
   o.total as count_value,
   o.min_value,
 	o.max_value,
@@ -5860,7 +5860,7 @@ priorStats (stratum1_id, count_value, total, accumulated) as
   group by s.stratum1_id, s.count_value, s.total, s.rn
 )
 select 1505 as analysis_id,
-  p.stratum1_id as stratum_1,
+  CAST(p.stratum1_id AS VARCHAR(255)) as stratum_1,
   o.total as count_value,
   o.min_value,
 	o.max_value,
@@ -5925,7 +5925,7 @@ priorStats (stratum1_id, count_value, total, accumulated) as
   group by s.stratum1_id, s.count_value, s.total, s.rn
 )
 select 1506 as analysis_id,
-  p.stratum1_id as stratum_1,
+  CAST(p.stratum1_id AS VARCHAR(255)) as stratum_1,
   o.total as count_value,
   o.min_value,
 	o.max_value,
@@ -5989,7 +5989,7 @@ priorStats (stratum1_id, count_value, total, accumulated) as
   group by s.stratum1_id, s.count_value, s.total, s.rn
 )
 select 1507 as analysis_id,
-  p.stratum1_id as stratum_1,
+  CAST(p.stratum1_id AS VARCHAR(255)) as stratum_1,
   o.total as count_value,
   o.min_value,
 	o.max_value,
@@ -6054,7 +6054,7 @@ priorStats (stratum1_id, count_value, total, accumulated) as
   group by s.stratum1_id, s.count_value, s.total, s.rn
 )
 select 1508 as analysis_id,
-  p.stratum1_id as stratum_1,
+  CAST(p.stratum1_id AS VARCHAR(255)) as stratum_1,
   o.total as count_value,
   o.min_value,
 	o.max_value,
@@ -6119,7 +6119,7 @@ priorStats (stratum1_id, count_value, total, accumulated) as
   group by s.stratum1_id, s.count_value, s.total, s.rn
 )
 select 1509 as analysis_id,
-  p.stratum1_id as stratum_1,
+  CAST(p.stratum1_id AS VARCHAR(255)) as stratum_1,
   o.total as count_value,
   o.min_value,
   o.max_value,
@@ -6183,7 +6183,7 @@ priorStats (stratum1_id, count_value, total, accumulated) as
   group by s.stratum1_id, s.count_value, s.total, s.rn
 )
 select 1510 as analysis_id,
-  p.stratum1_id as stratum_1,
+  CAST(p.stratum1_id AS VARCHAR(255)) as stratum_1,
   o.total as count_value,
   o.min_value,
   o.max_value,
@@ -6246,7 +6246,7 @@ priorStats (stratum1_id, count_value, total, accumulated) as
   group by s.stratum1_id, s.count_value, s.total, s.rn
 )
 select 1511 as analysis_id,
-  p.stratum1_id as stratum_1,
+  CAST(p.stratum1_id AS VARCHAR(255)) as stratum_1,
   o.total as count_value,
   o.min_value,
   o.max_value,
@@ -6370,7 +6370,7 @@ priorStats (stratum1_id, count_value, total, accumulated) as
   group by s.stratum1_id, s.count_value, s.total, s.rn
 )
 select 1602 as analysis_id,
-  p.stratum1_id as stratum_1,
+  CAST(p.stratum1_id AS VARCHAR(255)) as stratum_1,
   o.total as count_value,
   o.min_value,
   o.max_value,
@@ -6435,7 +6435,7 @@ priorStats (stratum1_id, count_value, total, accumulated) as
   group by s.stratum1_id, s.count_value, s.total, s.rn
 )
 select 1603 as analysis_id,
-  p.stratum1_id as stratum_1,
+  CAST(p.stratum1_id AS VARCHAR(255)) as stratum_1,
   o.total as count_value,
   o.min_value,
   o.max_value,
@@ -6499,7 +6499,7 @@ priorStats (stratum1_id, count_value, total, accumulated) as
   group by s.stratum1_id, s.count_value, s.total, s.rn
 )
 select 1604 as analysis_id,
-  p.stratum1_id as stratum_1,
+  CAST(p.stratum1_id AS VARCHAR(255)) as stratum_1,
   o.total as count_value,
   o.min_value,
   o.max_value,
@@ -6563,7 +6563,7 @@ priorStats (stratum1_id, count_value, total, accumulated) as
   group by s.stratum1_id, s.count_value, s.total, s.rn
 )
 select 1605 as analysis_id,
-  p.stratum1_id as stratum_1,
+  CAST(p.stratum1_id AS VARCHAR(255)) as stratum_1,
   o.total as count_value,
   o.min_value,
   o.max_value,
@@ -6627,7 +6627,7 @@ priorStats (stratum1_id, count_value, total, accumulated) as
   group by s.stratum1_id, s.count_value, s.total, s.rn
 )
 select 1606 as analysis_id,
-  p.stratum1_id as stratum_1,
+  CAST(p.stratum1_id AS VARCHAR(255)) as stratum_1,
   o.total as count_value,
   o.min_value,
   o.max_value,
@@ -6691,7 +6691,7 @@ priorStats (stratum1_id, count_value, total, accumulated) as
   group by s.stratum1_id, s.count_value, s.total, s.rn
 )
 select 1607 as analysis_id,
-  p.stratum1_id as stratum_1,
+  CAST(p.stratum1_id AS VARCHAR(255)) as stratum_1,
   o.total as count_value,
   o.min_value,
   o.max_value,
@@ -6756,7 +6756,7 @@ priorStats (stratum1_id, count_value, total, accumulated) as
   group by s.stratum1_id, s.count_value, s.total, s.rn
 )
 select 1608 as analysis_id,
-  p.stratum1_id as stratum_1,
+  CAST(p.stratum1_id AS VARCHAR(255)) as stratum_1,
   o.total as count_value,
   o.min_value,
   o.max_value,
@@ -6795,7 +6795,7 @@ drop table #tempResults;
 -- 1610	Number of records by revenue_code_concept_id
 insert into @results_database_schema.ACHILLES_results (analysis_id, stratum_1, count_value)
 select 1610 as analysis_id, 
-	revenue_code_concept_id as stratum_1, 
+	CAST(revenue_code_concept_id AS VARCHAR(255)) as stratum_1,
 	COUNT_BIG(pc1.procedure_cost_ID) as count_value
 from
 	@cdm_database_schema.procedure_cost pc1
@@ -6823,7 +6823,7 @@ ACHILLES Analyses on COHORT table
 -- 1700	Number of records by cohort_concept_id
 insert into @results_database_schema.ACHILLES_results (analysis_id, stratum_1, count_value)
 select 1700 as analysis_id, 
-	cohort_definition_id as stratum_1, 
+	CAST(cohort_definition_id AS VARCHAR(255)) as stratum_1,
 	COUNT_BIG(subject_ID) as count_value
 from
 	@cdm_database_schema.cohort c1
@@ -6855,7 +6855,7 @@ ACHILLES Analyses on MEASUREMENT table
 -- 1800	Number of persons with at least one measurement occurrence, by measurement_concept_id
 insert into @results_database_schema.ACHILLES_results (analysis_id, stratum_1, count_value)
 select 1800 as analysis_id, 
-	m.measurement_CONCEPT_ID as stratum_1,
+	CAST(m.measurement_CONCEPT_ID AS VARCHAR(255)) as stratum_1,
 	COUNT_BIG(distinct m.PERSON_ID) as count_value
 from
 	@cdm_database_schema.measurement m
@@ -6868,7 +6868,7 @@ group by m.measurement_CONCEPT_ID
 -- 1801	Number of measurement occurrence records, by measurement_concept_id
 insert into @results_database_schema.ACHILLES_results (analysis_id, stratum_1, count_value)
 select 1801 as analysis_id, 
-	m.measurement_concept_id as stratum_1,
+	CAST(m.measurement_concept_id AS VARCHAR(255)) as stratum_1,
 	COUNT_BIG(m.PERSON_ID) as count_value
 from
 	@cdm_database_schema.measurement m
@@ -6882,8 +6882,8 @@ group by m.measurement_CONCEPT_ID
 -- 1802	Number of persons by measurement occurrence start month, by measurement_concept_id
 insert into @results_database_schema.ACHILLES_results (analysis_id, stratum_1, stratum_2, count_value)
 select 1802 as analysis_id,   
-	m.measurement_concept_id as stratum_1,
-	YEAR(measurement_date)*100 + month(measurement_date) as stratum_2, 
+	CAST(m.measurement_concept_id AS VARCHAR(255)) as stratum_1,
+	CAST(YEAR(measurement_date)*100 + month(measurement_date) AS VARCHAR(255)) as stratum_2,
 	COUNT_BIG(distinct PERSON_ID) as count_value
 from
 	@cdm_database_schema.measurement m
@@ -6966,10 +6966,10 @@ drop table #tempResults;
 -- 1804	Number of persons with at least one measurement occurrence, by measurement_concept_id by calendar year by gender by age decile
 insert into @results_database_schema.ACHILLES_results (analysis_id, stratum_1, stratum_2, stratum_3, stratum_4, count_value)
 select 1804 as analysis_id,   
-	m.measurement_concept_id as stratum_1,
-	YEAR(measurement_date) as stratum_2,
-	p1.gender_concept_id as stratum_3,
-	floor((year(measurement_date) - p1.year_of_birth)/10) as stratum_4, 
+	CAST(m.measurement_concept_id AS VARCHAR(255)) as stratum_1,
+	CAST(YEAR(measurement_date) AS VARCHAR(255)) as stratum_2,
+	CAST(p1.gender_concept_id AS VARCHAR(255)) as stratum_3,
+	CAST(floor((year(measurement_date) - p1.year_of_birth)/10) AS VARCHAR(255)) as stratum_4,
 	COUNT_BIG(distinct p1.PERSON_ID) as count_value
 from @cdm_database_schema.PERSON p1
 inner join @cdm_database_schema.measurement m on p1.person_id = m.person_id
@@ -6984,8 +6984,8 @@ group by m.measurement_concept_id,
 -- 1805	Number of measurement records, by measurement_concept_id by measurement_type_concept_id
 insert into @results_database_schema.ACHILLES_results (analysis_id, stratum_1, stratum_2, count_value)
 select 1805 as analysis_id, 
-	m.measurement_concept_id as stratum_1,
-	m.measurement_type_concept_id as stratum_2,
+	CAST(m.measurement_concept_id AS VARCHAR(255)) as stratum_1,
+	CAST(m.measurement_type_concept_id AS VARCHAR(255)) as stratum_2,
 	COUNT_BIG(m.PERSON_ID) as count_value
 from @cdm_database_schema.measurement m
 group by m.measurement_concept_id,	
@@ -7037,8 +7037,8 @@ priorStats (stratum1_id, stratum2_id, count_value, total, accumulated) as
   group by s.stratum1_id, s.stratum2_id, s.count_value, s.total, s.rn
 )
 select 1806 as analysis_id,
-  o.stratum1_id,
-  o.stratum2_id,
+  CAST(o.stratum1_id AS VARCHAR(255)) AS stratum1_id,
+  CAST(o.stratum2_id AS VARCHAR(255)) AS stratum2_id,
   o.total as count_value,
   o.min_value,
 	o.max_value,
@@ -7073,8 +7073,8 @@ drop table #tempResults;
 -- 1807	Number of measurement occurrence records, by measurement_concept_id and unit_concept_id
 insert into @results_database_schema.ACHILLES_results (analysis_id, stratum_1, stratum_2, count_value)
 select 1807 as analysis_id, 
-	m.measurement_concept_id as stratum_1,
-	m.unit_concept_id as stratum_2,
+	CAST(m.measurement_concept_id AS VARCHAR(255)) as stratum_1,
+	CAST(m.unit_concept_id AS VARCHAR(255)) as stratum_2,
 	COUNT_BIG(m.PERSON_ID) as count_value
 from @cdm_database_schema.measurement m
 group by m.measurement_concept_id, m.unit_concept_id
@@ -7184,8 +7184,8 @@ priorStats (stratum1_id, stratum2_id, count_value, total, accumulated) as
   group by s.stratum1_id, s.stratum2_id, s.count_value, s.total, s.rn
 )
 select 1815 as analysis_id,
-  o.stratum1_id,
-  o.stratum2_id,
+  CAST(o.stratum1_id AS VARCHAR(255)) AS stratum1_id,
+  CAST(o.stratum2_id AS VARCHAR(255)) AS stratum2_id,
   o.total as count_value,
   o.min_value,
 	o.max_value,
@@ -7255,8 +7255,8 @@ priorStats (stratum1_id, stratum2_id, count_value, total, accumulated) as
   group by s.stratum1_id, s.stratum2_id, s.count_value, s.total, s.rn
 )
 select 1816 as analysis_id,
-  o.stratum1_id,
-  o.stratum2_id,
+  CAST(o.stratum1_id AS VARCHAR(255)) AS stratum1_id,
+  CAST(o.stratum2_id AS VARCHAR(255)) AS stratum2_id,
   o.total as count_value,
   o.min_value,
 	o.max_value,
@@ -7326,8 +7326,8 @@ priorStats (stratum1_id, stratum2_id, count_value, total, accumulated) as
   group by s.stratum1_id, s.stratum2_id, s.count_value, s.total, s.rn
 )
 select 1817 as analysis_id,
-  o.stratum1_id,
-  o.stratum2_id,
+  CAST(o.stratum1_id AS VARCHAR(255)) AS stratum1_id,
+  CAST(o.stratum2_id AS VARCHAR(255)) AS stratum2_id,
   o.total as count_value,
   o.min_value,
 	o.max_value,
@@ -7363,12 +7363,12 @@ drop table #tempResults;
 -- 1818	Number of observation records below/within/above normal range, by observation_concept_id and unit_concept_id
 insert into @results_database_schema.ACHILLES_results (analysis_id, stratum_1, stratum_2, stratum_3, count_value)
 select 1818 as analysis_id,  
-	m.measurement_concept_id as stratum_1,
-	m.unit_concept_id as stratum_2,
-	case when m.value_as_number < m.range_low then 'Below Range Low'
+	CAST(m.measurement_concept_id AS VARCHAR(255)) as stratum_1,
+	CAST(m.unit_concept_id AS VARCHAR(255)) as stratum_2,
+	CAST(case when m.value_as_number < m.range_low then 'Below Range Low'
 		when m.value_as_number >= m.range_low and m.value_as_number <= m.range_high then 'Within Range'
 		when m.value_as_number > m.range_high then 'Above Range High'
-		else 'Other' end as stratum_3,
+		else 'Other' end AS VARCHAR(255)) as stratum_3,
 	COUNT_BIG(m.PERSON_ID) as count_value
 from @cdm_database_schema.measurement m
 where m.value_as_number is not null
@@ -7377,10 +7377,10 @@ where m.value_as_number is not null
 	and m.range_high is not null
 group by measurement_concept_id,
 	unit_concept_id,
-	  case when m.value_as_number < m.range_low then 'Below Range Low'
+	  CAST(case when m.value_as_number < m.range_low then 'Below Range Low'
 		when m.value_as_number >= m.range_low and m.value_as_number <= m.range_high then 'Within Range'
 		when m.value_as_number > m.range_high then 'Above Range High'
-		else 'Other' end
+		else 'Other' end AS VARCHAR(255))
 ;
 --}
 
@@ -7391,7 +7391,7 @@ group by measurement_concept_id,
 -- 1820	Number of observation records by condition occurrence start month
 insert into @results_database_schema.ACHILLES_results (analysis_id, stratum_1, count_value)
 select 1820 as analysis_id,   
-	YEAR(measurement_date)*100 + month(measurement_date) as stratum_1, 
+	CAST(YEAR(measurement_date)*100 + month(measurement_date) AS VARCHAR(255)) as stratum_1,
 	COUNT_BIG(PERSON_ID) as count_value
 from @cdm_database_schema.measurement m
 group by YEAR(measurement_date)*100 + month(measurement_date)
@@ -7422,7 +7422,7 @@ Reports
 -- 1900	concept_0 report
 
 INSERT INTO @results_database_schema.ACHILLES_results (analysis_id, stratum_1, stratum_2, count_value)
-select 1900 as analysis_id, table_name as stratum_1, source_value as stratum_2, cnt as count_value
+select 1900 as analysis_id, CAST(table_name AS VARCHAR(255)) as stratum_1, source_value as stratum_2, cnt as count_value
  from (
 select 'measurement' as table_name,measurement_source_value as source_value, COUNT_BIG(*) as cnt from @cdm_database_schema.measurement where measurement_concept_id = 0 group by measurement_source_value 
 union
