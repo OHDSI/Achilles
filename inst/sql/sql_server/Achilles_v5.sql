@@ -3954,7 +3954,7 @@ drop table #tempResults;
 with rawData(stratum_id, count_value) as
 (
   select drug_concept_id,
-    quantity as count_value
+    CAST(quantity AS FLOAT) as count_value
   from @cdm_database_schema.drug_exposure 
 	where quantity is not null
 ),
@@ -4349,7 +4349,7 @@ where o1.value_as_number is null
 -- 815  Distribution of numeric values, by observation_concept_id and unit_concept_id
 select observation_concept_id as subject_id, 
 	unit_concept_id,
-	value_as_number as count_value
+	CAST(value_as_number AS FLOAT) as count_value
 INTO #rawData_815
 from @cdm_database_schema.observation o1
 where o1.unit_concept_id is not null
@@ -7151,7 +7151,7 @@ where m.value_as_number is null
 -- 1815  Distribution of numeric values, by measurement_concept_id and unit_concept_id
 select measurement_concept_id as subject_id, 
 	unit_concept_id,
-	value_as_number as count_value
+	CAST(value_as_number AS FLOAT) as count_value
 INTO #rawData_1815
 from @cdm_database_schema.measurement m
 where m.unit_concept_id is not null
@@ -7220,7 +7220,7 @@ drop table #tempResults;
 -- 1816	Distribution of low range, by measurement_concept_id and unit_concept_id
 select measurement_concept_id as subject_id, 
 	unit_concept_id,
-	range_low as count_value
+	CAST(range_low AS FLOAT) as count_value
 INTO #rawData_1816
 from @cdm_database_schema.measurement m
 where m.unit_concept_id is not null
@@ -7291,7 +7291,7 @@ drop table #tempResults;
 -- 1817	Distribution of high range, by observation_concept_id and unit_concept_id
 select measurement_concept_id as subject_id, 
 	unit_concept_id,
-	range_high as count_value
+	CAST(range_high AS FLOAT) as count_value
 INTO #rawData_1817
 from @cdm_database_schema.measurement m
 where m.unit_concept_id is not null
