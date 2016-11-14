@@ -33,7 +33,8 @@
 #                "PERSON", 
 #                "PROCEDURE",
 #                "VISIT",
-#                "MEASUREMENT")
+#                "MEASUREMENT",
+#                "META")
 # save(allReports,file="allReports.rda")
 
 initOutputPath <- function (outputPath){
@@ -52,7 +53,7 @@ initOutputPath <- function (outputPath){
 #'
 #' @details
 #' exportToJson supports the following report types:
-#' "CONDITION","CONDITION_ERA", "DASHBOARD", "DATA_DENSITY", "DEATH", "DRUG", "DRUG_ERA", "HEEL", "OBSERVATION", "OBSERVATION_PERIOD", "PERSON", "PROCEDURE","VISIT"
+#' "CONDITION","CONDITION_ERA", "DASHBOARD", "DATA_DENSITY", "DEATH", "DRUG", "DRUG_ERA", "HEEL", "META", "OBSERVATION", "OBSERVATION_PERIOD", "PERSON", "PROCEDURE","VISIT"
 #' 
 #' @return none (opens the allReports vector in a View() display) 
 #' @examples \dontrun{
@@ -136,6 +137,11 @@ exportToJson <- function (connectionDetails, cdmDatabaseSchema, resultsDatabaseS
   if ("HEEL" %in% reports)
   {
     generateAchillesHeelReport(conn, connectionDetails$dbms, cdmDatabaseSchema, resultsDatabaseSchema, outputPath, cdmVersion, vocabDatabaseSchema)
+  }
+  
+  if (("META" %in% reports) & (cdmVersion != "4"))
+  {
+    generateDomainMetaReport(conn, connectionDetails$dbms, cdmDatabaseSchema, resultsDatabaseSchema, outputPath, cdmVersion, vocabDatabaseSchema)
   }
   
   if ( ("MEASUREMENT" %in% reports) & (cdmVersion != "4"))
@@ -391,6 +397,32 @@ exportHeelToJson <- function (connectionDetails, cdmDatabaseSchema, resultsDatab
   exportToJson(connectionDetails, cdmDatabaseSchema, resultsDatabaseSchema, outputPath, reports = c("HEEL"), cdmVersion, vocabDatabaseSchema)  
 }
 
+#' @title exportMetaToJson
+#'
+#' @description
+#' \code{exportMetaToJson} Exports Achilles Heel report into a JSON form for reports.
+#'
+#' @details
+#' Creates individual files for Achilles Heel report found in Achilles.Web
+#' 
+#' 
+#' @param connectionDetails  An R object of type ConnectionDetail (details for the function that contains server info, database type, optionally username/password, port)
+#' @param cdmDatabaseSchema      Name of the database schema that contains the vocabulary files
+#' @param resultsDatabaseSchema  		Name of the database schema that contains the Achilles analysis files. Default is cdmDatabaseSchema
+#' @param outputPath		A folder location to save the JSON files. Default is current working folder
+#' @param vocabDatabaseSchema		string name of database schema that contains OMOP Vocabulary. Default is cdmDatabaseSchema. On SQL Server, this should specifiy both the database and the schema, so for example 'results.dbo'.
+#' 
+#' @return none 
+#' @examples \dontrun{
+#'   connectionDetails <- createConnectionDetails(dbms="sql server", server="yourserver")
+#'   exportMetaToJson(connectionDetails, cdmDatabaseSchema="cdm4_sim", outputPath="your/output/path")
+#' }
+#' @export
+exportMetaToJson <- function (connectionDetails, cdmDatabaseSchema, resultsDatabaseSchema, outputPath = getwd(), cdmVersion="4", vocabDatabaseSchema = cdmDatabaseSchema)
+{
+  exportToJson(connectionDetails, cdmDatabaseSchema, resultsDatabaseSchema, outputPath, reports = c("META"), cdmVersion, vocabDatabaseSchema)  
+}
+
 #' @title exportMeasurementToJson
 #'
 #' @description
@@ -573,6 +605,23 @@ generateAchillesHeelReport <- function(conn, dbms, cdmDatabaseSchema, resultsDat
   output$MESSAGES <- querySql(conn,queryAchillesHeel)
   jsonOutput = toJSON(output)
   write(jsonOutput, file=paste(outputPath, "/achillesheel.json", sep=""))  
+}
+
+generateDomainMetaReport <- function(conn, dbms, cdmDatabaseSchema, resultsDatabaseSchema, outputPath, cdmVersion = "4", vocabDatabaseSchema = cdmDatabaseSchema) {
+  writeLines("Generating domain meta report")
+  output <- {}
+  
+  queryDomainMeta <- loadRenderTranslateSql(sqlFilename = addCdmVersionPath("/domainmeta/sqlDomainMeta.sql",cdmVersion),
+                                            packageName = "Achilles",
+                                            dbms = dbms,
+                                            cdm_database_schema = cdmDatabaseSchema,
+                                            results_database_schema = resultsDatabaseSchema,
+                                            vocab_database_schema = vocabDatabaseSchema
+  )  
+  
+  output$MESSAGES <- querySql(conn,queryDomainMeta)
+  jsonOutput = toJSON(output)
+  write(jsonOutput, file=paste(outputPath, "/domainmeta.json", sep=""))  
 }
 
 generateDrugEraTreemap <- function(conn, dbms,cdmDatabaseSchema, resultsDatabaseSchema, outputPath, cdmVersion = "4", vocabDatabaseSchema = cdmDatabaseSchema) {
