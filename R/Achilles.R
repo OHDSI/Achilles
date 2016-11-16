@@ -57,6 +57,7 @@ getAnalysisDetails <- function() {
 #' @param validateSchema     Boolean to determine if CDM Schema Validation should be run. This could be very slow.  Default = FALSE
 #' @param vocabDatabaseSchema		string name of database schema that contains OMOP Vocabulary. Default is cdmDatabaseSchema. On SQL Server, this should specifiy both the database and the schema, so for example 'results.dbo'.
 #' @param runCostAnalysis Boolean to determine if cost analysis should be run. Note: only works on CDM v5.0 style cost tables.
+#' @param queryProfiling Boolean to determine if large set of queries should be run as one query at a time (SQL statements written into numbered files) Allows identifying slow queries.
 #' 
 #' @return An object of type \code{achillesResults} containing details for connecting to the database containing the results 
 #' @examples \dontrun{
@@ -73,21 +74,25 @@ achilles <- function (connectionDetails,
                       analysisIds, 
                       createTable = TRUE, 
                       smallcellcount = 5, 
-                      cdmVersion = "4", 
+                      cdmVersion = "5", 
                       runHeel = TRUE,
                       validateSchema = FALSE,
                       vocabDatabaseSchema = cdmDatabaseSchema,
                       runCostAnalysis = FALSE,
-                      sqlOnly = FALSE){
+                      sqlOnly = FALSE,
+                      queryProfiling = FALSE){
   
   if (cdmVersion == "4")  {
-    achillesFile <- "Achilles_v4.sql"
-    heelFile <- "AchillesHeel_v4.sql"
+    # achillesFile <- "Achilles_v4.sql"
+    # heelFile <- "AchillesHeel_v4.sql"
+    stop("To execute Achilles on version 4, use version 1.3 Achilles. Achilles since November 2016 and version 1.4 focuses primarly on CDM v5+")
+    
   } else if (cdmVersion == "5") {
-    achillesFile <- "Achilles_v5.sql"
+    achillesFileInitCleanValidate <- "Achilles_v5_init_clean_validate.sql"
+    achillesFileExecutePrecomputations <- "Achilles_v5_execute_precomputations.sql"
     heelFile <- "AchillesHeel_v5.sql"
   } else  {
-    stop("Error: Invalid CDM Version number, use 4 or 5")
+    stop("Error: Invalid CDM Version number. Also, use string (not number)")
   }
   
   if (missing(analysisIds))
@@ -97,7 +102,7 @@ achilles <- function (connectionDetails,
 #   resultsDatabase <- strsplit(resultsDatabaseSchema ,"\\.")[[1]][1]
 #   vocabDatabase <- strsplit(vocabDatabaseSchema ,"\\.")[[1]][1]
   
-  achillesSql <- loadRenderTranslateSql(sqlFilename = achillesFile,
+  achillesSqlInitCleanValidate <- loadRenderTranslateSql(sqlFilename = achillesFileInitCleanValidate,
                                         packageName = "Achilles",
                                         dbms = connectionDetails$dbms,
                                         oracleTempSchema = oracleTempSchema,
@@ -115,21 +120,61 @@ achilles <- function (connectionDetails,
                                         runCostAnalysis = runCostAnalysis
   )
   
+  achillesSqlInitCleanValidate <- loadRenderTranslateSql(sqlFilename = achillesFileInitCleanValidate,
+                                                         packageName = "Achilles",
+                                                         dbms = connectionDetails$dbms,
+                                                         oracleTempSchema = oracleTempSchema,
+                                                         # cdm_database = cdmDatabase,
+                                                         cdm_database_schema = cdmDatabaseSchema,
+                                                         # results_database = resultsDatabase, 
+                                                         results_database_schema = resultsDatabaseSchema,
+                                                         source_name = sourceName, 
+                                                         list_of_analysis_ids = analysisIds,
+                                                         createTable = createTable,
+                                                         smallcellcount = smallcellcount,
+                                                         validateSchema = validateSchema,
+                                                         # vocab_database = vocabDatabase,
+                                                         vocab_database_schema = vocabDatabaseSchema,
+                                                         runCostAnalysis = runCostAnalysis
+  )
+  
+  achillesSqlExecutePrecomputations <- loadRenderTranslateSql(sqlFilename = achillesFileExecutePrecomputations,
+                                                         packageName = "Achilles",
+                                                         dbms = connectionDetails$dbms,
+                                                         oracleTempSchema = oracleTempSchema,
+                                                         # cdm_database = cdmDatabase,
+                                                         cdm_database_schema = cdmDatabaseSchema,
+                                                         # results_database = resultsDatabase, 
+                                                         results_database_schema = resultsDatabaseSchema,
+                                                         source_name = sourceName, 
+                                                         list_of_analysis_ids = analysisIds,
+                                                         createTable = createTable,
+                                                         smallcellcount = smallcellcount,
+                                                         validateSchema = validateSchema,
+                                                         # vocab_database = vocabDatabase,
+                                                         vocab_database_schema = vocabDatabaseSchema,
+                                                         runCostAnalysis = runCostAnalysis
+  )
+  
   if (sqlOnly) {
     outputFolder <- "output";
   
     if (!file.exists(outputFolder))
       dir.create(outputFolder);
-    writeSql(achillesSql,paste(outputFolder, achillesFile, sep="/"));
+    writeSql(achillesSqlInitCleanValidate,paste(outputFolder, achillesFileInitCleanValidate, sep="/"));
+    writeSql(achillesSqlExecutePrecomputations,paste(outputFolder, achillesFileExecutePrecomputations, sep="/"));
     
-    writeLines(paste("Achilles sql generated in: ", paste(outputFolder, achillesFile, sep="/")));
+    writeLines(paste("Achilles sql files generated in: ", paste(outputFolder, sep="/")));
     
     return();
   } else {
     conn <- connect(connectionDetails)
-    writeLines("Executing multiple queries. This could take a while")
+    writeLines("Executing multiple queries. This could take a while (Init-Clean-Validate)")
     #writeSql(achillesSql, 'achillesDebug.sql');
-    executeSql(conn,achillesSql)
+    executeSql(conn,achillesSqlInitCleanValidate,profile = queryProfiling)
+    
+    writeLines("Executing multiple queries. This could take a while (Precomputations)")
+    executeSql(conn,achillesSqlExecutePrecomputations,profile = queryProfiling)
     writeLines(paste("Done. Achilles results can now be found in",resultsDatabaseSchema))
   }
   
@@ -165,7 +210,7 @@ achilles <- function (connectionDetails,
                  analysis_table = "ACHILLES_analysis",
                  sourceName = sourceName,
                  analysisIds = analysisIds,
-                 AchillesSql = achillesSql,
+                 AchillesSql = paste(achillesSqlInitCleanValidate,'\n',achillesSqlExecutePrecomputations),
                  HeelSql = heelSql, #if runHeel is false -  this assignment fails - causes error of the  whole function  (adding else)
                  call = match.call())
   class(result) <- "achillesResults"
