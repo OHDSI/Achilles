@@ -6,7 +6,11 @@ select c2.concept_name as category,
 	ard1.p75_value as P75_value,
 	ard1.p90_value as P90_value,
 	ard1.max_value as max_value
-from @results_database_schema.ACHILLES_results_dist ard1
+  from (
+    select cast(stratum_1 as int) stratum_1, min_value, p10_value, p25_value, median_value, p75_value, p90_value, max_value
+    FROM @results_database_schema.ACHILLES_results_dist  
+    where analysis_id = 506
+    GROUP BY analysis_id, stratum_1, min_value, p10_value, p25_value, median_value, p75_value, p90_value, max_value 
+  ) ard1
 	inner join
-	@vocab_database_schema.concept c2 on ard1.stratum_1 = CAST(c2.concept_id as VARCHAR)
-where ard1.analysis_id = 506
+	@vocab_database_schema.concept c2 on ard1.stratum_1 = c2.concept_id
