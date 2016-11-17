@@ -32,10 +32,11 @@ If the datasources file exists, the data source will be added to the file.
 If the datasources file does not exist, a new file wil be initialized with the specified data source.
 }
 \examples{
+\dontrun{
 jsonFolderPath <- "your/output/path"
 connectionDetails <- createConnectionDetails(dbms="sql server", server="yourserver")
 exportToJson(connectionDetails, cdmDatabaseSchema="cdm5", outputPath=jsonFolderPath)
 addDatasource(jsonFolderPath, "your_data_name")
-
+}
 }
 
