@@ -36,12 +36,13 @@
 #' 
 #' @return none 
 #' 
-#' @examples
+#' @examples \dontrun{
 #' jsonFolderPath <- "your/output/path"
 #' connectionDetails <- createConnectionDetails(dbms="sql server", server="yourserver")
 #' exportToJson(connectionDetails, cdmDatabaseSchema="cdm5", outputPath=jsonFolderPath)
 #' addDatasource(jsonFolderPath, "your_data_name")
-#' 
+#' } 
+#'
 #' @export
 addDatasource <- function(jsonFolderPath, dataName = NULL, datasourcePath = NULL, datasourcesFilename = "datasources.json", additionalParam = list(cdmVersion = 5) )
 {
