@@ -1,3 +1,8 @@
+#Cost tables
+
+CDM version 5.0 had cost tables that were deleted in version 5.0.1. To avoid errors, use a parameter when calling the achilles function that specifies  runCostAnalysis = FALSE
+
+
 #How to run Achilles Heel only: 
 
 Execution of all analyses computations is not necessary if all you want to do is to run new data quality measures in a revised version of Heel. Instead of 10+ hours, you can be done in few minutes with running just heel
@@ -54,8 +59,29 @@ achillesResults <- achilles(connectionDetails,cdmDatabaseSchema=cdmDatabaseSchem
                             createTable = F,analysisIds = c(2000,2001))
                             
 ```
+#Small maintenance tasks for the package 
+##update CSV overview file for analyses
+```R
+connectionDetails$schema=resultsDatabaseSchema
+conn<-connect(connectionDetails)
+achilles_analysis<-querySql(conn,'select * from achilles_analysis')
+#this line caused issue 151: names(achilles_analysis) <- tolower(names(achilles_analysis))
+write.csv(achilles_analysis,file = 'inst/csv/analysisDetails.csv',na = '',row.names = F)
 
-#overview html files 
+#optionaly insert rule overview into the database
+#or rewrite this as  package file
+read.csv(system.file("csv","derived_analysis_details",package="Achilles"),as.is=T)
+
+#achilles_derived_measures<-read.csv(file = 'inst/csv/derived_analysis_details.csv',as.is=T)
+achilles_derived_measures<-read.csv(system.file("csv","derived_analysis_details.csv",package="Achilles"),as.is=T)
+insertTable(conn,'achilles_derived_measures',achilles_derived_measures)
+
+achilles_rule<-read.csv(system.file("csv","achilles_rule.csv",package="Achilles"),as.is=T)
+insertTable(conn,'achilles_rule',achilles_rule)
+
+```
+
+##overview html files 
 The code below updates html files that show content overview. Use rawgit.com/OHDSI/... to view it nicely.
 ```R
 tempf<-tempfile(pattern = 'temp', fileext = '.Rmd')

@@ -3,6 +3,10 @@ Achilles
  
 Automated Characterization of Health Information at Large-scale Longitudinal Evidence Systems (ACHILLES) - descriptive statistics about a OMOP CDM v4/v5 database
 
+Achilles consists of several parts: 1. precomputations (for database characterization) 2. Achilles Heel for data quality and 3. export feature for AchillesWeb
+
+Achilles Heel is activelly being developed for CDM v5 only.
+
 Getting Started
 ===============
 (Please review the [Achilles Wiki](https://github.com/OHDSI/Achilles/wiki/Additional-instructions-for-Linux) for specific details for Linux)
@@ -19,9 +23,11 @@ Getting Started
   install_github("ohdsi/SqlRender")
   install_github("ohdsi/DatabaseConnector")
   install_github("ohdsi/Achilles")
+  #install_github("OHDSI/Achilles",args="--no-multiarch")  #to avoid Java 32 vs 64 issues 
+  #install_github("OHDSI/OhdsiRTools@v1.3.0")#use a prior released version (to bypass fresh errors)
   ```
   
-4. To run the Achilles analysis, use the following commands in R:
+4. To run the Achilles analysis, use the following commands in R: (use runCostAnalysis = F or runHeel = F if necessary)
 
   ```r
   library(Achilles)
@@ -38,7 +44,7 @@ Getting Started
   ?createConnectionDetails
   ```
   Currently "sql server", "oracle", "postgresql", and "redshift" are supported as dbms.
-  "cdmVersion" can be either 4 or 5.
+  "cdmVersion" can be either 4 or 5 (note that some Achilles features are only implemented for version 5).
 
 5. To use [AchillesWeb](https://github.com/OHDSI/AchillesWeb) to explore the Achilles statistics, you must first export the statistics to JSON files:
   ```r
@@ -49,6 +55,24 @@ Getting Started
   ```r
   achillesHeel(connectionDetails, cdmDatabaseSchema = "cdm4_inst", resultsDatabaseSchema = "results", cdmVersion = "cdm version", vocabDatabaseSchema = "vocabulary")
   ```
+
+7. Possible optional additional steps:
+
+To see what errors were found (from within R), run `fetchAchillesHeelResults(connectionDetails,resultsDatabaseSchema)`
+
+To see a particular analysis, run `fetchAchillesAnalysisResults(connectionDetails,resultsDatabaseSchema,analysisId = 2)`
+
+To join data tables with some lookup (overview files), obtains those using commands below:
+
+To get description of analyses, run `getAnalysisDetails()`.
+
+To get description of derived measures, run `read.csv(system.file("csv","derived_analysis_details",package="Achilles"),as.is=T)`
+
+Similarly, for overview of rules, run  
+`read.csv(system.file("csv","achilles_rule.csv",package="Achilles"),as.is=T)`
+
+Also see [notes.md](extras/notes.md) for more information (in the extras folder).
+
 
 Getting Started with Docker
 ===========================

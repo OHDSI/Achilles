@@ -39,6 +39,7 @@ SQL for OMOP CDM v5
 {DEFAULT @results_database = 'scratch'}
 {DEFAULT @results_database_schema = 'scratch.dbo'}
 {DEFAULT @source_name = 'CDM NAME'}
+{DEFAULT @achilles_version = '1.4'}
 {DEFAULT @smallcellcount = 5}
 {DEFAULT @createTable = TRUE}
 {DEFAULT @validateSchema = FALSE}
@@ -1228,6 +1229,40 @@ insert into @results_database_schema.ACHILLES_analysis (analysis_id, analysis_na
 	values (2003, 'Number of patients with at least 1 Visit');
 
 
+--2100- DEVICE_EXPOSURE
+
+
+insert into @results_database_schema.ACHILLES_analysis (analysis_id, analysis_name, stratum_1_name)
+	values (2100, 'Number of persons with at least one device exposure, by device_concept_id', 'device_concept_id');
+
+insert into @results_database_schema.ACHILLES_analysis (analysis_id, analysis_name, stratum_1_name)
+	values (2101, 'Number of device exposure records, by device_concept_id', 'device_concept_id');
+
+insert into @results_database_schema.ACHILLES_analysis (analysis_id, analysis_name, stratum_1_name, stratum_2_name)
+	values (2102, 'Number of persons by device records  start month, by device_concept_id', 'device_concept_id', 'calendar month');	
+
+--2103 was not implemented at this point
+
+insert into @results_database_schema.ACHILLES_analysis (analysis_id, analysis_name, stratum_1_name, stratum_2_name, stratum_3_name, stratum_4_name)
+	values (2104, 'Number of persons with at least one device exposure, by device_concept_id by calendar year by gender by age decile', 'device_concept_id', 'calendar year', 'gender_concept_id', 'age decile');
+
+insert into @results_database_schema.ACHILLES_analysis (analysis_id, analysis_name, stratum_1_name, stratum_2_name)
+	values (2105, 'Number of device exposure records, by device_concept_id by device_type_concept_id', 'device_concept_id', 'device_type_concept_id');
+
+
+
+--2200- NOTE
+
+
+insert into @results_database_schema.ACHILLES_analysis (analysis_id, analysis_name, stratum_1_name)
+	values (2200, 'Number of persons with at least one note by  note_type_concept_id', 'note_type_concept_id');
+
+insert into @results_database_schema.ACHILLES_analysis (analysis_id, analysis_name, stratum_1_name)
+	values (2201, 'Number of note records, by note_type_concept_id', 'note_type_concept_id');
+
+
+
+
 --end of importing values into analysis lookup table
 
 --} : {else if not createTable
@@ -1242,9 +1277,9 @@ delete from @results_database_schema.ACHILLES_results_dist where analysis_id IN 
 ****/
 
 --{0 IN (@list_of_analysis_ids)}?{
--- 0	Number of persons
-insert into @results_database_schema.ACHILLES_results (analysis_id, stratum_1, count_value)
-select 0 as analysis_id,  '@source_name' as stratum_1, COUNT_BIG(distinct person_id) as count_value
+-- 0	cdm name, version of Achilles and date when pre-computations were executed
+insert into @results_database_schema.ACHILLES_results (analysis_id, stratum_1, stratum_2, stratum_3,count_value)
+select 0 as analysis_id,  '@source_name' as stratum_1, '@achilles_version' as stratum_2, GETDATE() as stratum_3,COUNT_BIG(distinct person_id) as count_value
 from @cdm_database_schema.PERSON;
 
 insert into @results_database_schema.ACHILLES_results_dist (analysis_id, stratum_1, count_value)
@@ -7450,6 +7485,133 @@ insert into @results_database_schema.ACHILLES_results (analysis_id, count_value)
 select 2003 as analysis_id,  COUNT_BIG(distinct person_id) as count_value
 from @cdm_database_schema.visit_occurrence;
 --}
+
+
+/********************************************
+
+ACHILLES Analyses on DEVICE_EXPOSURE  table
+
+*********************************************/
+
+
+
+--{2100 IN (@list_of_analysis_ids)}?{
+-- 2100	Number of persons with at least one device exposure , by device_concept_id
+insert into @results_database_schema.ACHILLES_results (analysis_id, stratum_1, count_value)
+select 2100 as analysis_id, 
+	m.device_CONCEPT_ID as stratum_1,
+	COUNT_BIG(distinct m.PERSON_ID) as count_value
+from
+	@cdm_database_schema.device_exposure m
+group by m.device_CONCEPT_ID
+;
+--}
+
+
+--{2101 IN (@list_of_analysis_ids)}?{
+-- 2101	Number of device exposure  records, by device_concept_id
+insert into @results_database_schema.ACHILLES_results (analysis_id, stratum_1, count_value)
+select 2101 as analysis_id, 
+m.device_CONCEPT_ID as stratum_1,
+	COUNT_BIG(m.PERSON_ID) as count_value
+from
+	@cdm_database_schema.device_exposure m
+group by m.device_CONCEPT_ID
+;
+--}
+
+
+
+--{2102 IN (@list_of_analysis_ids)}?{
+-- 2102	Number of persons by device by  start month, by device_concept_id
+insert into @results_database_schema.ACHILLES_results (analysis_id, stratum_1, stratum_2, count_value)
+select 2102 as analysis_id,   
+	m.device_CONCEPT_ID as stratum_1,
+	YEAR(device_exposure_start_date)*100 + month(device_exposure_start_date) as stratum_2, 
+	COUNT_BIG(distinct PERSON_ID) as count_value
+from
+	@cdm_database_schema.device_exposure m
+group by m.device_CONCEPT_ID, 
+	YEAR(device_exposure_start_date)*100 + month(device_exposure_start_date)
+;
+--}
+
+--2103 is not implemented at this point
+
+
+--{2104 IN (@list_of_analysis_ids)}?{
+-- 2104	Number of persons with at least one device occurrence, by device_concept_id by calendar year by gender by age decile
+insert into @results_database_schema.ACHILLES_results (analysis_id, stratum_1, stratum_2, stratum_3, stratum_4, count_value)
+select 2104 as analysis_id,   
+	m.device_CONCEPT_ID as stratum_1,
+	YEAR(device_exposure_start_date) as stratum_2,
+	p1.gender_concept_id as stratum_3,
+	floor((year(device_exposure_start_date) - p1.year_of_birth)/10) as stratum_4, 
+	COUNT_BIG(distinct p1.PERSON_ID) as count_value
+from @cdm_database_schema.PERSON p1
+inner join @cdm_database_schema.device_exposure m on p1.person_id = m.person_id
+group by m.device_CONCEPT_ID, 
+	YEAR(device_exposure_start_date),
+	p1.gender_concept_id,
+	floor((year(device_exposure_start_date) - p1.year_of_birth)/10)
+;
+--}
+
+
+--{2105 IN (@list_of_analysis_ids)}?{
+-- 2105	Number of exposure records by device_concept_id by device_type_concept_id
+insert into @results_database_schema.ACHILLES_results (analysis_id, stratum_1, stratum_2, count_value)
+select 2105 as analysis_id, 
+	m.device_CONCEPT_ID as stratum_1,
+	m.device_type_concept_id as stratum_2,
+	COUNT_BIG(m.PERSON_ID) as count_value
+from @cdm_database_schema.device_exposure m
+group by m.device_CONCEPT_ID,	
+	m.device_type_concept_id
+;
+--}
+
+--2106 and more analyses are not implemented at this point
+
+
+
+
+
+/********************************************
+
+ACHILLES Analyses on NOTE table
+
+*********************************************/
+
+
+
+--{2200 IN (@list_of_analysis_ids)}?{
+-- 2200	Number of persons with at least one device exposure , by device_concept_id
+insert into @results_database_schema.ACHILLES_results (analysis_id, stratum_1, count_value)
+select 2200 as analysis_id, 
+	m.note_type_CONCEPT_ID as stratum_1,
+	COUNT_BIG(distinct m.PERSON_ID) as count_value
+from
+	@cdm_database_schema.note m
+group by m.note_type_CONCEPT_ID
+;
+--}
+
+
+--{2201 IN (@list_of_analysis_ids)}?{
+-- 2201	Number of device exposure  records, by device_concept_id
+insert into @results_database_schema.ACHILLES_results (analysis_id, stratum_1, count_value)
+select 2201 as analysis_id, 
+m.note_type_CONCEPT_ID as stratum_1,
+	COUNT_BIG(m.PERSON_ID) as count_value
+from
+	@cdm_database_schema.note m
+group by m.note_type_CONCEPT_ID
+;
+--}
+
+
+
 
 
 --final processing of results
