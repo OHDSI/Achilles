@@ -5,18 +5,20 @@ library(testthat)
 
 test_that("Achilles export does not throw an error on Postgres", {
   # Postgresql
-  details <- createConnectionDetails(dbms = "postgresql",
-                                     user = Sys.getenv("CDM5_POSTGRESQL_USER"),
-                                     password = URLdecode(Sys.getenv("CDM5_POSTGRESQL_PASSWORD")),
-                                     server = Sys.getenv("CDM5_POSTGRESQL_SERVER"))
-  try(exportToJson(details, 
-                   cdmDatabaseSchema = Sys.getenv("CDM5_POSTGRESQL_CDM_SCHEMA"), 
-                   resultsDatabaseSchema = Sys.getenv("CDM5_POSTGRESQL_OHDSI_SCHEMA"),
-                   outputPath = "postgresql",
-                   cdmVersion = "5"))
-  if (file.exists("errorReport.txt")){
-    writeLines(readChar("errorReport.txt", file.info("errorReport.txt")$size))
+  if (Sys.getenv("CDM5_POSTGRESQL_USER") != "") {   
+    details <- createConnectionDetails(dbms = "postgresql",
+                                       user = Sys.getenv("CDM5_POSTGRESQL_USER"),
+                                       password = URLdecode(Sys.getenv("CDM5_POSTGRESQL_PASSWORD")),
+                                       server = Sys.getenv("CDM5_POSTGRESQL_SERVER"))
+    try(exportToJson(details, 
+                     cdmDatabaseSchema = Sys.getenv("CDM5_POSTGRESQL_CDM_SCHEMA"), 
+                     resultsDatabaseSchema = Sys.getenv("CDM5_POSTGRESQL_OHDSI_SCHEMA"),
+                     outputPath = "postgresql",
+                     cdmVersion = "5"))
+    if (file.exists("errorReport.txt")){
+      writeLines(readChar("errorReport.txt", file.info("errorReport.txt")$size))
+    }
+    # dashboard.json is the last report to be generated:
+    expect_true(file.exists("postgresql/dashboard.json"))
   }
-  # dashboard.json is the last report to be generated:
-  expect_true(file.exists("postgresql/dashboard.json"))
 })

@@ -5,20 +5,22 @@ library(testthat)
 
 test_that("Achilles main does not throw an error on SQL Server", {
   # SQL Server
-  details <- createConnectionDetails(dbms = "sql server",
-                                     user = Sys.getenv("CDM5_SQL_SERVER_USER"),
-                                     password = URLdecode(Sys.getenv("CDM5_SQL_SERVER_PASSWORD")),
-                                     server = Sys.getenv("CDM5_SQL_SERVER_SERVER"))
-  try(result <- achilles(details, 
-                         cdmDatabaseSchema = Sys.getenv("CDM5_SQL_SERVER_CDM_SCHEMA"), 
-                         resultsDatabaseSchema = Sys.getenv("CDM5_SQL_SERVER_OHDSI_SCHEMA"), 
-                         sourceName = "NHANES", 
-                         cdmVersion = "5", 
-                         validateSchema = FALSE, 
-                         createTable = TRUE))
-  if (file.exists("errorReport.txt")){
-    writeLines(readChar("errorReport.txt", file.info("errorReport.txt")$size))
+  if (Sys.getenv("CDM5_SQL_SERVER_USER") != "") {
+    details <- createConnectionDetails(dbms = "sql server",
+                                       user = Sys.getenv("CDM5_SQL_SERVER_USER"),
+                                       password = URLdecode(Sys.getenv("CDM5_SQL_SERVER_PASSWORD")),
+                                       server = Sys.getenv("CDM5_SQL_SERVER_SERVER"))
+    try(result <- achilles(details, 
+                           cdmDatabaseSchema = Sys.getenv("CDM5_SQL_SERVER_CDM_SCHEMA"), 
+                           resultsDatabaseSchema = Sys.getenv("CDM5_SQL_SERVER_OHDSI_SCHEMA"), 
+                           sourceName = "NHANES", 
+                           cdmVersion = "5", 
+                           validateSchema = FALSE, 
+                           createTable = TRUE))
+    if (file.exists("errorReport.txt")){
+      writeLines(readChar("errorReport.txt", file.info("errorReport.txt")$size))
+    }
+    expect_true(class(result) == "achillesResults")
   }
-  expect_true(class(result) == "achillesResults")
 })
 

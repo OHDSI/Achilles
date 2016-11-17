@@ -6,18 +6,20 @@ library(testthat)
 
 test_that("Achilles export does not throw an error on SQL Server", {
   # SQL Server
-  details <- createConnectionDetails(dbms = "sql server",
-                                     user = Sys.getenv("CDM5_SQL_SERVER_USER"),
-                                     password = URLdecode(Sys.getenv("CDM5_SQL_SERVER_PASSWORD")),
-                                     server = Sys.getenv("CDM5_SQL_SERVER_SERVER"))
-  try(exportToJson(details, 
-                   cdmDatabaseSchema = Sys.getenv("CDM5_SQL_SERVER_CDM_SCHEMA"), 
-                   resultsDatabaseSchema = Sys.getenv("CDM5_SQL_SERVER_OHDSI_SCHEMA"),
-                   outputPath = "sql_server",
-                   cdmVersion = "5"))
-  if (file.exists("errorReport.txt")){
-    writeLines(readChar("errorReport.txt", file.info("errorReport.txt")$size))
+  if (Sys.getenv("CDM5_SQL_SERVER_USER") != "") {   
+    details <- createConnectionDetails(dbms = "sql server",
+                                       user = Sys.getenv("CDM5_SQL_SERVER_USER"),
+                                       password = URLdecode(Sys.getenv("CDM5_SQL_SERVER_PASSWORD")),
+                                       server = Sys.getenv("CDM5_SQL_SERVER_SERVER"))
+    try(exportToJson(details, 
+                     cdmDatabaseSchema = Sys.getenv("CDM5_SQL_SERVER_CDM_SCHEMA"), 
+                     resultsDatabaseSchema = Sys.getenv("CDM5_SQL_SERVER_OHDSI_SCHEMA"),
+                     outputPath = "sql_server",
+                     cdmVersion = "5"))
+    if (file.exists("errorReport.txt")){
+      writeLines(readChar("errorReport.txt", file.info("errorReport.txt")$size))
+    }
+    # dashboard.json is the last report to be generated:
+    expect_true(file.exists("sql_server/dashboard.json"))
   }
-  # dashboard.json is the last report to be generated:
-  expect_true(file.exists("sql_server/dashboard.json"))
 })

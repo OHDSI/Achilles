@@ -5,20 +5,22 @@ library(testthat)
 
 test_that("Achilles main does not throw an error on Oracle", {
   # Oracle
-  details <- createConnectionDetails(dbms = "oracle",
-                                     user = Sys.getenv("CDM5_ORACLE_USER"),
-                                     password = URLdecode(Sys.getenv("CDM5_ORACLE_PASSWORD")),
-                                     server = Sys.getenv("CDM5_ORACLE_SERVER"))
-  try(result <- achilles(details, 
-                         cdmDatabaseSchema = Sys.getenv("CDM5_ORACLE_CDM_SCHEMA"), 
-                         resultsDatabaseSchema = Sys.getenv("CDM5_ORACLE_OHDSI_SCHEMA"), 
-                         oracleTempSchema = Sys.getenv("CDM5_ORACLE_OHDSI_SCHEMA"), 
-                         sourceName = "NHANES", 
-                         cdmVersion = "5", 
-                         validateSchema = FALSE, 
-                         createTable = TRUE))
-  if (file.exists("errorReport.txt")){
-    writeLines(readChar("errorReport.txt", file.info("errorReport.txt")$size))
+  if (Sys.getenv("CDM5_ORACLE_USER") != "") {  
+    details <- createConnectionDetails(dbms = "oracle",
+                                       user = Sys.getenv("CDM5_ORACLE_USER"),
+                                       password = URLdecode(Sys.getenv("CDM5_ORACLE_PASSWORD")),
+                                       server = Sys.getenv("CDM5_ORACLE_SERVER"))
+    try(result <- achilles(details, 
+                           cdmDatabaseSchema = Sys.getenv("CDM5_ORACLE_CDM_SCHEMA"), 
+                           resultsDatabaseSchema = Sys.getenv("CDM5_ORACLE_OHDSI_SCHEMA"), 
+                           oracleTempSchema = Sys.getenv("CDM5_ORACLE_OHDSI_SCHEMA"), 
+                           sourceName = "NHANES", 
+                           cdmVersion = "5", 
+                           validateSchema = FALSE, 
+                           createTable = TRUE))
+    if (file.exists("errorReport.txt")){
+      writeLines(readChar("errorReport.txt", file.info("errorReport.txt")$size))
+    }
+    expect_true(class(result) == "achillesResults")
   }
-  expect_true(class(result) == "achillesResults")
 })

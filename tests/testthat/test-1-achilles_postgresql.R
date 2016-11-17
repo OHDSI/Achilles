@@ -5,20 +5,22 @@ library(testthat)
 
 test_that("Achilles main does not throw an error on Postgres", {
   # Postgresql
-  details <- createConnectionDetails(dbms = "postgresql",
-                                     user = Sys.getenv("CDM5_POSTGRESQL_USER"),
-                                     password = URLdecode(Sys.getenv("CDM5_POSTGRESQL_PASSWORD")),
-                                     server = Sys.getenv("CDM5_POSTGRESQL_SERVER"))
-  try(result <- achilles(details, 
-                         cdmDatabaseSchema = Sys.getenv("CDM5_POSTGRESQL_CDM_SCHEMA"), 
-                         resultsDatabaseSchema = Sys.getenv("CDM5_POSTGRESQL_OHDSI_SCHEMA"), 
-                         sourceName = "NHANES", 
-                         cdmVersion = "5", 
-                         validateSchema = FALSE, 
-                         createTable = TRUE))
-  if (file.exists("errorReport.txt")){
-    writeLines(readChar("errorReport.txt", file.info("errorReport.txt")$size))
+  if (Sys.getenv("CDM5_POSTGRESQL_USER") != "") {
+    details <- createConnectionDetails(dbms = "postgresql",
+                                       user = Sys.getenv("CDM5_POSTGRESQL_USER"),
+                                       password = URLdecode(Sys.getenv("CDM5_POSTGRESQL_PASSWORD")),
+                                       server = Sys.getenv("CDM5_POSTGRESQL_SERVER"))
+    try(result <- achilles(details, 
+                           cdmDatabaseSchema = Sys.getenv("CDM5_POSTGRESQL_CDM_SCHEMA"), 
+                           resultsDatabaseSchema = Sys.getenv("CDM5_POSTGRESQL_OHDSI_SCHEMA"), 
+                           sourceName = "NHANES", 
+                           cdmVersion = "5", 
+                           validateSchema = FALSE, 
+                           createTable = TRUE))
+    if (file.exists("errorReport.txt")){
+      writeLines(readChar("errorReport.txt", file.info("errorReport.txt")$size))
+    }
+    expect_true(class(result) == "achillesResults")
   }
-  expect_true(class(result) == "achillesResults")
 })
 
