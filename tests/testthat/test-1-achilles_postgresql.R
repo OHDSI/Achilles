@@ -21,6 +21,8 @@ test_that("Achilles main does not throw an error on Postgres", {
       writeLines(readChar("errorReport.txt", file.info("errorReport.txt")$size))
     }
     expect_true(class(result) == "achillesResults")
+  } else {
+    writeLines("Skipping postgress main test")
   }
 })
 

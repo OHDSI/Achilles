@@ -21,6 +21,8 @@ test_that("Achilles main does not throw an error on SQL Server", {
       writeLines(readChar("errorReport.txt", file.info("errorReport.txt")$size))
     }
     expect_true(class(result) == "achillesResults")
+  } else {
+    writeLines("Skipping sql server main test")
   }
 })
 

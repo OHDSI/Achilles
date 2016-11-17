@@ -20,5 +20,7 @@ test_that("Achilles export does not throw an error on Oracle", {
     }
     # dashboard.json is the last report to be generated:
     expect_true(file.exists("oracle/dashboard.json"))
+  } else {
+    writeLines("Skipping oracle export test")
   }
 })
