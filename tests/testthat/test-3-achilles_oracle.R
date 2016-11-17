@@ -22,5 +22,7 @@ test_that("Achilles main does not throw an error on Oracle", {
       writeLines(readChar("errorReport.txt", file.info("errorReport.txt")$size))
     }
     expect_true(class(result) == "achillesResults")
+  } else {
+    writeLines("Skipping oracle main test")
   }
 })

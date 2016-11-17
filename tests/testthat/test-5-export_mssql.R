@@ -21,5 +21,7 @@ test_that("Achilles export does not throw an error on SQL Server", {
     }
     # dashboard.json is the last report to be generated:
     expect_true(file.exists("sql_server/dashboard.json"))
+  } else {
+    writeLines("Skipping sql server export test")
   }
 })

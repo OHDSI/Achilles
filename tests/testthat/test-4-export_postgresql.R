@@ -20,5 +20,7 @@ test_that("Achilles export does not throw an error on Postgres", {
     }
     # dashboard.json is the last report to be generated:
     expect_true(file.exists("postgresql/dashboard.json"))
+  } else {
+    writeLines("Skipping postgress export test")
   }
 })
