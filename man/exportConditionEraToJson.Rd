@@ -5,7 +5,7 @@
 \title{exportConditionEraToJson}
 \usage{
 exportConditionEraToJson(connectionDetails, cdmDatabaseSchema,
-  resultsDatabaseSchema, outputPath = getwd(), cdmVersion = "4",
+  resultsDatabaseSchema, outputPath = getwd(), cdmVersion = "5",
   vocabDatabaseSchema = cdmDatabaseSchema)
 }
 \arguments{
@@ -16,6 +16,8 @@ exportConditionEraToJson(connectionDetails, cdmDatabaseSchema,
 \item{resultsDatabaseSchema}{Name of the database schema that contains the Achilles analysis files. Default is cdmDatabaseSchema}
 
 \item{outputPath}{A folder location to save the JSON files. Default is current working folder}
+
+\item{cdmVersion}{version of CDM.}
 
 \item{vocabDatabaseSchema}{string name of database schema that contains OMOP Vocabulary. Default is cdmDatabaseSchema. On SQL Server, this should specifiy both the database and the schema, so for example 'results.dbo'.}
 }
