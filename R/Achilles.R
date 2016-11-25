@@ -133,6 +133,9 @@ achilles <- function (connectionDetails,
     writeLines(paste("Done. Achilles results can now be found in",resultsDatabaseSchema))
   }
   
+  #heel execution lives currently in two places. I suggest (V Huser) it is removed from achilles() 
+  #function  and only lives in its special function achillesHeel()
+  
   if (runHeel) {
     heelSql <- loadRenderTranslateSql(sqlFilename = heelFile,
                                       packageName = "Achilles",
@@ -226,6 +229,15 @@ achillesHeel <- function (connectionDetails,
   conn <- connect(connectionDetails);
   writeLines("Executing Achilles Heel. This could take a while");
   executeSql(conn,heelSql);
+  
+  #check for metadata table existence
+  
+  tables<-getTableNames(conn,cdmDatabaseSchema) #requires certain version of DatabaseConnector 
+  tables<-toupper(tables)
+  if (!("CDM_SOURCE" %in% tables)) 
+    writeLines('Additional Non-SQL-based Data Quality check:CDM_SOURCE table missing')
+  
+  
   dummy <- dbDisconnect(conn);
   writeLines(paste("Done. Achilles Heel results can now be found in",resultsDatabaseSchema))
 }

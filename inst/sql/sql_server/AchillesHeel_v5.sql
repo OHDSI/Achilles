@@ -63,6 +63,7 @@ CREATE TABLE @results_database_schema.ACHILLES_HEEL_results (
 --per DQI group suggestion: measure_id is made into a string to make derivation
 --and sql authoring easy
 --computation is quick so the whole table gets wiped every time Heel is executed
+--in derived table: analysis_id is not used, look at measure_id instead
 
 
 IF OBJECT_ID('@results_database_schema.ACHILLES_results_derived', 'U') IS NOT NULL
@@ -70,9 +71,9 @@ IF OBJECT_ID('@results_database_schema.ACHILLES_results_derived', 'U') IS NOT NU
 
 create table @results_database_schema.ACHILLES_results_derived
 (
-	analysis_id int,
+	analysis_id int, 
 	stratum_1 varchar(255),
-	statistic_type varchar(255),
+	stratum_2 varchar(255),
 	statistic_value float,
 	measure_id varchar(255)
 );
@@ -263,7 +264,25 @@ where temp_cnt >= @derivedDataSmPtCount;
 
 
 
+--more aggregated view of visit type by decile (derived from analysis_id 204)
 
+insert into @results_database_schema.ACHILLES_results_derived (stratum_1,stratum_2,statistic_value,measure_id)    
+select a.stratum_1, a.stratum_4 as stratum_2, a.person_cnt/b.population_size as statistic_value,
+'Visit:Type:PersonWithAtLeastOne:byDecile:Percentage' as measure_id
+from
+(select stratum_1,  stratum_4, sum(count_value) as person_cnt  from @results_database_schema.achilles_results where analysis_id = 204 group by stratum_1,  stratum_4) a
+inner join 
+(select   stratum_4, sum(count_value) as population_size  from @results_database_schema.achilles_results where analysis_id = 204 group by   stratum_4) b
+on  a.stratum_4=b.stratum_4
+where a.person_cnt >= @derivedDataSmPtCount;
+
+
+--size of Achilles Metadata
+insert into @results_database_schema.ACHILLES_results_derived (stratum_1,statistic_value,measure_id)    
+select analysis_id as stratum_1,COUNT_BIG(*) as statistic_value, 
+'Achilles:byAnalysis:RowCnt' as measure_id
+from @results_database_schema.achilles_results group by analysis_id
+;
 
 --end of derived general measures ********************************************************************
 
@@ -1014,17 +1033,15 @@ from @results_database_schema.achilles_results_derived where measure_id ='ach_18
 
 with t1 (all_count) as 
   (select sum(count_value) as all_count from @results_database_schema.achilles_results where analysis_id = 1820)
-  --count of all meas rows (I wish this would also be a measure) (1820 is count by month)
 select 
-CAST('percentage' AS VARCHAR(100)) as statistic_type,
 (select count_value from @results_database_schema.achilles_results where analysis_id = 1821)*100.0/all_count as statistic_value,
 CAST('Meas:NoNumValue:Percentage' AS VARCHAR(100)) as measure_id
 into #tempResults 
 from t1;
 
 
-insert into @results_database_schema.ACHILLES_results_derived (statistic_type, statistic_value, measure_id)    
-  select  statistic_type,statistic_value,measure_id from #tempResults;
+insert into @results_database_schema.ACHILLES_results_derived (statistic_value, measure_id)    
+  select  statistic_value,measure_id from #tempResults;
 
 
 
