@@ -228,7 +228,7 @@ exportConditionToJson <- function (connectionDetails, cdmDatabaseSchema, results
 #' @param resultsDatabaseSchema  		Name of the database schema that contains the Achilles analysis files. Default is cdmDatabaseSchema
 #' @param outputPath		A folder location to save the JSON files. Default is current working folder
 #' @param vocabDatabaseSchema		string name of database schema that contains OMOP Vocabulary. Default is cdmDatabaseSchema. On SQL Server, this should specifiy both the database and the schema, so for example 'results.dbo'.
-#' @param cdmVersion		version of CDM.
+#' @param cdmVersion		version of CDM
 #' 
 #' @return none 
 #' @examples \dontrun{
@@ -256,6 +256,7 @@ exportConditionEraToJson <- function (connectionDetails, cdmDatabaseSchema, resu
 #' @param resultsDatabaseSchema  		Name of the database schema that contains the Achilles analysis files. Default is cdmDatabaseSchema
 #' @param outputPath		A folder location to save the JSON files. Default is current working folder
 #' @param vocabDatabaseSchema		string name of database schema that contains OMOP Vocabulary. Default is cdmDatabaseSchema. On SQL Server, this should specifiy both the database and the schema, so for example 'results.dbo'.
+#' @param cdmVersion		version of CDM
 #' 
 #' @return none 
 #' @examples \dontrun{
@@ -282,6 +283,7 @@ exportDashboardToJson <- function (connectionDetails, cdmDatabaseSchema, results
 #' @param resultsDatabaseSchema  		Name of the database schema that contains the Achilles analysis files. Default is cdmDatabaseSchema
 #' @param outputPath		A folder location to save the JSON files. Default is current working folder
 #' @param vocabDatabaseSchema		string name of database schema that contains OMOP Vocabulary. Default is cdmDatabaseSchema. On SQL Server, this should specifiy both the database and the schema, so for example 'results.dbo'.
+#' @param cdmVersion		version of CDM
 #' 
 #' @return none 
 #' @examples \dontrun{
@@ -308,6 +310,7 @@ exportDataDensityToJson <- function (connectionDetails, cdmDatabaseSchema, resul
 #' @param resultsDatabaseSchema  		Name of the database schema that contains the Achilles analysis files. Default is cdmDatabaseSchema
 #' @param outputPath		A folder location to save the JSON files. Default is current working folder
 #' @param vocabDatabaseSchema		string name of database schema that contains OMOP Vocabulary. Default is cdmDatabaseSchema. On SQL Server, this should specifiy both the database and the schema, so for example 'results.dbo'.
+#' @param cdmVersion		version of CDM
 #' 
 #' @return none 
 #' @examples \dontrun{
@@ -334,6 +337,7 @@ exportDeathToJson <- function (connectionDetails, cdmDatabaseSchema, resultsData
 #' @param resultsDatabaseSchema  		Name of the database schema that contains the Achilles analysis files. Default is cdmDatabaseSchema
 #' @param outputPath		A folder location to save the JSON files. Default is current working folder
 #' @param vocabDatabaseSchema		string name of database schema that contains OMOP Vocabulary. Default is cdmDatabaseSchema. On SQL Server, this should specifiy both the database and the schema, so for example 'results.dbo'.
+#' @param cdmVersion		version of CDM
 #' 
 #' @return none 
 #' @examples \dontrun{
@@ -360,6 +364,7 @@ exportDrugToJson <- function (connectionDetails, cdmDatabaseSchema, resultsDatab
 #' @param resultsDatabaseSchema  		Name of the database schema that contains the Achilles analysis files. Default is cdmDatabaseSchema
 #' @param outputPath		A folder location to save the JSON files. Default is current working folder
 #' @param vocabDatabaseSchema		string name of database schema that contains OMOP Vocabulary. Default is cdmDatabaseSchema. On SQL Server, this should specifiy both the database and the schema, so for example 'results.dbo'.
+#' @param cdmVersion		version of CDM
 #' 
 #' @return none 
 #' @examples \dontrun{
@@ -386,6 +391,7 @@ exportDrugEraToJson <- function (connectionDetails, cdmDatabaseSchema, resultsDa
 #' @param resultsDatabaseSchema  		Name of the database schema that contains the Achilles analysis files. Default is cdmDatabaseSchema
 #' @param outputPath		A folder location to save the JSON files. Default is current working folder
 #' @param vocabDatabaseSchema		string name of database schema that contains OMOP Vocabulary. Default is cdmDatabaseSchema. On SQL Server, this should specifiy both the database and the schema, so for example 'results.dbo'.
+#' @param cdmVersion		version of CDM
 #' 
 #' @return none 
 #' @examples \dontrun{
@@ -412,6 +418,7 @@ exportHeelToJson <- function (connectionDetails, cdmDatabaseSchema, resultsDatab
 #' @param resultsDatabaseSchema  		Name of the database schema that contains the Achilles analysis files. Default is cdmDatabaseSchema
 #' @param outputPath		A folder location to save the JSON files. Default is current working folder
 #' @param vocabDatabaseSchema		string name of database schema that contains OMOP Vocabulary. Default is cdmDatabaseSchema. On SQL Server, this should specifiy both the database and the schema, so for example 'results.dbo'.
+#' @param cdmVersion		version of CDM
 #' 
 #' @return none 
 #' @examples \dontrun{
@@ -438,6 +445,7 @@ exportMetaToJson <- function (connectionDetails, cdmDatabaseSchema, resultsDatab
 #' @param resultsDatabaseSchema  		Name of the database schema that contains the Achilles analysis files. Default is cdmDatabaseSchema
 #' @param outputPath		A folder location to save the JSON files. Default is current working folder
 #' @param vocabDatabaseSchema		string name of database schema that contains OMOP Vocabulary. Default is cdmDatabaseSchema. On SQL Server, this should specifiy both the database and the schema, so for example 'results.dbo'.
+#' @param cdmVersion		version of CDM
 #' 
 #' @return none 
 #' @examples \dontrun{
@@ -464,6 +472,7 @@ exportMeasurementToJson <- function (connectionDetails, cdmDatabaseSchema, resul
 #' @param resultsDatabaseSchema  		Name of the database schema that contains the Achilles analysis files. Default is cdmDatabaseSchema
 #' @param outputPath		A folder location to save the JSON files. Default is current working folder
 #' @param vocabDatabaseSchema		string name of database schema that contains OMOP Vocabulary. Default is cdmDatabaseSchema. On SQL Server, this should specifiy both the database and the schema, so for example 'results.dbo'.
+#' @param cdmVersion		version of CDM
 #' 
 #' @return none 
 #' @examples \dontrun{
@@ -490,6 +499,7 @@ exportObservationToJson <- function (connectionDetails, cdmDatabaseSchema, resul
 #' @param resultsDatabaseSchema  		Name of the database schema that contains the Achilles analysis files. Default is cdmDatabaseSchema
 #' @param outputPath		A folder location to save the JSON files. Default is current working folder
 #' @param vocabDatabaseSchema		string name of database schema that contains OMOP Vocabulary. Default is cdmDatabaseSchema. On SQL Server, this should specifiy both the database and the schema, so for example 'results.dbo'.
+#' @param cdmVersion		version of CDM
 #' 
 #' @return none 
 #' @examples \dontrun{
@@ -516,6 +526,7 @@ exportObservationPeriodToJson <- function (connectionDetails, cdmDatabaseSchema,
 #' @param resultsDatabaseSchema			Name of the database schema that contains the Achilles analysis files. Default is cdmDatabaseSchema
 #' @param outputPath		A folder location to save the JSON files. Default is current working folder
 #' @param vocabDatabaseSchema		string name of database schema that contains OMOP Vocabulary. Default is cdmDatabaseSchema. On SQL Server, this should specifiy both the database and the schema, so for example 'results.dbo'.
+#' @param cdmVersion		version of CDM
 #' 
 #' @return none 
 #' @examples \dontrun{
@@ -542,6 +553,7 @@ exportPersonToJson <- function (connectionDetails, cdmDatabaseSchema, resultsDat
 #' @param resultsDatabaseSchema  		Name of the database schema that contains the Achilles analysis files. Default is cdmDatabaseSchema
 #' @param outputPath		A folder location to save the JSON files. Default is current working folder
 #' @param vocabDatabaseSchema		string name of database schema that contains OMOP Vocabulary. Default is cdmDatabaseSchema. On SQL Server, this should specifiy both the database and the schema, so for example 'results.dbo'.
+#' @param cdmVersion		version of CDM
 #' 
 #' @return none 
 #' @examples \dontrun{
@@ -568,6 +580,7 @@ exportProcedureToJson <- function (connectionDetails, cdmDatabaseSchema, results
 #' @param resultsDatabaseSchema  		Name of the database schema that contains the Achilles analysis files. Default is cdmDatabaseSchema
 #' @param outputPath		A folder location to save the JSON files. Default is current working folder
 #' @param vocabDatabaseSchema		string name of database schema that contains OMOP Vocabulary. Default is cdmDatabaseSchema. On SQL Server, this should specifiy both the database and the schema, so for example 'results.dbo'.
+#' @param cdmVersion		version of CDM
 #' 
 #' @return none 
 #' @examples \dontrun{

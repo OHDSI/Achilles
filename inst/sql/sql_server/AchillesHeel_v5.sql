@@ -265,9 +265,12 @@ where temp_cnt >= @derivedDataSmPtCount;
 
 
 --more aggregated view of visit type by decile (derived from analysis_id 204)
+--denominator calculation will be replaced with new measure 212 in next version
 
 insert into @results_database_schema.ACHILLES_results_derived (stratum_1,stratum_2,statistic_value,measure_id)    
-select a.stratum_1, a.stratum_4 as stratum_2, a.person_cnt/b.population_size as statistic_value,
+select a.stratum_1,
+  a.stratum_4 as stratum_2,
+  1.0*a.person_cnt/b.population_size as statistic_value,
 'Visit:Type:PersonWithAtLeastOne:byDecile:Percentage' as measure_id
 from
 (select stratum_1,  stratum_4, sum(count_value) as person_cnt  from @results_database_schema.achilles_results where analysis_id = 204 group by stratum_1,  stratum_4) a
