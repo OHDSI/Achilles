@@ -39,7 +39,7 @@ SQL for OMOP CDM v5
 {DEFAULT @results_database = 'scratch'}
 {DEFAULT @results_database_schema = 'scratch.dbo'}
 {DEFAULT @source_name = 'CDM NAME'}
-{DEFAULT @achilles_version = '1.4'}
+{DEFAULT @achilles_version = '1.4.5'}
 {DEFAULT @smallcellcount = 5}
 {DEFAULT @createTable = TRUE}
 {DEFAULT @validateSchema = FALSE}
