@@ -20,9 +20,11 @@
 # @author Chris Knoll
 # @author Frank DeFalco
 
+
+# Run this definition of allReports when adding a new report
 # allReports <- c("CONDITION",
-#                "CONDITION_ERA",  
-#                "DASHBOARD", 
+#                "CONDITION_ERA",
+#                "DASHBOARD",
 #                "DATA_DENSITY",
 #                "DEATH",
 #                "DRUG",
@@ -30,12 +32,12 @@
 #                "HEEL",
 #                "OBSERVATION",
 #                "OBSERVATION_PERIOD",
-#                "PERSON", 
+#                "PERSON",
 #                "PROCEDURE",
 #                "VISIT",
 #                "MEASUREMENT",
 #                "META")
-# save(allReports,file="allReports.rda")
+# save(allReports,file="data/allReports.rda")
 
 initOutputPath <- function (outputPath){
   # create output path if it doesn't already exist, warn if it does
@@ -619,9 +621,18 @@ generateDomainMetaReport <- function(conn, dbms, cdmDatabaseSchema, resultsDatab
                                             vocab_database_schema = vocabDatabaseSchema
   )  
   
-  output$MESSAGES <- querySql(conn,queryDomainMeta)
-  jsonOutput = toJSON(output)
-  write(jsonOutput, file=paste(outputPath, "/domainmeta.json", sep=""))  
+  try(
+    output$MESSAGES <- querySql(conn,queryDomainMeta)
+  )
+  if (output$MESSAGES = NULL)
+  {
+    writeLines("No CDM_DOMAIN_META table found, skipping export")
+  }
+  else
+  {
+    jsonOutput = toJSON(output)
+    write(jsonOutput, file=paste(outputPath, "/domainmeta.json", sep=""))  
+  }
 }
 
 generateDrugEraTreemap <- function(conn, dbms,cdmDatabaseSchema, resultsDatabaseSchema, outputPath, cdmVersion = "4", vocabDatabaseSchema = cdmDatabaseSchema) {
