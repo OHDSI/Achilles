@@ -1578,7 +1578,7 @@ select 116 as analysis_id,
 	COUNT_BIG(distinct p1.PERSON_ID) as count_value
 from
 	@cdm_database_schema.PERSON p1
-	inner join observation_period op1
+	inner join @cdm_database_schema.observation_period op1
 	on p1.person_id = op1.person_id
 	,
 	#temp_dates t1 
@@ -2543,7 +2543,7 @@ select 604 as analysis_id,
 	COUNT_BIG(distinct p1.PERSON_ID) as count_value
 from @cdm_database_schema.person p1
 inner join
-procedure_occurrence po1
+@cdm_database_schema.procedure_occurrence po1
 on p1.person_id = po1.person_id
 group by po1.procedure_concept_id, 
 	YEAR(procedure_date),
@@ -2775,7 +2775,7 @@ select 704 as analysis_id,
 	COUNT_BIG(distinct p1.PERSON_ID) as count_value
 from @cdm_database_schema.person p1
 inner join
-drug_exposure de1
+@cdm_database_schema.drug_exposure de1
 on p1.person_id = de1.person_id
 group by de1.drug_concept_id, 
 	YEAR(drug_exposure_start_date),
@@ -4318,7 +4318,7 @@ select drug_concept_id,
 	1.0*(row_number() over (partition by drug_concept_id order by paid_coinsurance))/(COUNT_BIG(*) over (partition by drug_concept_id)+1) as p1
 from @cdm_database_schema.drug_exposure de1
 	inner join
-	drug_cost dc1
+	@cdm_database_schema.drug_cost dc1
 	on de1.drug_exposure_id = dc1.drug_exposure_id
 where paid_coinsurance is not null
 ) t1
