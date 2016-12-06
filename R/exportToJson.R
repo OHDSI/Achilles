@@ -624,7 +624,7 @@ generateDomainMetaReport <- function(conn, dbms, cdmDatabaseSchema, resultsDatab
   try(
     output$MESSAGES <- querySql(conn,queryDomainMeta)
   )
-  if (output$MESSAGES = NULL)
+  if (is.null(output$MESSAGES))
   {
     writeLines("No CDM_DOMAIN_META table found, skipping export")
   }
