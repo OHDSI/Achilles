@@ -39,7 +39,7 @@ SQL for OMOP CDM v5
 {DEFAULT @results_database = 'scratch'}
 {DEFAULT @results_database_schema = 'scratch.dbo'}
 {DEFAULT @source_name = 'CDM NAME'}
-{DEFAULT @achilles_version = '1.4'}
+{DEFAULT @achilles_version = '1.4.5'}
 {DEFAULT @smallcellcount = 5}
 {DEFAULT @createTable = TRUE}
 {DEFAULT @validateSchema = FALSE}
@@ -666,6 +666,9 @@ insert into @results_database_schema.ACHILLES_analysis (analysis_id, analysis_na
 
 insert into @results_database_schema.ACHILLES_analysis (analysis_id, analysis_name, stratum_1_name)
 	values (211, 'Distribution of length of stay by visit_concept_id', 'visit_concept_id');
+
+insert into @results_database_schema.ACHILLES_analysis (analysis_id, analysis_name, stratum_1_name, stratum_2_name, stratum_3_name )
+	values (212, 'Number of persons with at least one visit occurrence, by calendar year by gender by age decile', 'calendar year', 'gender_concept_id', 'age decile');
 
 insert into @results_database_schema.ACHILLES_analysis (analysis_id, analysis_name, stratum_1_name)
 	values (220, 'Number of visit occurrence records by visit occurrence start month', 'calendar month');
@@ -2353,6 +2356,26 @@ from #tempResults
 truncate table #tempResults;
 drop table #tempResults;
 
+--}
+
+
+--{212 IN (@list_of_analysis_ids)}?{
+-- 212	Number of persons with at least one visit occurrence by calendar year by gender by age decile
+insert into @results_database_schema.ACHILLES_results (analysis_id, stratum_1, stratum_2, stratum_3, count_value)
+select 212 as analysis_id,   
+	YEAR(visit_start_date) as stratum_1,
+	p1.gender_concept_id as stratum_2,
+	floor((year(visit_start_date) - p1.year_of_birth)/10) as stratum_3, 
+	COUNT_BIG(distinct p1.PERSON_ID) as count_value
+from @cdm_database_schema.PERSON p1
+inner join
+@cdm_database_schema.visit_occurrence vo1
+on p1.person_id = vo1.person_id
+group by 
+	YEAR(visit_start_date),
+	p1.gender_concept_id,
+	floor((year(visit_start_date) - p1.year_of_birth)/10)
+;
 --}
 
 
