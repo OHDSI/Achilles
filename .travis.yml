@@ -19,7 +19,7 @@ install:
   - ./travis-tool.sh install_github jimhester/covr
 
 script:
-    - ./travis-tool.sh run_tests
+    - travis_wait 90 ./travis-tool.sh run_tests
     - ./travis-tool.sh dump_logs
     - echo $TEST
 
@@ -30,6 +30,7 @@ notifications:
   recipients:
     - cknoll1@its.jnj.com
     - schuemie@ohdsi.org
+    - ta2471@cumc.columbia.edu
   email:
     on_success: change
     on_failure: change
