@@ -41,6 +41,7 @@
 209,"Number of visit records with end date < start date",,,,,
 210,"Number of visit records with invalid care_site_id",,,,,
 211,"Distribution of length of stay by visit_concept_id","visit_concept_id",,,,
+212,"Number of persons with at least one visit occurrence, by calendar year by gender by age decile","calendar year","gender_concept_id","age decile",,
 220,"Number of visit occurrence records by visit occurrence start month","calendar month",,,,
 300,"Number of providers",,,,,
 301,"Number of providers by specialty concept_id","specialty_concept_id",,,,
