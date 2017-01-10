@@ -2364,9 +2364,9 @@ drop table #tempResults;
 -- 212	Number of persons with at least one visit occurrence by calendar year by gender by age decile
 insert into @results_database_schema.ACHILLES_results (analysis_id, stratum_1, stratum_2, stratum_3, count_value)
 select 212 as analysis_id,   
-	YEAR(visit_start_date) as stratum_1,
-	p1.gender_concept_id as stratum_2,
-	floor((year(visit_start_date) - p1.year_of_birth)/10) as stratum_3, 
+	CAST(YEAR(visit_start_date) AS VARCHAR(255)),
+	CAST(p1.gender_concept_id AS VARCHAR(255)) as stratum_2,
+	CAST(floor((year(visit_start_date) - p1.year_of_birth)/10) AS VARCHAR(255)) as stratum_3,
 	COUNT_BIG(distinct p1.PERSON_ID) as count_value
 from @cdm_database_schema.PERSON p1
 inner join
@@ -7523,7 +7523,7 @@ ACHILLES Analyses on DEVICE_EXPOSURE  table
 -- 2100	Number of persons with at least one device exposure , by device_concept_id
 insert into @results_database_schema.ACHILLES_results (analysis_id, stratum_1, count_value)
 select 2100 as analysis_id, 
-	m.device_CONCEPT_ID as stratum_1,
+	CAST(m.device_CONCEPT_ID AS VARCHAR(255)) as stratum_1,
 	COUNT_BIG(distinct m.PERSON_ID) as count_value
 from
 	@cdm_database_schema.device_exposure m
@@ -7536,7 +7536,7 @@ group by m.device_CONCEPT_ID
 -- 2101	Number of device exposure  records, by device_concept_id
 insert into @results_database_schema.ACHILLES_results (analysis_id, stratum_1, count_value)
 select 2101 as analysis_id, 
-m.device_CONCEPT_ID as stratum_1,
+    CAST(m.device_CONCEPT_ID AS VARCHAR(255)) as stratum_1,
 	COUNT_BIG(m.PERSON_ID) as count_value
 from
 	@cdm_database_schema.device_exposure m
@@ -7550,8 +7550,8 @@ group by m.device_CONCEPT_ID
 -- 2102	Number of persons by device by  start month, by device_concept_id
 insert into @results_database_schema.ACHILLES_results (analysis_id, stratum_1, stratum_2, count_value)
 select 2102 as analysis_id,   
-	m.device_CONCEPT_ID as stratum_1,
-	YEAR(device_exposure_start_date)*100 + month(device_exposure_start_date) as stratum_2, 
+	CAST(m.device_CONCEPT_ID AS VARCHAR(255)) as stratum_1,
+	CAST(YEAR(device_exposure_start_date)*100 + month(device_exposure_start_date) AS VARCHAR(255)) as stratum_2,
 	COUNT_BIG(distinct PERSON_ID) as count_value
 from
 	@cdm_database_schema.device_exposure m
@@ -7567,10 +7567,10 @@ group by m.device_CONCEPT_ID,
 -- 2104	Number of persons with at least one device occurrence, by device_concept_id by calendar year by gender by age decile
 insert into @results_database_schema.ACHILLES_results (analysis_id, stratum_1, stratum_2, stratum_3, stratum_4, count_value)
 select 2104 as analysis_id,   
-	m.device_CONCEPT_ID as stratum_1,
-	YEAR(device_exposure_start_date) as stratum_2,
-	p1.gender_concept_id as stratum_3,
-	floor((year(device_exposure_start_date) - p1.year_of_birth)/10) as stratum_4, 
+	CAST(m.device_CONCEPT_ID AS VARCHAR(255)) as stratum_1,
+	CAST(YEAR(device_exposure_start_date) AS VARCHAR(255)) as stratum_2,
+	CAST(p1.gender_concept_id AS VARCHAR(255)) as stratum_3,
+	CAST(floor((year(device_exposure_start_date) - p1.year_of_birth)/10) AS VARCHAR(255)) as stratum_4,
 	COUNT_BIG(distinct p1.PERSON_ID) as count_value
 from @cdm_database_schema.PERSON p1
 inner join @cdm_database_schema.device_exposure m on p1.person_id = m.person_id
@@ -7586,8 +7586,8 @@ group by m.device_CONCEPT_ID,
 -- 2105	Number of exposure records by device_concept_id by device_type_concept_id
 insert into @results_database_schema.ACHILLES_results (analysis_id, stratum_1, stratum_2, count_value)
 select 2105 as analysis_id, 
-	m.device_CONCEPT_ID as stratum_1,
-	m.device_type_concept_id as stratum_2,
+	CAST(m.device_CONCEPT_ID AS VARCHAR(255)) as stratum_1,
+	CAST(m.device_type_concept_id AS VARCHAR(255)) as stratum_2,
 	COUNT_BIG(m.PERSON_ID) as count_value
 from @cdm_database_schema.device_exposure m
 group by m.device_CONCEPT_ID,	
@@ -7613,7 +7613,7 @@ ACHILLES Analyses on NOTE table
 -- 2200	Number of persons with at least one device exposure , by device_concept_id
 insert into @results_database_schema.ACHILLES_results (analysis_id, stratum_1, count_value)
 select 2200 as analysis_id, 
-	m.note_type_CONCEPT_ID as stratum_1,
+	CAST(m.note_type_CONCEPT_ID AS VARCHAR(255)) as stratum_1,
 	COUNT_BIG(distinct m.PERSON_ID) as count_value
 from
 	@cdm_database_schema.note m
@@ -7626,7 +7626,7 @@ group by m.note_type_CONCEPT_ID
 -- 2201	Number of device exposure  records, by device_concept_id
 insert into @results_database_schema.ACHILLES_results (analysis_id, stratum_1, count_value)
 select 2201 as analysis_id, 
-m.note_type_CONCEPT_ID as stratum_1,
+    CAST(m.note_type_CONCEPT_ID AS VARCHAR(255)) as stratum_1,
 	COUNT_BIG(m.PERSON_ID) as count_value
 from
 	@cdm_database_schema.note m
