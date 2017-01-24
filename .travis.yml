@@ -1,30 +1,17 @@
-language: java
+language: R
+cache: packages
+sudo: false
 
-jdk:
-  - oraclejdk7
+r_packages:
+  - covr
+  - drat
 
-sudo: required
+r_github_packages:
+  - OHDSI/DatabaseConnector
 
 before_install:
-    - curl -OL http://raw.github.com/craigcitro/r-travis/master/scripts/travis-tool.sh
-    - chmod 755 ./travis-tool.sh
-    - ./travis-tool.sh bootstrap
-
-install:
-  - sudo R CMD javareconf
-  - ./travis-tool.sh install_r_binary rJava
-  - ./travis-tool.sh install_deps
-  - ./travis-tool.sh install_github OHDSI/SqlRender
-  - ./travis-tool.sh install_github OHDSI/DatabaseConnector
-  - ./travis-tool.sh install_github jimhester/covr
-
-script:
-    - ./travis-tool.sh run_tests
-    - ./travis-tool.sh dump_logs
-    - echo $TEST
-
-after_failure:
-  - ./travis-tool.sh dump_logs
+  - Rscript -e 'update.packages(ask = FALSE)'
+  - export LD_LIBRARY_PATH=$JAVA_HOME:$LD_LIBRARY_PATH
 
 notifications:
   recipients:
