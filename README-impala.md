@@ -16,6 +16,9 @@ In R, use the following commands to install the Impala development version of Ac
 install.packages("devtools")
 library(devtools)
 
+install_github("tomwhite/SqlRender", ref="impala-location-reserved-word")
+library(SqlRender)
+
 install_github("tomwhite/Achilles", ref="impala") 
 ```
 
