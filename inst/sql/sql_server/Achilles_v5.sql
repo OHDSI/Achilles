@@ -499,6 +499,30 @@ create table @results_database_schema.ACHILLES_results
 	count_value bigint
 );
 
+--{@dbms == 'pdw'}?{
+
+IF 0 = (SELECT COUNT(*) as index_count
+    FROM sys.indexes 
+    WHERE object_id = OBJECT_ID('@results_database_schema.ACHILLES_results')
+    AND name='idx_ar_aid')
+CREATE NONCLUSTERED INDEX idx_ar_aid
+   ON @results_database_schema.ACHILLES_results (analysis_id ASC);
+
+IF 0 = (SELECT COUNT(*) as index_count
+    FROM sys.indexes 
+    WHERE object_id = OBJECT_ID('@results_database_schema.ACHILLES_results')
+    AND name='idx_ar_aid_s1')  
+CREATE NONCLUSTERED INDEX idx_ar_aid_s1
+   ON @results_database_schema.ACHILLES_results (analysis_id ASC, stratum_1 ASC);
+
+IF 0 = (SELECT COUNT(*) as index_count
+    FROM sys.indexes 
+    WHERE object_id = OBJECT_ID('@results_database_schema.ACHILLES_results')
+    AND name='idx_ar_aid_s1234')
+CREATE NONCLUSTERED INDEX idx_ar_aid_s1234
+   ON @results_database_schema.ACHILLES_results (analysis_id ASC, stratum_1 ASC, stratum_2 ASC, stratum_3 ASC, stratum_4 ASC);
+
+--}
 
 IF OBJECT_ID('@results_database_schema.ACHILLES_results_dist', 'U') IS NOT NULL
   drop table @results_database_schema.ACHILLES_results_dist;
