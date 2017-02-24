@@ -43,6 +43,7 @@ SQL for OMOP CDM v5
 {DEFAULT @smallcellcount = 5}
 {DEFAULT @createTable = TRUE}
 {DEFAULT @validateSchema = FALSE}
+{DEFAULT @is_pdw = FALSE}
 
   /****
     developer comment about general ACHILLES calculation process:  
@@ -1271,7 +1272,36 @@ insert into @results_database_schema.ACHILLES_analysis (analysis_id, analysis_na
 --} : {else if not createTable
 delete from @results_database_schema.ACHILLES_results where analysis_id IN (@list_of_analysis_ids);
 delete from @results_database_schema.ACHILLES_results_dist where analysis_id IN (@list_of_analysis_ids);
-}
+--}
+
+
+/* create achilles_results nonclustered indexes if dbms is PDW */
+
+--{@is_pdw}?{
+
+IF 0 = (SELECT COUNT(*) as index_count
+    FROM sys.indexes 
+    WHERE object_id = OBJECT_ID('@results_database_schema.ACHILLES_results')
+    AND name='idx_ar_aid')
+CREATE NONCLUSTERED INDEX idx_ar_aid
+   ON @results_database_schema.ACHILLES_results (analysis_id ASC);
+
+IF 0 = (SELECT COUNT(*) as index_count
+    FROM sys.indexes 
+    WHERE object_id = OBJECT_ID('@results_database_schema.ACHILLES_results')
+    AND name='idx_ar_aid_s1')  
+CREATE NONCLUSTERED INDEX idx_ar_aid_s1
+   ON @results_database_schema.ACHILLES_results (analysis_id ASC, stratum_1 ASC);
+
+IF 0 = (SELECT COUNT(*) as index_count
+    FROM sys.indexes 
+    WHERE object_id = OBJECT_ID('@results_database_schema.ACHILLES_results')
+    AND name='idx_ar_aid_s1234')
+CREATE NONCLUSTERED INDEX idx_ar_aid_s1234
+   ON @results_database_schema.ACHILLES_results (analysis_id ASC, stratum_1 ASC, stratum_2 ASC, stratum_3 ASC, stratum_4 ASC);
+
+--}
+
 
 /****
 7. generate results for analysis_results
