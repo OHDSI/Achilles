@@ -14,6 +14,11 @@ before_install:
   - Rscript -e 'update.packages(ask = FALSE)'
   - export LD_LIBRARY_PATH=$JAVA_HOME:$LD_LIBRARY_PATH
 
+script: 
+  - |
+    R CMD build .
+    travis_wait 30 R CMD check Achilles*tar.gz
+    
 notifications:
   recipients:
     - cknoll1@its.jnj.com
