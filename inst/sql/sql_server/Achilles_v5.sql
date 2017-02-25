@@ -5495,8 +5495,8 @@ IF OBJECT_ID('tempdb..#temp_dates', 'U') IS NOT NULL
 
 SELECT DISTINCT 
   YEAR(payer_plan_period_start_date)*100 + MONTH(payer_plan_period_start_date) AS obs_month,
-  CAST(CONCAT(CAST(YEAR(payer_plan_period_start_date) AS VARCHAR(4)), RIGHT(CONCAT('0', CAST(MONTH(payer_plan_period_start_date) AS VARCHAR(2))), 2), '01') AS DATE) AS obs_month_start,
-  DATEADD(dd,-1,DATEADD(mm,1,CAST(CONCAT(CAST(YEAR(payer_plan_period_start_date) AS VARCHAR(4)), RIGHT(CONCAT('0', CAST(MONTH(payer_plan_period_start_date) AS VARCHAR(2))), 2), '01') AS DATE))) AS obs_month_end
+  CAST(CONCAT(CONCAT(CAST(YEAR(payer_plan_period_start_date) AS VARCHAR(4)), RIGHT(CONCAT('0', CAST(MONTH(payer_plan_period_start_date) AS VARCHAR(2))), 2)), '01') AS DATE) AS obs_month_start,
+  DATEADD(dd,-1,DATEADD(mm,1,CAST(CONCAT(CONCAT(CAST(YEAR(payer_plan_period_start_date) AS VARCHAR(4)), RIGHT(CONCAT('0', CAST(MONTH(payer_plan_period_start_date) AS VARCHAR(2))), 2)), '01') AS DATE))) AS obs_month_end
 INTO
   #temp_dates
 FROM 
@@ -5515,8 +5515,8 @@ from
 	on p1.person_id = ppp1.person_id
 	,
 	#temp_dates
-where CAST(ppp1.payer_plan_period_START_DATE AS DATE) <= obs_month_start
-	and CAST(ppp1.payer_plan_period_END_DATE AS DATE) >= obs_month_end
+where ppp1.payer_plan_period_START_DATE <= obs_month_start
+	and ppp1.payer_plan_period_END_DATE >= obs_month_end
 group by obs_month
 ;
 
