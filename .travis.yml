@@ -14,6 +14,11 @@ before_install:
   - Rscript -e 'update.packages(ask = FALSE)'
   - export LD_LIBRARY_PATH=$JAVA_HOME:$LD_LIBRARY_PATH
 
+script: 
+  - |
+    R CMD build .
+    travis_wait 30 R CMD check Achilles*tar.gz
+    
 notifications:
   recipients:
     - cknoll1@its.jnj.com
@@ -28,6 +33,9 @@ after_success:
   - curl --data "build=true" -X POST https://registry.hub.docker.com/u/ohdsi/broadsea-methodslibrary/trigger/f0b51cec-4027-4781-9383-4b38b42dd4f5/
   # Rebuild drat repo
   - test $TRAVIS_PULL_REQUEST == "false" && test $TRAVIS_BRANCH == "master" && bash deploy.sh
+
+after_failure:
+- find *Rcheck -name '*.fail' -print -exec cat '{}' \;
 
 env:
   global:

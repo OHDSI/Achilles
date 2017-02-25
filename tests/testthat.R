@@ -1,4 +1,4 @@
 library(testthat)
 library(Achilles)
 
-test_check("Achilles", filter="_mssql$")
+test_check("Achilles")
