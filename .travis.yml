@@ -34,6 +34,9 @@ after_success:
   # Rebuild drat repo
   - test $TRAVIS_PULL_REQUEST == "false" && test $TRAVIS_BRANCH == "master" && bash deploy.sh
 
+after_failure:
+- find *Rcheck -name '*.fail' -print -exec cat '{}' \;
+
 env:
   global:
     secure: a1Rdhif0jhUZRpNqLzIYbEBCM/+VbbTJhT3/vfxZKy+PiLVQixi/ARqvA581p/JRfsA3d9koWynxy6+karOKw94b27+Uaos8ds85noObq3enND+d/FNVqDA9mn9l0tDFioeKR7T2SQlyWF1LIWtKzj9L21/EjNSy8mi0btiiJaU=
