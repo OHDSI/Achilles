@@ -28,7 +28,7 @@ notifications:
     on_failure: change
 
 after_success:
-  - Rscript -e 'library(covr);codecov()'
+  - travis_wait 30 Rscript -e 'library(covr);codecov()'
   # Rebuild docker container
   - curl --data "build=true" -X POST https://registry.hub.docker.com/u/ohdsi/broadsea-methodslibrary/trigger/f0b51cec-4027-4781-9383-4b38b42dd4f5/
   # Rebuild drat repo

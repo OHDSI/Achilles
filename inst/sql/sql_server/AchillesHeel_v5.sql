@@ -1248,10 +1248,8 @@ GROUP BY or1.analysis_id,
 
 --derived measure for this rule - ratio of notes over the number of visits
 insert into @results_database_schema.ACHILLES_results_derived (statistic_value,measure_id)    
-    select  1.0*(select sum(count_value) as all_notes from @results_database_schema.achilles_results r where analysis_id =2201)/sum(count_value) as statistic_value,
-    'Note:NoteVisitRatio' as measure_id
-    from @results_database_schema.achilles_results where analysis_id = 201 
-;    
+SELECT 1.0*(SELECT sum(count_value) as all_notes FROM @results_database_schema.achilles_results r WHERE analysis_id =2201 )/1.0*(SELECT sum(count_value) as all_visits FROM @results_database_schema.achilles_results r WHERE  analysis_id =201 ) as statistic_value,
+  'Note:NoteVisitRatio' as measure_id;    
 
 --one co-author of the DataQuality study suggested measuring data density on visit level (in addition to 
 -- patient and dataset level)
@@ -1340,5 +1338,3 @@ from
  where analysis_id = 1800 and stratum_1 = '3025315'
 ) a
 where a.row_present = 0;
-;
-
