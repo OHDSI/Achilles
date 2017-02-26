@@ -5546,13 +5546,13 @@ group by cast(CONCAT(cast(YEAR(payer_plan_period_start_date) as varchar(4)), CON
 -- 1412	Number of persons by payer plan period end month
 insert into @results_database_schema.ACHILLES_results (analysis_id, stratum_1, count_value)
 select 1412 as analysis_id,  
-	cast(CONCAT(CONCAT(cast(YEAR(payer_plan_period_end_date) as varchar(4)), CONCAT(RIGHT(CONCAT('0', CAST(month(payer_plan_period_end_DATE) AS VARCHAR(2))), 2)), '01')) as VARCHAR(255)) as stratum_1,
+	cast(CONCAT(cast(YEAR(payer_plan_period_end_date) as varchar(4)), CONCAT(RIGHT(CONCAT('0', CAST(month(payer_plan_period_end_DATE) AS VARCHAR(2))), 2), '01')) as VARCHAR(255)) as stratum_1,
 	COUNT_BIG(distinct p1.PERSON_ID) as count_value
 from
 	@cdm_database_schema.PERSON p1
 	inner join @cdm_database_schema.payer_plan_period ppp1
 	on p1.person_id = ppp1.person_id
-group by cast(CONCAT(CONCAT(cast(YEAR(payer_plan_period_end_date) as varchar(4)), CONCAT(RIGHT(CONCAT('0', CAST(month(payer_plan_period_end_DATE) AS VARCHAR(2))), 2)), '01')) as VARCHAR(255))
+group by cast(CONCAT(cast(YEAR(payer_plan_period_end_date) as varchar(4)), CONCAT(RIGHT(CONCAT('0', CAST(month(payer_plan_period_end_DATE) AS VARCHAR(2))), 2), '01')) as VARCHAR(255))
 ;
 --}
 
