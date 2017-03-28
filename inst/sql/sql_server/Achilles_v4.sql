@@ -4287,7 +4287,7 @@ select drug_concept_id,
 	1.0*(row_number() over (partition by drug_concept_id order by paid_copay))/(COUNT_BIG(*) over (partition by drug_concept_id)+1) as p1
 from @cdm_database_schema.drug_exposure de1
 	inner join
-	drug_cost dc1
+	@cdm_database_schema.drug_cost dc1
 	on de1.drug_exposure_id = dc1.drug_exposure_id
 where paid_copay is not null
 ) t1
