@@ -616,22 +616,18 @@ generateDomainMetaReport <- function(conn, dbms, cdmDatabaseSchema, resultsDatab
   queryDomainMeta <- loadRenderTranslateSql(sqlFilename = addCdmVersionPath("/domainmeta/sqlDomainMeta.sql",cdmVersion),
                                             packageName = "Achilles",
                                             dbms = dbms,
-                                            cdm_database_schema = cdmDatabaseSchema,
-                                            results_database_schema = resultsDatabaseSchema,
-                                            vocab_database_schema = vocabDatabaseSchema
+                                            cdm_database_schema = cdmDatabaseSchema
   )  
   
-  try(
-    output$MESSAGES <- querySql(conn,queryDomainMeta)
-  )
-  if (is.null(output$MESSAGES))
+  if ("CDM_DOMAIN_META" %in% DatabaseConnector::getTableNames(connection = conn, databaseSchema = cdmDatabaseSchema))
   {
-    writeLines("No CDM_DOMAIN_META table found, skipping export")
+    output$MESSAGES <- querySql(conn, queryDomainMeta) 
+    jsonOutput = toJSON(output)
+    write(jsonOutput, file=paste(outputPath, "/domainmeta.json", sep=""))  
   }
   else
   {
-    jsonOutput = toJSON(output)
-    write(jsonOutput, file=paste(outputPath, "/domainmeta.json", sep=""))  
+    writeLines("No CDM_DOMAIN_META table found, skipping export")  
   }
 }
 
