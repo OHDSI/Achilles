@@ -22,7 +22,7 @@ from (select * from @results_database_schema.ACHILLES_results where analysis_id 
 		select c1.concept_id as rxnorm_ingredient_concept_id, 
 			c1.concept_name as RxNorm_ingredient_concept_name
 		from @vocab_database_schema.concept c1
-		where c1.vocabulary_id = 8
+		where c1.vocabulary_id in (8,82)
 			and c1.concept_class = 'Ingredient'
 		) rxnorm
 		left join
@@ -32,7 +32,7 @@ from (select * from @results_database_schema.ACHILLES_results where analysis_id 
 			inner join 
 			@vocab_database_schema.concept_ancestor ca1
 			on c1.concept_id = ca1.descendant_concept_id
-			and c1.vocabulary_id = 8
+			and c1.vocabulary_id in (8,82)
 			and c1.concept_class = 'Ingredient'
 			inner join 
 			@vocab_database_schema.concept c2
