@@ -63,6 +63,7 @@ CREATE TABLE @results_database_schema.ACHILLES_HEEL_results (
 --per DQI group suggestion: measure_id is made into a string to make derivation
 --and sql authoring easy
 --computation is quick so the whole table gets wiped every time Heel is executed
+--in derived table: analysis_id is not used, look at measure_id instead
 
 
 IF OBJECT_ID('@results_database_schema.ACHILLES_results_derived', 'U') IS NOT NULL
@@ -70,12 +71,13 @@ IF OBJECT_ID('@results_database_schema.ACHILLES_results_derived', 'U') IS NOT NU
 
 create table @results_database_schema.ACHILLES_results_derived
 (
-	analysis_id int,
+	analysis_id int, 
 	stratum_1 varchar(255),
-	statistic_type varchar(255),
+	stratum_2 varchar(255),
 	statistic_value float,
 	measure_id varchar(255)
 );
+
 
  
 --general derived measures
@@ -263,6 +265,42 @@ where temp_cnt >= @derivedDataSmPtCount;
 
 
 
+--more aggregated view of visit type by decile (derived from analysis_id 204)
+--denominator calculation will be replaced with new measure 212 in next version
+
+insert into @results_database_schema.ACHILLES_results_derived (stratum_1,stratum_2,statistic_value,measure_id)    
+select a.stratum_1,
+  a.stratum_4 as stratum_2,
+  1.0*a.person_cnt/b.population_size as statistic_value,
+'Visit:Type:PersonWithAtLeastOne:byDecile:Percentage' as measure_id
+from
+(select stratum_1,  stratum_4, sum(count_value) as person_cnt  from @results_database_schema.achilles_results where analysis_id = 204 group by stratum_1,  stratum_4) a
+inner join 
+(select   stratum_4, sum(count_value) as population_size  from @results_database_schema.achilles_results where analysis_id = 204 group by   stratum_4) b
+on  a.stratum_4=b.stratum_4
+where a.person_cnt >= @derivedDataSmPtCount;
+
+
+--size of Achilles Metadata
+insert into @results_database_schema.ACHILLES_results_derived (stratum_1,statistic_value,measure_id)    
+select analysis_id as stratum_1,COUNT_BIG(*) as statistic_value, 
+'Achilles:byAnalysis:RowCnt' as measure_id
+from @results_database_schema.achilles_results group by analysis_id
+;
+
+
+--General Population Only: ratio of born to deceased (indicates missing birth or death events) stratified by year
+insert into @results_database_schema.ACHILLES_results_derived (stratum_1,statistic_value,measure_id)    
+select a.stratum_1,
+  1.0*a.born_cnt/b.died_cnt as statistic_value,
+  'Death:BornDeceasedRatio' as measure_id
+from (select stratum_1,count_value as born_cnt from @results_database_schema.achilles_results where analysis_id = 3) a 
+inner join 
+(select stratum_1, count(count_value) as died_cnt from @results_database_schema.achilles_results where analysis_id = 504 group by stratum_1) b 
+on a.stratum_1 = b.stratum_1
+where b.died_cnt > 0
+;
+
 
 
 --end of derived general measures ********************************************************************
@@ -316,7 +354,7 @@ WHERE or1.analysis_id IN (
 		412,
 		413,
 		509,
-		510,
+		--510, taken out from this umbrella rule and implemented separately
 		609,
 		610,
 		612,
@@ -460,6 +498,9 @@ GROUP BY or1.analysis_id,
 	oa1.analysis_name;
 
 --ruleid 5 CDM-conformance rule:invalid type concept_id
+--this rule is only checking that the concept is valid (joins to concept table at all)
+--it does not check the vocabulary_id to further restrict the scope of the valid concepts
+--to only include,for example, death types 
 INSERT INTO @results_database_schema.ACHILLES_HEEL_results (
 	analysis_id,
 	ACHILLES_HEEL_warning,
@@ -479,7 +520,8 @@ WHERE or1.analysis_id IN (
 		405,
 		605,
 		705,
-		805
+		805,
+		1805
 		)
 	AND or1.stratum_2 IS NOT NULL
 	AND c1.concept_id IS NULL
@@ -1014,24 +1056,23 @@ from @results_database_schema.achilles_results_derived where measure_id ='ach_18
 
 with t1 (all_count) as 
   (select sum(count_value) as all_count from @results_database_schema.achilles_results where analysis_id = 1820)
-  --count of all meas rows (I wish this would also be a measure) (1820 is count by month)
 select 
-CAST('percentage' AS VARCHAR(100)) as statistic_type,
 (select count_value from @results_database_schema.achilles_results where analysis_id = 1821)*100.0/all_count as statistic_value,
 CAST('Meas:NoNumValue:Percentage' AS VARCHAR(100)) as measure_id
 into #tempResults 
 from t1;
 
 
-insert into @results_database_schema.ACHILLES_results_derived (statistic_type, statistic_value, measure_id)    
-  select  statistic_type,statistic_value,measure_id from #tempResults;
+insert into @results_database_schema.ACHILLES_results_derived (statistic_value, measure_id)    
+  select  statistic_value,measure_id from #tempResults;
 
 
 
-INSERT INTO @results_database_schema.ACHILLES_HEEL_results (ACHILLES_HEEL_warning,rule_id)
+INSERT INTO @results_database_schema.ACHILLES_HEEL_results (ACHILLES_HEEL_warning,rule_id,record_count)
 SELECT 
   'NOTIFICATION: percentage of non-numerical measurement records exceeds general population threshold ' as ACHILLES_HEEL_warning,
-	28 as rule_id
+	28 as rule_id,
+	cast(statistic_value as int) as record_count
 FROM #tempResults t
 --WHERE t.analysis_id IN (100730,100430) --umbrella version
 WHERE measure_id='Meas:NoNumValue:Percentage' --t.analysis_id IN (100000)
@@ -1126,7 +1167,7 @@ SELECT
   32 as rule_id
 FROM @results_database_schema.ACHILLES_results_derived d
 where d.measure_id = 'ach_2003:Percentage'
-and 100-d.statistic_value > 5  --thresholds will be decided in the ongoing DQ-Study2
+and 100-d.statistic_value > 27  --threshold identified in the DataQuality study
 ;
 
 --rule33 DQ rule (for general population only)
@@ -1202,3 +1243,98 @@ WHERE or1.analysis_id IN (101)
 	AND or1.count_value > 0
 GROUP BY or1.analysis_id,
   oa1.analysis_name;
+
+--ruleid 37 DQ rule
+
+--derived measure for this rule - ratio of notes over the number of visits
+insert into @results_database_schema.ACHILLES_results_derived (statistic_value,measure_id)    
+SELECT 1.0*(SELECT sum(count_value) as all_notes FROM @results_database_schema.achilles_results r WHERE analysis_id =2201 )/1.0*(SELECT sum(count_value) as all_visits FROM @results_database_schema.achilles_results r WHERE  analysis_id =201 ) as statistic_value,
+  'Note:NoteVisitRatio' as measure_id;    
+
+--one co-author of the DataQuality study suggested measuring data density on visit level (in addition to 
+-- patient and dataset level)
+--Assumption is that at least one data event (e.g., diagnisis, note) is generated for each visit
+--this rule is testing that at least some notes exist (considering the number of visits)
+--for datasets with zero notes the derived measure is null and rule does not fire at all
+--possible elaboration of this rule include number of inpatient notes given number of inpatient visits
+--current rule is on overall data density (for notes only) per visit level
+
+INSERT INTO @results_database_schema.ACHILLES_HEEL_results (ACHILLES_HEEL_warning,rule_id,record_count)
+SELECT 
+ 'NOTIFICATION: Notes data density is below threshold'  as ACHILLES_HEEL_warning,
+  37 as rule_id,
+  cast(statistic_value as int) as record_count
+FROM @results_database_schema.ACHILLES_results_derived d
+where measure_id = 'Note:NoteVisitRatio'
+and statistic_value < 0.01; --threshold will be decided in DataQuality study
+
+
+
+
+--ruleid 38 DQ rule; in a general dataset, it is expected that more than providers with a wide range of specialties 
+--(at least more than just one specialty) is present
+--notification  may indicate that provider table is missing data on specialty 
+--typical dataset has at least 28 specialties present in provider table
+
+INSERT INTO @results_database_schema.ACHILLES_HEEL_results (ACHILLES_HEEL_warning,rule_id,record_count)
+SELECT 
+ 'NOTIFICATION: [GeneralPopulationOnly] Count of distinct specialties of providers in the PROVIDER table is below threshold'  as ACHILLES_HEEL_warning,
+  38 as rule_id,
+  cast(statistic_value as int) as record_count
+FROM @results_database_schema.ACHILLES_results_derived d
+where measure_id = 'Provider:SpeciatlyCnt'
+and statistic_value <2; --DataQuality data indicate median of 55 specialties (percentile25 is 28; percentile10 is 2)
+
+
+--ruleid 39 DQ rule; Given lifetime record DQ assumption if more than 30k patients is born for every deceased patient
+--the dataset may not be recording complete records for all senior patients in that year
+--derived ratio measure Death:BornDeceasedRatio only exists for years where death data exist
+--to avoid alerting on too early years such as 1925 where births exist but no deaths
+
+INSERT INTO @results_database_schema.ACHILLES_HEEL_results (ACHILLES_HEEL_warning,rule_id,record_count)
+select 
+'NOTIFICATION: [GeneralPopulationOnly] In some years, number of deaths is too low considering the number of birhts (lifetime record DQ assumption)' 
+ as achilles_heel_warning,
+ 39 as rule_id,
+ year_cnt as record_count 
+ from
+ (select count(*) as year_cnt from @results_database_schema.achilles_results_derived 
+ where measure_id =  'Death:BornDeceasedRatio' and statistic_value > 30000) a
+where a.year_cnt> 0; 
+
+
+--ruleid 40  this rule was under umbrella rule 1 and was made into a separate rule
+
+
+INSERT INTO @results_database_schema.ACHILLES_HEEL_results (
+	analysis_id,
+	ACHILLES_HEEL_warning,
+	rule_id,
+	record_count
+	)
+SELECT DISTINCT or1.analysis_id,
+	'ERROR: Death event outside observation period, ' + cast(or1.analysis_id as VARCHAR) + '-' + oa1.analysis_name + '; count (n=' + cast(or1.count_value as VARCHAR) + ') should not be > 0' AS ACHILLES_HEEL_warning,
+	40 as rule_id,
+	or1.count_value
+FROM @results_database_schema.ACHILLES_results or1
+INNER JOIN @results_database_schema.ACHILLES_analysis oa1
+	ON or1.analysis_id = oa1.analysis_id
+WHERE or1.analysis_id IN (510)
+	AND or1.count_value > 0;
+
+
+--ruleid 41 DQ rule, data density
+--porting a Sentinel rule that checks for certain vital signs data (weight, in this case)
+--multiple concepts_ids may be added to broaden the rule, however standardizing on a single
+--concept would be more optimal
+
+INSERT INTO @results_database_schema.ACHILLES_HEEL_results (ACHILLES_HEEL_warning,rule_id)
+select 'NOTIFICATION:No body weight data in MEASUREMENT table (under concept_id 3025315 (LOINC code 29463-7))' 
+ as achilles_heel_warning,
+ 41 as rule_id
+from
+(select count(*) as row_present  
+ from @results_database_schema.achilles_results 
+ where analysis_id = 1800 and stratum_1 = '3025315'
+) a
+where a.row_present = 0;
