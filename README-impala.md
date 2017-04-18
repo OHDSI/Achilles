@@ -14,12 +14,12 @@ In R, use the following commands to install the Impala development version of Ac
 
 ```r
 install.packages("devtools")
-library(devtools)
+                 library(devtools)
 
-install_github("tomwhite/SqlRender", ref="impala-location-reserved-word")
+install_github("tomwhite/SqlRender", ref="impala-timestamp")
 library(SqlRender)
-
-install_github("tomwhite/Achilles", ref="impala") 
+install_github("ohdsi/DatabaseConnector")
+install_github("ohdsi/Achilles")
 ```
 
 To run Achilles for a single, simple analysis, try:
@@ -28,11 +28,11 @@ To run Achilles for a single, simple analysis, try:
 library(Achilles)
 connectionDetails <- createConnectionDetails(dbms="impala", 
                                              server="bottou01.sjc.cloudera.com",
-                                             schema="omop_cdm",
+                                             schema="omop_cdm_parquet",
                                              pathToDriver = "/impala-drivers/Cloudera_ImpalaJDBC4_2.5.36")
-achillesResults <- achilles(connectionDetails, cdmDatabaseSchema="omop_cdm",
+achillesResults <- achilles(connectionDetails, cdmDatabaseSchema="omop_cdm_parquet",
                             resultsDatabaseSchema="achilles", sourceName="Impala trial", runHeel = FALSE,
-                            cdmVersion = "5", vocabDatabaseSchema="omop_cdm", analysisIds = c(1))
+                            cdmVersion = "5", vocabDatabaseSchema="omop_cdm_parquet", analysisIds = c(1))
 ```
 
 Have a look at the output:
@@ -44,9 +44,9 @@ impala-shell -q 'select * from achilles.achilles_results'
 The following is a more complex analysis:
 
 ```r
-achillesResults <- achilles(connectionDetails, cdmDatabaseSchema="omop_cdm",
+achillesResults <- achilles(connectionDetails, cdmDatabaseSchema="omop_cdm_parquet",
                             resultsDatabaseSchema="achilles", sourceName="Impala trial", runHeel = FALSE,
-                            cdmVersion = "5", vocabDatabaseSchema="omop_cdm", analysisIds = c(105))
+                            cdmVersion = "5", vocabDatabaseSchema="omop_cdm_parquet", analysisIds = c(105))
 ```
 
 This is how you can run a set of analyses, by exclusion:
@@ -54,9 +54,9 @@ This is how you can run a set of analyses, by exclusion:
 allAnalyses=getAnalysisDetails()$analysis_id
 subset1=setdiff(allAnalyses,c(110))
 subset2=Filter(function(X) { X > 0 }, subset1)
-achillesResults <- achilles(connectionDetails, cdmDatabaseSchema="omop_cdm",
+achillesResults <- achilles(connectionDetails, cdmDatabaseSchema="omop_cdm_parquet",
                             resultsDatabaseSchema="achilles", sourceName="Impala trial", runHeel = FALSE, createTable = FALSE,
-                            cdmVersion = "5", vocabDatabaseSchema="omop_cdm", 
+                            cdmVersion = "5", vocabDatabaseSchema="omop_cdm_parquet", 
                             analysisIds = subset2)
 ```
 
@@ -66,9 +66,9 @@ created, to save time.
 Finally, run all of the analyses with:
 
 ```r
-achillesResults <- achilles(connectionDetails, cdmDatabaseSchema="omop_cdm",
+achillesResults <- achilles(connectionDetails, cdmDatabaseSchema="omop_cdm_parquet",
                             resultsDatabaseSchema="achilles", sourceName="Impala trial", runHeel = FALSE,
-                            cdmVersion = "5", vocabDatabaseSchema="omop_cdm")
+                            cdmVersion = "5", vocabDatabaseSchema="omop_cdm_parquet")
 ```
 
 You can uninstall packages with 
