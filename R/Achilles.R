@@ -57,6 +57,7 @@ getAnalysisDetails <- function() {
 #' @param validateSchema     Boolean to determine if CDM Schema Validation should be run. This could be very slow.  Default = FALSE
 #' @param vocabDatabaseSchema		string name of database schema that contains OMOP Vocabulary. Default is cdmDatabaseSchema. On SQL Server, this should specifiy both the database and the schema, so for example 'results.dbo'.
 #' @param runCostAnalysis Boolean to determine if cost analysis should be run. Note: only works on CDM v5.0 style cost tables.
+#' @param conceptHierarchy Boolean to determine if the concept_hierarchy result table should be created, for use by Atlas treemaps. Note: only works on CDM v5.0 tables.
 #' 
 #' @return An object of type \code{achillesResults} containing details for connecting to the database containing the results 
 #' @examples \dontrun{
@@ -78,14 +79,18 @@ achilles <- function (connectionDetails,
                       validateSchema = FALSE,
                       vocabDatabaseSchema = cdmDatabaseSchema,
                       runCostAnalysis = FALSE,
-                      sqlOnly = FALSE){
+                      sqlOnly = FALSE,
+                      conceptHierarchy = TRUE){
   
   if (cdmVersion == "4")  {
     achillesFile <- "Achilles_v4.sql"
     heelFile <- "AchillesHeel_v4.sql"
+    hierarchyFile = ""
+    conceptHierarchy = FALSE
   } else if (cdmVersion == "5") {
     achillesFile <- "Achilles_v5.sql"
     heelFile <- "AchillesHeel_v5.sql"
+    hierarchyFile = "ConceptHierarchy_v5.sql"
   } else  {
     stop("Error: Invalid CDM Version number, use 4 or 5")
   }
@@ -112,7 +117,7 @@ achilles <- function (connectionDetails,
                                         smallcellcount = smallcellcount,
                                         validateSchema = validateSchema,
                                         # vocab_database = vocabDatabase,
-                                        vocab_database_schema = vocabDatabaseSchema,
+                                        # vocab_database_schema = vocabDatabaseSchema,
                                         runCostAnalysis = runCostAnalysis
   )
   
@@ -143,7 +148,7 @@ achilles <- function (connectionDetails,
                                       # results_database = resultsDatabase,
                                       results_database_schema = resultsDatabaseSchema,
                                       source_name = sourceName, 
-                                      list_of_analysis_ids = analysisIds,
+                                      #list_of_analysis_ids = analysisIds,
                                       createTable = createTable,
                                       smallcellcount = smallcellcount,
                                       # vocab_database = vocabDatabase,
@@ -156,6 +161,22 @@ achilles <- function (connectionDetails,
     
   } else heelSql='HEEL EXECUTION SKIPPED PER USER REQUEST'
   
+  if (conceptHierarchy) {
+    hierarchySql <- loadRenderTranslateSql(sqlFilename = hierarchyFile,
+                                      packageName = "Achilles",
+                                      dbms = connectionDetails$dbms,
+                                      oracleTempSchema = oracleTempSchema,
+                                      results_database_schema = resultsDatabaseSchema,
+                                      vocab_database_schema = vocabDatabaseSchema
+    )
+    
+    writeLines("Executing Concept Hierarchy creation. This could take a while")
+    executeSql(conn,hierarchySql)
+    writeLines(paste("Done. Concept Hierarchy table can now be found in",resultsDatabaseSchema))    
+    
+  } else heelSql='CONCEPT HIERARCHY EXECUTION SKIPPED PER USER REQUEST'
+  
+  dummy <- dbDisconnect(conn)
   DatabaseConnector::disconnect(conn)
   
   resultsConnectionDetails <- connectionDetails
@@ -196,11 +217,11 @@ achilles <- function (connectionDetails,
 #' }
 #' @export
 achillesHeel <- function (connectionDetails, 
-                      cdmDatabaseSchema, 
-                      oracleTempSchema = cdmDatabaseSchema,
-                      resultsDatabaseSchema = cdmDatabaseSchema,
-                      cdmVersion = "5",
-                      vocabDatabaseSchema = cdmDatabaseSchema){
+                          cdmDatabaseSchema, 
+                          oracleTempSchema = cdmDatabaseSchema,
+                          resultsDatabaseSchema = cdmDatabaseSchema,
+                          cdmVersion = "5",
+                          vocabDatabaseSchema = cdmDatabaseSchema){
   
 #   resultsDatabase <- strsplit(resultsDatabaseSchema ,"\\.")[[1]][1]
 #   vocabDatabase <- strsplit(vocabDatabaseSchema ,"\\.")[[1]][1]
@@ -243,4 +264,54 @@ fetchAchillesHeelResults <- function (connectionDetails, resultsDatabaseSchema){
   res <- DatabaseConnector::querySql(conn,sql)
   DatabaseConnector::disconnect(conn)
   res
+}
+
+#' execution of concept hierarchy creation 
+#'
+#' @description
+#' \code{conceptHierarchy} executes script to create the concept_hierarchy table.
+#'
+#' @details
+#' \code{conceptHierarchy} executes script to create the concept_hierarchy table in the results schema, to be used by Atlas for treemap displays.
+#' 
+#' @param connectionDetails  An R object of type ConnectionDetail (details for the function that contains server info, database type, optionally username/password, port)
+#' @param vocabDatabaseSchema		string name of database schema that contains OMOP Vocabulary. Default is vocabDatabaseSchema. On SQL Server, this should specifiy both the database and the schema, so for example 'results.dbo'.
+#' @param oracleTempSchema    For Oracle only: the name of the database schema where you want all temporary tables to be managed. Requires create/insert permissions to this database. 
+#' @param resultsDatabaseSchema		string name of database schema that we can write results to. Default is vocabDatabaseSchema. On SQL Server, this should specifiy both the database and the schema, so for example 'results.dbo'.
+#' @param cdmVersion     Define the OMOP CDM version used:  currently support only "5".  Default = "5"
+#' 
+#' @return nothing is returned
+#' @examples \dontrun{
+#'   connectionDetails <- createConnectionDetails(dbms="sql server", server="RNDUSRDHIT07.jnj.com")
+#'   conceptHierarchy <- conceptHierarchy(connectionDetails, resultsDatabaseSchema="scratch", vocabDatabaseSchema="vocabulary")
+#' }
+#' @export
+conceptHierarchy <- function (connectionDetails, 
+                              vocabDatabaseSchema, 
+                              oracleTempSchema = vocabDatabaseSchema,
+                              resultsDatabaseSchema = vocabDatabaseSchema,
+                              cdmVersion = "5"){
+  
+  #   resultsDatabase <- strsplit(resultsDatabaseSchema ,"\\.")[[1]][1]
+  #   vocabDatabase <- strsplit(vocabDatabaseSchema ,"\\.")[[1]][1]
+  
+  if (cdmVersion == "5") {
+    hierarchyFile = "ConceptHierarchy_v5.sql"
+  } else  {
+    stop("Error: Invalid CDM Version number, only version 5 supported")
+  }
+  
+  hierarchySql <- loadRenderTranslateSql(sqlFilename = hierarchyFile,
+                                         packageName = "Achilles",
+                                         dbms = connectionDetails$dbms,
+                                         oracleTempSchema = oracleTempSchema,
+                                         #cdm_database_schema = cdmDatabaseSchema,
+                                         results_database_schema = resultsDatabaseSchema,
+                                         vocab_database_schema = vocabDatabaseSchema
+  );
+  
+  conn <- connect(connectionDetails);
+  writeLines("Executing Concept Hierarchy creation. This could take a while")
+  executeSql(conn,hierarchySql)
+  writeLines(paste("Done. Concept Hierarchy table can now be found in",resultsDatabaseSchema))    
 }
