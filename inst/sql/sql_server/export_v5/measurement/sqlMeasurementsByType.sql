@@ -5,7 +5,7 @@ select c1.concept_id as MEASUREMENT_CONCEPT_ID,
 	ar1.count_value as COUNT_VALUE
 from (
   select cast(stratum_1 as int) stratum_1, cast(stratum_2 as int) stratum_2, count_value
-  FROM @results_database_schema.ACHILLES_results_dist  
+  FROM @results_database_schema.ACHILLES_results  
   where analysis_id = 1805
   GROUP BY analysis_id, stratum_1, stratum_2, count_value 
 ) ar1
