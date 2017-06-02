@@ -23,7 +23,7 @@ test_that("Achilles main does not throw an error on BigQuery", {
     }
     expect_true(class(result) == "achillesResults")
   } else {
-    writeLines("Skipping postgress main test")
+    writeLines("Skipping bigquery main test")
   }
 })
 
