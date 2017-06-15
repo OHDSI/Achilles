@@ -1158,22 +1158,22 @@ insert into @results_database_schema.ACHILLES_analysis (analysis_id, analysis_na
 	values (1800, 'Number of persons with at least one measurement occurrence, by measurement_concept_id', 'measurement_concept_id');
 
 insert into @results_database_schema.ACHILLES_analysis (analysis_id, analysis_name, stratum_1_name)
-	values (1801, 'Number of measurement occurrence records, by observation_concept_id', 'measurement_concept_id');
+	values (1801, 'Number of measurement occurrence records, by measurement_concept_id', 'measurement_concept_id');
 
 insert into @results_database_schema.ACHILLES_analysis (analysis_id, analysis_name, stratum_1_name, stratum_2_name)
-	values (1802, 'Number of persons by measurement occurrence start month, by observation_concept_id', 'measurement_concept_id', 'calendar month');	
+	values (1802, 'Number of persons by measurement occurrence start month, by measurement_concept_id', 'measurement_concept_id', 'calendar month');	
 
 insert into @results_database_schema.ACHILLES_analysis (analysis_id, analysis_name)
-	values (1803, 'Number of distinct observation occurrence concepts per person');
+	values (1803, 'Number of distinct mesurement occurrence concepts per person');
 
 insert into @results_database_schema.ACHILLES_analysis (analysis_id, analysis_name, stratum_1_name, stratum_2_name, stratum_3_name, stratum_4_name)
-	values (1804, 'Number of persons with at least one observation occurrence, by observation_concept_id by calendar year by gender by age decile', 'measurement_concept_id', 'calendar year', 'gender_concept_id', 'age decile');
+	values (1804, 'Number of persons with at least one mesurement  occurrence, by measurement_concept_id by calendar year by gender by age decile', 'measurement_concept_id', 'calendar year', 'gender_concept_id', 'age decile');
 
 insert into @results_database_schema.ACHILLES_analysis (analysis_id, analysis_name, stratum_1_name, stratum_2_name)
-	values (1805, 'Number of observation occurrence records, by measurement_concept_id by measurement_type_concept_id', 'measurement_concept_id', 'measurement_type_concept_id');
+	values (1805, 'Number of measurement occurrence records, by measurement_concept_id by measurement_type_concept_id', 'measurement_concept_id', 'measurement_type_concept_id');
 
 insert into @results_database_schema.ACHILLES_analysis (analysis_id, analysis_name, stratum_1_name, stratum_2_name)
-	values (1806, 'Distribution of age by observation_concept_id', 'observation_concept_id', 'gender_concept_id');
+	values (1806, 'Distribution of age by measurement_concept_id', 'measurement_concept_id', 'gender_concept_id');
 
 insert into @results_database_schema.ACHILLES_analysis (analysis_id, analysis_name, stratum_1_name, stratum_2_name)
 	values (1807, 'Number of measurement occurrence records, by measurement_concept_id and unit_concept_id', 'measurement_concept_id', 'unit_concept_id');
