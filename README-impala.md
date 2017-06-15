@@ -83,3 +83,12 @@ If you want to delete all the Achilles results use the following:
 ```bash
 impala-shell -q 'drop database achilles cascade'
 ```
+
+
+Heel implementation for Impala
+
+Currently only Achilles precomputations are fully developed for Impala. No work was done on the Heel component of Achilles
+
+```bash
+impala-shell -q 'drop database achilles cascade'
+```
