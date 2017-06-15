@@ -39,7 +39,7 @@ SQL for OMOP CDM v5
 {DEFAULT @results_database = 'scratch'}
 {DEFAULT @results_database_schema = 'scratch.dbo'}
 {DEFAULT @source_name = 'CDM NAME'}
-{DEFAULT @achilles_version = '1.4.5'}
+{DEFAULT @achilles_version = '1.4.6'}
 {DEFAULT @smallcellcount = 5}
 {DEFAULT @createTable = TRUE}
 {DEFAULT @validateSchema = FALSE}
@@ -673,6 +673,9 @@ insert into @results_database_schema.ACHILLES_analysis (analysis_id, analysis_na
 
 insert into @results_database_schema.ACHILLES_analysis (analysis_id, analysis_name, stratum_1_name)
 	values (220, 'Number of visit occurrence records by visit occurrence start month', 'calendar month');
+
+insert into @results_database_schema.ACHILLES_analysis (analysis_id, analysis_name, stratum_1_name)
+	values (221, 'Number of persons by visit start year', 'calendar year');
 
 
 
