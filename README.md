@@ -121,7 +121,7 @@ Some Heel Rules take advantage of derived measures. A feature of Heel introduced
 
 Overview of derived measures can be seen in file `derived_analysis_details.csv`.
 
-For possible future flexible setting of Achilles Heel rule thresholds, some Heel rules are split into two phase approach. First, a derived measure is computed and the result is stored in a separate table `ACHILLES_RESULTS_DERIVED`. A Heel rule logic is than made simpler by a simple comparison whether a derived measure is over a threshold. A link between which rules use which pre-computation is available in file `inst\csv\achilles_rule.csv` (see column `linked_measure`). For example
+For possible future flexible setting of Achilles Heel rule thresholds, some Heel rules are split into two phase approach. First, a derived measure is computed and the result is stored in a separate table `ACHILLES_RESULTS_DERIVED`. A Heel rule logic is than made simpler by a simple comparison whether a derived measure is over a threshold. A link between which rules use which pre-computation is available in file `inst\csv\achilles_rule.csv` (see column `linked_measure`).
 
 
 # Heel Rules
