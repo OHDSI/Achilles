@@ -11,7 +11,7 @@ Description: creates descriptive statistics summary for an entire OMOP CDM
     Heel component does data quality assesment.
 Depends:
     SqlRender,
-    DatabaseConnector,
+    DatabaseConnector (>= 1.11.4),
     rjson
 Suggests:
     testthat
