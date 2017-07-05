@@ -127,10 +127,10 @@ achilles <- function (connectionDetails,
     
     return();
   } else {
-    conn <- connect(connectionDetails)
+    conn <- DatabaseConnector::connect(connectionDetails)
     writeLines("Executing multiple queries. This could take a while")
     #writeSql(achillesSql, 'achillesDebug.sql');
-    executeSql(conn,achillesSql)
+    DatabaseConnector::executeSql(conn,achillesSql)
     writeLines(paste("Done. Achilles results can now be found in",resultsDatabaseSchema))
   }
   
@@ -151,12 +151,12 @@ achilles <- function (connectionDetails,
     )
     
     writeLines("Executing Achilles Heel. This could take a while")
-    executeSql(conn,heelSql)
+    DatabaseConnector::executeSql(conn,heelSql)
     writeLines(paste("Done. Achilles Heel results can now be found in",resultsDatabaseSchema))    
     
   } else heelSql='HEEL EXECUTION SKIPPED PER USER REQUEST'
   
-  dummy <- dbDisconnect(conn)
+  DatabaseConnector::disconnect(conn)
   
   resultsConnectionDetails <- connectionDetails
   resultsConnectionDetails$schema = resultsDatabaseSchema
@@ -224,10 +224,10 @@ achillesHeel <- function (connectionDetails,
                                     vocab_database_schema = vocabDatabaseSchema
   );
   
-  conn <- connect(connectionDetails);
+  conn <- DatabaseConnector::connect(connectionDetails);
   writeLines("Executing Achilles Heel. This could take a while");
-  executeSql(conn,heelSql);
-  dummy <- dbDisconnect(conn);
+  DatabaseConnector::executeSql(conn,heelSql);
+  DatabaseConnector::disconnect(conn);
   writeLines(paste("Done. Achilles Heel results can now be found in",resultsDatabaseSchema))
 }
 
@@ -235,11 +235,12 @@ achillesHeel <- function (connectionDetails,
 #' @export
 fetchAchillesHeelResults <- function (connectionDetails, resultsDatabaseSchema){
   connectionDetails$schema = resultsDatabaseSchema
-  conn <- connect(connectionDetails)
+  conn <- DatabaseConnector::connect(connectionDetails)
   
   
   sql <- "SELECT * FROM ACHILLES_heel_results"
   sql <- renderSql(sql)$sql
-  res <- dbGetQuery(conn,sql)
+  res <- DatabaseConnector::querySql(conn,sql)
+  DatabaseConnector::disconnect(conn)
   res
 }
