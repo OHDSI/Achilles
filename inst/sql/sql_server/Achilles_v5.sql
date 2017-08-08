@@ -7467,7 +7467,7 @@ union
 select 'condition_occurrence' as table_name,condition_source_value as source_value, COUNT_BIG(*) as cnt from @cdm_database_schema.condition_occurrence where condition_concept_id = 0 group by condition_source_value 
 ) a
 where cnt >= 1 --use other threshold if needed (e.g., 10)
-order by a.table_name desc, cnt desc
+--order by a.table_name desc, cnt desc
 ;
 --}
 
