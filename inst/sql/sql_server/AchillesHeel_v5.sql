@@ -929,8 +929,8 @@ INNER JOIN @results_database_schema.ACHILLES_results ar2
 			1002
 			)
 WHERE (
-		ROUND(CAST(ar1.stratum_2 AS DECIMAL(18,4)),0) + 1 = ROUND(CAST(ar2.stratum_2 AS DECIMAL(18,4)),0)
-		OR ROUND(CAST(ar1.stratum_2 AS DECIMAL(18,4)),0) + 89 = ROUND(CAST(ar2.stratum_2 AS DECIMAL(18,4)),0)
+		CAST(ar1.stratum_2 AS INT) + 1 = CAST(ar2.stratum_2 AS INT)
+		OR CAST(ar1.stratum_2 AS INT) + 89 = CAST(ar2.stratum_2 AS INT)
 		)
 	AND 1.0 * abs(ar2.count_value - ar1.count_value) / ar1.count_value > 1
 	AND ar1.count_value > 10
