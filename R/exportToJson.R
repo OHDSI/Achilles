@@ -1039,6 +1039,14 @@ generateDrugReports <- function(conn, dbms, cdmDatabaseSchema, resultsDatabaseSc
                                                    vocab_database_schema = vocabDatabaseSchema
   )
   
+  queryDrugFrequencyDistribution <- loadRenderTranslateSql(sqlFilename = addCdmVersionPath("/drug/sqlFrequencyDistribution.sql",cdmVersion), 
+                                                           packageName = "Achilles",
+                                                           dbms = dbms,
+                                                           cdm_database_schema = cdmDatabaseSchema,
+                                                           results_database_schema = resultsDatabaseSchema,
+                                                           vocab_database_schema = vocabDatabaseSchema
+  )
+  
   queryQuantityDistribution <- loadRenderTranslateSql(sqlFilename = addCdmVersionPath("/drug/sqlQuantityDistribution.sql",cdmVersion),
                                                       packageName = "Achilles",
                                                       dbms = dbms,
@@ -1062,6 +1070,7 @@ generateDrugReports <- function(conn, dbms, cdmDatabaseSchema, resultsDatabaseSc
   dataPrevalenceByMonth <- DatabaseConnector::querySql(conn,queryPrevalenceByMonth)
   dataQuantityDistribution <- DatabaseConnector::querySql(conn,queryQuantityDistribution) 
   dataRefillsDistribution <- DatabaseConnector::querySql(conn,queryRefillsDistribution) 
+  dataDrugFrequencyDistribution <- DatabaseConnector::querySql(conn,queryDrugFrequencyDistribution)
   
   buildDrugReport <- function(concept_id) {
     report <- {}
@@ -1070,6 +1079,7 @@ generateDrugReports <- function(conn, dbms, cdmDatabaseSchema, resultsDatabaseSc
     report$DRUGS_BY_TYPE <- dataDrugsByType[dataDrugsByType$DRUG_CONCEPT_ID == concept_id, c(3,4)]
     report$PREVALENCE_BY_GENDER_AGE_YEAR <- dataPrevalenceByGenderAgeYear[dataPrevalenceByGenderAgeYear$CONCEPT_ID == concept_id,c(3,4,5,6)]  
     report$PREVALENCE_BY_MONTH <- dataPrevalenceByMonth[dataPrevalenceByMonth$CONCEPT_ID == concept_id,c(3,4)]
+    report$DRUG_FREQUENCY_DISTRIBUTION <- dataDrugFrequencyDistribution[dataDrugFrequencyDistribution$CONCEPT_ID == concept_id,c(3,4)]
     report$QUANTITY_DISTRIBUTION <- dataQuantityDistribution[dataQuantityDistribution$DRUG_CONCEPT_ID == concept_id, c(2,3,4,5,6,7,8,9)]
     report$REFILLS_DISTRIBUTION <- dataRefillsDistribution[dataRefillsDistribution$DRUG_CONCEPT_ID == concept_id, c(2,3,4,5,6,7,8,9)]
     
@@ -1152,6 +1162,14 @@ generateProcedureReports <- function(conn, dbms, cdmDatabaseSchema, resultsDatab
                                                    vocab_database_schema = vocabDatabaseSchema
   )
   
+  queryProcedureFrequencyDistribution <- loadRenderTranslateSql(sqlFilename = addCdmVersionPath("/procedure/sqlFrequencyDistribution.sql",cdmVersion), 
+                                                           packageName = "Achilles",
+                                                           dbms = dbms,
+                                                           cdm_database_schema = cdmDatabaseSchema,
+                                                           results_database_schema = resultsDatabaseSchema,
+                                                           vocab_database_schema = vocabDatabaseSchema
+  )
+  
   queryProceduresByType <- loadRenderTranslateSql(sqlFilename = addCdmVersionPath("/procedure/sqlProceduresByType.sql",cdmVersion),
                                                   packageName = "Achilles",
                                                   dbms = dbms,
@@ -1172,11 +1190,13 @@ generateProcedureReports <- function(conn, dbms, cdmDatabaseSchema, resultsDatab
   dataPrevalenceByMonth <- DatabaseConnector::querySql(conn,queryPrevalenceByMonth)  
   dataProceduresByType <- DatabaseConnector::querySql(conn,queryProceduresByType)    
   dataAgeAtFirstOccurrence <- DatabaseConnector::querySql(conn,queryAgeAtFirstOccurrence)    
+  dataProcedureFrequencyDistribution <- DatabaseConnector::querySql(conn,queryProcedureFrequencyDistribution)
   
   buildProcedureReport <- function(concept_id) {
     report <- {}
     report$PREVALENCE_BY_GENDER_AGE_YEAR <- dataPrevalenceByGenderAgeYear[dataPrevalenceByGenderAgeYear$CONCEPT_ID == concept_id,c(3,4,5,6)]    
     report$PREVALENCE_BY_MONTH <- dataPrevalenceByMonth[dataPrevalenceByMonth$CONCEPT_ID == concept_id,c(3,4)]
+    report$PROCEDURE_FREQUENCY_DISTRIBUTION <- dataProcedureFrequencyDistribution[dataProcedureFrequencyDistribution$CONCEPT_ID == concept_id,c(3,4)]
     report$PROCEDURES_BY_TYPE <- dataProceduresByType[dataProceduresByType$PROCEDURE_CONCEPT_ID == concept_id,c(4,5)]
     report$AGE_AT_FIRST_OCCURRENCE <- dataAgeAtFirstOccurrence[dataAgeAtFirstOccurrence$CONCEPT_ID == concept_id,c(2,3,4,5,6,7,8,9)]
     filename <- paste(outputPath, "/procedures/procedure_" , concept_id , ".json", sep='')  
@@ -1710,6 +1730,14 @@ generateMeasurementReports <- function(conn, dbms, cdmDatabaseSchema, resultsDat
                                                    vocab_database_schema = vocabDatabaseSchema
   )
   
+  queryFrequencyDistribution <- loadRenderTranslateSql(sqlFilename = addCdmVersionPath("/measurement/sqlFrequencyDistribution.sql",cdmVersion), 
+                                                       packageName = "Achilles",
+                                                       dbms = dbms,
+                                                       cdm_database_schema = cdmDatabaseSchema,
+                                                       results_database_schema = resultsDatabaseSchema,
+                                                       vocab_database_schema = vocabDatabaseSchema
+  )
+  
   queryMeasurementsByType <- loadRenderTranslateSql(sqlFilename = addCdmVersionPath("/measurement/sqlMeasurementsByType.sql",cdmVersion),
                                                     packageName = "Achilles",
                                                     dbms = dbms,
@@ -1775,11 +1803,13 @@ generateMeasurementReports <- function(conn, dbms, cdmDatabaseSchema, resultsDat
   dataLowerLimitDistribution <- DatabaseConnector::querySql(conn,queryLowerLimitDistribution)
   dataUpperLimitDistribution <- DatabaseConnector::querySql(conn,queryUpperLimitDistribution)
   dataValuesRelativeToNorm <- DatabaseConnector::querySql(conn,queryValuesRelativeToNorm)
+  dataFrequencyDistribution <- DatabaseConnector::querySql(conn,queryFrequencyDistribution)
   
   buildMeasurementReport <- function(concept_id) {
     report <- {}
     report$PREVALENCE_BY_GENDER_AGE_YEAR <- dataPrevalenceByGenderAgeYear[dataPrevalenceByGenderAgeYear$CONCEPT_ID == concept_id,c(3,4,5,6)]    
     report$PREVALENCE_BY_MONTH <- dataPrevalenceByMonth[dataPrevalenceByMonth$CONCEPT_ID == concept_id,c(3,4)]
+    report$FREQUENCY_DISTRIBUTION <- dataFrequencyDistribution[dataFrequencyDistribution$CONCEPT_ID == concept_id,c(3,4)]
     report$MEASUREMENTS_BY_TYPE <- dataMeasurementsByType[dataMeasurementsByType$MEASUREMENT_CONCEPT_ID == concept_id,c(4,5)]
     report$AGE_AT_FIRST_OCCURRENCE <- dataAgeAtFirstOccurrence[dataAgeAtFirstOccurrence$CONCEPT_ID == concept_id,c(2,3,4,5,6,7,8,9)]
     
@@ -1871,6 +1901,14 @@ generateObservationReports <- function(conn, dbms, cdmDatabaseSchema, resultsDat
                                                    vocab_database_schema = vocabDatabaseSchema
   )
   
+  queryObsFrequencyDistribution <- loadRenderTranslateSql(sqlFilename = addCdmVersionPath("/observation/sqlFrequencyDistribution.sql",cdmVersion), 
+                                                          packageName = "Achilles",
+                                                          dbms = dbms,
+                                                          cdm_database_schema = cdmDatabaseSchema,
+                                                          results_database_schema = resultsDatabaseSchema,
+                                                          vocab_database_schema = vocabDatabaseSchema
+  )
+  
   queryObservationsByType <- loadRenderTranslateSql(sqlFilename = addCdmVersionPath("/observation/sqlObservationsByType.sql",cdmVersion),
                                                     packageName = "Achilles",
                                                     dbms = dbms,
@@ -1934,6 +1972,7 @@ generateObservationReports <- function(conn, dbms, cdmDatabaseSchema, resultsDat
   dataPrevalenceByMonth <- DatabaseConnector::querySql(conn,queryPrevalenceByMonth)  
   dataObservationsByType <- DatabaseConnector::querySql(conn,queryObservationsByType)    
   dataAgeAtFirstOccurrence <- DatabaseConnector::querySql(conn,queryAgeAtFirstOccurrence)
+  dataObsFrequencyDistribution <- DatabaseConnector::querySql(conn,queryObsFrequencyDistribution)
   if (cdmVersion == "4")
   {
     dataRecordsByUnit <- DatabaseConnector::querySql(conn,queryRecordsByUnit)
@@ -1947,6 +1986,7 @@ generateObservationReports <- function(conn, dbms, cdmDatabaseSchema, resultsDat
     report <- {}
     report$PREVALENCE_BY_GENDER_AGE_YEAR <- dataPrevalenceByGenderAgeYear[dataPrevalenceByGenderAgeYear$CONCEPT_ID == concept_id,c(3,4,5,6)]    
     report$PREVALENCE_BY_MONTH <- dataPrevalenceByMonth[dataPrevalenceByMonth$CONCEPT_ID == concept_id,c(3,4)]
+    report$OBS_FREQUENCY_DISTRIBUTION <- dataObsFrequencyDistribution[dataObsFrequencyDistribution$CONCEPT_ID == concept_id,c(3,4)]
     report$OBSERVATIONS_BY_TYPE <- dataObservationsByType[dataObservationsByType$OBSERVATION_CONCEPT_ID == concept_id,c(4,5)]
     report$AGE_AT_FIRST_OCCURRENCE <- dataAgeAtFirstOccurrence[dataAgeAtFirstOccurrence$CONCEPT_ID == concept_id,c(2,3,4,5,6,7,8,9)]
     
