@@ -1,5 +1,5 @@
 rule_id,rule_name,severity,rule_type,rule_description,threshold,rule_classification,rule_scope,linked_measure
-0,Achilles Heel version 1.3,,,this rule is not used for data analysis. It communicates the version of the ruleset.,,,,
+0,Achilles Heel version 1.4.6,,,this rule is not used for data analysis. It communicates the version of the ruleset.,,,,
 1,multiple checks for greater than zero,error,DQ,umbrella rule: this rule includes multiple error checks on over 35 analysis_ids,>0,complex,,
 2,multiple checks where minimum value of a measure should not be negative,error,DQ,umbrella rule: this rule includes multiple error checks on over 20 analysis_ids where min value in distribution should not be negative,,complex,,
 3,multiple checks related to death data where maximum value of a measure should not be positive,warning,DQ,death distributions where max should not be positive (using anlyses 511;512;513;514;515),,plausibility,,
@@ -41,3 +41,6 @@ rule_id,rule_name,severity,rule_type,rule_description,threshold,rule_classificat
 ",>30000,completeness,GeneralPopulationOnly,Death:BornDeceasedRatio
 40,Death event outside observation period,error,DQ,death event should not be outside observation period; this rule was if previous versions subsumed in umbrella rule,,completeness,,510
 41,No weight data in MEASUREMENT table,notification,DQ,implementation of similar Sentinel rule for certain vital signs; rule lukes at concept_id 3025315 (LOINC code 29463-7)),,completeness,,1800
+42,Percentage of  outpatient visits is too low,notification,DQ,"Rule is looking at percentage of outpatient visits. If this measure is too low (e.g. 5 percent), it may indicate a predominantly inpatient dataset. Threshold was decided on DQ-Study 2. General population only rule.",<0.42,completeness,GeneralPopulationOnly,201
+43,99+ percent of persons have exactly one observation period,notification,DQ,Some datasets cannot provide observation period data based on health insurance start and stop dates. Rule notifies a user if 99+% of patients have exactly one observation period. ,>=99.0,completeness,,113
+44,"Percentage of patients with at least 1 Measurement, 1 Dx and 1 Rx is below threshold",notification,DQ,This notification may indicate that a significant percentage of patients is missing data for either Measurement or Diagnosis or Medication. Many clinical studies may want to require at least some data in all three domains. Threshold was decided empirically in OHDSI DQ Study ,,completeness,,2002

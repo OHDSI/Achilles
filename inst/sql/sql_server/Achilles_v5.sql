@@ -39,7 +39,7 @@ SQL for OMOP CDM v5
 {DEFAULT @results_database = 'scratch'}
 {DEFAULT @results_database_schema = 'scratch.dbo'}
 {DEFAULT @source_name = 'CDM NAME'}
-{DEFAULT @achilles_version = '1.4.5'}
+{DEFAULT @achilles_version = '1.4.6'}
 {DEFAULT @smallcellcount = 5}
 {DEFAULT @createTable = TRUE}
 {DEFAULT @validateSchema = FALSE}
@@ -674,6 +674,9 @@ insert into @results_database_schema.ACHILLES_analysis (analysis_id, analysis_na
 insert into @results_database_schema.ACHILLES_analysis (analysis_id, analysis_name, stratum_1_name)
 	values (220, 'Number of visit occurrence records by visit occurrence start month', 'calendar month');
 
+insert into @results_database_schema.ACHILLES_analysis (analysis_id, analysis_name, stratum_1_name)
+	values (221, 'Number of persons by visit start year', 'calendar year');
+
 
 
 --300- PROVIDER
@@ -1158,22 +1161,22 @@ insert into @results_database_schema.ACHILLES_analysis (analysis_id, analysis_na
 	values (1800, 'Number of persons with at least one measurement occurrence, by measurement_concept_id', 'measurement_concept_id');
 
 insert into @results_database_schema.ACHILLES_analysis (analysis_id, analysis_name, stratum_1_name)
-	values (1801, 'Number of measurement occurrence records, by observation_concept_id', 'measurement_concept_id');
+	values (1801, 'Number of measurement occurrence records, by measurement_concept_id', 'measurement_concept_id');
 
 insert into @results_database_schema.ACHILLES_analysis (analysis_id, analysis_name, stratum_1_name, stratum_2_name)
-	values (1802, 'Number of persons by measurement occurrence start month, by observation_concept_id', 'measurement_concept_id', 'calendar month');	
+	values (1802, 'Number of persons by measurement occurrence start month, by measurement_concept_id', 'measurement_concept_id', 'calendar month');	
 
 insert into @results_database_schema.ACHILLES_analysis (analysis_id, analysis_name)
-	values (1803, 'Number of distinct observation occurrence concepts per person');
+	values (1803, 'Number of distinct mesurement occurrence concepts per person');
 
 insert into @results_database_schema.ACHILLES_analysis (analysis_id, analysis_name, stratum_1_name, stratum_2_name, stratum_3_name, stratum_4_name)
-	values (1804, 'Number of persons with at least one observation occurrence, by observation_concept_id by calendar year by gender by age decile', 'measurement_concept_id', 'calendar year', 'gender_concept_id', 'age decile');
+	values (1804, 'Number of persons with at least one mesurement  occurrence, by measurement_concept_id by calendar year by gender by age decile', 'measurement_concept_id', 'calendar year', 'gender_concept_id', 'age decile');
 
 insert into @results_database_schema.ACHILLES_analysis (analysis_id, analysis_name, stratum_1_name, stratum_2_name)
-	values (1805, 'Number of observation occurrence records, by measurement_concept_id by measurement_type_concept_id', 'measurement_concept_id', 'measurement_type_concept_id');
+	values (1805, 'Number of measurement occurrence records, by measurement_concept_id by measurement_type_concept_id', 'measurement_concept_id', 'measurement_type_concept_id');
 
 insert into @results_database_schema.ACHILLES_analysis (analysis_id, analysis_name, stratum_1_name, stratum_2_name)
-	values (1806, 'Distribution of age by observation_concept_id', 'observation_concept_id', 'gender_concept_id');
+	values (1806, 'Distribution of age by measurement_concept_id', 'measurement_concept_id', 'gender_concept_id');
 
 insert into @results_database_schema.ACHILLES_analysis (analysis_id, analysis_name, stratum_1_name, stratum_2_name)
 	values (1807, 'Number of measurement occurrence records, by measurement_concept_id and unit_concept_id', 'measurement_concept_id', 'unit_concept_id');
@@ -7464,7 +7467,7 @@ union
 select 'condition_occurrence' as table_name,condition_source_value as source_value, COUNT_BIG(*) as cnt from @cdm_database_schema.condition_occurrence where condition_concept_id = 0 group by condition_source_value 
 ) a
 where cnt >= 1 --use other threshold if needed (e.g., 10)
-order by a.table_name desc, cnt desc
+--order by a.table_name desc, cnt desc
 ;
 --}
 

@@ -41,6 +41,8 @@ SQL for ACHILLES results (for either OMOP CDM v4 or OMOP CDM v5)
 {DEFAULT @createTable = TRUE}
 {DEFAULT @derivedDataSmPtCount = 11} 
 {DEFAULT @ThresholdAgeWarning = 125} 
+{DEFAULT @ThresholdOutpatientVisitPerc = 0.43} 
+{DEFAULT @ThresholdMinimalPtMeasDxRx = 20.5} 
 
  
 --@results_database_schema.ACHILLES_Heel part:
@@ -77,6 +79,8 @@ create table @results_database_schema.ACHILLES_results_derived
 	statistic_value float,
 	measure_id varchar(255)
 );
+
+
 
 
  
@@ -1338,3 +1342,58 @@ from
  where analysis_id = 1800 and stratum_1 = '3025315'
 ) a
 where a.row_present = 0;
+
+
+
+--ruleid 42 DQ rule
+--Percentage of outpatient visits (concept_id 9202) is too low (for general population).
+--This may indicate a dataset with mostly inpatient data (that may be biased and missing some EHR events)
+--Threshold was decided as 10th percentile in empiric comparison of 12 real world datasets in the DQ-Study2
+
+
+
+INSERT INTO @results_database_schema.ACHILLES_HEEL_results (ACHILLES_HEEL_warning,rule_id)
+select 'NOTIFICATION: [GeneralPopulationOnly] Percentage of outpatient visits is below threshold' 
+ as achilles_heel_warning,
+ 42 as rule_id
+from
+ (
+  select 
+    1.0*count_value/(select sum(count_value) from @results_database_schema.achilles_results where analysis_id = 201)  as outp_perc  
+  from @results_database_schema.achilles_results where analysis_id = 201 and stratum_1='9202'
+  ) d
+where d.outp_perc < @ThresholdOutpatientVisitPerc;
+
+--ruleid 43 DQ rule
+--looks at observation period data, if all patients have exactly one the rule alerts the user
+--This rule is based on majority of real life datasets. 
+--For some datasets (e.g., UK national data with single payor, one observation period is perfectly valid)
+
+
+INSERT INTO @results_database_schema.ACHILLES_HEEL_results (ACHILLES_HEEL_warning,rule_id)
+select 'NOTIFICATION: 99+ percent of persons have exactly one observation period' 
+ as achilles_heel_warning,
+ 43 as rule_id
+from
+ (select 100.0*count_value/(select count_value as total_pts from @results_database_schema.achilles_results r where analysis_id =1) as one_obs_per_perc 
+  from @results_database_schema.achilles_results where analysis_id = 113 and stratum_1 = '1'
+  ) d
+where d.one_obs_per_perc >= 99.0;
+
+
+
+--ruleid 44 DQ rule
+--uses iris measure: patients with at least 1 Meas, 1 Dx and 1 Rx 
+
+
+INSERT INTO @results_database_schema.ACHILLES_HEEL_results (ACHILLES_HEEL_warning,rule_id)
+SELECT 
+ 'NOTIFICATION: Percentage of patients with at least 1 Measurement, 1 Dx and 1 Rx is below threshold' as ACHILLES_HEEL_warning,
+  44 as rule_id
+FROM @results_database_schema.ACHILLES_results_derived d
+where d.measure_id = 'ach_2002:Percentage'
+and d.statistic_value < @ThresholdMinimalPtMeasDxRx  --threshold identified in the DataQuality study
+;
+
+
+

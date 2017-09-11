@@ -110,11 +110,37 @@ License
 =======
 Achilles is licensed under Apache License 2.0
 
+
+# Pre-computations
+
+Achilles has some compatibility with Data Quality initiatives of the Data Quality Collaborative (DQC; http://repository.edm-forum.org/dqc or GitHub https://github.com/orgs/DQCollaborative). For example, a harmonized set of data quality terms has been published by Khan at al. in 2016.
+
+What Achilles calls an *analysis* (a pre-computation for a given dataset), the term used by DQC would be *measure*
+
+Some Heel Rules take advantage of derived measures. A feature of Heel introduced since version 1.4.  A *derived measure* is a result of an SQL query that takes Achilles analyses as input. It is simply a different view of the precomputations that has some advantage to be materialized.  The logic for computing a derived measures can be viewed in the `AchillesHeel_v5.sql` file.
+
+Overview of derived measures can be seen in file `derived_analysis_details.csv`.
+
+For possible future flexible setting of Achilles Heel rule thresholds, some Heel rules are split into two phase approach. First, a derived measure is computed and the result is stored in a separate table `ACHILLES_RESULTS_DERIVED`. A Heel rule logic is than made simpler by a simple comparison whether a derived measure is over a threshold. A link between which rules use which pre-computation is available in file `inst\csv\achilles_rule.csv` (see column `linked_measure`).
+
+
+# Heel Rules
+
+Rules are classified into `CDM conformance` rules and `DQ` rules (see column `rule_type` in the rule CSV file).
+
+
+Some Heel rules can be generalized to non-OMOP datasets. Other rules are dependant on OMOP concept ids and a translation of the code to other CDMs would be needed (for example rule with `rule_id` of `29` uses OMOP specific concept;concept 195075).
+
+Rules that have in their name a prefix `[GeneralPopulationOnly]` are applicable to datasets that represent a general population. Once metadata for this parameter is implemented by OHDSI, their execution can be limited to such datasets. In the meantime, users should ignore output of rules that are meant for general population if their dataset is not of that type.
+
+Rules are classified into: error, warning and notification (see column `severity`).
+
+
 Development
 ===========
 Achilles is being developed in R Studio.
 
-###Development status
+### Development status
 [![Build Status](https://travis-ci.org/OHDSI/Achilles.svg?branch=master)](https://travis-ci.org/OHDSI/Achilles)
 [![codecov.io](https://codecov.io/github/OHDSI/Achilles/coverage.svg?branch=master)](https://codecov.io/github/OHDSI/Achilles?branch=master)
 

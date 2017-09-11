@@ -19,12 +19,12 @@
 #' @export
 fetchAchillesHeelResults <- function (connectionDetails, resultsDatabase){
   connectionDetails$schema = resultsDatabase
-  conn <- connect(connectionDetails)
+  conn <- DatabaseConnector::connect(connectionDetails)
   
   sql <- "SELECT * FROM ACHILLES_HEEL_results"
-  issues <- dbGetQuery(conn,sql)
+  issues <- DatabaseConnector::querySql(conn,sql)
   
-  dummy <- dbDisconnect(conn)
+  DatabaseConnector::disconnect(conn)
   
   issues
 }
@@ -50,20 +50,20 @@ fetchAchillesHeelResults <- function (connectionDetails, resultsDatabase){
 #' @export
 fetchAchillesAnalysisResults <- function (connectionDetails, resultsDatabase, analysisId){
   connectionDetails$schema = resultsDatabase
-  conn <- connect(connectionDetails)
+  conn <- DatabaseConnector::connect(connectionDetails)
   
   sql <- "SELECT * FROM ACHILLES_analysis WHERE analysis_id = @analysisId"
   sql <- renderSql(sql,analysisId = analysisId)$sql
-  analysisDetails <- dbGetQuery(conn,sql)
+  analysisDetails <- DatabaseConnector::querySql(conn,sql)
   
   sql <- "SELECT * FROM ACHILLES_results WHERE analysis_id = @analysisId"
   sql <- renderSql(sql,analysisId = analysisId)$sql
-  analysisResults <- dbGetQuery(conn,sql)
+  analysisResults <- DatabaseConnector::querySql(conn,sql)
   
   if (nrow(analysisResults) == 0){
     sql <- "SELECT * FROM ACHILLES_results_dist WHERE analysis_id = @analysisId"
     sql <- renderSql(sql,analysisId = analysisId)$sql
-    analysisResults <- dbGetQuery(conn,sql)
+    analysisResults <- DatabaseConnector::querySql(conn,sql)
   }
   
   colnames(analysisDetails) <- toupper(colnames(analysisDetails))
@@ -78,7 +78,7 @@ fetchAchillesAnalysisResults <- function (connectionDetails, resultsDatabase, an
     }
   }
   
-  dummy <- dbDisconnect(conn)
+  DatabaseConnector::disconnect(conn)
   
   result <- list(analysisId = analysisId,
                  analysisName = analysisDetails$ANALYSIS_NAME,
