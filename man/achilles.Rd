@@ -10,7 +10,7 @@ achilles(connectionDetails, cdmDatabaseSchema,
   createTable = TRUE, smallcellcount = 5, cdmVersion = "4",
   runHeel = TRUE, validateSchema = FALSE,
   vocabDatabaseSchema = cdmDatabaseSchema, runCostAnalysis = FALSE,
-  sqlOnly = FALSE)
+  sqlOnly = FALSE, createHierarchy = TRUE)
 }
 \arguments{
 \item{connectionDetails}{An R object of type ConnectionDetail (details for the function that contains server info, database type, optionally username/password, port)}
@@ -39,6 +39,8 @@ If not specified, all analyses will be executed. Use \code{\link{getAnalysisDeta
 \item{vocabDatabaseSchema}{string name of database schema that contains OMOP Vocabulary. Default is cdmDatabaseSchema. On SQL Server, this should specifiy both the database and the schema, so for example 'results.dbo'.}
 
 \item{runCostAnalysis}{Boolean to determine if cost analysis should be run. Note: only works on CDM v5.0 style cost tables.}
+
+\item{createHierarchy}{Boolean to determine if the concept_hierarchy result table should be created, for use by Atlas treemaps. Note: only works on CDM v5.0 tables.}
 }
 \value{
 An object of type \code{achillesResults} containing details for connecting to the database containing the results
@@ -56,4 +58,3 @@ An object of type \code{achillesResults} containing details for connecting to th
   fetchAchillesAnalysisResults(connectionDetails, "scratch", 106)
 }
 }
-
