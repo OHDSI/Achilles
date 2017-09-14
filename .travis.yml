@@ -15,8 +15,9 @@ before_install:
   - export LD_LIBRARY_PATH=$JAVA_HOME:$LD_LIBRARY_PATH
 
 script: 
-  - R CMD build .
-  - travis_wait 60 R CMD check Achilles*tar.gz
+  - |
+    R CMD build .
+    travis_wait 30 R CMD check Achilles*tar.gz
 
 notifications:
   recipients:
