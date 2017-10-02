@@ -176,7 +176,6 @@ achilles <- function (connectionDetails,
     
   } else heelSql='CONCEPT HIERARCHY EXECUTION SKIPPED PER USER REQUEST'
   
-  dummy <- dbDisconnect(conn)
   DatabaseConnector::disconnect(conn)
   
   resultsConnectionDetails <- connectionDetails
