@@ -17,7 +17,8 @@ test_that("Achilles main does not throw an error on Oracle", {
                            sourceName = "NHANES", 
                            cdmVersion = "5", 
                            validateSchema = FALSE, 
-                           createTable = TRUE))
+                           createTable = TRUE,
+                           conceptHierarchy = FALSE))
     if (file.exists("errorReport.txt")){
       writeLines(readChar("errorReport.txt", file.info("errorReport.txt")$size))
     }
