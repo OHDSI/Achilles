@@ -1,6 +1,6 @@
 Package: Achilles
 Type: Package
-Title: Creates descriptive statistics summary for an entire OMOP CDM instance.
+Title: Creates descriptive statistics summary for an entire OMOP CDM instance
 Version: 1.4
 Date: 2016-10-20
 Author: Patrick Ryan, Martijn Schuemie, Vojtech Huser, Chris Knoll
@@ -17,4 +17,4 @@ Suggests:
     testthat
 License: Apache License
 Roxygen: list(wrap = FALSE)
-RoxygenNote: 5.0.1
+RoxygenNote: 6.0.1

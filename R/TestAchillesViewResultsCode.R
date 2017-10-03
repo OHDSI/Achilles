@@ -3,9 +3,9 @@
 testAchillesViestResultsCode <- function(){
   #Test on SQL Server: 
   setwd("c:/temp")
-  connectionDetailsSqlServer <- createConnectionDetails(dbms="sql server", server="RNDUSRDHIT09.jnj.com")
-  fetchAchillesHeelResults(connectionDetailsSqlServer, resultsDatabase="CDM_TRUVEN_CCAE_6k")
-  fetchAchillesAnalysisResults(connectionDetailsSqlServer, resultsDatabase = "CDM_TRUVEN_CCAE_6k", analysisId = 106)
+  connectionDetailsSqlServer <- DatabaseConnector::createConnectionDetails(dbms="sql server", server="myserver")
+  fetchAchillesHeelResults(connectionDetailsSqlServer, resultsDatabase="my_cdm")
+  fetchAchillesAnalysisResults(connectionDetailsSqlServer, resultsDatabase = "my_cdm", analysisId = 106)
   
   
   pw <- ""
@@ -14,42 +14,42 @@ testAchillesViestResultsCode <- function(){
   
   #Test on SQL Server
   setwd("c:/temp")
-  connectionDetails <- createConnectionDetails(dbms="sql server", server="RNDUSRDHIT07.jnj.com")
+  connectionDetails <- DatabaseConnector::createConnectionDetails(dbms="sql server", server="myserver")
   fetchAchillesHeelResults(connectionDetails,  resultsDatabase = "scratch")
 
   #Test on PostgreSQL
   setwd("c:/temp")
-  connectionDetails <- createConnectionDetails(dbms="postgresql", server="localhost/ohdsi", user="postgres",password=pw)
+  connectionDetails <- DatabaseConnector::createConnectionDetails(dbms="postgresql", server="localhost/ohdsi", user="postgres",password=pw)
   fetchAchillesHeelResults(connectionDetails, resultsDatabase = "scratch")
 
   
 
   #Test on Oracle 
   setwd("c:/temp")
-  connectionDetails <- createConnectionDetails(dbms="oracle", server="xe", user="system",password="OHDSI2")
+  connectionDetails <- DatabaseConnector::createConnectionDetails(dbms="oracle", server="xe", user="system",password="OHDSI2")
   fetchAchillesHeelResults(connectionDetails, resultsDatabase = "scratch")
 
   
   ### Test Achilles analysis results view part ###
   #Test on SQL Server
   setwd("c:/temp")
-  connectionDetails <- createConnectionDetails(dbms="sql server", server="RNDUSRDHIT07.jnj.com")
+  connectionDetails <- DatabaseConnector::createConnectionDetails(dbms="sql server", server="myserver")
   fetchAchillesAnalysisResults(connectionDetails,  resultsDatabase = "scratch", analysisId = 106)
   
   #Test on PostgreSQL
   setwd("c:/temp")
-  connectionDetails <- createConnectionDetails(dbms="postgresql", server="localhost/ohdsi", user="postgres",password=pw)
+  connectionDetails <- DatabaseConnector::createConnectionDetails(dbms="postgresql", server="localhost/ohdsi", user="postgres",password=pw)
   fetchAchillesAnalysisResults(connectionDetails, resultsDatabase = "scratch", analysisId = 106)
   
   
 
   #Test on Oracle
   setwd("c:/temp")
-  connectionDetails <- createConnectionDetails(dbms="oracle", server="xe", user="system",password="OHDSI2")
+  connectionDetails <- DatabaseConnector::createConnectionDetails(dbms="oracle", server="xe", user="system",password="OHDSI2")
   fetchAchillesAnalysisResults(connectionDetails, resultsDatabase = "scratch", analysisId = 106)
   
   
-  connectionDetails <- createConnectionDetails(dbms="oracle", server="xe", user="system",password=pw)
+  connectionDetails <- DatabaseConnector::createConnectionDetails(dbms="oracle", server="xe", user="system",password=pw)
   for (analysisId in analysesDetails$ANALYSIS_ID){
     results <- fetchAchillesAnalysisResults(connectionDetails, resultsDatabase = "scratch", analysisId = analysisId)
   }
