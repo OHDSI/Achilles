@@ -470,13 +470,3 @@ INSERT INTO @results_database_schema.concept_hierarchy
       ON ca1.ancestor_concept_id = proc_hierarchy.os3_concept_id
   GROUP BY procs.concept_id,
     procs.proc_concept_name;
-
-
-/*********************************************/
-/***** Index the hierarchy lookup table  *****/
-/*********************************************/
-CREATE INDEX concept_hierarchy_concept_id_idx
-  ON @results_database_schema.concept_hierarchy (concept_id);
-
-CREATE INDEX concept_hierarchy_treemap_idx
-  ON @results_database_schema.concept_hierarchy (treemap);

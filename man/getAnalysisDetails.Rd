@@ -15,4 +15,3 @@ Get all analysis details
 \details{
 Get a list of all analyses with their analysis IDs and strata.
 }
-

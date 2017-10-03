@@ -12,7 +12,7 @@
 #' 
 #' @return A table listing all identified issues 
 #' @examples \dontrun{
-#'   connectionDetails <- createConnectionDetails(dbms="sql server", server="RNDUSRDHIT07.jnj.com")
+#'   connectionDetails <- DatabaseConnector::createConnectionDetails(dbms="sql server", server="myserver")
 #'   achillesResults <- achilles(connectionDetails, "cdm4_sim", "scratch", "TestDB")
 #'   fetchAchillesHeelResults(connectionDetails, "scratch")
 #' }
@@ -43,7 +43,7 @@ fetchAchillesHeelResults <- function (connectionDetails, resultsDatabase){
 #' 
 #' @return An object of type \code{achillesAnalysisResults}
 #' @examples \dontrun{
-#'   connectionDetails <- createConnectionDetails(dbms="sql server", server="RNDUSRDHIT07.jnj.com")
+#'   connectionDetails <- DatabaseConnector::createConnectionDetails(dbms="sql server", server="myserver")
 #'   achillesResults <- achilles(connectionDetails, "cdm4_sim", "scratch", "TestDB")
 #'   fetchAchillesAnalysisResults(connectionDetails, "scratch",106)
 #' }
@@ -53,16 +53,16 @@ fetchAchillesAnalysisResults <- function (connectionDetails, resultsDatabase, an
   conn <- DatabaseConnector::connect(connectionDetails)
   
   sql <- "SELECT * FROM ACHILLES_analysis WHERE analysis_id = @analysisId"
-  sql <- renderSql(sql,analysisId = analysisId)$sql
+  sql <- SqlRender::renderSql(sql,analysisId = analysisId)$sql
   analysisDetails <- DatabaseConnector::querySql(conn,sql)
   
   sql <- "SELECT * FROM ACHILLES_results WHERE analysis_id = @analysisId"
-  sql <- renderSql(sql,analysisId = analysisId)$sql
+  sql <- SqlRender::renderSql(sql,analysisId = analysisId)$sql
   analysisResults <- DatabaseConnector::querySql(conn,sql)
   
   if (nrow(analysisResults) == 0){
     sql <- "SELECT * FROM ACHILLES_results_dist WHERE analysis_id = @analysisId"
-    sql <- renderSql(sql,analysisId = analysisId)$sql
+    sql <- SqlRender::renderSql(sql,analysisId = analysisId)$sql
     analysisResults <- DatabaseConnector::querySql(conn,sql)
   }
   

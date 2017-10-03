@@ -43,7 +43,6 @@ SQL for OMOP CDM v5
 {DEFAULT @smallcellcount = 5}
 {DEFAULT @createTable = TRUE}
 {DEFAULT @validateSchema = FALSE}
-{DEFAULT @is_pdw = FALSE}
 
   /****
     developer comment about general ACHILLES calculation process:  
@@ -1285,35 +1284,6 @@ insert into @results_database_schema.ACHILLES_analysis (analysis_id, analysis_na
 delete from @results_database_schema.ACHILLES_results where analysis_id IN (@list_of_analysis_ids);
 delete from @results_database_schema.ACHILLES_results_dist where analysis_id IN (@list_of_analysis_ids);
 --}
-
-
-/* create achilles_results nonclustered indexes if dbms is PDW */
-
---{@is_pdw}?{
-
-IF 0 = (SELECT COUNT(*) as index_count
-    FROM sys.indexes 
-    WHERE object_id = OBJECT_ID('@results_database_schema.ACHILLES_results')
-    AND name='idx_ar_aid')
-CREATE NONCLUSTERED INDEX idx_ar_aid
-   ON @results_database_schema.ACHILLES_results (analysis_id ASC);
-
-IF 0 = (SELECT COUNT(*) as index_count
-    FROM sys.indexes 
-    WHERE object_id = OBJECT_ID('@results_database_schema.ACHILLES_results')
-    AND name='idx_ar_aid_s1')  
-CREATE NONCLUSTERED INDEX idx_ar_aid_s1
-   ON @results_database_schema.ACHILLES_results (analysis_id ASC, stratum_1 ASC);
-
-IF 0 = (SELECT COUNT(*) as index_count
-    FROM sys.indexes 
-    WHERE object_id = OBJECT_ID('@results_database_schema.ACHILLES_results')
-    AND name='idx_ar_aid_s1234')
-CREATE NONCLUSTERED INDEX idx_ar_aid_s1234
-   ON @results_database_schema.ACHILLES_results (analysis_id ASC, stratum_1 ASC, stratum_2 ASC, stratum_3 ASC, stratum_4 ASC);
-
---}
-
 
 /****
 7. generate results for analysis_results
@@ -7762,20 +7732,3 @@ delete from @results_database_schema.ACHILLES_results
 where count_value <= @smallcellcount;
 delete from @results_database_schema.ACHILLES_results_dist 
 where count_value <= @smallcellcount;
-
-/**************************************************/
-/***** Add indexes to Achilles results tables *****/
-/**************************************************/
-CREATE INDEX achilles_results_analysis_id_idx
-  ON @results_database_schema.ACHILLES_results (analysis_id);
-CREATE INDEX achilles_results_stratum_1_idx
-  ON @results_database_schema.ACHILLES_results (stratum_1);
-CREATE INDEX achilles_results_stratum_2_idx
-  ON @results_database_schema.ACHILLES_results (stratum_2);
-
-CREATE INDEX achilles_results_dist_analysis_id_idx
-  ON @results_database_schema.ACHILLES_results_dist (analysis_id);
-CREATE INDEX achilles_results_dist_stratum_1_idx
-  ON @results_database_schema.ACHILLES_results_dist (stratum_1);
-CREATE INDEX achilles_results_dist_stratum_2_idx
-  ON @results_database_schema.ACHILLES_results_dist (stratum_2);

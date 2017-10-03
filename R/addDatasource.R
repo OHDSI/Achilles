@@ -38,7 +38,7 @@
 #' 
 #' @examples \dontrun{
 #' jsonFolderPath <- "your/output/path"
-#' connectionDetails <- createConnectionDetails(dbms="sql server", server="yourserver")
+#' connectionDetails <- DatabaseConnector::createConnectionDetails(dbms="sql server", server="yourserver")
 #' exportToJson(connectionDetails, cdmDatabaseSchema="cdm5", outputPath=jsonFolderPath)
 #' addDatasource(jsonFolderPath, "your_data_name")
 #' }
@@ -59,10 +59,10 @@ addDatasource <- function(jsonFolderPath, dataName = NULL, datasourcePath = NULL
   # Read the json file or create new if not exists
   if( file.exists(datasourcePath) ){
     print(paste("Writing to existing datasources file: ", datasourcePath))
-    j <- fromJSON( file = datasourcePath )
+    j <- rjson::fromJSON( file = datasourcePath )
   } else {
     print(paste("Creating a new datasources file: ", datasourcePath))
-    j <- fromJSON('{"datasources":[]}')
+    j <- rjson::fromJSON('{"datasources":[]}')
   }
   
   # Append new datasource object to existing datasources
@@ -71,6 +71,6 @@ addDatasource <- function(jsonFolderPath, dataName = NULL, datasourcePath = NULL
   j$datasources[[n_elements+1]] <- new_datasource
   
   # Overwrite existing json file
-  write(toJSON(j), datasourcePath)
+  write(rjson::toJSON(j), datasourcePath)
 }
 

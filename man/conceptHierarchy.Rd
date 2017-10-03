@@ -30,7 +30,7 @@ nothing is returned
 }
 \examples{
 \dontrun{
-  connectionDetails <- createConnectionDetails(dbms="sql server", server="RNDUSRDHIT07.jnj.com")
+  connectionDetails <- DatabaseConnector::createConnectionDetails(dbms="sql server", server="myserver")
   conceptHierarchy <- conceptHierarchy(connectionDetails, resultsDatabaseSchema="scratch", vocabDatabaseSchema="vocabulary")
 }
 }

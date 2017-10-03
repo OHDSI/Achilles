@@ -17,7 +17,8 @@ test_that("Achilles main does not throw an error on SQL Server", {
                            cdmVersion = "5", 
                            validateSchema = FALSE, 
                            createTable = TRUE,
-                           conceptHierarchy = FALSE))
+                           conceptHierarchy = FALSE,
+                           createIndices = FALSE))
     if (file.exists("errorReport.txt")){
       writeLines(readChar("errorReport.txt", file.info("errorReport.txt")$size))
     }
