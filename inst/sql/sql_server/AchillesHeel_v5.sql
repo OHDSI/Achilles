@@ -1297,7 +1297,7 @@ and statistic_value <2; --DataQuality data indicate median of 55 specialties (pe
 
 INSERT INTO @results_database_schema.ACHILLES_HEEL_results (ACHILLES_HEEL_warning,rule_id,record_count)
 select 
-'NOTIFICATION: [GeneralPopulationOnly] In some years, number of deaths is too low considering the number of birhts (lifetime record DQ assumption)' 
+'NOTIFICATION: [GeneralPopulationOnly] In some years, number of deaths is too low considering the number of births (lifetime record DQ assumption)' 
  as achilles_heel_warning,
  39 as rule_id,
  year_cnt as record_count 
