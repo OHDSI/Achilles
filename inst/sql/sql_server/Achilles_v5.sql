@@ -3541,8 +3541,8 @@ group by YEAR(procedure_date)*100 + month(procedure_date)
 insert into @results_database_schema.ACHILLES_results (analysis_id, stratum_1, stratum_2, count_value)
 select 
 	691 as analysis_id,
-	procedure_concept_id as stratum_1, 
-	prc_cnt as stratum_2,
+	CAST(procedure_concept_id AS VARCHAR(255)) as stratum_1,
+	CAST(prc_cnt AS VARCHAR(255)) as stratum_2,
 	sum(count(person_id))	over (partition by procedure_concept_id order by prc_cnt desc) as count_value
 from (
 	select 
@@ -4061,8 +4061,8 @@ group by YEAR(drug_exposure_start_date)*100 + month(drug_exposure_start_date)
 insert into @results_database_schema.ACHILLES_results (analysis_id, stratum_1, stratum_2, count_value)
 select 
 	791 as analysis_id,
-	drug_concept_id as stratum_1, 
-	drg_cnt as stratum_2,
+	CAST(drug_concept_id AS VARCHAR(255)) as stratum_1,
+	CAST(drg_cnt AS VARCHAR(255)) as stratum_2,
 	sum(count(person_id))	over (partition by drug_concept_id order by drg_cnt desc) as count_value
 from (
 	select 
@@ -4510,8 +4510,8 @@ group by YEAR(observation_date)*100 + month(observation_date)
 insert into @results_database_schema.ACHILLES_results (analysis_id, stratum_1, stratum_2, count_value)
 select 
 	891 as analysis_id,
-	observation_concept_id as stratum_1, 
-	obs_cnt as stratum_2,
+	CAST(observation_concept_id AS VARCHAR(255)) as stratum_1,
+	CAST(obs_cnt AS VARCHAR(255)) as stratum_2,
 	sum(count(person_id))	over (partition by observation_concept_id order by obs_cnt desc) as count_value
 from (
 	select 
@@ -7486,8 +7486,8 @@ where m.value_as_number is null
 insert into @results_database_schema.ACHILLES_results (analysis_id, stratum_1, stratum_2, count_value)
 select 
 	1891 as analysis_id,
-	measurement_concept_id as stratum_1, 
-	meas_cnt as stratum_2,
+	CAST(measurement_concept_id AS VARCHAR(255)) as stratum_1,
+	CAST(meas_cnt AS VARCHAR(255)) as stratum_2,
 	sum(count(person_id))	over (partition by measurement_concept_id order by meas_cnt desc) as count_value
 from (
 	select 
