@@ -43,7 +43,6 @@ SQL for OMOP CDM v5
 {DEFAULT @smallcellcount = 5}
 {DEFAULT @createTable = TRUE}
 {DEFAULT @validateSchema = FALSE}
-{DEFAULT @is_pdw = FALSE}
 
   /****
     developer comment about general ACHILLES calculation process:  
@@ -818,6 +817,8 @@ insert into @results_database_schema.ACHILLES_analysis (analysis_id, analysis_na
 insert into @results_database_schema.ACHILLES_analysis (analysis_id, analysis_name, stratum_1_name)
 	values (620, 'Number of procedure occurrence records  by procedure occurrence start month', 'calendar month');
 
+insert into @results_database_schema.ACHILLES_analysis (analysis_id, analysis_name, stratum_1_name, stratum_2_name)
+	values (691, 'Number of persons that have at least x procedures', 'procedure_id', 'procedure_count');
 
 --700- DRUG_EXPOSURE
 
@@ -875,6 +876,8 @@ insert into @results_database_schema.ACHILLES_analysis (analysis_id, analysis_na
 insert into @results_database_schema.ACHILLES_analysis (analysis_id, analysis_name, stratum_1_name)
 	values (720, 'Number of drug exposure records  by drug exposure start month', 'calendar month');
 
+insert into @results_database_schema.ACHILLES_analysis (analysis_id, analysis_name, stratum_1_name, stratum_2_name)
+	values (791, 'Number of persons that have at least x drug exposures', 'drug_concept_id', 'drug_count');
 
 --800- OBSERVATION
 
@@ -924,6 +927,8 @@ insert into @results_database_schema.ACHILLES_analysis (analysis_id, analysis_na
 insert into @results_database_schema.ACHILLES_analysis (analysis_id, analysis_name, stratum_1_name)
 	values (820, 'Number of observation records  by observation start month', 'calendar month');
 
+insert into @results_database_schema.ACHILLES_analysis (analysis_id, analysis_name, stratum_1_name, stratum_2_name)
+	values (891, 'Number of persons that have at least x observations', 'observation_concept_id', 'observation_count');
 
 --900- DRUG_ERA
 
@@ -1215,6 +1220,9 @@ insert into @results_database_schema.ACHILLES_analysis (analysis_id, analysis_na
 insert into @results_database_schema.ACHILLES_analysis (analysis_id, analysis_name)
 	values (1821, 'Number of measurement records with no numeric value');
 
+insert into @results_database_schema.ACHILLES_analysis (analysis_id, analysis_name, stratum_1_name, stratum_2_name)
+	values (1891, 'Number of persons that have at least x measurements', 'measurement_concept_id', 'measurement_count');
+
 --1900 REPORTS
 
 insert into @results_database_schema.ACHILLES_analysis (analysis_id, analysis_name, stratum_1_name, stratum_2_name)
@@ -1276,35 +1284,6 @@ insert into @results_database_schema.ACHILLES_analysis (analysis_id, analysis_na
 delete from @results_database_schema.ACHILLES_results where analysis_id IN (@list_of_analysis_ids);
 delete from @results_database_schema.ACHILLES_results_dist where analysis_id IN (@list_of_analysis_ids);
 --}
-
-
-/* create achilles_results nonclustered indexes if dbms is PDW */
-
---{@is_pdw}?{
-
-IF 0 = (SELECT COUNT(*) as index_count
-    FROM sys.indexes 
-    WHERE object_id = OBJECT_ID('@results_database_schema.ACHILLES_results')
-    AND name='idx_ar_aid')
-CREATE NONCLUSTERED INDEX idx_ar_aid
-   ON @results_database_schema.ACHILLES_results (analysis_id ASC);
-
-IF 0 = (SELECT COUNT(*) as index_count
-    FROM sys.indexes 
-    WHERE object_id = OBJECT_ID('@results_database_schema.ACHILLES_results')
-    AND name='idx_ar_aid_s1')  
-CREATE NONCLUSTERED INDEX idx_ar_aid_s1
-   ON @results_database_schema.ACHILLES_results (analysis_id ASC, stratum_1 ASC);
-
-IF 0 = (SELECT COUNT(*) as index_count
-    FROM sys.indexes 
-    WHERE object_id = OBJECT_ID('@results_database_schema.ACHILLES_results')
-    AND name='idx_ar_aid_s1234')
-CREATE NONCLUSTERED INDEX idx_ar_aid_s1234
-   ON @results_database_schema.ACHILLES_results (analysis_id ASC, stratum_1 ASC, stratum_2 ASC, stratum_3 ASC, stratum_4 ASC);
-
---}
-
 
 /****
 7. generate results for analysis_results
@@ -3557,6 +3536,25 @@ group by YEAR(procedure_date)*100 + month(procedure_date)
 --}
 
 
+--{691 IN (@list_of_analysis_ids)}?{
+-- 691	Number of total persons that have at least x procedures
+insert into @results_database_schema.ACHILLES_results (analysis_id, stratum_1, stratum_2, count_value)
+select 
+	691 as analysis_id,
+	CAST(procedure_concept_id AS VARCHAR(255)) as stratum_1,
+	CAST(prc_cnt AS VARCHAR(255)) as stratum_2,
+	sum(count(person_id))	over (partition by procedure_concept_id order by prc_cnt desc) as count_value
+from (
+	select 
+		p.procedure_concept_id, 
+		count(p.procedure_occurrence_id) as prc_cnt, 
+		p.person_id
+	from @cdm_database_schema.procedure_occurrence p 
+	group by p.person_id, p.procedure_concept_id
+) cnt_q
+group by procedure_concept_id, prc_cnt;
+--}
+
 /********************************************
 
 ACHILLES Analyses on DRUG_EXPOSURE table
@@ -4058,6 +4056,25 @@ group by YEAR(drug_exposure_start_date)*100 + month(drug_exposure_start_date)
 ;
 --}
 
+--{791 IN (@list_of_analysis_ids)}?{
+-- 791	Number of total persons that have at least x drug exposures
+insert into @results_database_schema.ACHILLES_results (analysis_id, stratum_1, stratum_2, count_value)
+select 
+	791 as analysis_id,
+	CAST(drug_concept_id AS VARCHAR(255)) as stratum_1,
+	CAST(drg_cnt AS VARCHAR(255)) as stratum_2,
+	sum(count(person_id))	over (partition by drug_concept_id order by drg_cnt desc) as count_value
+from (
+	select 
+		d.drug_concept_id, 
+		count(d.drug_exposure_id) as drg_cnt, 
+		d.person_id
+	from @cdm_database_schema.drug_exposure d 
+	group by d.person_id, d.drug_concept_id
+) cnt_q
+group by drug_concept_id, drg_cnt;
+--}
+
 /********************************************
 
 ACHILLES Analyses on OBSERVATION table
@@ -4486,6 +4503,26 @@ group by YEAR(observation_date)*100 + month(observation_date)
 ;
 --}
 
+
+
+--{891 IN (@list_of_analysis_ids)}?{
+-- 891	Number of total persons that have at least x observations
+insert into @results_database_schema.ACHILLES_results (analysis_id, stratum_1, stratum_2, count_value)
+select 
+	891 as analysis_id,
+	CAST(observation_concept_id AS VARCHAR(255)) as stratum_1,
+	CAST(obs_cnt AS VARCHAR(255)) as stratum_2,
+	sum(count(person_id))	over (partition by observation_concept_id order by obs_cnt desc) as count_value
+from (
+	select 
+		o.observation_concept_id, 
+		count(o.observation_id) as obs_cnt, 
+		o.person_id
+	from @cdm_database_schema.observation o 
+	group by o.person_id, o.observation_concept_id
+) cnt_q
+group by observation_concept_id, obs_cnt;
+--}
 
 
 
@@ -7443,6 +7480,25 @@ where m.value_as_number is null
 ;
 --}
 
+
+--{1891 IN (@list_of_analysis_ids)}?{
+-- 1891	Number of total persons that have at least x measurements
+insert into @results_database_schema.ACHILLES_results (analysis_id, stratum_1, stratum_2, count_value)
+select 
+	1891 as analysis_id,
+	CAST(measurement_concept_id AS VARCHAR(255)) as stratum_1,
+	CAST(meas_cnt AS VARCHAR(255)) as stratum_2,
+	sum(count(person_id))	over (partition by measurement_concept_id order by meas_cnt desc) as count_value
+from (
+	select 
+		m.measurement_concept_id, 
+		count(m.measurement_id) as meas_cnt, 
+		m.person_id
+	from @cdm_database_schema.measurement m 
+	group by m.person_id, m.measurement_concept_id
+) cnt_q
+group by measurement_concept_id, meas_cnt;
+--}
 --end of measurment analyses
 
 /********************************************
@@ -7672,6 +7728,7 @@ group by m.note_type_CONCEPT_ID
 
 
 --final processing of results
-delete from @results_database_schema.ACHILLES_results where count_value <= @smallcellcount;
-delete from @results_database_schema.ACHILLES_results_dist where count_value <= @smallcellcount;
-
+delete from @results_database_schema.ACHILLES_results 
+where count_value <= @smallcellcount;
+delete from @results_database_schema.ACHILLES_results_dist 
+where count_value <= @smallcellcount;

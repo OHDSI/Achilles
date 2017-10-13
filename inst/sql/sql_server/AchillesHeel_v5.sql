@@ -929,8 +929,8 @@ INNER JOIN @results_database_schema.ACHILLES_results ar2
 			1002
 			)
 WHERE (
-		CAST(ar1.stratum_2 AS INT) + 1 = CAST(ar2.stratum_2 AS INT)
-		OR CAST(ar1.stratum_2 AS INT) + 89 = CAST(ar2.stratum_2 AS INT)
+		ROUND(CAST(ar1.stratum_2 AS DECIMAL(18,4)),0) + 1 = ROUND(CAST(ar2.stratum_2 AS DECIMAL(18,4)),0)
+		OR ROUND(CAST(ar1.stratum_2 AS DECIMAL(18,4)),0) + 89 = ROUND(CAST(ar2.stratum_2 AS DECIMAL(18,4)),0)
 		)
 	AND 1.0 * abs(ar2.count_value - ar1.count_value) / ar1.count_value > 1
 	AND ar1.count_value > 10
@@ -1297,7 +1297,7 @@ and statistic_value <2; --DataQuality data indicate median of 55 specialties (pe
 
 INSERT INTO @results_database_schema.ACHILLES_HEEL_results (ACHILLES_HEEL_warning,rule_id,record_count)
 select 
-'NOTIFICATION: [GeneralPopulationOnly] In some years, number of deaths is too low considering the number of birhts (lifetime record DQ assumption)' 
+'NOTIFICATION: [GeneralPopulationOnly] In some years, number of deaths is too low considering the number of births (lifetime record DQ assumption)' 
  as achilles_heel_warning,
  39 as rule_id,
  year_cnt as record_count 

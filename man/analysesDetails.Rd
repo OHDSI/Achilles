@@ -23,4 +23,3 @@ A data frame describing all Achilles analyses and their IDs. The variables are a
 }
 }
 \keyword{datasets}
-

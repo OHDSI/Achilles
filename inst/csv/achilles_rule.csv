@@ -1,5 +1,5 @@
 rule_id,rule_name,severity,rule_type,rule_description,threshold,rule_classification,rule_scope,linked_measure
-0,Achilles Heel version 1.4.6,,,this rule is not used for data analysis. It communicates the version of the ruleset.,,,,
+0,Achilles Heel version 1.5,,,this rule is not used for data analysis. It communicates the version of the ruleset.,,,,
 1,multiple checks for greater than zero,error,DQ,umbrella rule: this rule includes multiple error checks on over 35 analysis_ids,>0,complex,,
 2,multiple checks where minimum value of a measure should not be negative,error,DQ,umbrella rule: this rule includes multiple error checks on over 20 analysis_ids where min value in distribution should not be negative,,complex,,
 3,multiple checks related to death data where maximum value of a measure should not be positive,warning,DQ,death distributions where max should not be positive (using anlyses 511;512;513;514;515),,plausibility,,

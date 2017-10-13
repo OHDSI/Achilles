@@ -2,11 +2,11 @@
 
 testExportCode <- function(){
   pw <- ""
-  #sqlServerServer <- "RNDUSRDHIT07.jnj.com"
+  #sqlServerServer <- "myserver"
   #sqlServerresultsDatabaseSchema <- "scratch"
   #schema <- "cdm4_sim"
   
-  sqlServerServer <- "RNDUSRDHIT09.jnj.com"
+  sqlServerServer <- "myserver"
   
   sqlServerresultsDatabaseSchema <- "cdm_truven_ccae_6k.dbo"
   schema <- "cdm_truven_ccae_6k.dbo"
@@ -18,7 +18,7 @@ testExportCode <- function(){
   
   #Test on SQL Server
   setwd("c:/temp")
-  connectionDetails <- createConnectionDetails(dbms="sql server", server=sqlServerServer)
+  connectionDetails <- DatabaseConnector::createConnectionDetails(dbms="sql server", server=sqlServerServer)
   exportToJson(connectionDetails, cdmDatabaseSchema = schema, resultsDatabaseSchema = sqlServerresultsDatabaseSchema,outputPath = "c:/temp/SqlServer",cdmVersion=cdmVersion)
   
   #Test on PostgreSQL
@@ -32,12 +32,12 @@ testExportCode <- function(){
   cdmVersion <- "5"
   
   setwd("c:/temp")
-  connectionDetails <- createConnectionDetails(dbms="postgresql", server="localhost/ohdsi", user="postgres",password=pw)
+  connectionDetails <- DatabaseConnector::createConnectionDetails(dbms="postgresql", server="localhost/ohdsi", user="postgres",password=pw)
   exportToJson(connectionDetails, cdmDatabaseSchema = schema, resultsDatabaseSchema = "scratch",outputPath = "c:/temp/PostgreSQL",cdmVersion=cdmVersion)
 
   #Test on Oracle
   setwd("c:/temp")
-  connectionDetails <- createConnectionDetails(dbms="oracle", server="xe", user="system",password="OHDSI")
+  connectionDetails <- DatabaseConnector::createConnectionDetails(dbms="oracle", server="xe", user="system",password="OHDSI")
   exportToJson(connectionDetails, cdmDatabaseSchema = schema, resultsDatabaseSchema = "scratch",outputPath = "c:/temp/Oracle",cdmVersion=cdmVersion)  
   
   #Compare JSON files:
@@ -66,11 +66,11 @@ testExportCode <- function(){
   
   compareJSONFiles("c:/temp/postgresql","c:/temp/sqlserver")
   
-  connectionDetails <- createConnectionDetails(dbms="oracle", server="xe", user="system", schema="scratch",password=pw)
-  conn <- connect(connectionDetails)
+  connectionDetails <- DatabaseConnector::createConnectionDetails(dbms="oracle", server="xe", user="system", schema="scratch",password=pw)
+  conn <- DatabaseConnector::connect(connectionDetails)
   analysesDetails <- dbGetQuery(conn,"SELECT * FROM ACHILLES_ANALYSiS")
   save(analysesDetails,"c:/temp/analysesDetails.rda")
-  dbDisconnect(conn)
+  DatabaseConnector::dbDisconnect(conn)
 }
 
 
