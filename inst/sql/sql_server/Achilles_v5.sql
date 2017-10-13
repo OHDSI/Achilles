@@ -3552,7 +3552,7 @@ from (
 	from @cdm_database_schema.procedure_occurrence p 
 	group by p.person_id, p.procedure_concept_id
 ) cnt_q
-group by procedure_concept_id, prc_cnt;
+group by cnt_q.procedure_concept_id, cnt_q.prc_cnt;
 --}
 
 /********************************************
