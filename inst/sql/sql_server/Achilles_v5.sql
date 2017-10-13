@@ -4072,7 +4072,7 @@ from (
 	from @cdm_database_schema.drug_exposure d 
 	group by d.person_id, d.drug_concept_id
 ) cnt_q
-group by drug_concept_id, drg_cnt;
+group by cnt_q.drug_concept_id, cnt_q.drg_cnt;
 --}
 
 /********************************************
@@ -4521,7 +4521,7 @@ from (
 	from @cdm_database_schema.observation o 
 	group by o.person_id, o.observation_concept_id
 ) cnt_q
-group by observation_concept_id, obs_cnt;
+group by cnt_q.observation_concept_id, cnt_q.obs_cnt;
 --}
 
 
