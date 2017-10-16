@@ -7497,7 +7497,7 @@ from (
 	from @cdm_database_schema.measurement m 
 	group by m.person_id, m.measurement_concept_id
 ) cnt_q
-group by measurement_concept_id, meas_cnt;
+group by cnt_q.measurement_concept_id, cnt_q.meas_cnt;
 --}
 --end of measurment analyses
 
