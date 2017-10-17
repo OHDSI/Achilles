@@ -7731,5 +7731,4 @@ group by m.note_type_CONCEPT_ID
 delete from @results_database_schema.ACHILLES_results 
 where count_value <= @smallcellcount;
 delete from @results_database_schema.ACHILLES_results_dist 
-where count_value <= @smallcellcount;
-
+where count_value <= @smallcellcount; 
