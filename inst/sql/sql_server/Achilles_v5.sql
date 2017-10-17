@@ -7499,7 +7499,7 @@ from (
 ) cnt_q
 group by cnt_q.measurement_concept_id, cnt_q.meas_cnt;
 --}
---end of measurment analyses
+--end of measurement analyses
 
 /********************************************
 
