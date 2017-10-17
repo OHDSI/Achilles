@@ -7732,3 +7732,4 @@ delete from @results_database_schema.ACHILLES_results
 where count_value <= @smallcellcount;
 delete from @results_database_schema.ACHILLES_results_dist 
 where count_value <= @smallcellcount;
+
