@@ -27,10 +27,18 @@
 Achilles - indices for tables
 
 *******************************************************************/
+{DEFAULT @is_pdw = FALSE}
 
 /**************************************************/
 /***** Add indexes to Achilles results tables *****/
 /**************************************************/
+
+
+{@is_pdw}?{
+CREATE CLUSTERED COLUMNSTORE INDEX ClusteredIndex_Achilles_results 
+  ON @results_database_schema.ACHILLES_results;
+}
+
 CREATE INDEX idx_ar_aid
   ON @results_database_schema.ACHILLES_results (analysis_id);
 CREATE INDEX idx_ar_s1

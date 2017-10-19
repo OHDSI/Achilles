@@ -347,6 +347,7 @@ conceptHierarchy <- function (connectionDetails,
 createIndices <- function (connectionDetails, 
                            resultsDatabaseSchema,
                            oracleTempSchema = resultsDatabaseSchema,
+                           sqlOnly = FALSE,
                            cdmVersion = "5"){
   
   if (cdmVersion == "5") {
@@ -359,15 +360,21 @@ createIndices <- function (connectionDetails,
     stop("Error: RedShift does not support creating indices")
   }
   
+  is_pdw <- (connectionDetails$dbms == "pdw")
+  
   indicesSql <- SqlRender::loadRenderTranslateSql(sqlFilename = sqlFile,
                                          packageName = "Achilles",
                                          dbms = connectionDetails$dbms,
                                          oracleTempSchema = oracleTempSchema,
+                                         is_pdw = is_pdw,
                                          results_database_schema = resultsDatabaseSchema);
   
-  conn <- DatabaseConnector::connect(connectionDetails);
-  writeLines("Executing indices creation. This could take a while")
-  DatabaseConnector::executeSql(conn,indicesSql)
-  writeLines(paste("Done. Indices created in",resultsDatabaseSchema))  
+  if (!sqlOnly) {
+    conn <- DatabaseConnector::connect(connectionDetails);
+    writeLines("Executing indices creation. This could take a while")
+    DatabaseConnector::executeSql(conn,indicesSql)
+    writeLines(paste("Done. Indices created in",resultsDatabaseSchema))  
+  }
   return(indicesSql)
 }
+
