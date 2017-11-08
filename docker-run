@@ -31,6 +31,8 @@ connectionDetails <- createConnectionDetails(
     password=env_vars$ACHILLES_DB_PASSWORD    
 )
 
+createIndices <- env_vars$ACHILLES_DB_TYPE != "redshift"
+
 args <- commandArgs(trailingOnly = TRUE)
 
 if (length(args) == 0 || args[1] != "heel") {
@@ -41,7 +43,8 @@ if (length(args) == 0 || args[1] != "heel") {
         resultsDatabaseSchema=env_vars$ACHILLES_RES_SCHEMA,
         vocabDatabaseSchema=env_vars$ACHILLES_VOCAB_SCHEMA,
         sourceName=env_vars$ACHILLES_SOURCE,
-        cdmVersion=env_vars$ACHILLES_CDM_VERSION
+        cdmVersion=env_vars$ACHILLES_CDM_VERSION,
+        createIndices=createIndices
     )
     
 } else {
