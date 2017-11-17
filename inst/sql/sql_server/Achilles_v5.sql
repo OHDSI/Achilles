@@ -3552,7 +3552,7 @@ from (
 	from @cdm_database_schema.procedure_occurrence p 
 	group by p.person_id, p.procedure_concept_id
 ) cnt_q
-group by procedure_concept_id, prc_cnt;
+group by cnt_q.procedure_concept_id, cnt_q.prc_cnt;
 --}
 
 /********************************************
@@ -4072,7 +4072,7 @@ from (
 	from @cdm_database_schema.drug_exposure d 
 	group by d.person_id, d.drug_concept_id
 ) cnt_q
-group by drug_concept_id, drg_cnt;
+group by cnt_q.drug_concept_id, cnt_q.drg_cnt;
 --}
 
 /********************************************
@@ -4521,7 +4521,7 @@ from (
 	from @cdm_database_schema.observation o 
 	group by o.person_id, o.observation_concept_id
 ) cnt_q
-group by observation_concept_id, obs_cnt;
+group by cnt_q.observation_concept_id, cnt_q.obs_cnt;
 --}
 
 
@@ -7497,9 +7497,9 @@ from (
 	from @cdm_database_schema.measurement m 
 	group by m.person_id, m.measurement_concept_id
 ) cnt_q
-group by measurement_concept_id, meas_cnt;
+group by cnt_q.measurement_concept_id, cnt_q.meas_cnt;
 --}
---end of measurment analyses
+--end of measurement analyses
 
 /********************************************
 
