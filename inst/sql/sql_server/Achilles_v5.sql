@@ -1821,8 +1821,8 @@ IF OBJECT_ID('tempdb..#temp_dates', 'U') IS NOT NULL
 
 SELECT DISTINCT 
   YEAR(observation_period_start_date) AS obs_year,
-  CAST(CONCAT(CONCAT(CAST(YEAR(observation_period_start_date) AS VARCHAR(4)), '01'), '01') AS DATE) AS obs_year_start,
-  CAST(CONCAT(CONCAT(CAST(YEAR(observation_period_start_date) AS VARCHAR(4)), '12'), '31') AS DATE) AS obs_year_end
+  DATEFROMPARTS(YEAR(observation_period_start_date), 1, 1) AS obs_year_start,
+  DATEFROMPARTS(YEAR(observation_period_start_date), 12, 31) AS obs_year_end
 INTO
   #temp_dates
 FROM @cdm_database_schema.observation_period
@@ -1857,9 +1857,8 @@ IF OBJECT_ID('tempdb..#temp_dates', 'U') IS NOT NULL
 
 SELECT DISTINCT 
   YEAR(observation_period_start_date)*100 + MONTH(observation_period_start_date) AS obs_month,
-  CAST(CONCAT(CONCAT(CAST(YEAR(observation_period_start_date) AS VARCHAR(4)), RIGHT(CONCAT('0', CAST(MONTH(OBSERVATION_PERIOD_START_DATE) AS VARCHAR(2))), 2)), '01') AS DATE)
-  AS obs_month_start,
-  DATEADD(dd,-1,DATEADD(mm,1,CAST(CONCAT(CONCAT(CAST(YEAR(observation_period_start_date) AS VARCHAR(4)), RIGHT(CONCAT('0', CAST(MONTH(OBSERVATION_PERIOD_START_DATE) AS VARCHAR(2))), 2)), '01') AS DATE))) AS obs_month_end
+  DATEFROMPARTS(YEAR(observation_period_start_date), MONTH(OBSERVATION_PERIOD_START_DATE), 1) AS obs_month_start,
+  EOMONTH(observation_period_start_date) AS obs_month_end
 INTO
   #temp_dates
 FROM @cdm_database_schema.observation_period
@@ -5535,8 +5534,8 @@ IF OBJECT_ID('tempdb..#temp_dates', 'U') IS NOT NULL
 
 SELECT DISTINCT 
   YEAR(payer_plan_period_start_date)*100 + MONTH(payer_plan_period_start_date) AS obs_month,
-  CAST(CONCAT(CONCAT(CAST(YEAR(payer_plan_period_start_date) AS VARCHAR(4)), RIGHT(CONCAT('0', CAST(MONTH(payer_plan_period_start_date) AS VARCHAR(2))), 2)), '01') AS DATE) AS obs_month_start,
-  DATEADD(dd,-1,DATEADD(mm,1,CAST(CONCAT(CONCAT(CAST(YEAR(payer_plan_period_start_date) AS VARCHAR(4)), RIGHT(CONCAT('0', CAST(MONTH(payer_plan_period_start_date) AS VARCHAR(2))), 2)), '01') AS DATE))) AS obs_month_end
+  DATEFROMPARTS(YEAR(payer_plan_period_start_date), MONTH(payer_plan_period_start_date), 1)  AS obs_month_start,
+  EOMONTH(payer_plan_period_start_date) AS obs_month_end
 INTO
   #temp_dates
 FROM 
@@ -5570,13 +5569,13 @@ DROP TABLE #temp_dates;
 -- 1411	Number of persons by payer plan period start month
 insert into @results_database_schema.ACHILLES_results (analysis_id, stratum_1, count_value)
 select 1411 as analysis_id, 
-	cast(CONCAT(cast(YEAR(payer_plan_period_start_date) as varchar(4)), CONCAT(RIGHT(CONCAT('0', CAST(month(payer_plan_period_START_DATE) AS VARCHAR(2))), 2),'01')) as VARCHAR(255)) as stratum_1,
+	DATEFROMPARTS(YEAR(payer_plan_period_start_date), MONTH(payer_plan_period_START_DATE), 1) AS stratum_1,
 	 COUNT_BIG(distinct p1.PERSON_ID) as count_value
 from
 	@cdm_database_schema.PERSON p1
 	inner join @cdm_database_schema.payer_plan_period ppp1
 	on p1.person_id = ppp1.person_id
-group by cast(CONCAT(cast(YEAR(payer_plan_period_start_date) as varchar(4)), CONCAT(RIGHT(CONCAT('0', CAST(month(payer_plan_period_START_DATE) AS VARCHAR(2))), 2),'01')) as VARCHAR(255))
+group by DATEFROMPARTS(YEAR(payer_plan_period_start_date), MONTH(payer_plan_period_START_DATE), 1)
 ;
 --}
 
@@ -5586,13 +5585,13 @@ group by cast(CONCAT(cast(YEAR(payer_plan_period_start_date) as varchar(4)), CON
 -- 1412	Number of persons by payer plan period end month
 insert into @results_database_schema.ACHILLES_results (analysis_id, stratum_1, count_value)
 select 1412 as analysis_id,  
-	cast(CONCAT(cast(YEAR(payer_plan_period_end_date) as varchar(4)), CONCAT(RIGHT(CONCAT('0', CAST(month(payer_plan_period_end_DATE) AS VARCHAR(2))), 2), '01')) as VARCHAR(255)) as stratum_1,
+	DATEFROMPARTS(YEAR(payer_plan_period_start_date), MONTH(payer_plan_period_START_DATE), 1) AS stratum_1,
 	COUNT_BIG(distinct p1.PERSON_ID) as count_value
 from
 	@cdm_database_schema.PERSON p1
 	inner join @cdm_database_schema.payer_plan_period ppp1
 	on p1.person_id = ppp1.person_id
-group by cast(CONCAT(cast(YEAR(payer_plan_period_end_date) as varchar(4)), CONCAT(RIGHT(CONCAT('0', CAST(month(payer_plan_period_end_DATE) AS VARCHAR(2))), 2), '01')) as VARCHAR(255))
+group by DATEFROMPARTS(YEAR(payer_plan_period_start_date), MONTH(payer_plan_period_START_DATE), 1)
 ;
 --}
 
