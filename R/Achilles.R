@@ -136,6 +136,11 @@ achilles <- function (connectionDetails,
   } else {
     conn <- DatabaseConnector::connect(connectionDetails)
     writeLines("Executing multiple queries. This could take a while")
+    if( connectionDetails$dbms == "oracle" ){
+        writeLines( "Setting NLS_DATE_FORMAT for this session" )
+        DatabaseConnector::executeSql( conn ,
+                                      'alter session set NLS_DATE_FORMAT="YYYYMMDD"' )
+    }
     #SqlRender::writeSql(achillesSql, 'achillesDebug.sql');
     DatabaseConnector::executeSql(conn,achillesSql)
     writeLines(paste("Done. Achilles results can now be found in",resultsDatabaseSchema))
