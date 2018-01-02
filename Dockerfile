@@ -33,6 +33,7 @@ ENV LANG en_US.UTF-8
 
 # Install Achilles requirements that need to be installed from source
 RUN echo 'options(repos=structure(c(CRAN="http://cran.cnr.berkeley.edu/")))' > /root/.Rprofile && \
+    /usr/share/doc/littler/examples/install.r remotes && \
     /usr/share/doc/littler/examples/install.r docopt && \
     /usr/share/doc/littler/examples/installGithub.r \
       OHDSI/SqlRender \
