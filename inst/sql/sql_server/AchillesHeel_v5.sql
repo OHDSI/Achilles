@@ -74,8 +74,8 @@ IF OBJECT_ID('@results_database_schema.ACHILLES_results_derived', 'U') IS NOT NU
 create table @results_database_schema.ACHILLES_results_derived
 (
 	analysis_id int, 
-	stratum_1 varchar(255),
-	stratum_2 varchar(255),
+	stratum_1 varchar(MAX),
+	stratum_2 varchar(MAX),
 	statistic_value float,
 	measure_id varchar(255)
 );
