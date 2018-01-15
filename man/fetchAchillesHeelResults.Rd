@@ -23,9 +23,8 @@ that should really be fixed) and warnings (things that should at least be invest
 }
 \examples{
 \dontrun{
-  connectionDetails <- createConnectionDetails(dbms="sql server", server="RNDUSRDHIT07.jnj.com")
+  connectionDetails <- DatabaseConnector::createConnectionDetails(dbms="sql server", server="myserver")
   achillesResults <- achilles(connectionDetails, "cdm4_sim", "scratch", "TestDB")
   fetchAchillesHeelResults(connectionDetails, "scratch")
 }
 }
-

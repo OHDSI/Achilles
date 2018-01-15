@@ -31,10 +31,12 @@ server <- paste(db_conf$hostname, db_conf$path, sep="/")
 # Create connection details using DatabaseConnector utility.
 connectionDetails <- createConnectionDetails(
     dbms=db_conf$scheme, user=db_conf$username, password=db_conf$password,
-    server=server, schema=db_conf$path, port=db_conf$port
+    server=server, port=db_conf$port
 )
 
 args <- commandArgs(trailingOnly = TRUE)
+
+createIndices <- db_conf$scheme != "redshift"
 
 if (length(args) == 0 || args[1] != "heel") {
 
@@ -44,7 +46,8 @@ if (length(args) == 0 || args[1] != "heel") {
         resultsDatabaseSchema=env_vars$ACHILLES_RES_SCHEMA,
         vocabDatabaseSchema=env_vars$ACHILLES_VOCAB_SCHEMA,
         sourceName=env_vars$ACHILLES_SOURCE,
-        cdmVersion=env_vars$ACHILLES_CDM_VERSION
+        cdmVersion=env_vars$ACHILLES_CDM_VERSION,
+        createIndices=createIndices
     )
     
 } else {

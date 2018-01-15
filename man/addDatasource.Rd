@@ -34,9 +34,8 @@ If the datasources file does not exist, a new file wil be initialized with the s
 \examples{
 \dontrun{
 jsonFolderPath <- "your/output/path"
-connectionDetails <- createConnectionDetails(dbms="sql server", server="yourserver")
+connectionDetails <- DatabaseConnector::createConnectionDetails(dbms="sql server", server="yourserver")
 exportToJson(connectionDetails, cdmDatabaseSchema="cdm5", outputPath=jsonFolderPath)
 addDatasource(jsonFolderPath, "your_data_name")
 }
 }
-

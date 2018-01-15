@@ -21,4 +21,3 @@ exportToJson supports the following report types:
   showReportTypes()
 }
 }
-

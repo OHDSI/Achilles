@@ -19,6 +19,8 @@ exportToJson(connectionDetails, cdmDatabaseSchema, resultsDatabaseSchema,
 
 \item{reports}{A character vector listing the set of reports to generate. Default is all reports.}
 
+\item{cdmVersion}{Define the OMOP CDM version used:  currently support "4" and "5".  Default = "4"}
+
 \item{vocabDatabaseSchema}{string name of database schema that contains OMOP Vocabulary. Default is cdmDatabaseSchema. On SQL Server, this should specifiy both the database and the schema, so for example 'results.dbo'.
 See \code{data(allReports)} for a list of all report types}
 }
@@ -33,8 +35,7 @@ Creates individual files for each report found in Achilles.Web
 }
 \examples{
 \dontrun{
-  connectionDetails <- createConnectionDetails(dbms="sql server", server="yourserver")
+  connectionDetails <- DatabaseConnector::createConnectionDetails(dbms="sql server", server="yourserver")
   exportToJson(connectionDetails, cdmDatabaseSchema="cdm4_sim", outputPath="your/output/path")
 }
 }
-

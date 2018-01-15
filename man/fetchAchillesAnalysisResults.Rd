@@ -24,9 +24,8 @@ See \code{data(analysesDetails)} for a list of all Achilles analyses and their I
 }
 \examples{
 \dontrun{
-  connectionDetails <- createConnectionDetails(dbms="sql server", server="RNDUSRDHIT07.jnj.com")
+  connectionDetails <- DatabaseConnector::createConnectionDetails(dbms="sql server", server="myserver")
   achillesResults <- achilles(connectionDetails, "cdm4_sim", "scratch", "TestDB")
   fetchAchillesAnalysisResults(connectionDetails, "scratch",106)
 }
 }
-

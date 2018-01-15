@@ -21,8 +21,6 @@ achillesHeel(connectionDetails, cdmDatabaseSchema,
 \item{cdmVersion}{Define the OMOP CDM version used:  currently support "4" and "5".  Default = "4"}
 
 \item{vocabDatabaseSchema}{string name of database schema that contains OMOP Vocabulary. Default is cdmDatabaseSchema. On SQL Server, this should specifiy both the database and the schema, so for example 'results.dbo'.}
-
-\item{sourceName}{string name of the database, as recorded in results}
 }
 \value{
 nothing is returned
@@ -35,8 +33,7 @@ nothing is returned
 }
 \examples{
 \dontrun{
-  connectionDetails <- createConnectionDetails(dbms="sql server", server="RNDUSRDHIT07.jnj.com")
+  connectionDetails <- DatabaseConnector::createConnectionDetails(dbms="sql server", server="myserver")
   achillesHeel <- achilles(connectionDetails, cdmDatabaseSchema="mycdm", resultsDatabaseSchema="scratch", vocabDatabaseSchema="vocabulary")
 }
 }
-
