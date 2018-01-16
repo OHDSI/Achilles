@@ -491,11 +491,11 @@ IF OBJECT_ID('@results_database_schema.ACHILLES_results', 'U') IS NOT NULL
 create table @results_database_schema.ACHILLES_results
 (
 	analysis_id int,
-	stratum_1 varchar(255),
-	stratum_2 varchar(255),
-	stratum_3 varchar(255),
-	stratum_4 varchar(255),
-	stratum_5 varchar(255),
+	stratum_1 varchar(MAX),
+	stratum_2 varchar(MAX),
+	stratum_3 varchar(MAX),
+	stratum_4 varchar(MAX),
+	stratum_5 varchar(MAX),
 	count_value bigint
 );
 
