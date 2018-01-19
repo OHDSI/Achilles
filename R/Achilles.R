@@ -86,7 +86,7 @@ achilles <- function (connectionDetails,
                       createIndices = TRUE){
   
   if (cdmVersion == "4")  {
-    stop("Error: Version 4 is no longer supported by this version of Achilles. Last release with v4 support was v1.5")
+    stop("Error: Invalid CDM Version number, version 4 is no longer supported.")
     #achillesFile <- "Achilles_v4.sql"
     #heelFile <- "AchillesHeel_v4.sql"
     #hierarchyFile = ""
