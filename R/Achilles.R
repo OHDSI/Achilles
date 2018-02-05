@@ -86,10 +86,11 @@ achilles <- function (connectionDetails,
                       createIndices = TRUE){
   
   if (cdmVersion == "4")  {
-    achillesFile <- "Achilles_v4.sql"
-    heelFile <- "AchillesHeel_v4.sql"
-    hierarchyFile = ""
-    conceptHierarchy = FALSE
+    stop("Error: Invalid CDM Version number, version 4 is no longer supported.")
+    #achillesFile <- "Achilles_v4.sql"
+    #heelFile <- "AchillesHeel_v4.sql"
+    #hierarchyFile = ""
+    #conceptHierarchy = FALSE
   } else if (cdmVersion == "5") {
     achillesFile <- "Achilles_v5.sql"
     heelFile <- "AchillesHeel_v5.sql"
@@ -336,6 +337,7 @@ conceptHierarchy <- function (connectionDetails,
 #' @param connectionDetails  An R object of type ConnectionDetail (details for the function that contains server info, database type, optionally username/password, port)
 #' @param resultsDatabaseSchema		string name of database schema that holds the results tables for indexing. On SQL Server, this should specifiy both the database and the schema, so for example 'results.dbo'.
 #' @param oracleTempSchema    For Oracle only: the name of the database schema where you want all temporary tables to be managed. Requires create/insert permissions to this database. 
+#' @param sqlOnly     if TRUE, only the SQL code will be generated
 #' @param cdmVersion     Define the OMOP CDM version used:  currently support only "5".  Default = "5"
 #' 
 #' @return nothing is returned

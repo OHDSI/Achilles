@@ -478,7 +478,7 @@ FROM @results_database_schema.ACHILLES_results or1
 INNER JOIN @results_database_schema.ACHILLES_analysis oa1
 	ON or1.analysis_id = oa1.analysis_id
 LEFT JOIN @vocab_database_schema.concept c1
-	ON or1.stratum_1 = CAST(c1.concept_id AS VARCHAR)
+	ON or1.stratum_1 = CAST(c1.concept_id AS VARCHAR(19))
 WHERE or1.analysis_id IN (
 		2,
 		4,
@@ -519,7 +519,7 @@ FROM @results_database_schema.ACHILLES_results or1
 INNER JOIN @results_database_schema.ACHILLES_analysis oa1
 	ON or1.analysis_id = oa1.analysis_id
 LEFT JOIN @vocab_database_schema.concept c1
-	ON or1.stratum_2 = CAST(c1.concept_id AS VARCHAR)
+	ON or1.stratum_2 = CAST(c1.concept_id AS VARCHAR(19))
 WHERE or1.analysis_id IN (
 		405,
 		605,
@@ -583,7 +583,7 @@ FROM @results_database_schema.ACHILLES_results or1
 INNER JOIN @results_database_schema.ACHILLES_analysis oa1
 	ON or1.analysis_id = oa1.analysis_id
 INNER JOIN @vocab_database_schema.concept c1
-	ON or1.stratum_1 = CAST(c1.concept_id AS VARCHAR)
+	ON or1.stratum_1 = CAST(c1.concept_id AS VARCHAR(19))
 WHERE or1.analysis_id IN (2)
 	AND or1.stratum_1 IS NOT NULL
 	AND c1.concept_id <> 0 
@@ -606,7 +606,7 @@ FROM @results_database_schema.ACHILLES_results or1
 INNER JOIN @results_database_schema.ACHILLES_analysis oa1
 	ON or1.analysis_id = oa1.analysis_id
 INNER JOIN @vocab_database_schema.concept c1
-	ON or1.stratum_1 = CAST(c1.concept_id AS VARCHAR)
+	ON or1.stratum_1 = CAST(c1.concept_id AS VARCHAR(19))
 WHERE or1.analysis_id IN (4)
 	AND or1.stratum_1 IS NOT NULL
 	AND c1.concept_id <> 0 
@@ -629,7 +629,7 @@ FROM @results_database_schema.ACHILLES_results or1
 INNER JOIN @results_database_schema.ACHILLES_analysis oa1
 	ON or1.analysis_id = oa1.analysis_id
 INNER JOIN @vocab_database_schema.concept c1
-	ON or1.stratum_1 = CAST(c1.concept_id AS VARCHAR)
+	ON or1.stratum_1 = CAST(c1.concept_id AS VARCHAR(19))
 WHERE or1.analysis_id IN (5)
 	AND or1.stratum_1 IS NOT NULL
 	AND c1.concept_id <> 0 
@@ -652,7 +652,7 @@ FROM @results_database_schema.ACHILLES_results or1
 INNER JOIN @results_database_schema.ACHILLES_analysis oa1
 	ON or1.analysis_id = oa1.analysis_id
 INNER JOIN @vocab_database_schema.concept c1
-	ON or1.stratum_1 = CAST(c1.concept_id AS VARCHAR)
+	ON or1.stratum_1 = CAST(c1.concept_id AS VARCHAR(19))
 WHERE or1.analysis_id IN (202)
 	AND or1.stratum_1 IS NOT NULL
 	AND c1.concept_id <> 0 
@@ -675,7 +675,7 @@ FROM @results_database_schema.ACHILLES_results or1
 INNER JOIN @results_database_schema.ACHILLES_analysis oa1
 	ON or1.analysis_id = oa1.analysis_id
 INNER JOIN @vocab_database_schema.concept c1
-	ON or1.stratum_1 = CAST(c1.concept_id AS VARCHAR)
+	ON or1.stratum_1 = CAST(c1.concept_id AS VARCHAR(19))
 WHERE or1.analysis_id IN (301)
 	AND or1.stratum_1 IS NOT NULL
 	AND c1.concept_id <> 0 
@@ -698,7 +698,7 @@ FROM @results_database_schema.ACHILLES_results or1
 INNER JOIN @results_database_schema.ACHILLES_analysis oa1
 	ON or1.analysis_id = oa1.analysis_id
 INNER JOIN @vocab_database_schema.concept c1
-	ON or1.stratum_1 = CAST(c1.concept_id AS VARCHAR)
+	ON or1.stratum_1 = CAST(c1.concept_id AS VARCHAR(19))
 WHERE or1.analysis_id IN (
 		400,
 		1000
@@ -724,7 +724,7 @@ FROM @results_database_schema.ACHILLES_results or1
 INNER JOIN @results_database_schema.ACHILLES_analysis oa1
 	ON or1.analysis_id = oa1.analysis_id
 INNER JOIN @vocab_database_schema.concept c1
-	ON or1.stratum_1 = CAST(c1.concept_id AS VARCHAR)
+	ON or1.stratum_1 = CAST(c1.concept_id AS VARCHAR(19))
 WHERE or1.analysis_id IN (
 		700,
 		900
@@ -750,7 +750,7 @@ FROM @results_database_schema.ACHILLES_results or1
 INNER JOIN @results_database_schema.ACHILLES_analysis oa1
 	ON or1.analysis_id = oa1.analysis_id
 INNER JOIN @vocab_database_schema.concept c1
-	ON or1.stratum_1 = CAST(c1.concept_id AS VARCHAR)
+	ON or1.stratum_1 = CAST(c1.concept_id AS VARCHAR(19))
 WHERE or1.analysis_id IN (600)
 	AND or1.stratum_1 IS NOT NULL
 	AND c1.concept_id <> 0 
@@ -782,7 +782,7 @@ FROM @results_database_schema.ACHILLES_results or1
 INNER JOIN @results_database_schema.ACHILLES_analysis oa1
 	ON or1.analysis_id = oa1.analysis_id
 INNER JOIN @vocab_database_schema.concept c1
-	ON or1.stratum_1 = CAST(c1.concept_id AS VARCHAR)
+	ON or1.stratum_1 = CAST(c1.concept_id AS VARCHAR(19))
 WHERE or1.analysis_id IN (1610)
 	AND or1.stratum_1 IS NOT NULL
 	AND c1.concept_id <> 0 
