@@ -160,7 +160,7 @@ select cast(floor(cast(stratum_1 as int)/10) as varchar(255)) as stratum_1,
   sum(count_value) as statistic_value,
   CAST('AgeAtFirstObsByDecile:PersonCnt' AS VARCHAR(255)) as measure_id
   from @results_database_schema.achilles_results where analysis_id = 101
-group by 1, 3;
+group by stratum_1, measure_id;
 
 --count whether all deciles from 0 to 8 are there  (has later a rule: if less the threshold, issue notification)
 insert into @results_database_schema.ACHILLES_results_derived (statistic_value,measure_id)    
