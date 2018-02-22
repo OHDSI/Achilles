@@ -1,6 +1,6 @@
 # @file exportToJson
 #
-# Copyright 2014 Observational Health Data Sciences and Informatics
+# Copyright 2018 Observational Health Data Sciences and Informatics
 #
 # This file is part of Achilles
 # 
@@ -76,13 +76,14 @@ showReportTypes <- function()
 #' Creates individual files for each report found in Achilles.Web
 #' 
 #' 
-#' @param connectionDetails  An R object of type ConnectionDetail (details for the function that contains server info, database type, optionally username/password, port)
-#' @param cdmDatabaseSchema      Name of the database schema that contains the OMOP CDM.
-#' @param resultsDatabaseSchema  		Name of the database schema that contains the Achilles analysis files. Default is cdmDatabaseSchema
-#' @param outputPath		A folder location to save the JSON files. Default is current working folder
-#' @param reports       A character vector listing the set of reports to generate. Default is all reports. 
-#' @param cdmVersion     Define the OMOP CDM version used:  currently support "4" and "5".  Default = "4"
-#' @param vocabDatabaseSchema		string name of database schema that contains OMOP Vocabulary. Default is cdmDatabaseSchema. On SQL Server, this should specifiy both the database and the schema, so for example 'results.dbo'.
+#' @param connectionDetails             An R object of type ConnectionDetail (details for the function that contains server info, database type, optionally username/password, port)
+#' @param cdmDatabaseSchema             Name of the database schema that contains the OMOP CDM.
+#' @param resultsDatabaseSchema     		Name of the database schema that contains the Achilles analysis files. Default is cdmDatabaseSchema
+#' @param outputPath		                A folder location to save the JSON files. Default is current working folder
+#' @param reports                       A character vector listing the set of reports to generate. Default is all reports. 
+#' @param cdmVersion                    Define the OMOP CDM version used:  currently support "4" and "5".  Default = "4"
+#' @param vocabDatabaseSchema		        string name of database schema that contains OMOP Vocabulary. Default is cdmDatabaseSchema. On SQL Server, this should specifiy both the database and the schema, so for example 'results.dbo'.
+#' @param compressIntoOneFile           Boolean indicating if the JSON files should be compressed into one gzip file
 #' See \code{data(allReports)} for a list of all report types
 #' 
 #' @return none 
@@ -91,8 +92,14 @@ showReportTypes <- function()
 #'   exportToJson(connectionDetails, cdmDatabaseSchema="cdm4_sim", outputPath="your/output/path")
 #' }
 #' @export
-exportToJson <- function (connectionDetails, cdmDatabaseSchema, resultsDatabaseSchema, outputPath = getwd(), reports = allReports, cdmVersion = "4", vocabDatabaseSchema = cdmDatabaseSchema)
-{
+exportToJson <- function (connectionDetails, 
+                          cdmDatabaseSchema, 
+                          resultsDatabaseSchema, 
+                          outputPath = getwd(), 
+                          reports = allReports, 
+                          cdmVersion = "4", 
+                          vocabDatabaseSchema = cdmDatabaseSchema,
+                          compressIntoOneFile = FALSE) {
   start <- Sys.time()
   if (missing(resultsDatabaseSchema))
     resultsDatabaseSchema <- cdmDatabaseSchema
@@ -185,6 +192,12 @@ exportToJson <- function (connectionDetails, cdmDatabaseSchema, resultsDatabaseS
   }
   
   DatabaseConnector::disconnect(conn)
+  
+  if (compressIntoOneFile) {
+    R.utils::gzip(filename = outputPath, 
+                  destname = sprintf("%s.gz", cdmDatabaseSchema),
+                  remove = FALSE)
+  }
   
   delta <- Sys.time() - start
   writeLines(paste("Export took", signif(delta,3), attr(delta,"units")))

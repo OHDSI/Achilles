@@ -1,0 +1,11 @@
+-- 711	Number of drug exposure records with end date < start date
+
+--HINT DISTRIBUTE_ON_KEY(analysis_id)
+select 711 as analysis_id,  
+	null as stratum_1, null as stratum_2, null as stratum_3, null as stratum_4, null as stratum_5,
+	COUNT_BIG(de1.PERSON_ID) as count_value
+into @scratchDatabaseSchema@schemaDelim@tempAchillesPrefix_711
+from
+	@cdmDatabaseSchema.drug_exposure de1
+where de1.drug_exposure_end_date < de1.drug_exposure_start_date
+;
