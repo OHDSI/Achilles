@@ -10,7 +10,7 @@ select
 from
 (
   SELECT DISTINCT or1.analysis_id,
-  	'ERROR: ' + cast(or1.analysis_id as VARCHAR) + '-' + oa1.analysis_name + '; should not have year of birth in the future, (n=' + cast(sum(or1.count_value) as VARCHAR) + ')' AS ACHILLES_HEEL_warning,
+  	CAST(CONCAT('ERROR: ', cast(or1.analysis_id as VARCHAR), '-', oa1.analysis_name, '; should not have year of birth in the future, (n=', cast(sum(or1.count_value) as VARCHAR), ')') AS VARCHAR(255)) AS ACHILLES_HEEL_warning,
     18 as rule_id,
     sum(or1.count_value) as record_count
   FROM @resultsDatabaseSchema.ACHILLES_results or1

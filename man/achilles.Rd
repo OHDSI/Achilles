@@ -2,49 +2,62 @@
 % Please edit documentation in R/Achilles.R
 \name{achilles}
 \alias{achilles}
-\title{The main Achilles analysis}
+\title{The main Achilles analysis (for v5.x)}
 \usage{
 achilles(connectionDetails, cdmDatabaseSchema,
   oracleTempSchema = cdmDatabaseSchema,
-  resultsDatabaseSchema = cdmDatabaseSchema, sourceName = "", analysisIds,
-  createTable = TRUE, smallcellcount = 5, cdmVersion = "4",
-  runHeel = TRUE, validateSchema = FALSE,
-  vocabDatabaseSchema = cdmDatabaseSchema, runCostAnalysis = FALSE,
-  sqlOnly = FALSE, conceptHierarchy = TRUE, createIndices = TRUE)
+  resultsDatabaseSchema = cdmDatabaseSchema,
+  scratchDatabaseSchema = resultsDatabaseSchema,
+  vocabDatabaseSchema = cdmDatabaseSchema, sourceName = "", analysisIds,
+  smallcellcount = 5, cdmVersion = "5", runHeel = TRUE,
+  validateSchema = FALSE, runCostAnalysis = FALSE,
+  conceptHierarchy = TRUE, createIndices = TRUE, numThreads = 1,
+  tempAchillesPrefix = "tmpach", dropScratchTables = TRUE,
+  sqlOnly = FALSE, outputFolder = "output")
 }
 \arguments{
-\item{connectionDetails}{An R object of type ConnectionDetail (details for the function that contains server info, database type, optionally username/password, port)}
+\item{connectionDetails}{An R object of type ConnectionDetails (details for the function that contains server info, database type, optionally username/password, port)}
 
-\item{cdmDatabaseSchema}{string name of database schema that contains OMOP CDM. On SQL Server, this should specifiy both the database and the schema, so for example 'cdm_instance.dbo'.}
+\item{cdmDatabaseSchema}{Fully qualified name of database schema that contains OMOP CDM (including Vocabulary). 
+On SQL Server, this should specifiy both the database and the schema, so for example, on SQL Server, 'cdm_instance.dbo'.}
 
-\item{oracleTempSchema}{For Oracle only: the name of the database schema where you want all temporary tables to be managed. Requires create/insert permissions to this database.}
+\item{resultsDatabaseSchema}{Fully qualified name of database schema that we can write final results to. Default is cdmDatabaseSchema. 
+On SQL Server, this should specifiy both the database and the schema, so for example, on SQL Server, 'cdm_results.dbo'.}
 
-\item{resultsDatabaseSchema}{string name of database schema that we can write results to. Default is cdmDatabaseSchema. On SQL Server, this should specifiy both the database and the schema, so for example 'results.dbo'.}
+\item{scratchDatabaseSchema}{Fully qualified name of the database schema that will store all of the intermediate scratch tables, so for example, on SQL Server, 'cdm_scratch.dbo'. 
+Must be accessible to/from the cdmDatabaseSchema and the resultsDatabaseSchema. Default is resultsDatabaseSchema. 
+Making this "#" will run Achilles in single-threaded mode and use temporary tables instead of permanent tables.}
 
-\item{sourceName}{string name of the database, as recorded in results}
+\item{vocabDatabaseSchema}{String name of database schema that contains OMOP Vocabulary. Default is cdmDatabaseSchema. On SQL Server, this should specifiy both the database and the schema, so for example 'results.dbo'.}
 
-\item{analysisIds}{(optional) a vector containing the set of Achilles analysisIds for which results will be generated.
+\item{sourceName}{String name of the database, as recorded in results.}
+
+\item{analysisIds}{(OPTIONAL) A vector containing the set of Achilles analysisIds for which results will be generated. 
 If not specified, all analyses will be executed. Use \code{\link{getAnalysisDetails}} to get a list of all Achilles analyses and their Ids.}
 
-\item{createTable}{If true, new results tables will be created in the results schema. If not, the tables are assumed to already exists, and analysis results will be added}
+\item{smallcellcount}{To avoid patient identifiability, cells with small counts (<= smallcellcount) are deleted. Set to NULL if you don't want any deletions.}
 
-\item{smallcellcount}{To avoid patient identifiability, cells with small counts (<= smallcellcount) are deleted.}
-
-\item{cdmVersion}{Define the OMOP CDM version used:  currently support "4" and "5".  Default = "4"}
+\item{cdmVersion}{Define the OMOP CDM version used:  currently supports v5 and above.  Default = "5". v4 support is in \code{\link{achilles_v4}}.}
 
 \item{runHeel}{Boolean to determine if Achilles Heel data quality reporting will be produced based on the summary statistics.  Default = TRUE}
 
 \item{validateSchema}{Boolean to determine if CDM Schema Validation should be run. This could be very slow.  Default = FALSE}
 
-\item{vocabDatabaseSchema}{string name of database schema that contains OMOP Vocabulary. Default is cdmDatabaseSchema. On SQL Server, this should specifiy both the database and the schema, so for example 'results.dbo'.}
-
-\item{runCostAnalysis}{Boolean to determine if cost analysis should be run. Note: only works on CDM v5.0 style cost tables.}
-
-\item{sqlOnly}{Boolean to determine if the SQL generated by this function call should be executed or simply returned as a string. DEFAULT = FALSE indicating that the SQL code should be executed.}
+\item{runCostAnalysis}{Boolean to determine if cost analysis should be run. Note: only works on v5.1+ style cost tables.}
 
 \item{conceptHierarchy}{Boolean to determine if the concept_hierarchy result table should be created, for use by Atlas treemaps. Note: only works on CDM v5.0 tables.}
 
 \item{createIndices}{Boolean to determine if indices should be created on the resulting Achilles and concept_hierarchy table. Default= TRUE}
+
+\item{numThreads}{(OPTIONAL, multi-threaded mode) The number of threads to use to run Achilles in parallel. Default is 1 thread.}
+
+\item{tempAchillesPrefix}{(OPTIONAL, multi-threaded mode) The prefix to use for the scratch Achilles analyses tables. Default is "tmpach"}
+
+\item{dropScratchTables}{(OPTIONAL, multi-threaded mode) TRUE = drop the scratch tables (may take time depending on dbms), FALSE = leave them in place for later removal.}
+
+\item{sqlOnly}{TRUE = just generate SQL files, don't actually run, FALSE = run Achilles}
+
+\item{outputFolder}{(OPTIONAL, sql only mode) Path to store SQL files}
 }
 \value{
 An object of type \code{achillesResults} containing details for connecting to the database containing the results
@@ -56,9 +69,15 @@ An object of type \code{achillesResults} containing details for connecting to th
 \code{achilles} creates descriptive statistics summary for an entire OMOP CDM instance.
 }
 \examples{
-\dontrun{
-  connectionDetails <- DatabaseConnector::createConnectionDetails(dbms="sql server", server="myserver")
-  achillesResults <- achilles(connectionDetails, cdmDatabaseSchema="cdm4_sim", resultsDatabaseSchema="scratch", sourceName="TestDB", validateSchema="TRUE", vocabDatabaseSchema="vocabulary")
-  fetchAchillesAnalysisResults(connectionDetails, "scratch", 106)
-}
+                              \dontrun{
+                                          connectionDetails <- createConnectionDetails(dbms="sql server", server="some_server")
+                                          achillesResults <- achilles(connectionDetails = connectionDetails, 
+                                            cdmDatabaseSchema = "cdm", 
+                                            resultsDatabaseSchema="results", 
+                                            scratchDatabaseSchema="scratch",
+                                            sourceName="Some Source", 
+                                            cdmVersion = "5.3", 
+                                            runCostAnalysis = TRUE, 
+                                            numThreads = 10)
+                                        }
 }

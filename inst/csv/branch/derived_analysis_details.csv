@@ -1,0 +1,25 @@
+measure_id,name,statistic_value_name,stratum_1_name,stratum_2_name,description,associated_rules
+UnmappedDataByDomain:SourceValueCnt,Count of source values in unmapped data,count of source values,domain,,The measure analyzes how many source codes are unmapped.,34
+AgeAtFirstObsByDecile:DecileCnt,Count of deciles appearing in the data (at first observation),count of deciles,,,"The measure analyzes deciles of patients at their first observation. If only certain age groups are being observed, the count of deciles will be low.",33
+Provider:PatientProviderRatio,Patient Provider Ratio,ratio,,,"The measure looks at how many patients and how many providers are defined in the data. For example, the ratio may indicate abnormaly low number of providers.",31
+Meas:NoNumValue:Percentage,Percentage of rows in MEASUREMENT table that have NULL recorded as numerical value,percentage,,,The measure looks at data recorded in MESUREMENT table. A significant percentage of such rows typically contain a numerical result.,28
+UnmappedData:byDomain:Percentage,Percentage of rows that are unmapped,percentage,domain,,The measure looks at relative size of unmapped data.,27
+Provider:SpeciatlyCnt,Count of specialties found in the provider table,count of specialties,,,"The measure looks at how many different specialties are present. For general datasets, we expect at least some minimum number of specialties.",38
+DrugExposure:ConceptCnt,Count of distinct drug_concept_ids (drug_exposure),count of concepts,,,"Count of distinct drugs. For most datasets, a low number may indicate a data quality problem.",
+DrugEra:ConceptCnt,Count of distinct drug_concept_ids (drug_era),count of concepts,,,Count of distinct drugs.,
+ach_2000:Percentage,Percentage of patients with at least 1 Dx and 1 Rx,percentage,,,Indicates patient with some minimum events in their record,
+ach_2001:Percentage,Percentage of patients with at least 1 Dx and 1 Proc,percentage,,,Indicates patient with some minimum events in their record,
+ach_2002:Percentage,"Percentage of patients with at least 1 Meas, 1 Dx and 1 Rx",percentage,,,Indicates patient with some minimum events in their record,
+ach_2003:Percentage,Percentage of patients with at least 1 visit,percentage,,,Indicates patient with some minimum events in their record,32
+Achilles:byAnalysis:RowCnt,,count of rows,,,"Metadata about which measures were included when Achilles was last executed. Also allows count of types for certain domains (e.g., visit type). This is least sensitive data about a dataset. Pure metadata.",
+Visit:Type:PersonWithAtLeastOne:byDecile:Percentage,Percentage of patients that have at least one visit by visity type,percentage,visit_concept_id,decile,The measure indicates which visit types are present in the dataset by decile using non-sensitive percentage view of count of persons.,
+Device:ConceptCnt,Count of distinct concepts (Device),count of concepts,,,"Count of distinct concepts. For most datasets, a low number may indicate a data quality problem.",
+Measurement:ConceptCnt,Count of distinct concepts (Measurement),count of concepts,,,"Count of distinct concepts. For most datasets, a low number may indicate a data quality problem.",
+Observation:ConceptCnt,Count of distinct concepts (Observation),count of concepts,,,"Count of distinct concepts. For most datasets, a low number may indicate a data quality problem.",
+Procedure:ConceptCnt,Count of distinct concepts (Procedure),count of concepts,,,"Count of distinct concepts. For most datasets, a low number may indicate a data quality problem.",
+Note:ConceptCnt,Count of distinct concepts (Note),count of concepts,,,"Count of distinct concepts. For most datasets, a low number may indicate a data quality problem.",
+Death:DeathCause:ConceptCnt,Count of distinct concepts (Note),count of concepts,,,"Count of distinct concepts. For most datasets, a low number may indicate a data quality problem.",
+Death:DeathType:ConceptCnt,Count of distinct concepts (Note),count of concepts,,,"Count of distinct concepts. For most datasets, a low number may indicate a data quality problem.",
+Death:byYear:SafePatientCnt,Count of patients by year of death,count,calendar year,,Safe patient count indicates that low counts will not be included in the measure,
+Death:byDecade:SafePatientCnt,Count of patients by decade,count,calendar decade,,"Count of deaths by calendar decade (e.g., 1990s, 2000s,2100s). Large aggretion by decade is a less sensitive measure to report. ",
+Death:BornDeceasedRatio,Ratio of born persons to deceased persons by year,ratio,calendar year,,,39

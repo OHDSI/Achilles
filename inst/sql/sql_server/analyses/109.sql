@@ -6,8 +6,8 @@ IF OBJECT_ID('tempdb..#temp_dates', 'U') IS NOT NULL
 
 SELECT DISTINCT 
   YEAR(observation_period_start_date) AS obs_year,
-  CAST(CONCAT(CONCAT(CAST(YEAR(observation_period_start_date) AS VARCHAR(4)), '01'), '01') AS DATE) AS obs_year_start,
-  CAST(CONCAT(CONCAT(CAST(YEAR(observation_period_start_date) AS VARCHAR(4)), '12'), '31') AS DATE) AS obs_year_end
+  DATEFROMPARTS(YEAR(observation_period_start_date), 1, 1) AS obs_year_start,
+  DATEFROMPARTS(YEAR(observation_period_start_date), 12, 31) AS obs_year_end
 INTO
   #temp_dates
 FROM @cdmDatabaseSchema.observation_period

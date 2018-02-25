@@ -10,7 +10,7 @@ select
 from
 (
   SELECT DISTINCT ord1.analysis_id,
-    'WARNING: ' + cast(ord1.analysis_id as VARCHAR) + '-' + oa1.analysis_name + ' (count = ' + cast(COUNT_BIG(ord1.max_value) as VARCHAR) + '); max value should not be > 10' AS ACHILLES_HEEL_warning,
+    CAST(CONCAT('WARNING: ', cast(ord1.analysis_id as VARCHAR), '-', oa1.analysis_name, ' (count = ', cast(COUNT_BIG(ord1.max_value) as VARCHAR), '); max value should not be > 10') AS VARCHAR(255)) AS ACHILLES_HEEL_warning,
     25 as rule_id,
     COUNT_BIG(ord1.max_value) as record_count
   FROM @resultsDatabaseSchema.ACHILLES_results_dist ord1

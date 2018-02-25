@@ -6,9 +6,9 @@ IF OBJECT_ID('tempdb..#temp_dates', 'U') IS NOT NULL
 
 SELECT DISTINCT 
   YEAR(observation_period_start_date)*100 + MONTH(observation_period_start_date) AS obs_month,
-  CAST(CONCAT(CONCAT(CAST(YEAR(observation_period_start_date) AS VARCHAR(4)), RIGHT(CONCAT('0', CAST(MONTH(OBSERVATION_PERIOD_START_DATE) AS VARCHAR(2))), 2)), '01') AS DATE)
+  DATEFROMPARTS(YEAR(observation_period_start_date), MONTH(observation_period_start_date), 1)
   AS obs_month_start,
-  DATEADD(dd,-1,DATEADD(mm,1,CAST(CONCAT(CONCAT(CAST(YEAR(observation_period_start_date) AS VARCHAR(4)), RIGHT(CONCAT('0', CAST(MONTH(OBSERVATION_PERIOD_START_DATE) AS VARCHAR(2))), 2)), '01') AS DATE))) AS obs_month_end
+  EOMONTH(observation_period_start_date) AS obs_month_end
 INTO
   #temp_dates
 FROM @cdmDatabaseSchema.observation_period

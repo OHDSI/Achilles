@@ -49,12 +49,12 @@
 #' @param runHeel                          Boolean to determine if Achilles Heel data quality reporting will be produced based on the summary statistics.  Default = TRUE
 #' @param validateSchema                   Boolean to determine if CDM Schema Validation should be run. This could be very slow.  Default = FALSE
 #' @param runCostAnalysis                  Boolean to determine if cost analysis should be run. Note: only works on v5.1+ style cost tables.
-#' @param sqlOnly                          TRUE = just generate SQL files, don't actually run, FALSE = run Achilles
+#' @param conceptHierarchy                 Boolean to determine if the concept_hierarchy result table should be created, for use by Atlas treemaps. Note: only works on CDM v5.0 tables.
+#' @param createIndices                    Boolean to determine if indices should be created on the resulting Achilles and concept_hierarchy table. Default= TRUE
 #' @param numThreads                       (OPTIONAL, multi-threaded mode) The number of threads to use to run Achilles in parallel. Default is 1 thread.
 #' @param tempAchillesPrefix               (OPTIONAL, multi-threaded mode) The prefix to use for the scratch Achilles analyses tables. Default is "tmpach"
 #' @param dropScratchTables                (OPTIONAL, multi-threaded mode) TRUE = drop the scratch tables (may take time depending on dbms), FALSE = leave them in place for later removal.
-#' @param conceptHierarchy                 Boolean to determine if the concept_hierarchy result table should be created, for use by Atlas treemaps. Note: only works on CDM v5.0 tables.
-#' @param createIndices                    Boolean to determine if indices should be created on the resulting Achilles and concept_hierarchy table. Default= TRUE
+#' @param sqlOnly                          TRUE = just generate SQL files, don't actually run, FALSE = run Achilles
 #' @param outputFolder                     (OPTIONAL, sql only mode) Path to store SQL files
 #' 
 #' @return                                 An object of type \code{achillesResults} containing details for connecting to the database containing the results 
@@ -83,14 +83,12 @@ achilles <- function (connectionDetails,
                       runHeel = TRUE,
                       validateSchema = FALSE,
                       runCostAnalysis = FALSE,
-                      sqlOnly = FALSE,
                       conceptHierarchy = TRUE,
                       createIndices = TRUE,
                       numThreads = 1,
                       tempAchillesPrefix = "tmpach",
                       dropScratchTables = TRUE,
-                      conceptHierarchy = FALSE,
-                      createIndices = FALSE,
+                      sqlOnly = FALSE,
                       outputFolder = "output") {
   
   if (compareVersion(a = cdmVersion, b = "5") < 0) {
@@ -405,13 +403,13 @@ achilles <- function (connectionDetails,
 #'                                         so for example 'results.dbo'.
 #' @param scratchDatabaseSchema            (OPTIONAL, multi-threaded mode) Name of a fully qualified schema that is accessible to/from the resultsDatabaseSchema, that can store all of the scratch tables. Default is resultsDatabaseSchema.
 #' @param cdmVersion                       Define the OMOP CDM version used:  currently supports v5 and above.  Default = "5". 
-#' @param sqlOnly                          TRUE = just generate SQL files, don't actually run, FALSE = run Achilles
 #' @param numThreads                       (OPTIONAL, multi-threaded mode) The number of threads to use to run Achilles in parallel. Default is 1 thread.
 #' @param tempHeelPrefix                   (OPTIONAL, multi-threaded mode) The prefix to use for the "temporary" (but actually permanent) Heel tables. Default is "tmpheel"
 #' @param dropScratchTables                In multi-threaded mode: TRUE = drop the scratch tables (may take time depending on dbms), FALSE = leave them in place
 #' @param ThresholdAgeWarning              The maximum age to allow in Heel
 #' @param ThresholdOutpatientVisitPerc     The maximum percentage of outpatient visits among all visits
 #' @param ThresholdMinimalPtMeasDxRx       The minimum percentage of patients with at least 1 Measurement, 1 Dx, and 1 Rx
+#' @param sqlOnly                          TRUE = just generate SQL files, don't actually run, FALSE = run Achilles
 #' @param outputFolder                     (OPTIONAL, sql only mode) Path to store SQL files
 #' 
 #' @return nothing is returned
@@ -430,14 +428,14 @@ achillesHeel <- function(connectionDetails,
                          resultsDatabaseSchema = cdmDatabaseSchema,
                          scratchDatabaseSchema = resultsDatabaseSchema,
                          cdmVersion = "5",
-                         sqlOnly = FALSE,
                          numThreads = 1,
                          tempHeelPrefix = "tmpheel",
                          dropScratchTables = FALSE,
                          ThresholdAgeWarning = 125,
                          ThresholdOutpatientVisitPerc = 0.43,
                          ThresholdMinimalPtMeasDxRx = 20.5,
-                         outputFolder = "output") {
+                         outputFolder = "output",
+                         sqlOnly = FALSE) {
   
   if (compareVersion(a = cdmVersion, b = "5") < 0) {
     stop("Error: Invalid CDM Version number; this function is only for v5 and above. 
@@ -655,7 +653,7 @@ validateSchema <- function(connectionDetails,
 getAnalysisDetails <- function()
 {
   pathToCsv <- system.file("csv", "analysisDetails.csv", package = "Achilles")
-  analysisDetails <- read.csv(pathToCsv)
+  analysisDetails <- read.csv(file = pathToCsv, header = TRUE, stringsAsFactors = FALSE)
   return(analysisDetails)
 }
 
@@ -685,12 +683,12 @@ dropAllScratchTables <- function(connectionDetails,
     list(detailType = "results",
          tablePrefix = tempAchillesPrefix, 
          schema = read.csv(file = system.file("csv", "schema_achilles_results.csv", package = "Achilles"), 
-                           header = TRUE),
+                           header = TRUE, stringsAsFactors = FALSE),
          analysisIds = analysisDetails[analysisDetails$DISTRIBUTION <= 0, ]$ANALYSIS_ID),
     list(detailType = "results_dist",
          tablePrefix = sprintf("%1s_%2s", tempAchillesPrefix, "dist"),
          schema = read.csv(file = system.file("csv", "schema_achilles_results_dist.csv", package = "Achilles"), 
-                           header = TRUE),
+                           header = TRUE, stringsAsFactors = FALSE),
          analysisIds = analysisDetails[analysisDetails$DISTRIBUTION == 1, ]$ANALYSIS_ID))
   
   cluster <- OhdsiRTools::makeCluster(numberOfThreads = numThreads, singleThreadToMain = TRUE)

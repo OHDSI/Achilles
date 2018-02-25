@@ -13,14 +13,14 @@ select
 from
 (
   SELECT or1.analysis_id,
-  	'ERROR: ' + cast(or1.analysis_id as VARCHAR) + '-' + oa1.analysis_name + '; ' + cast(COUNT_BIG(DISTINCT stratum_2) AS VARCHAR) + ' concepts in data are not in vocabulary' AS ACHILLES_HEEL_warning,
+  	CAST(CONCAT('ERROR: ', cast(or1.analysis_id as VARCHAR), '-', oa1.analysis_name, '; ', cast(COUNT_BIG(DISTINCT stratum_2) AS VARCHAR), ' concepts in data are not in vocabulary') AS VARCHAR(255)) AS ACHILLES_HEEL_warning,
     5 as rule_id,
     COUNT_BIG(DISTINCT stratum_2) as record_count
   FROM @resultsDatabaseSchema.ACHILLES_results or1
   INNER JOIN @resultsDatabaseSchema.ACHILLES_analysis oa1
   	ON or1.analysis_id = oa1.analysis_id
   LEFT JOIN @cdmDatabaseSchema.concept c1
-  	ON or1.stratum_2 = CAST(c1.concept_id AS VARCHAR)
+  	ON or1.stratum_2 = CAST(c1.concept_id AS VARCHAR(19))
   WHERE or1.analysis_id IN (
   		405,
   		605,

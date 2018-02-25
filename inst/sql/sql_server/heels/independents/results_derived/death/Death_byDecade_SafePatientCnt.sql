@@ -3,10 +3,10 @@
 
 select 
   null as analysis_id,
-  decade as stratum_1,
+  cast(decade as varchar(255)) as stratum_1,
   null as stratum_2,
   temp_cnt as statistic_value,
-'Death:byDecade:SafePatientCnt' as measure_id
+cast('Death:byDecade:SafePatientCnt' as varchar(255)) as measure_id
 into @scratchDatabaseSchema@schemaDelim@tempHeelPrefix_@heelName
 from
    (select left(stratum_1,3) as decade,sum(count_value) as temp_cnt 

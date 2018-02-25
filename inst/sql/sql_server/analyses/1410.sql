@@ -6,8 +6,8 @@ IF OBJECT_ID('tempdb..#temp_dates', 'U') IS NOT NULL
 
 SELECT DISTINCT 
   YEAR(payer_plan_period_start_date)*100 + MONTH(payer_plan_period_start_date) AS obs_month,
-  CAST(CONCAT(CONCAT(CAST(YEAR(payer_plan_period_start_date) AS VARCHAR(4)), RIGHT(CONCAT('0', CAST(MONTH(payer_plan_period_start_date) AS VARCHAR(2))), 2)), '01') AS DATE) AS obs_month_start,
-  DATEADD(dd,-1,DATEADD(mm,1,CAST(CONCAT(CONCAT(CAST(YEAR(payer_plan_period_start_date) AS VARCHAR(4)), RIGHT(CONCAT('0', CAST(MONTH(payer_plan_period_start_date) AS VARCHAR(2))), 2)), '01') AS DATE))) AS obs_month_end
+  DATEFROMPARTS(YEAR(payer_plan_period_start_date), MONTH(payer_plan_period_start_date), 1) as obs_month_start,
+  EOMONTH(payer_plan_period_start_date) as obs_month_end
 INTO
   #temp_dates
 FROM 

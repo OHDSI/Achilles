@@ -10,7 +10,7 @@ select
 from
 (
   SELECT DISTINCT ar1.analysis_id,
-  	'WARNING: ' + cast(ar1.analysis_id as VARCHAR) + '-' + aa1.analysis_name + '; theres a 100% change in monthly count of events' AS ACHILLES_HEEL_warning,
+  	CAST(CONCAT('WARNING: ', cast(ar1.analysis_id as VARCHAR), '-', aa1.analysis_name, '; theres a 100% change in monthly count of events') AS VARCHAR(255)) AS ACHILLES_HEEL_warning,
     22 as rule_id
     
   FROM @resultsDatabaseSchema.ACHILLES_analysis aa1

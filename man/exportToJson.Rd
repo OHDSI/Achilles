@@ -6,7 +6,7 @@
 \usage{
 exportToJson(connectionDetails, cdmDatabaseSchema, resultsDatabaseSchema,
   outputPath = getwd(), reports = allReports, cdmVersion = "4",
-  vocabDatabaseSchema = cdmDatabaseSchema)
+  vocabDatabaseSchema = cdmDatabaseSchema, compressIntoOneFile = FALSE)
 }
 \arguments{
 \item{connectionDetails}{An R object of type ConnectionDetail (details for the function that contains server info, database type, optionally username/password, port)}
@@ -21,7 +21,9 @@ exportToJson(connectionDetails, cdmDatabaseSchema, resultsDatabaseSchema,
 
 \item{cdmVersion}{Define the OMOP CDM version used:  currently support "4" and "5".  Default = "4"}
 
-\item{vocabDatabaseSchema}{string name of database schema that contains OMOP Vocabulary. Default is cdmDatabaseSchema. On SQL Server, this should specifiy both the database and the schema, so for example 'results.dbo'.
+\item{vocabDatabaseSchema}{string name of database schema that contains OMOP Vocabulary. Default is cdmDatabaseSchema. On SQL Server, this should specifiy both the database and the schema, so for example 'results.dbo'.}
+
+\item{compressIntoOneFile}{Boolean indicating if the JSON files should be compressed into one gzip file
 See \code{data(allReports)} for a list of all report types}
 }
 \value{

@@ -4,8 +4,8 @@ select
   null as analysis_id,
   a.stratum_1,
   a.stratum_4 as stratum_2,
-  1.0*a.person_cnt/b.population_size as statistic_value,
-'Visit:Type:PersonWithAtLeastOne:byDecile:Percentage' as measure_id
+  cast(1.0*a.person_cnt/b.population_size as FLOAT) as statistic_value,
+cast('Visit:Type:PersonWithAtLeastOne:byDecile:Percentage' as varchar(255)) as measure_id
 into @scratchDatabaseSchema@schemaDelim@tempHeelPrefix_@heelName
 from
 (select 

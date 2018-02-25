@@ -5,7 +5,7 @@ select
   null as stratum_1,
   null as stratum_2,
   count_value as statistic_value, 
-       'UnmappedData:ach_'+CAST(analysis_id as VARCHAR) + ':GlobalRowCnt' as measure_id
+       CAST(concat('UnmappedData:ach_',cast(analysis_id as VARCHAR),':GlobalRowCnt') as varchar(255)) as measure_id
 into @scratchDatabaseSchema@schemaDelim@tempHeelPrefix_@heelName
 from @resultsDatabaseSchema.ACHILLES_results 
 --TODO:stratum_1 is varchar and this comparison may fail on some db engines

@@ -10,7 +10,7 @@ into @scratchDatabaseSchema@schemaDelim@tempHeelPrefix_@heelName
 from
 (
   SELECT ar1.analysis_id,
-  	'WARNING: ' + cast(ar1.analysis_id as VARCHAR) + '-' + aa1.analysis_name + '; ' + cast(COUNT_BIG(DISTINCT ar1.stratum_1) AS VARCHAR) + ' concepts have a 100% change in monthly count of events' AS ACHILLES_HEEL_warning,
+  	CAST(CONCAT('WARNING: ', cast(ar1.analysis_id as VARCHAR), '-', aa1.analysis_name, '; ', cast(COUNT_BIG(DISTINCT ar1.stratum_1) AS VARCHAR), ' concepts have a 100% change in monthly count of events') AS VARCHAR(255)) AS ACHILLES_HEEL_warning,
     23 as rule_id,
     COUNT_BIG(DISTINCT ar1.stratum_1) as record_count
   FROM @resultsDatabaseSchema.ACHILLES_analysis aa1
@@ -28,8 +28,8 @@ from
   			1002
   			)
   WHERE (
-  		CAST(ar1.stratum_2 AS INT) + 1 = CAST(ar2.stratum_2 AS INT)
-  		OR CAST(ar1.stratum_2 AS INT) + 89 = CAST(ar2.stratum_2 AS INT)
+  		ROUND(CAST(ar1.stratum_2 AS DECIMAL(18,4)),0) + 1 = ROUND(CAST(ar2.stratum_2 AS DECIMAL(18,4)),0)
+		OR ROUND(CAST(ar1.stratum_2 AS DECIMAL(18,4)),0) + 89 = ROUND(CAST(ar2.stratum_2 AS DECIMAL(18,4)),0)
   		)
   	AND 1.0 * abs(ar2.count_value - ar1.count_value) / ar1.count_value > 1
   	AND ar1.count_value > 10

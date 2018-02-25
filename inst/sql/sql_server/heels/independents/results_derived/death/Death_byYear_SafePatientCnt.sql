@@ -5,7 +5,7 @@ select
   stratum_1,
   null as stratum_2,
   temp_cnt as statistic_value,
-'Death:byYear:SafePatientCnt' as measure_id
+cast('Death:byYear:SafePatientCnt' as varchar(255)) as measure_id
 into @scratchDatabaseSchema@schemaDelim@tempHeelPrefix_@heelName
 from
    (select stratum_1,sum(count_value) as temp_cnt 

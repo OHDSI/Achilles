@@ -9,8 +9,8 @@ select
 	into @scratchDatabaseSchema@schemaDelim@tempHeelPrefix_@heelName
 	from
 	(
-  SELECT DISTINCT ord1.analysis_id,
-    'ERROR: ' + cast(ord1.analysis_id as VARCHAR) + ' - ' + oa1.analysis_name + ' (count = ' + cast(COUNT_BIG(ord1.min_value) as VARCHAR) + '); min value should not be negative' AS ACHILLES_HEEL_warning,
+    SELECT ord1.analysis_id,
+    CAST(CONCAT('ERROR: ', cast(ord1.analysis_id as VARCHAR), ' - ', oa1.analysis_name, ' (count = ', cast(COUNT_BIG(ord1.min_value) as VARCHAR), '); min value should not be negative') AS VARCHAR(255)) AS ACHILLES_HEEL_warning,
     2 as rule_id,
     COUNT_BIG(ord1.min_value) as record_count
   FROM @resultsDatabaseSchema.ACHILLES_results_dist ord1
