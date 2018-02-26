@@ -160,7 +160,7 @@ ANALYSIS_ID,DISTRIBUTION,COST,DISTRIBUTED_FIELD,ANALYSIS_NAME,STRATUM_1_NAME,STR
 1415,0,0,,Number of persons with payer plan period end < payer plan period start,,,,,
 1500,0,1,,Number of drug cost records with invalid drug exposure id,,,,,
 1501,0,1,,Number of drug cost records with invalid payer plan period id,,,,,
-1502,1,1,paid_copy,"Distribution of paid copay, by drug_concept_id",drug_concept_id,,,,
+1502,1,1,paid_copay,"Distribution of paid copay, by drug_concept_id",drug_concept_id,,,,
 1503,1,1,paid_coinsurance,"Distribution of paid coinsurance, by drug_concept_id",drug_concept_id,,,,
 1504,1,1,paid_toward_deductible,"Distribution of paid toward deductible, by drug_concept_id",drug_concept_id,,,,
 1505,1,1,paid_by_payer,"Distribution of paid by payer, by drug_concept_id",drug_concept_id,,,,
