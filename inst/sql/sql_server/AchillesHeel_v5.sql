@@ -141,7 +141,7 @@ select
    CAST(100.0*count_value/statistic.total_pts AS FLOAT) as statistic_value,
    CAST(CONCAT('ach_',CAST(analysis_id as VARCHAR),':Percentage') AS VARCHAR(255)) as measure_id
   from @results_database_schema.achilles_results 
-	join (SELECT TOP 1 count_value as total_pts from @results_database_schema.achilles_results r where analysis_id =1) as statistic
+	inner join (SELECT TOP 1 count_value as total_pts from @results_database_schema.achilles_results r where analysis_id =1) as statistic
   where analysis_id in (2000,2001,2002,2003);
   
 
@@ -1008,7 +1008,7 @@ select
   CAST(100.0*st.val/statistic_value AS FLOAT) as statistic_value,
   CAST('Condition' AS VARCHAR(255)) as stratum_1, CAST(  'UnmappedData:byDomain:Percentage' AS VARCHAR(255)) as measure_id
 from @results_database_schema.achilles_results_derived
-join (select statistic_value as val from @results_database_schema.achilles_results_derived where measure_id like 'UnmappedData:ach_401:GlobalRowCnt') as st
+inner join (select statistic_value as val from @results_database_schema.achilles_results_derived where measure_id like 'UnmappedData:ach_401:GlobalRowCnt') as st
 where measure_id ='ach_401:GlobalRowCnt';
 
 insert into @results_database_schema.ACHILLES_results_derived (statistic_value,stratum_1,measure_id)    
@@ -1016,7 +1016,7 @@ select
   CAST(100.0*st.val/statistic_value AS FLOAT) as statistic_value,
   CAST('Procedure' AS VARCHAR(255)) as stratum_1, CAST(  'UnmappedData:byDomain:Percentage' AS VARCHAR(255)) as measure_id
 from @results_database_schema.achilles_results_derived
-join (select statistic_value as val from @results_database_schema.achilles_results_derived where measure_id = 'UnmappedData:ach_601:GlobalRowCnt') as st
+inner join (select statistic_value as val from @results_database_schema.achilles_results_derived where measure_id = 'UnmappedData:ach_601:GlobalRowCnt') as st
 where measure_id ='ach_601:GlobalRowCnt';
 
 insert into @results_database_schema.ACHILLES_results_derived (statistic_value,stratum_1,measure_id)    
@@ -1024,7 +1024,7 @@ select
   CAST(100.0*st.val/statistic_value AS FLOAT) as statistic_value,
   CAST('DrugExposure' AS VARCHAR(255)) as stratum_1, CAST(  'UnmappedData:byDomain:Percentage' AS VARCHAR(255)) as measure_id
 from @results_database_schema.achilles_results_derived
-join (select statistic_value as val from @results_database_schema.achilles_results_derived where measure_id = 'UnmappedData:ach_701:GlobalRowCnt') as st
+inner join (select statistic_value as val from @results_database_schema.achilles_results_derived where measure_id = 'UnmappedData:ach_701:GlobalRowCnt') as st
 where measure_id ='ach_701:GlobalRowCnt';
 
 insert into @results_database_schema.ACHILLES_results_derived (statistic_value,stratum_1,measure_id)    
@@ -1032,7 +1032,7 @@ select
   CAST(100.0*st.val/statistic_value AS FLOAT) as statistic_value,
   CAST('Observation' AS VARCHAR(255)) as stratum_1, CAST(  'UnmappedData:byDomain:Percentage' AS VARCHAR(255)) as measure_id
 from @results_database_schema.achilles_results_derived
-join (select statistic_value as val from @results_database_schema.achilles_results_derived where measure_id = 'UnmappedData:ach_801:GlobalRowCnt') as st
+inner join (select statistic_value as val from @results_database_schema.achilles_results_derived where measure_id = 'UnmappedData:ach_801:GlobalRowCnt') as st
 where measure_id ='ach_801:GlobalRowCnt';
 
 insert into @results_database_schema.ACHILLES_results_derived (statistic_value,stratum_1,measure_id)    
@@ -1040,7 +1040,7 @@ select
   CAST(100.0*st.val/statistic_value AS FLOAT) as statistic_value,
   CAST('Measurement' AS VARCHAR(255)) as stratum_1, CAST(  'UnmappedData:byDomain:Percentage' AS VARCHAR(255)) as measure_id
 from @results_database_schema.achilles_results_derived
-join (select statistic_value as val from @results_database_schema.achilles_results_derived where measure_id = 'UnmappedData:ach_1801:GlobalRowCnt') as st
+inner join (select statistic_value as val from @results_database_schema.achilles_results_derived where measure_id = 'UnmappedData:ach_1801:GlobalRowCnt') as st
 where measure_id ='ach_1801:GlobalRowCnt';
 
 
@@ -1070,7 +1070,7 @@ select
 	CAST('Meas:NoNumValue:Percentage' AS VARCHAR(100)) as measure_id
 into #tempResults 
 from t1
-join (select CAST(count_value AS FLOAT) as count_value from @results_database_schema.achilles_results where analysis_id = 1821) as ct
+inner join (select CAST(count_value AS FLOAT) as count_value from @results_database_schema.achilles_results where analysis_id = 1821) as ct
 ;
 
 
@@ -1155,7 +1155,7 @@ drop table #tempResults;
 insert into @results_database_schema.ACHILLES_results_derived (statistic_value,measure_id)    
     select CAST(1.0*ct.total_pts/count_value AS FLOAT) as statistic_value, CAST('Provider:PatientProviderRatio' AS VARCHAR(255)) as measure_id
     from @results_database_schema.achilles_results
-		join (select count_value as total_pts from @results_database_schema.achilles_results r where analysis_id =1) ct
+		inner join (select count_value as total_pts from @results_database_schema.achilles_results r where analysis_id =1) ct
 		where analysis_id = 300
 ;
 
@@ -1262,7 +1262,7 @@ GROUP BY or1.analysis_id,
 insert into @results_database_schema.ACHILLES_results_derived (statistic_value,measure_id)    
 SELECT CAST(1.0*c1.all_notes/1.0*c2.all_visits AS FLOAT) as statistic_value, CAST(  'Note:NoteVisitRatio' AS VARCHAR(255)) as measure_id
 FROM (SELECT sum(count_value) as all_notes FROM	@results_database_schema.achilles_results r WHERE analysis_id =2201 ) c1
-JOIN (SELECT sum(count_value) as all_visits FROM @results_database_schema.achilles_results r WHERE  analysis_id =201 ) c2;
+INNER JOIN (SELECT sum(count_value) as all_visits FROM @results_database_schema.achilles_results r WHERE  analysis_id =201 ) c2;
 
 --one co-author of the DataQuality study suggested measuring data density on visit level (in addition to 
 -- patient and dataset level)
@@ -1370,7 +1370,7 @@ from
   select 
     1.0*achilles_results.count_value/c1.count_value as outp_perc
   from @results_database_schema.achilles_results
-		join (select sum(count_value) as count_value from @results_database_schema.achilles_results where analysis_id = 201) c1
+		inner join (select sum(count_value) as count_value from @results_database_schema.achilles_results where analysis_id = 201) c1
 	where analysis_id = 201 and stratum_1='9202'
   ) d
 where d.outp_perc < @ThresholdOutpatientVisitPerc;
@@ -1388,7 +1388,7 @@ select CAST('NOTIFICATION: 99+ percent of persons have exactly one observation p
 from
  (select 100.0*achilles_results.count_value/ct.total_pts as one_obs_per_perc
   from @results_database_schema.achilles_results
-	join (select count_value as total_pts from @results_database_schema.achilles_results r where analysis_id =1) as ct
+	inner join (select count_value as total_pts from @results_database_schema.achilles_results r where analysis_id =1) as ct
 	where analysis_id = 113 and stratum_1 = '1'
   ) d
 where d.one_obs_per_perc >= 99.0;
