@@ -36,7 +36,7 @@ connectionDetails <- createConnectionDetails(
 
 args <- commandArgs(trailingOnly = TRUE)
 
-createIndices <- (db_conf$scheme != "redshift" && db_conf$scheme != "netezza")
+createIndices <- db_conf$scheme != "redshift"
 
 if (length(args) == 0 || args[1] != "heel") {
 
