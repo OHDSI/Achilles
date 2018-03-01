@@ -156,7 +156,7 @@ insert into @results_database_schema.ACHILLES_results_derived (statistic_value,m
 
 --age at first observation by decile
 insert into @results_database_schema.ACHILLES_results_derived (stratum_1,statistic_value,measure_id)    
-select cast(floor(cast(stratum_1 as int)/10) as varchar(255)),
+select cast(floor(cast(stratum_1 as int)/10) as varchar(10)),
   sum(count_value) as statistic_value,
   CAST('AgeAtFirstObsByDecile:PersonCnt' AS VARCHAR(255)) as measure_id
   from @results_database_schema.achilles_results where analysis_id = 101
