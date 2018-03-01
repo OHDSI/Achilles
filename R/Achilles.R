@@ -142,17 +142,17 @@ achilles <- function (connectionDetails,
     analysisDetails <- analysisDetails[analysisDetails$COST == 0, ]
   }
   
-  detailTables <- list(
+  resultsTables <- list(
     list(detailType = "results",
-         tablePrefix = tempAchillesPrefix, 
-         schema = read.csv(file = system.file("csv", "schema_achilles_results.csv", package = "Achilles"), 
+                  tablePrefix = tempAchillesPrefix, 
+                  schema = read.csv(file = system.file("csv", "schema_achilles_results.csv", package = "Achilles"), 
                            header = TRUE),
-         analysisIds = analysisDetails[analysisDetails$DISTRIBUTION <= 0, ]$ANALYSIS_ID),
+                  analysisIds = analysisDetails[analysisDetails$DISTRIBUTION <= 0, ]$ANALYSIS_ID),
     list(detailType = "results_dist",
-         tablePrefix = sprintf("%1s_%2s", tempAchillesPrefix, "dist"),
-         schema = read.csv(file = system.file("csv", "schema_achilles_results_dist.csv", package = "Achilles"), 
+                      tablePrefix = sprintf("%1s_%2s", tempAchillesPrefix, "dist"),
+                      schema = read.csv(file = system.file("csv", "schema_achilles_results_dist.csv", package = "Achilles"), 
                            header = TRUE),
-         analysisIds = analysisDetails[abs(analysisDetails$DISTRIBUTION) == 1, ]$ANALYSIS_ID))
+                      analysisIds = analysisDetails[abs(analysisDetails$DISTRIBUTION) == 1, ]$ANALYSIS_ID))
   
   # Initialize serial execution (use temp tables and 1 thread only) ----------------------------------------------------------------
   
@@ -203,16 +203,6 @@ achilles <- function (connectionDetails,
         DatabaseConnector::disconnect(connection)
       }
     }
-  }
-  
-  # Clean up existing scratch tables -------------------------------------------------
-  
-  if (numThreads > 1 && !sqlOnly) {
-    writeLines("Dropping existing scratch Achilles tables")
-    dropAllScratchTables(connectionDetails = connectionDetails, 
-                         scratchDatabaseSchema = scratchDatabaseSchema, 
-                         tempAchillesPrefix = tempAchillesPrefix, 
-                         numThreads = numThreads)
   }
   
   # Generate cost analyses ----------------------------------------------------------
@@ -303,16 +293,25 @@ achilles <- function (connectionDetails,
                                      cdmDatabaseSchema = cdmDatabaseSchema,
                                      cdmVersion = cdmVersion,
                                      tempAchillesPrefix = tempAchillesPrefix,
-                                     detailTables = detailTables,
+                                     resultsTables = resultsTables,
                                      sourceName = sourceName,
                                      numThreads = numThreads,
                                      sqlOnly = sqlOnly)
   OhdsiRTools::stopCluster(cluster)
   
-  cluster <- OhdsiRTools::makeCluster(numberOfThreads = ifelse(numThreads > 1, 2, 1), singleThreadToMain = TRUE)
-  dummy <- OhdsiRTools::clusterApply(cluster = cluster, x = detailTables, fun = .mergeAchillesScratchTables,
+  # Merge scratch tables into final analysis tables -------------------------------------------------------------------------------------------
+  
+  include <- sapply(resultsTables, function(d) { any(d$analysisIds %in% analysisDetails$ANALYSIS_ID) })
+  resultsTablesToMerge <- resultsTables[include]
+  
+  cluster <- OhdsiRTools::makeCluster(numberOfThreads = length(resultsTablesToMerge),
+                                      singleThreadToMain = TRUE)
+  
+  dummy <- OhdsiRTools::clusterApply(cluster = cluster, x = resultsTablesToMerge, 
+                                     fun = .mergeAchillesScratchTables,
                                      connectionDetails = connectionDetails,
                                      connection = connection,
+                                     analysisIds = analysisDetails$ANALYSIS_ID,
                                      createTable = createTable,
                                      schemaDelim = schemaDelim,
                                      scratchDatabaseSchema = scratchDatabaseSchema,
@@ -387,7 +386,7 @@ achilles <- function (connectionDetails,
                                        connectionDetails = connectionDetails,
                                        scratchDatabaseSchema = scratchDatabaseSchema,
                                        tempAchillesPrefix = tempAchillesPrefix,
-                                       detailTables = detailTables,
+                                       resultsTables = resultsTables,
                                        sqlOnly = sqlOnly)
     
     OhdsiRTools::stopCluster(cluster = cluster)
@@ -712,7 +711,7 @@ dropAllScratchTables <- function(connectionDetails,
   # Drop Achilles Scratch Tables ------------------------------------------------------
   
   analysisDetails <- getAnalysisDetails()
-  detailTables <- list(
+  resultsTables <- list(
     list(detailType = "results",
          tablePrefix = tempAchillesPrefix, 
          schema = read.csv(file = system.file("csv", "schema_achilles_results.csv", package = "Achilles"), 
@@ -730,7 +729,7 @@ dropAllScratchTables <- function(connectionDetails,
                                      connectionDetails = connectionDetails,
                                      scratchDatabaseSchema = scratchDatabaseSchema,
                                      tempAchillesPrefix = tempAchillesPrefix,
-                                     detailTables = detailTables,
+                                     resultsTables = resultsTables,
                                      sqlOnly = FALSE)
   
   OhdsiRTools::stopCluster(cluster)
@@ -761,20 +760,20 @@ dropAllScratchTables <- function(connectionDetails,
                                       connectionDetails, 
                                       scratchDatabaseSchema, 
                                       tempAchillesPrefix, 
-                                      detailTables,
+                                      resultsTables,
                                       sqlOnly = FALSE) {
-  for (detailTable in detailTables) {
-    if (analysisId %in% detailTable$analysisIds) {
+  for (resultsTable in resultsTables) {
+    if (analysisId %in% resultsTable$analysisIds) {
       sql <- SqlRender::renderSql(sql = "IF OBJECT_ID('@scratchDatabaseSchema.@tablePrefix_@analysisId', 'U') IS NOT NULL 
                                   DROP TABLE @scratchDatabaseSchema.@tablePrefix_@analysisId;",
-                                  tablePrefix = detailTable$tablePrefix,
+                                  tablePrefix = resultsTable$tablePrefix,
                                   scratchDatabaseSchema = scratchDatabaseSchema, 
                                   analysisId = analysisId)$sql
       sql <- SqlRender::translateSql(sql = sql, targetDialect = connectionDetails$dbms)$sql
       
       if (!sqlOnly) {
         connection <- DatabaseConnector::connect(connectionDetails = connectionDetails)
-        DatabaseConnector::executeSql(connection = connection, sql = sql)
+        try(DatabaseConnector::executeSql(connection = connection, sql = sql))
         DatabaseConnector::disconnect(connection = connection)
       }
     }
@@ -810,7 +809,7 @@ dropAllScratchTables <- function(connectionDetails,
                                    cdmVersion,
                                    scratchDatabaseSchema,
                                    tempAchillesPrefix, 
-                                   detailTables,
+                                   resultsTables,
                                    sourceName,
                                    numThreads,
                                    sqlOnly = FALSE) {
@@ -821,7 +820,7 @@ dropAllScratchTables <- function(connectionDetails,
                               connectionDetails = connectionDetails, 
                               scratchDatabaseSchema = scratchDatabaseSchema, 
                               tempAchillesPrefix = tempAchillesPrefix, 
-                              detailTables = detailTables,
+                              resultsTables = resultsTables,
                               sqlOnly = sqlOnly)
   }
   
@@ -854,7 +853,8 @@ dropAllScratchTables <- function(connectionDetails,
   }
 }
 
-.mergeAchillesScratchTables <- function(detailTable, 
+.mergeAchillesScratchTables <- function(resultsTable,
+                                        analysisIds,
                                         createTable,
                                         connectionDetails,
                                         connection,
@@ -865,21 +865,22 @@ dropAllScratchTables <- function(connectionDetails,
                                         tempAchillesPrefix,
                                         sqlOnly,
                                         numThreads,
-                                        smallcellcount = 5) {
+                                        smallcellcount) {
   outputFolder <- "output"
   
-  castedNames <- apply(detailTable$schema, 1, function(field) {
+  castedNames <- apply(resultsTable$schema, 1, function(field) {
     SqlRender::renderSql("cast(@fieldName as @fieldType) as @fieldName", 
                          fieldName = field["FIELD_NAME"],
                          fieldType = field["FIELD_TYPE"])$sql
   })
   
-  detailSqls <- lapply(detailTable$analysisIds, function(analysisId) {
-    sql <- SqlRender::renderSql(sql = "select @castedNames from @scratchDatabaseSchema@schemaDelim@tablePrefix_@analysisId", 
+  detailSqls <- lapply(resultsTable$analysisIds[resultsTable$analysisIds %in% analysisIds], function(analysisId) { 
+                  sql <- SqlRender::renderSql(sql = "select @castedNames from 
+                                @scratchDatabaseSchema@schemaDelim@tablePrefix_@analysisId", 
                                 scratchDatabaseSchema = scratchDatabaseSchema,
                                 schemaDelim = schemaDelim,
                                 castedNames = paste(castedNames, collapse = ", "), 
-                                tablePrefix = detailTable$tablePrefix, 
+                                tablePrefix = resultsTable$tablePrefix, 
                                 analysisId = analysisId)$sql
     
     sql <- SqlRender::translateSql(sql = sql, targetDialect = connectionDetails$dbms)$sql
@@ -890,14 +891,14 @@ dropAllScratchTables <- function(connectionDetails,
                                            dbms = connectionDetails$dbms,
                                            createTable = createTable,
                                            resultsDatabaseSchema = resultsDatabaseSchema,
-                                           detailType = detailTable$detailType,
+                                           detailType = resultsTable$detailType,
                                            detailSqls = paste(detailSqls, collapse = " \nunion all\n "),
-                                           fieldNames = paste(detailTable$schema$FIELD_NAME, collapse = ", "),
+                                           fieldNames = paste(resultsTable$schema$FIELD_NAME, collapse = ", "),
                                            smallCellCount = smallcellcount)
   if (sqlOnly) {
     SqlRender::writeSql(sql = sql, 
                         targetFile = file.path(outputFolder, 
-                                           paste(paste("Merge", detailTable$detailType, sep = "_"), "sql", sep = ".")))
+                                           paste(paste("Merge", resultsTable$detailType, sep = "_"), "sql", sep = ".")))
   } else {
     if (numThreads > 1) {
       connection <- DatabaseConnector::connect(connectionDetails = connectionDetails)
