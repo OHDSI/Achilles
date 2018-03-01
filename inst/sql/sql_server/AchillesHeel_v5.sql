@@ -334,7 +334,7 @@ INSERT INTO @results_database_schema.ACHILLES_HEEL_results (
 	record_count
 	)
 SELECT DISTINCT or1.analysis_id,
-	CAST(CONCAT('ERROR: ', cast(or1.analysis_id as VARCHAR), '-', oa1.analysis_name, '; count (n=', cast(or1.count_value as VARCHAR), ') should not be > 0') AS VARCHAR(255)) AS ACHILLES_HEEL_warning,
+	CAST(CONCAT('ERROR: ', cast(or1.analysis_id as VARCHAR(10)), '-', oa1.analysis_name, '; count (n=', cast(or1.count_value as VARCHAR), ') should not be > 0') AS VARCHAR(255)) AS ACHILLES_HEEL_warning,
 	1 as rule_id,
 	or1.count_value
 FROM @results_database_schema.ACHILLES_results or1
@@ -396,7 +396,7 @@ INSERT INTO @results_database_schema.ACHILLES_HEEL_results (
 	record_count
 	)
 SELECT ord1.analysis_id,
-  CAST(CONCAT('ERROR: ', cast(ord1.analysis_id as VARCHAR), ' - ', oa1.analysis_name, ' (count = ', cast(COUNT_BIG(ord1.min_value) as VARCHAR), '); min value should not be negative') AS VARCHAR(255)) AS ACHILLES_HEEL_warning,
+  CAST(CONCAT('ERROR: ', cast(ord1.analysis_id as VARCHAR(10)), ' - ', oa1.analysis_name, ' (count = ', cast(COUNT_BIG(ord1.min_value) as VARCHAR), '); min value should not be negative') AS VARCHAR(255)) AS ACHILLES_HEEL_warning,
   2 as rule_id,
   COUNT_BIG(ord1.min_value) as record_count
 FROM @results_database_schema.ACHILLES_results_dist ord1
@@ -447,7 +447,7 @@ INSERT INTO @results_database_schema.ACHILLES_HEEL_results (
 	record_count
 )
 SELECT ord1.analysis_id,
-  CAST(CONCAT('WARNING: ', cast(ord1.analysis_id as VARCHAR), '-', oa1.analysis_name, ' (count = ', cast(COUNT_BIG(ord1.max_value) as VARCHAR), '); max value should not be positive, otherwise its a zombie with data >1mo after death ') AS VARCHAR(255)) AS ACHILLES_HEEL_warning,
+  CAST(CONCAT('WARNING: ', cast(ord1.analysis_id as VARCHAR(10)), '-', oa1.analysis_name, ' (count = ', cast(COUNT_BIG(ord1.max_value) as VARCHAR), '); max value should not be positive, otherwise its a zombie with data >1mo after death ') AS VARCHAR(255)) AS ACHILLES_HEEL_warning,
   3 as rule_id,
   COUNT_BIG(ord1.max_value) as record_count
 FROM @results_database_schema.ACHILLES_results_dist ord1
@@ -471,7 +471,7 @@ INSERT INTO @results_database_schema.ACHILLES_HEEL_results (
 	record_count
 )
 SELECT or1.analysis_id,
-	CAST(CONCAT('ERROR: ', cast(or1.analysis_id as VARCHAR), '-', oa1.analysis_name, '; ', cast(COUNT_BIG(DISTINCT stratum_1) AS VARCHAR), ' concepts in data are not in vocabulary') AS VARCHAR(255)) AS ACHILLES_HEEL_warning,
+	CAST(CONCAT('ERROR: ', cast(or1.analysis_id as VARCHAR(10)), '-', oa1.analysis_name, '; ', cast(COUNT_BIG(DISTINCT stratum_1) AS VARCHAR), ' concepts in data are not in vocabulary') AS VARCHAR(255)) AS ACHILLES_HEEL_warning,
   4 as rule_id,
   COUNT_BIG(DISTINCT stratum_1) as record_count
 FROM @results_database_schema.ACHILLES_results or1
@@ -512,7 +512,7 @@ INSERT INTO @results_database_schema.ACHILLES_HEEL_results (
 	record_count
 	)
 SELECT or1.analysis_id,
-	CAST(CONCAT('ERROR: ', cast(or1.analysis_id as VARCHAR), '-', oa1.analysis_name, '; ', cast(COUNT_BIG(DISTINCT stratum_2) AS VARCHAR), ' concepts in data are not in vocabulary') AS VARCHAR(255)) AS ACHILLES_HEEL_warning,
+	CAST(CONCAT('ERROR: ', cast(or1.analysis_id as VARCHAR(10)), '-', oa1.analysis_name, '; ', cast(COUNT_BIG(DISTINCT stratum_2) AS VARCHAR), ' concepts in data are not in vocabulary') AS VARCHAR(255)) AS ACHILLES_HEEL_warning,
   5 as rule_id,
   COUNT_BIG(DISTINCT stratum_2) as record_count
 FROM @results_database_schema.ACHILLES_results or1
@@ -540,7 +540,7 @@ INSERT INTO @results_database_schema.ACHILLES_HEEL_results (
 	record_count
 	)
 SELECT or1.analysis_id,
-	CAST(CONCAT('WARNING: ', cast(or1.analysis_id as VARCHAR), '-', oa1.analysis_name, '; data with unmapped concepts') AS VARCHAR(255)) AS ACHILLES_HEEL_warning,
+	CAST(CONCAT('WARNING: ', cast(or1.analysis_id as VARCHAR(10)), '-', oa1.analysis_name, '; data with unmapped concepts') AS VARCHAR(255)) AS ACHILLES_HEEL_warning,
   6 as rule_id,
   null as record_count
 FROM @results_database_schema.ACHILLES_results or1
@@ -576,7 +576,7 @@ INSERT INTO @results_database_schema.ACHILLES_HEEL_results (
 	record_count
 	)
 SELECT or1.analysis_id,
-	CAST(CONCAT('ERROR: ', cast(or1.analysis_id as VARCHAR), '-', oa1.analysis_name, '; ', cast(COUNT_BIG(DISTINCT stratum_1) AS VARCHAR), ' concepts in data are not in correct vocabulary') AS VARCHAR(255)) AS ACHILLES_HEEL_warning,
+	CAST(CONCAT('ERROR: ', cast(or1.analysis_id as VARCHAR(10)), '-', oa1.analysis_name, '; ', cast(COUNT_BIG(DISTINCT stratum_1) AS VARCHAR), ' concepts in data are not in correct vocabulary') AS VARCHAR(255)) AS ACHILLES_HEEL_warning,
   7 as rule_id,
   COUNT_BIG(DISTINCT stratum_1) as record_count
 FROM @results_database_schema.ACHILLES_results or1
@@ -599,7 +599,7 @@ INSERT INTO @results_database_schema.ACHILLES_HEEL_results (
 	record_count
 	)
 SELECT or1.analysis_id,
-	CAST(CONCAT('ERROR: ', cast(or1.analysis_id as VARCHAR), '-', oa1.analysis_name, '; ', cast(COUNT_BIG(DISTINCT stratum_1) AS VARCHAR), ' concepts in data are not in correct vocabulary') AS VARCHAR(255)) AS ACHILLES_HEEL_warning,
+	CAST(CONCAT('ERROR: ', cast(or1.analysis_id as VARCHAR(10)), '-', oa1.analysis_name, '; ', cast(COUNT_BIG(DISTINCT stratum_1) AS VARCHAR), ' concepts in data are not in correct vocabulary') AS VARCHAR(255)) AS ACHILLES_HEEL_warning,
   8 as rule_id,
   COUNT_BIG(DISTINCT stratum_1) as record_count
 FROM @results_database_schema.ACHILLES_results or1
@@ -622,7 +622,7 @@ INSERT INTO @results_database_schema.ACHILLES_HEEL_results (
 	record_count
 	)
 SELECT or1.analysis_id,
-	CAST(CONCAT('ERROR: ', cast(or1.analysis_id as VARCHAR), '-', oa1.analysis_name, '; ', cast(COUNT_BIG(DISTINCT stratum_1) AS VARCHAR), ' concepts in data are not in correct vocabulary (CMS Ethnicity)') AS VARCHAR(255)) AS ACHILLES_HEEL_warning,
+	CAST(CONCAT('ERROR: ', cast(or1.analysis_id as VARCHAR(10)), '-', oa1.analysis_name, '; ', cast(COUNT_BIG(DISTINCT stratum_1) AS VARCHAR), ' concepts in data are not in correct vocabulary (CMS Ethnicity)') AS VARCHAR(255)) AS ACHILLES_HEEL_warning,
   9 as rule_id,
   COUNT_BIG(DISTINCT stratum_1) as record_count
 FROM @results_database_schema.ACHILLES_results or1
@@ -645,7 +645,7 @@ INSERT INTO @results_database_schema.ACHILLES_HEEL_results (
 	record_count
 	)
 SELECT or1.analysis_id,
-	CAST(CONCAT('ERROR: ', cast(or1.analysis_id as VARCHAR), '-', oa1.analysis_name, '; ', cast(COUNT_BIG(DISTINCT stratum_1) AS VARCHAR), ' concepts in data are not in correct vocabulary') AS VARCHAR(255)) AS ACHILLES_HEEL_warning,
+	CAST(CONCAT('ERROR: ', cast(or1.analysis_id as VARCHAR(10)), '-', oa1.analysis_name, '; ', cast(COUNT_BIG(DISTINCT stratum_1) AS VARCHAR), ' concepts in data are not in correct vocabulary') AS VARCHAR(255)) AS ACHILLES_HEEL_warning,
   10 as rule_id,
   COUNT_BIG(DISTINCT stratum_1) as record_count
 FROM @results_database_schema.ACHILLES_results or1
@@ -668,7 +668,7 @@ INSERT INTO @results_database_schema.ACHILLES_HEEL_results (
 	record_count
 	)
 SELECT or1.analysis_id,
-	CAST(CONCAT('ERROR: ', cast(or1.analysis_id as VARCHAR), '-', oa1.analysis_name, '; ', cast(COUNT_BIG(DISTINCT stratum_1) AS VARCHAR), ' concepts in data are not in correct vocabulary (Specialty)') AS VARCHAR(255)) AS ACHILLES_HEEL_warning,
+	CAST(CONCAT('ERROR: ', cast(or1.analysis_id as VARCHAR(10)), '-', oa1.analysis_name, '; ', cast(COUNT_BIG(DISTINCT stratum_1) AS VARCHAR), ' concepts in data are not in correct vocabulary (Specialty)') AS VARCHAR(255)) AS ACHILLES_HEEL_warning,
   11 as rule_id,
   COUNT_BIG(DISTINCT stratum_1) as record_count
 FROM @results_database_schema.ACHILLES_results or1
@@ -691,7 +691,7 @@ INSERT INTO @results_database_schema.ACHILLES_HEEL_results (
 	record_count
 	)
 SELECT or1.analysis_id,
-	CAST(CONCAT('ERROR: ', cast(or1.analysis_id as VARCHAR), '-', oa1.analysis_name, '; ', cast(COUNT_BIG(DISTINCT stratum_1) AS VARCHAR), ' concepts in data are not in correct vocabulary') AS VARCHAR(255)) AS ACHILLES_HEEL_warning,
+	CAST(CONCAT('ERROR: ', cast(or1.analysis_id as VARCHAR(10)), '-', oa1.analysis_name, '; ', cast(COUNT_BIG(DISTINCT stratum_1) AS VARCHAR), ' concepts in data are not in correct vocabulary') AS VARCHAR(255)) AS ACHILLES_HEEL_warning,
   12 as rule_id,
   COUNT_BIG(DISTINCT stratum_1) as record_count
 FROM @results_database_schema.ACHILLES_results or1
@@ -717,7 +717,7 @@ INSERT INTO @results_database_schema.ACHILLES_HEEL_results (
 	record_count
 	)
 SELECT or1.analysis_id,
-	CAST(CONCAT('ERROR: ', cast(or1.analysis_id as VARCHAR), '-', oa1.analysis_name, '; ', cast(COUNT_BIG(DISTINCT stratum_1) AS VARCHAR), ' concepts in data are not in correct vocabulary') AS VARCHAR(255)) AS ACHILLES_HEEL_warning,
+	CAST(CONCAT('ERROR: ', cast(or1.analysis_id as VARCHAR(10)), '-', oa1.analysis_name, '; ', cast(COUNT_BIG(DISTINCT stratum_1) AS VARCHAR), ' concepts in data are not in correct vocabulary') AS VARCHAR(255)) AS ACHILLES_HEEL_warning,
   13 as rule_id,
   COUNT_BIG(DISTINCT stratum_1) as record_count
 FROM @results_database_schema.ACHILLES_results or1
@@ -743,7 +743,7 @@ INSERT INTO @results_database_schema.ACHILLES_HEEL_results (
 	record_count
 	)
 SELECT or1.analysis_id,
-	CAST(CONCAT('ERROR: ', cast(or1.analysis_id as VARCHAR), '-', oa1.analysis_name, '; ', cast(COUNT_BIG(DISTINCT stratum_1) AS VARCHAR), ' concepts in data are not in correct vocabulary') AS VARCHAR(255)) AS ACHILLES_HEEL_warning,
+	CAST(CONCAT('ERROR: ', cast(or1.analysis_id as VARCHAR(10)), '-', oa1.analysis_name, '; ', cast(COUNT_BIG(DISTINCT stratum_1) AS VARCHAR), ' concepts in data are not in correct vocabulary') AS VARCHAR(255)) AS ACHILLES_HEEL_warning,
   14 as rule_id,
   COUNT_BIG(DISTINCT stratum_1) as record_count
 FROM @results_database_schema.ACHILLES_results or1
@@ -775,7 +775,7 @@ INSERT INTO @results_database_schema.ACHILLES_HEEL_results (
 	record_count
 	)
 SELECT or1.analysis_id,
-	CAST(CONCAT('ERROR: ', cast(or1.analysis_id as VARCHAR), '-', oa1.analysis_name, '; ', cast(COUNT_BIG(DISTINCT stratum_1) AS VARCHAR), ' concepts in data are not in correct vocabulary (revenue code)') AS VARCHAR(255)) AS ACHILLES_HEEL_warning,
+	CAST(CONCAT('ERROR: ', cast(or1.analysis_id as VARCHAR(10)), '-', oa1.analysis_name, '; ', cast(COUNT_BIG(DISTINCT stratum_1) AS VARCHAR), ' concepts in data are not in correct vocabulary (revenue code)') AS VARCHAR(255)) AS ACHILLES_HEEL_warning,
   17 as rule_id,
   COUNT_BIG(DISTINCT stratum_1) as record_count
 FROM @results_database_schema.ACHILLES_results or1
@@ -799,7 +799,7 @@ INSERT INTO @results_database_schema.ACHILLES_HEEL_results (
 	record_count
 	)
 SELECT or1.analysis_id,
-	CAST(CONCAT('ERROR: ', cast(or1.analysis_id as VARCHAR), '-', oa1.analysis_name, '; should not have year of birth in the future, (n=', cast(sum(or1.count_value) as VARCHAR), ')') AS VARCHAR(255)) AS ACHILLES_HEEL_warning,
+	CAST(CONCAT('ERROR: ', cast(or1.analysis_id as VARCHAR(10)), '-', oa1.analysis_name, '; should not have year of birth in the future, (n=', cast(sum(or1.count_value) as VARCHAR), ')') AS VARCHAR(255)) AS ACHILLES_HEEL_warning,
   18 as rule_id,
   sum(or1.count_value) as record_count
 FROM @results_database_schema.ACHILLES_results or1
@@ -820,7 +820,7 @@ INSERT INTO @results_database_schema.ACHILLES_HEEL_results (
 	record_count
 	)
 SELECT or1.analysis_id,
-	CAST(CONCAT('ERROR: ', cast(or1.analysis_id as VARCHAR), '-', oa1.analysis_name, '; should not have year of birth < 1800, (n=', cast(sum(or1.count_value) as VARCHAR), ')') AS VARCHAR(255)) AS ACHILLES_HEEL_warning,
+	CAST(CONCAT('ERROR: ', cast(or1.analysis_id as VARCHAR(10)), '-', oa1.analysis_name, '; should not have year of birth < 1800, (n=', cast(sum(or1.count_value) as VARCHAR), ')') AS VARCHAR(255)) AS ACHILLES_HEEL_warning,
   19 as rule_id,
   sum(or1.count_value) as record_count
 FROM @results_database_schema.ACHILLES_results or1
@@ -840,7 +840,7 @@ INSERT INTO @results_database_schema.ACHILLES_HEEL_results (
 	record_count
 	)
 SELECT or1.analysis_id,
-	CAST(CONCAT('ERROR: ', cast(or1.analysis_id as VARCHAR), '-', oa1.analysis_name, '; should not have age < 0, (n=', cast(sum(or1.count_value) as VARCHAR), ')') AS VARCHAR(255)) AS ACHILLES_HEEL_warning,
+	CAST(CONCAT('ERROR: ', cast(or1.analysis_id as VARCHAR(10)), '-', oa1.analysis_name, '; should not have age < 0, (n=', cast(sum(or1.count_value) as VARCHAR), ')') AS VARCHAR(255)) AS ACHILLES_HEEL_warning,
   20 as rule_id,
   sum(or1.count_value) as record_count
 FROM @results_database_schema.ACHILLES_results or1
@@ -860,7 +860,7 @@ INSERT INTO @results_database_schema.ACHILLES_HEEL_results (
 	record_count
 	)
 SELECT or1.analysis_id,
-	CAST(CONCAT('ERROR: ', cast(or1.analysis_id as VARCHAR), '-', oa1.analysis_name, '; should not have age > 150, (n=', cast(sum(or1.count_value) as VARCHAR), ')') AS VARCHAR(255)) AS ACHILLES_HEEL_warning,
+	CAST(CONCAT('ERROR: ', cast(or1.analysis_id as VARCHAR(10)), '-', oa1.analysis_name, '; should not have age > 150, (n=', cast(sum(or1.count_value) as VARCHAR), ')') AS VARCHAR(255)) AS ACHILLES_HEEL_warning,
   21 as rule_id,
   sum(or1.count_value) as record_count
 FROM @results_database_schema.ACHILLES_results or1
@@ -880,7 +880,7 @@ INSERT INTO @results_database_schema.ACHILLES_HEEL_results (
 	
 	)
 SELECT DISTINCT ar1.analysis_id,
-	CAST(CONCAT('WARNING: ', cast(ar1.analysis_id as VARCHAR), '-', aa1.analysis_name, '; theres a 100% change in monthly count of events') AS VARCHAR(255)) AS ACHILLES_HEEL_warning,
+	CAST(CONCAT('WARNING: ', cast(ar1.analysis_id as VARCHAR(10)), '-', aa1.analysis_name, '; theres a 100% change in monthly count of events') AS VARCHAR(255)) AS ACHILLES_HEEL_warning,
   22 as rule_id
   
 FROM @results_database_schema.ACHILLES_analysis aa1
@@ -911,7 +911,7 @@ INSERT INTO @results_database_schema.ACHILLES_HEEL_results (
 	record_count
 	)
 SELECT ar1.analysis_id,
-	CAST(CONCAT('WARNING: ', cast(ar1.analysis_id as VARCHAR), '-', aa1.analysis_name, '; ', cast(COUNT_BIG(DISTINCT ar1.stratum_1) AS VARCHAR), ' concepts have a 100% change in monthly count of events') AS VARCHAR(255)) AS ACHILLES_HEEL_warning,
+	CAST(CONCAT('WARNING: ', cast(ar1.analysis_id as VARCHAR(10)), '-', aa1.analysis_name, '; ', cast(COUNT_BIG(DISTINCT ar1.stratum_1) AS VARCHAR), ' concepts have a 100% change in monthly count of events') AS VARCHAR(255)) AS ACHILLES_HEEL_warning,
   23 as rule_id,
   COUNT_BIG(DISTINCT ar1.stratum_1) as record_count
 FROM @results_database_schema.ACHILLES_analysis aa1
@@ -945,7 +945,7 @@ INSERT INTO @results_database_schema.ACHILLES_HEEL_results (
 	record_count
 	)
 SELECT ord1.analysis_id,
-  CAST(CONCAT('WARNING: ', cast(ord1.analysis_id as VARCHAR), '-', oa1.analysis_name, ' (count = ', cast(COUNT_BIG(ord1.max_value) as VARCHAR), '); max value should not be > 180') AS VARCHAR(255)) AS ACHILLES_HEEL_warning,
+  CAST(CONCAT('WARNING: ', cast(ord1.analysis_id as VARCHAR(10)), '-', oa1.analysis_name, ' (count = ', cast(COUNT_BIG(ord1.max_value) as VARCHAR), '); max value should not be > 180') AS VARCHAR(255)) AS ACHILLES_HEEL_warning,
   24 as rule_id,
   COUNT_BIG(ord1.max_value) as record_count
 FROM @results_database_schema.ACHILLES_results_dist ord1
@@ -963,7 +963,7 @@ INSERT INTO @results_database_schema.ACHILLES_HEEL_results (
 	record_count
 	)
 SELECT ord1.analysis_id,
-  CAST(CONCAT('WARNING: ', cast(ord1.analysis_id as VARCHAR), '-', oa1.analysis_name, ' (count = ', cast(COUNT_BIG(ord1.max_value) as VARCHAR), '); max value should not be > 10') AS VARCHAR(255)) AS ACHILLES_HEEL_warning,
+  CAST(CONCAT('WARNING: ', cast(ord1.analysis_id as VARCHAR(10)), '-', oa1.analysis_name, ' (count = ', cast(COUNT_BIG(ord1.max_value) as VARCHAR), '); max value should not be > 10') AS VARCHAR(255)) AS ACHILLES_HEEL_warning,
   25 as rule_id,
   COUNT_BIG(ord1.max_value) as record_count
 FROM @results_database_schema.ACHILLES_results_dist ord1
@@ -981,7 +981,7 @@ INSERT INTO @results_database_schema.ACHILLES_HEEL_results (
 	record_count
 	)
 SELECT ord1.analysis_id,
-  CAST(CONCAT('WARNING: ', cast(ord1.analysis_id as VARCHAR), '-', oa1.analysis_name, ' (count = ', cast(count(ord1.max_value) as VARCHAR), '); max value should not be > 600') AS VARCHAR(255)) AS ACHILLES_HEEL_warning,
+  CAST(CONCAT('WARNING: ', cast(ord1.analysis_id as VARCHAR(10)), '-', oa1.analysis_name, ' (count = ', cast(count(ord1.max_value) as VARCHAR), '); max value should not be > 600') AS VARCHAR(255)) AS ACHILLES_HEEL_warning,
   26 as rule_id,
   count(ord1.max_value) as record_count
 FROM @results_database_schema.ACHILLES_results_dist ord1
@@ -1244,7 +1244,7 @@ INSERT INTO @results_database_schema.ACHILLES_HEEL_results (
 	record_count
 	)
 SELECT or1.analysis_id,
-	CAST(CONCAT('WARNING: ', cast(or1.analysis_id as VARCHAR), '-', oa1.analysis_name, '; should not have age > @ThresholdAgeWarning, (n=', cast(sum(or1.count_value) as VARCHAR), ')') AS VARCHAR(255)) AS ACHILLES_HEEL_warning,
+	CAST(CONCAT('WARNING: ', cast(or1.analysis_id as VARCHAR(10)), '-', oa1.analysis_name, '; should not have age > @ThresholdAgeWarning, (n=', cast(sum(or1.count_value) as VARCHAR), ')') AS VARCHAR(255)) AS ACHILLES_HEEL_warning,
   36 as rule_id,
   sum(or1.count_value) as record_count
 FROM @results_database_schema.ACHILLES_results or1
@@ -1326,7 +1326,7 @@ INSERT INTO @results_database_schema.ACHILLES_HEEL_results (
 	record_count
 	)
 SELECT DISTINCT or1.analysis_id,
-	CAST(CONCAT('ERROR: Death event outside observation period, ', cast(or1.analysis_id as VARCHAR), '-', oa1.analysis_name, '; count (n=', cast(or1.count_value as VARCHAR), ') should not be > 0') AS VARCHAR(255)) AS ACHILLES_HEEL_warning,
+	CAST(CONCAT('ERROR: Death event outside observation period, ', cast(or1.analysis_id as VARCHAR(10)), '-', oa1.analysis_name, '; count (n=', cast(or1.count_value as VARCHAR), ') should not be > 0') AS VARCHAR(255)) AS ACHILLES_HEEL_warning,
 	40 as rule_id,
 	or1.count_value
 FROM @results_database_schema.ACHILLES_results or1
