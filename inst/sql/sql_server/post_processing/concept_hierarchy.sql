@@ -1,11 +1,11 @@
-{DEFAULT @results_database_schema = 'webapi.dbo'}
-{DEFAULT @vocab_database_schema = 'omopcdm.dbo'}
+{DEFAULT @resultsDatabaseSchema = 'webapi.dbo'}
+{DEFAULT @vocabDatabaseSchema = 'omopcdm.dbo'}
 
 /*********************************************************************/
 /***** Create hierarchy lookup table for the treemap hierarchies *****/
 /*********************************************************************/
-IF OBJECT_ID('@results_database_schema.concept_hierarchy', 'U') IS NOT NULL
-  DROP TABLE @results_database_schema.concept_hierarchy;
+IF OBJECT_ID('@resultsDatabaseSchema.concept_hierarchy', 'U') IS NOT NULL
+  DROP TABLE @resultsDatabaseSchema.concept_hierarchy;
 
 
 /***********************************************************/
@@ -28,7 +28,7 @@ into #ch_condition
       SELECT
         concept_id,
         concept_name
-      FROM @vocab_database_schema.concept
+      FROM @vocabDatabaseSchema.concept
       WHERE domain_id = 'Condition'
     ) snomed
     LEFT JOIN
@@ -36,14 +36,14 @@ into #ch_condition
        c1.concept_id      AS snomed_concept_id,
        max(c2.concept_id) AS pt_concept_id
      FROM
-       @vocab_database_schema.concept c1
+       @vocabDatabaseSchema.concept c1
        INNER JOIN
-       @vocab_database_schema.concept_ancestor ca1
+       @vocabDatabaseSchema.concept_ancestor ca1
          ON c1.concept_id = ca1.descendant_concept_id
             AND c1.domain_id = 'Condition'
             AND ca1.min_levels_of_separation = 1
        INNER JOIN
-       @vocab_database_schema.concept c2
+       @vocabDatabaseSchema.concept c2
          ON ca1.ancestor_concept_id = c2.concept_id
             AND c2.vocabulary_id = 'MedDRA'
      GROUP BY c1.concept_id
@@ -56,14 +56,14 @@ into #ch_condition
        c1.concept_name    AS pt_concept_name,
        max(c2.concept_id) AS hlt_concept_id
      FROM
-       @vocab_database_schema.concept c1
+       @vocabDatabaseSchema.concept c1
        INNER JOIN
-       @vocab_database_schema.concept_ancestor ca1
+       @vocabDatabaseSchema.concept_ancestor ca1
          ON c1.concept_id = ca1.descendant_concept_id
             AND c1.vocabulary_id = 'MedDRA'
             AND ca1.min_levels_of_separation = 1
        INNER JOIN
-       @vocab_database_schema.concept c2
+       @vocabDatabaseSchema.concept c2
          ON ca1.ancestor_concept_id = c2.concept_id
             AND c2.vocabulary_id = 'MedDRA'
      GROUP BY c1.concept_id, c1.concept_name
@@ -76,14 +76,14 @@ into #ch_condition
        c1.concept_name    AS hlt_concept_name,
        max(c2.concept_id) AS hlgt_concept_id
      FROM
-       @vocab_database_schema.concept c1
+       @vocabDatabaseSchema.concept c1
        INNER JOIN
-       @vocab_database_schema.concept_ancestor ca1
+       @vocabDatabaseSchema.concept_ancestor ca1
          ON c1.concept_id = ca1.descendant_concept_id
             AND c1.vocabulary_id = 'MedDRA'
             AND ca1.min_levels_of_separation = 1
        INNER JOIN
-       @vocab_database_schema.concept c2
+       @vocabDatabaseSchema.concept c2
          ON ca1.ancestor_concept_id = c2.concept_id
             AND c2.vocabulary_id = 'MedDRA'
      GROUP BY c1.concept_id, c1.concept_name
@@ -96,21 +96,21 @@ into #ch_condition
        c1.concept_name    AS hlgt_concept_name,
        max(c2.concept_id) AS soc_concept_id
      FROM
-       @vocab_database_schema.concept c1
+       @vocabDatabaseSchema.concept c1
        INNER JOIN
-       @vocab_database_schema.concept_ancestor ca1
+       @vocabDatabaseSchema.concept_ancestor ca1
          ON c1.concept_id = ca1.descendant_concept_id
             AND c1.vocabulary_id = 'MedDRA'
             AND ca1.min_levels_of_separation = 1
        INNER JOIN
-       @vocab_database_schema.concept c2
+       @vocabDatabaseSchema.concept c2
          ON ca1.ancestor_concept_id = c2.concept_id
             AND c2.vocabulary_id = 'MedDRA'
      GROUP BY c1.concept_id, c1.concept_name
     ) hlgt_to_soc
       ON hlt_to_hlgt.hlgt_concept_id = hlgt_to_soc.hlgt_concept_id
 
-    LEFT JOIN @vocab_database_schema.concept soc
+    LEFT JOIN @vocabDatabaseSchema.concept soc
       ON hlgt_to_soc.soc_concept_id = soc.concept_id;
 
 /********** DRUG **********/
@@ -131,11 +131,11 @@ into #ch_drug
         c1.concept_name,
         c2.concept_id   AS rxnorm_ingredient_concept_id,
         c2.concept_name AS RxNorm_ingredient_concept_name
-      FROM @vocab_database_schema.concept c1
-        INNER JOIN @vocab_database_schema.concept_ancestor ca1
+      FROM @vocabDatabaseSchema.concept c1
+        INNER JOIN @vocabDatabaseSchema.concept_ancestor ca1
           ON c1.concept_id = ca1.descendant_concept_id
              AND c1.domain_id = 'Drug'
-        INNER JOIN @vocab_database_schema.concept c2
+        INNER JOIN @vocabDatabaseSchema.concept c2
           ON ca1.ancestor_concept_id = c2.concept_id
              AND c2.domain_id = 'Drug'
              AND c2.concept_class_id = 'Ingredient'
@@ -145,14 +145,14 @@ into #ch_drug
        c1.concept_id      AS rxnorm_ingredient_concept_id,
        max(c2.concept_id) AS atc5_concept_id
      FROM
-       @vocab_database_schema.concept c1
+       @vocabDatabaseSchema.concept c1
        INNER JOIN
-       @vocab_database_schema.concept_ancestor ca1
+       @vocabDatabaseSchema.concept_ancestor ca1
          ON c1.concept_id = ca1.descendant_concept_id
             AND c1.domain_id = 'Drug'
             AND c1.concept_class_id = 'Ingredient'
        INNER JOIN
-       @vocab_database_schema.concept c2
+       @vocabDatabaseSchema.concept c2
          ON ca1.ancestor_concept_id = c2.concept_id
             AND c2.vocabulary_id = 'ATC'
             AND c2.concept_class_id = 'ATC 4th'
@@ -166,14 +166,14 @@ into #ch_drug
        c1.concept_name    AS atc5_concept_name,
        max(c2.concept_id) AS atc3_concept_id
      FROM
-       @vocab_database_schema.concept c1
+       @vocabDatabaseSchema.concept c1
        INNER JOIN
-       @vocab_database_schema.concept_ancestor ca1
+       @vocabDatabaseSchema.concept_ancestor ca1
          ON c1.concept_id = ca1.descendant_concept_id
             AND c1.vocabulary_id = 'ATC'
             AND c1.concept_class_id = 'ATC 4th'
        INNER JOIN
-       @vocab_database_schema.concept c2
+       @vocabDatabaseSchema.concept c2
          ON ca1.ancestor_concept_id = c2.concept_id
             AND c2.vocabulary_id = 'ATC'
             AND c2.concept_class_id = 'ATC 2nd'
@@ -187,14 +187,14 @@ into #ch_drug
        c1.concept_name    AS atc3_concept_name,
        max(c2.concept_id) AS atc1_concept_id
      FROM
-       @vocab_database_schema.concept c1
+       @vocabDatabaseSchema.concept c1
        INNER JOIN
-       @vocab_database_schema.concept_ancestor ca1
+       @vocabDatabaseSchema.concept_ancestor ca1
          ON c1.concept_id = ca1.descendant_concept_id
             AND c1.vocabulary_id = 'ATC'
             AND c1.concept_class_id = 'ATC 2nd'
        INNER JOIN
-       @vocab_database_schema.concept c2
+       @vocabDatabaseSchema.concept c2
          ON ca1.ancestor_concept_id = c2.concept_id
             AND c2.vocabulary_id = 'ATC'
             AND c2.concept_class_id = 'ATC 1st'
@@ -202,7 +202,7 @@ into #ch_drug
     ) atc3_to_atc1
       ON atc5_to_atc3.atc3_concept_id = atc3_to_atc1.atc3_concept_id
 
-    LEFT JOIN @vocab_database_schema.concept atc1
+    LEFT JOIN @vocabDatabaseSchema.concept atc1
       ON atc3_to_atc1.atc1_concept_id = atc1.concept_id;
 
 /********** DRUG_ERA **********/
@@ -213,7 +213,7 @@ into #ch_drug
     'Drug Era' AS treemap,
     atc5_to_atc3.atc5_concept_name as level1_concept_name,
     atc3_to_atc1.atc3_concept_name as level2_concept_name,
-    atc1.concept_name AS atc1_concept_name as level3_concept_name,
+    atc1.concept_name as level3_concept_name,
     null as level4_concept_name
 into #ch_drug_era
   FROM
@@ -222,7 +222,7 @@ into #ch_drug_era
         c2.concept_id   AS rxnorm_ingredient_concept_id,
         c2.concept_name AS RxNorm_ingredient_concept_name
       FROM
-        @vocab_database_schema.concept c2
+        @vocabDatabaseSchema.concept c2
       WHERE
         c2.domain_id = 'Drug'
         AND c2.concept_class_id = 'Ingredient'
@@ -232,14 +232,14 @@ into #ch_drug_era
        c1.concept_id      AS rxnorm_ingredient_concept_id,
        max(c2.concept_id) AS atc5_concept_id
      FROM
-       @vocab_database_schema.concept c1
+       @vocabDatabaseSchema.concept c1
        INNER JOIN
-       @vocab_database_schema.concept_ancestor ca1
+       @vocabDatabaseSchema.concept_ancestor ca1
          ON c1.concept_id = ca1.descendant_concept_id
             AND c1.domain_id = 'Drug'
             AND c1.concept_class_id = 'Ingredient'
        INNER JOIN
-       @vocab_database_schema.concept c2
+       @vocabDatabaseSchema.concept c2
          ON ca1.ancestor_concept_id = c2.concept_id
             AND c2.vocabulary_id = 'ATC'
             AND c2.concept_class_id = 'ATC 4th'
@@ -253,14 +253,14 @@ into #ch_drug_era
        c1.concept_name    AS atc5_concept_name,
        max(c2.concept_id) AS atc3_concept_id
      FROM
-       @vocab_database_schema.concept c1
+       @vocabDatabaseSchema.concept c1
        INNER JOIN
-       @vocab_database_schema.concept_ancestor ca1
+       @vocabDatabaseSchema.concept_ancestor ca1
          ON c1.concept_id = ca1.descendant_concept_id
             AND c1.vocabulary_id = 'ATC'
             AND c1.concept_class_id = 'ATC 4th'
        INNER JOIN
-       @vocab_database_schema.concept c2
+       @vocabDatabaseSchema.concept c2
          ON ca1.ancestor_concept_id = c2.concept_id
             AND c2.vocabulary_id = 'ATC'
             AND c2.concept_class_id = 'ATC 2nd'
@@ -274,14 +274,14 @@ into #ch_drug_era
        c1.concept_name    AS atc3_concept_name,
        max(c2.concept_id) AS atc1_concept_id
      FROM
-       @vocab_database_schema.concept c1
+       @vocabDatabaseSchema.concept c1
        INNER JOIN
-       @vocab_database_schema.concept_ancestor ca1
+       @vocabDatabaseSchema.concept_ancestor ca1
          ON c1.concept_id = ca1.descendant_concept_id
             AND c1.vocabulary_id = 'ATC'
             AND c1.concept_class_id = 'ATC 2nd'
        INNER JOIN
-       @vocab_database_schema.concept c2
+       @vocabDatabaseSchema.concept c2
          ON ca1.ancestor_concept_id = c2.concept_id
             AND c2.vocabulary_id = 'ATC'
             AND c2.concept_class_id = 'ATC 1st'
@@ -289,7 +289,7 @@ into #ch_drug_era
     ) atc3_to_atc1
       ON atc5_to_atc3.atc3_concept_id = atc3_to_atc1.atc3_concept_id
 
-    LEFT JOIN @vocab_database_schema.concept atc1
+    LEFT JOIN @vocabDatabaseSchema.concept atc1
       ON atc3_to_atc1.atc1_concept_id = atc1.concept_id;
 
 /********** MEASUREMENT **********/
@@ -299,7 +299,7 @@ into #ch_drug_era
     m.concept_name,
     'Measurement' AS treemap,
     max(c1.concept_name) AS level1_concept_name,
-    CAST(max(c2.concept_name)  AS level2_concept_name,
+    max(c2.concept_name) AS level2_concept_name,
     max(c3.concept_name) AS level3_concept_name,
     null as level4_concept_name
 into #ch_measurement
@@ -308,18 +308,18 @@ into #ch_measurement
       SELECT DISTINCT
         concept_id,
         concept_name
-      FROM @vocab_database_schema.concept c
+      FROM @vocabDatabaseSchema.concept c
       WHERE domain_id = 'Measurement'
     ) m
-    LEFT JOIN @vocab_database_schema.concept_ancestor ca1
+    LEFT JOIN @vocabDatabaseSchema.concept_ancestor ca1
       ON M.concept_id = ca1.DESCENDANT_CONCEPT_ID AND ca1.min_levels_of_separation = 1
-    LEFT JOIN @vocab_database_schema.concept c1 ON ca1.ANCESTOR_CONCEPT_ID = c1.concept_id
-    LEFT JOIN @vocab_database_schema.concept_ancestor ca2
+    LEFT JOIN @vocabDatabaseSchema.concept c1 ON ca1.ANCESTOR_CONCEPT_ID = c1.concept_id
+    LEFT JOIN @vocabDatabaseSchema.concept_ancestor ca2
       ON c1.concept_id = ca2.DESCENDANT_CONCEPT_ID AND ca2.min_levels_of_separation = 1
-    LEFT JOIN @vocab_database_schema.concept c2 ON ca2.ANCESTOR_CONCEPT_ID = c2.concept_id
-    LEFT JOIN @vocab_database_schema.concept_ancestor ca3
+    LEFT JOIN @vocabDatabaseSchema.concept c2 ON ca2.ANCESTOR_CONCEPT_ID = c2.concept_id
+    LEFT JOIN @vocabDatabaseSchema.concept_ancestor ca3
       ON c2.concept_id = ca3.DESCENDANT_CONCEPT_ID AND ca3.min_levels_of_separation = 1
-    LEFT JOIN @vocab_database_schema.concept c3 ON ca3.ANCESTOR_CONCEPT_ID = c3.concept_id
+    LEFT JOIN @vocabDatabaseSchema.concept c3 ON ca3.ANCESTOR_CONCEPT_ID = c3.concept_id
   GROUP BY M.concept_id, M.concept_name;
 
 /********** OBSERVATION **********/
@@ -338,18 +338,18 @@ into #ch_observation
       SELECT
         concept_id,
         concept_name
-      FROM @vocab_database_schema.concept
+      FROM @vocabDatabaseSchema.concept
       WHERE domain_id = 'Observation'
     ) obs
-    LEFT JOIN @vocab_database_schema.concept_ancestor ca1
+    LEFT JOIN @vocabDatabaseSchema.concept_ancestor ca1
       ON obs.concept_id = ca1.DESCENDANT_CONCEPT_ID AND ca1.min_levels_of_separation = 1
-    LEFT JOIN @vocab_database_schema.concept c1 ON ca1.ANCESTOR_CONCEPT_ID = c1.concept_id
-    LEFT JOIN @vocab_database_schema.concept_ancestor ca2
+    LEFT JOIN @vocabDatabaseSchema.concept c1 ON ca1.ANCESTOR_CONCEPT_ID = c1.concept_id
+    LEFT JOIN @vocabDatabaseSchema.concept_ancestor ca2
       ON c1.concept_id = ca2.DESCENDANT_CONCEPT_ID AND ca2.min_levels_of_separation = 1
-    LEFT JOIN @vocab_database_schema.concept c2 ON ca2.ANCESTOR_CONCEPT_ID = c2.concept_id
-    LEFT JOIN @vocab_database_schema.concept_ancestor ca3
+    LEFT JOIN @vocabDatabaseSchema.concept c2 ON ca2.ANCESTOR_CONCEPT_ID = c2.concept_id
+    LEFT JOIN @vocabDatabaseSchema.concept_ancestor ca3
       ON c2.concept_id = ca3.DESCENDANT_CONCEPT_ID AND ca3.min_levels_of_separation = 1
-    LEFT JOIN @vocab_database_schema.concept c3 ON ca3.ANCESTOR_CONCEPT_ID = c3.concept_id
+    LEFT JOIN @vocabDatabaseSchema.concept c3 ON ca3.ANCESTOR_CONCEPT_ID = c3.concept_id
   GROUP BY obs.concept_id, obs.concept_name;
 
 /********** PROCEDURE **********/
@@ -368,8 +368,8 @@ into #ch_procedure
       SELECT
         c1.concept_id,
         v1.vocabulary_name + ' ' + c1.concept_code + ': ' + c1.concept_name AS proc_concept_name
-      FROM @vocab_database_schema.concept c1
-        INNER JOIN @vocab_database_schema.vocabulary v1
+      FROM @vocabDatabaseSchema.concept c1
+        INNER JOIN @vocabDatabaseSchema.vocabulary v1
           ON c1.vocabulary_id = v1.vocabulary_id
       WHERE c1.domain_id = 'Procedure'
     ) procs
@@ -377,18 +377,18 @@ into #ch_procedure
     (SELECT
        ca0.DESCENDANT_CONCEPT_ID,
        max(ca0.ancestor_concept_id) AS ancestor_concept_id
-     FROM @vocab_database_schema.concept_ancestor ca0
+     FROM @vocabDatabaseSchema.concept_ancestor ca0
        INNER JOIN
        (SELECT DISTINCT c2.concept_id AS os3_concept_id
-        FROM @vocab_database_schema.concept_ancestor ca1
+        FROM @vocabDatabaseSchema.concept_ancestor ca1
           INNER JOIN
-          @vocab_database_schema.concept c1
+          @vocabDatabaseSchema.concept c1
             ON ca1.DESCENDANT_CONCEPT_ID = c1.concept_id
           INNER JOIN
-          @vocab_database_schema.concept_ancestor ca2
+          @vocabDatabaseSchema.concept_ancestor ca2
             ON c1.concept_id = ca2.ANCESTOR_CONCEPT_ID
           INNER JOIN
-          @vocab_database_schema.concept c2
+          @vocabDatabaseSchema.concept c2
             ON ca2.DESCENDANT_CONCEPT_ID = c2.concept_id
         WHERE ca1.ancestor_concept_id = 4040390
               AND ca1.Min_LEVELS_OF_SEPARATION = 2
@@ -409,9 +409,9 @@ into #ch_procedure
         (SELECT
            DESCENDANT_CONCEPT_ID AS os1_concept_id,
            concept_name          AS os1_concept_name
-         FROM @vocab_database_schema.concept_ancestor ca1
+         FROM @vocabDatabaseSchema.concept_ancestor ca1
            INNER JOIN
-           @vocab_database_schema.concept c1
+           @vocabDatabaseSchema.concept c1
              ON ca1.DESCENDANT_CONCEPT_ID = c1.concept_id
          WHERE ancestor_concept_id = 4040390
                AND Min_LEVELS_OF_SEPARATION = 1
@@ -422,15 +422,15 @@ into #ch_procedure
            max(c1.CONCEPT_ID) AS os1_concept_id,
            c2.concept_id      AS os2_concept_id,
            c2.concept_name    AS os2_concept_name
-         FROM @vocab_database_schema.concept_ancestor ca1
+         FROM @vocabDatabaseSchema.concept_ancestor ca1
            INNER JOIN
-           @vocab_database_schema.concept c1
+           @vocabDatabaseSchema.concept c1
              ON ca1.DESCENDANT_CONCEPT_ID = c1.concept_id
            INNER JOIN
-           @vocab_database_schema.concept_ancestor ca2
+           @vocabDatabaseSchema.concept_ancestor ca2
              ON c1.concept_id = ca2.ANCESTOR_CONCEPT_ID
            INNER JOIN
-           @vocab_database_schema.concept c2
+           @vocabDatabaseSchema.concept c2
              ON ca2.DESCENDANT_CONCEPT_ID = c2.concept_id
          WHERE ca1.ancestor_concept_id = 4040390
                AND ca1.Min_LEVELS_OF_SEPARATION = 1
@@ -444,15 +444,15 @@ into #ch_procedure
            max(c1.CONCEPT_ID) AS os2_concept_id,
            c2.concept_id      AS os3_concept_id,
            c2.concept_name    AS os3_concept_name
-         FROM @vocab_database_schema.concept_ancestor ca1
+         FROM @vocabDatabaseSchema.concept_ancestor ca1
            INNER JOIN
-           @vocab_database_schema.concept c1
+           @vocabDatabaseSchema.concept c1
              ON ca1.DESCENDANT_CONCEPT_ID = c1.concept_id
            INNER JOIN
-           @vocab_database_schema.concept_ancestor ca2
+           @vocabDatabaseSchema.concept_ancestor ca2
              ON c1.concept_id = ca2.ANCESTOR_CONCEPT_ID
            INNER JOIN
-           @vocab_database_schema.concept c2
+           @vocabDatabaseSchema.concept c2
              ON ca2.DESCENDANT_CONCEPT_ID = c2.concept_id
          WHERE ca1.ancestor_concept_id = 4040390
                AND ca1.Min_LEVELS_OF_SEPARATION = 2
@@ -465,8 +465,9 @@ into #ch_procedure
   GROUP BY procs.concept_id,
     procs.proc_concept_name;
 
-with cte
-as
+select * into 
+@resultsDatabaseSchema.concept_hierarchy
+from
 (
   select * from #ch_condition
   union all
@@ -479,10 +480,7 @@ as
   select * from #ch_observation
   union all 
   select * from #ch_procedure
-)
-select * from cte
-into 
-@results_database_schema.concept_hierarchy
+) Q
 ;
 
 truncate table #ch_condition;

@@ -9,11 +9,11 @@ achilles(connectionDetails, cdmDatabaseSchema,
   resultsDatabaseSchema = cdmDatabaseSchema,
   scratchDatabaseSchema = resultsDatabaseSchema,
   vocabDatabaseSchema = cdmDatabaseSchema, sourceName = "", analysisIds,
-  smallcellcount = 5, cdmVersion = "5", runHeel = TRUE,
-  validateSchema = FALSE, runCostAnalysis = FALSE,
+  createTable = TRUE, smallcellcount = 5, cdmVersion = "5",
+  runHeel = TRUE, validateSchema = FALSE, runCostAnalysis = FALSE,
   conceptHierarchy = TRUE, createIndices = TRUE, numThreads = 1,
   tempAchillesPrefix = "tmpach", dropScratchTables = TRUE,
-  sqlOnly = FALSE, outputFolder = "output", createTable = TRUE)
+  sqlOnly = FALSE, outputFolder = "output")
 }
 \arguments{
 \item{connectionDetails}{An R object of type ConnectionDetails (details for the function that contains server info, database type, optionally username/password, port)}
@@ -34,6 +34,8 @@ Making this "#" will run Achilles in single-threaded mode and use temporary tabl
 
 \item{analysisIds}{(OPTIONAL) A vector containing the set of Achilles analysisIds for which results will be generated. 
 If not specified, all analyses will be executed. Use \code{\link{getAnalysisDetails}} to get a list of all Achilles analyses and their Ids.}
+
+\item{createTable}{If true, new results tables will be created in the results schema. If not, the tables are assumed to already exist, and analysis results will be inserted (slower on MPP).}
 
 \item{smallcellcount}{To avoid patient identifiability, cells with small counts (<= smallcellcount) are deleted. Set to NULL if you don't want any deletions.}
 

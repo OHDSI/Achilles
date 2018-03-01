@@ -1,4 +1,4 @@
-{createTable}?{
+{@createTable}?{
   IF OBJECT_ID('@resultsDatabaseSchema.achilles_@detailType', 'U') IS NOT NULL
     drop table @resultsDatabaseSchema.achilles_@detailType;
 }
@@ -8,11 +8,11 @@ as
 (
   @detailSqls
 )
-{!createTable}?{
+{!@createTable}?{
   insert into @resultsDatabaseSchema.achilles_@detailType
 }
 select @fieldNames
-{createTable}?{
+{@createTable}?{
   into @resultsDatabaseSchema.achilles_@detailType
 }
 from cte_merged

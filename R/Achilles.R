@@ -205,9 +205,10 @@ achilles <- function (connectionDetails,
     }
   }
   
-  # Clean up earlier scratch tables -------------------------------------------------
+  # Clean up existing scratch tables -------------------------------------------------
   
   if (numThreads > 1 && !sqlOnly) {
+    writeLines("Dropping existing scratch Achilles tables")
     dropAllScratchTables(connectionDetails = connectionDetails, 
                          scratchDatabaseSchema = scratchDatabaseSchema, 
                          tempAchillesPrefix = tempAchillesPrefix, 
@@ -336,9 +337,8 @@ achilles <- function (connectionDetails,
     hierarchySql <- SqlRender::loadRenderTranslateSql(sqlFilename = "post_processing/concept_hierarchy.sql",
                                                       packageName = "Achilles",
                                                       dbms = connectionDetails$dbms,
-                                                      oracleTempSchema = oracleTempSchema,
-                                                      results_database_schema = resultsDatabaseSchema,
-                                                      vocab_database_schema = vocabDatabaseSchema
+                                                      resultsDatabaseSchema = resultsDatabaseSchema,
+                                                      vocabDatabaseSchema = vocabDatabaseSchema
     )
     
     if (sqlOnly) {
@@ -481,9 +481,10 @@ achillesHeel <- function(connectionDetails,
     # first invocation of the connection, to persist throughout to maintain temp tables
   }
   
-  # Clean up earlier scratch tables -------------------------------------------------
+  # Clean up existing scratch tables -------------------------------------------------
   
   if (numThreads > 1 && !sqlOnly) {
+    writeLines("Dropping existing scratch Heel tables")
     dropAllScratchTables(connectionDetails = connectionDetails, 
                          scratchDatabaseSchema = scratchDatabaseSchema, 
                          tempAchillesPrefix = tempAchillesPrefix, 
