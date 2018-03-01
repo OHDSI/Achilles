@@ -2,7 +2,7 @@
 
 --HINT DISTRIBUTE_ON_KEY(analysis_id)
 select 1411 as analysis_id, 
-	CAST(DATEFROMPARTS(YEAR(payer_plan_period_start_date), MONTH(payer_plan_period_start_date), 1) as varchar(255)) as stratum_1,
+	DATEFROMPARTS(YEAR(payer_plan_period_start_date), MONTH(payer_plan_period_start_date), 1) as stratum_1,
 	null as stratum_2, null as stratum_3, null as stratum_4, null as stratum_5,
 	COUNT_BIG(distinct p1.PERSON_ID) as count_value
 into @scratchDatabaseSchema@schemaDelim@tempAchillesPrefix_1411

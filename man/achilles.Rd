@@ -13,7 +13,7 @@ achilles(connectionDetails, cdmDatabaseSchema,
   validateSchema = FALSE, runCostAnalysis = FALSE,
   conceptHierarchy = TRUE, createIndices = TRUE, numThreads = 1,
   tempAchillesPrefix = "tmpach", dropScratchTables = TRUE,
-  sqlOnly = FALSE, outputFolder = "output")
+  sqlOnly = FALSE, outputFolder = "output", createTable = TRUE)
 }
 \arguments{
 \item{connectionDetails}{An R object of type ConnectionDetails (details for the function that contains server info, database type, optionally username/password, port)}

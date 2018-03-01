@@ -44,6 +44,7 @@
 #' @param sourceName		                   String name of the database, as recorded in results.
 #' @param analysisIds		                   (OPTIONAL) A vector containing the set of Achilles analysisIds for which results will be generated. 
 #'                                         If not specified, all analyses will be executed. Use \code{\link{getAnalysisDetails}} to get a list of all Achilles analyses and their Ids.
+#' @param createTable                      If true, new results tables will be created in the results schema. If not, the tables are assumed to already exist, and analysis results will be inserted (slower on MPP).
 #' @param smallcellcount                   To avoid patient identifiability, cells with small counts (<= smallcellcount) are deleted. Set to NULL if you don't want any deletions.
 #' @param cdmVersion                       Define the OMOP CDM version used:  currently supports v5 and above.  Default = "5". v4 support is in \code{\link{achilles_v4}}.
 #' @param runHeel                          Boolean to determine if Achilles Heel data quality reporting will be produced based on the summary statistics.  Default = TRUE
@@ -78,6 +79,7 @@ achilles <- function (connectionDetails,
                       vocabDatabaseSchema = cdmDatabaseSchema,
                       sourceName = "", 
                       analysisIds, 
+                      createTable = TRUE,
                       smallcellcount = 5, 
                       cdmVersion = "5", 
                       runHeel = TRUE,
@@ -96,6 +98,13 @@ achilles <- function (connectionDetails,
          See Achilles Git Repo to find v4 compatible version of Achilles.")
   }
   
+  # Establish folder paths --------------------------------------------------------------------------------------------------------
+  
+  if (sqlOnly) {
+    unlink(x = outputFolder, recursive = TRUE, force = TRUE)
+    dir.create(path = outputFolder, recursive = TRUE)
+  }
+  
   # Validate CDM schema (optional) --------------------------------------------------------------------------------------------------
   
   if (validateSchema) {
@@ -108,7 +117,8 @@ achilles <- function (connectionDetails,
   # Get source name if none provided --------------------------------------------------
   
   if (is.null(sourceName)) {
-    sql <- SqlRender::renderSql(sql = "select top 1 cdm_source_name from @cdmDatabaseSchema.cdm_source",
+    sql <- SqlRender::renderSql(sql = "select top 1 cdm_source_name 
+                                from @cdmDatabaseSchema.cdm_source",
                                 cdmDatabaseSchema = cdmDatabaseSchema)$sql
     connection <- DatabaseConnector::connect(connectionDetails = connectionDetails)
     sourceName <- tryCatch({
@@ -119,13 +129,6 @@ achilles <- function (connectionDetails,
       DatabaseConnector::disconnect(connection = connection)
       connection <- NULL
     })
-  }
-  
-  # Establish folder paths --------------------------------------------------------------------------------------------------------
-  
-  if (sqlOnly) {
-    unlink(x = outputFolder, recursive = TRUE, force = TRUE)
-    dir.create(path = outputFolder, recursive = TRUE)
   }
   
   # Obtain analyses to run --------------------------------------------------------------------------------------------------------
@@ -149,7 +152,7 @@ achilles <- function (connectionDetails,
          tablePrefix = sprintf("%1s_%2s", tempAchillesPrefix, "dist"),
          schema = read.csv(file = system.file("csv", "schema_achilles_results_dist.csv", package = "Achilles"), 
                            header = TRUE),
-         analysisIds = analysisDetails[analysisDetails$DISTRIBUTION == 1, ]$ANALYSIS_ID))
+         analysisIds = analysisDetails[abs(analysisDetails$DISTRIBUTION) == 1, ]$ANALYSIS_ID))
   
   # Initialize serial execution (use temp tables and 1 thread only) ----------------------------------------------------------------
   
@@ -159,44 +162,56 @@ achilles <- function (connectionDetails,
     numThreads <- 1
     scratchDatabaseSchema <- "#"
     schemaDelim <- "s_"
-    connection <- DatabaseConnector::connect(connectionDetails = connectionDetails) 
+    
     # first invocation of the connection, to persist throughout to maintain temp tables
+    connection <- DatabaseConnector::connect(connectionDetails = connectionDetails) 
   }
   
   # Create analysis table -------------------------------------------------------------
   
-  analysesSqls <- apply(analysisDetails, 1, function(analysisDetail) {  
-    SqlRender::renderSql("select @analysisId as analysis_id, '@analysisName' as analysis_name,
-                         '@stratum1Name' as stratum_1_name, '@stratum2Name' as stratum_2_name,
-                         '@stratum3Name' as stratum_3_name, '@stratum4Name' as stratum_4_name,
-                         '@stratum5Name' as stratum_5_name", 
-                         analysisId = analysisDetail["ANALYSIS_ID"],
-                         analysisName = analysisDetail["ANALYSIS_NAME"],
-                         stratum1Name = analysisDetail["STRATUM_1_NAME"],
-                         stratum2Name = analysisDetail["STRATUM_2_NAME"],
-                         stratum3Name = analysisDetail["STRATUM_3_NAME"],
-                         stratum4Name = analysisDetail["STRATUM_4_NAME"],
-                         stratum5Name = analysisDetail["STRATUM_5_NAME"])$sql
-  })  
-  
-  sql <- SqlRender::loadRenderTranslateSql(sqlFilename = "analyses/create_analysis_table.sql", 
-                                           packageName = "Achilles", 
-                                           dbms = connectionDetails$dbms,
-                                           resultsDatabaseSchema = resultsDatabaseSchema,
-                                           analysesSqls = paste(analysesSqls, collapse = " \nunion all\n "))
-  
-  if (sqlOnly) {
-    SqlRender::writeSql(sql = sql, 
-                        targetFile = file.path(outputFolder, "CreateAnalysisTable.sql"))
-  } else {
-    if (numThreads == 1) { 
-      # connection is already alive
-      DatabaseConnector::executeSql(connection = connection, sql = sql)
+  if (createTable) {
+    analysesSqls <- apply(analysisDetails, 1, function(analysisDetail) {  
+      SqlRender::renderSql("select @analysisId as analysis_id, '@analysisName' as analysis_name,
+                           '@stratum1Name' as stratum_1_name, '@stratum2Name' as stratum_2_name,
+                           '@stratum3Name' as stratum_3_name, '@stratum4Name' as stratum_4_name,
+                           '@stratum5Name' as stratum_5_name", 
+                           analysisId = analysisDetail["ANALYSIS_ID"],
+                           analysisName = analysisDetail["ANALYSIS_NAME"],
+                           stratum1Name = analysisDetail["STRATUM_1_NAME"],
+                           stratum2Name = analysisDetail["STRATUM_2_NAME"],
+                           stratum3Name = analysisDetail["STRATUM_3_NAME"],
+                           stratum4Name = analysisDetail["STRATUM_4_NAME"],
+                           stratum5Name = analysisDetail["STRATUM_5_NAME"])$sql
+    })  
+    
+    sql <- SqlRender::loadRenderTranslateSql(sqlFilename = "analyses/create_analysis_table.sql", 
+                                             packageName = "Achilles", 
+                                             dbms = connectionDetails$dbms,
+                                             resultsDatabaseSchema = resultsDatabaseSchema,
+                                             analysesSqls = paste(analysesSqls, collapse = " \nunion all\n "))
+    
+    if (sqlOnly) {
+      SqlRender::writeSql(sql = sql, 
+                          targetFile = file.path(outputFolder, "CreateAnalysisTable.sql"))
     } else {
-      connection <- DatabaseConnector::connect(connectionDetails)
-      DatabaseConnector::executeSql(connection = connection, sql = sql)
-      DatabaseConnector::disconnect(connection)
+      if (numThreads == 1) { 
+        # connection is already alive
+        DatabaseConnector::executeSql(connection = connection, sql = sql)
+      } else {
+        connection <- DatabaseConnector::connect(connectionDetails)
+        DatabaseConnector::executeSql(connection = connection, sql = sql)
+        DatabaseConnector::disconnect(connection)
+      }
     }
+  }
+  
+  # Clean up earlier scratch tables -------------------------------------------------
+  
+  if (numThreads > 1 && !sqlOnly) {
+    dropAllScratchTables(connectionDetails = connectionDetails, 
+                         scratchDatabaseSchema = scratchDatabaseSchema, 
+                         tempAchillesPrefix = tempAchillesPrefix, 
+                         numThreads = numThreads)
   }
   
   # Generate cost analyses ----------------------------------------------------------
@@ -221,7 +236,7 @@ achilles <- function (connectionDetails,
                                                        schemaDelim = schemaDelim,
                                                        cdmDatabaseSchema = cdmDatabaseSchema,
                                                        scratchDatabaseSchema = scratchDatabaseSchema,
-                                                       costColumn = drugCostMappings[drugCostMappings$V5 == analysisDetail["DISTRIBUTED_FIELD"][[1]], ]$V5_0_1,
+                                                       costColumn = drugCostMappings[drugCostMappings$OLD == analysisDetail["DISTRIBUTED_FIELD"][[1]], ]$CURRENT,
                                                        countValue = analysisDetail["DISTRIBUTED_FIELD"][[1]],
                                                        domain = "Drug",
                                                        domainTable = "drug_exposure", 
@@ -239,7 +254,7 @@ achilles <- function (connectionDetails,
                                                        schemaDelim = schemaDelim,
                                                        cdmDatabaseSchema = cdmDatabaseSchema,
                                                        scratchDatabaseSchema = scratchDatabaseSchema,
-                                                       costColumn = procedureCostMappings[drugCostMappings$V5 == analysisDetail["DISTRIBUTED_FIELD"], ]$V5_0_1,
+                                                       costColumn = procedureCostMappings[drugCostMappings$OLD == analysisDetail["DISTRIBUTED_FIELD"][[1]], ]$CURRENT,
                                                        countValue = analysisDetail["DISTRIBUTED_FIELD"],
                                                        domain = "Procedure",
                                                        domainTable = "procedure_occurrence", 
@@ -275,36 +290,40 @@ achilles <- function (connectionDetails,
     writeLines("Achilles SQL scripts generating")
   } else {
     writeLines("Executing multiple queries. This could take a while")
-    
-    cluster <- OhdsiRTools::makeCluster(numberOfThreads = numThreads, singleThreadToMain = TRUE)
-    dummy <- OhdsiRTools::clusterApply(cluster = cluster, x = analysisDetails$ANALYSIS_ID, 
-                                       fun = .runAchillesAnalysisId,
-                                       connectionDetails = connectionDetails,
-                                       connection = ifelse(numThreads == 1, connection, NULL),
-                                       schemaDelim = schemaDelim,
-                                       scratchDatabaseSchema = scratchDatabaseSchema,
-                                       cdmDatabaseSchema = cdmDatabaseSchema,
-                                       cdmVersion = cdmVersion,
-                                       tempAchillesPrefix = tempAchillesPrefix,
-                                       detailTables = detailTables,
-                                       sourceName = sourceName,
-                                       sqlOnly = sqlOnly)
-    OhdsiRTools::stopCluster(cluster)
-    
-    cluster <- OhdsiRTools::makeCluster(numberOfThreads = ifelse(numThreads > 1, 2, 1), singleThreadToMain = TRUE)
-    dummy <- OhdsiRTools::clusterApply(cluster = cluster, x = detailTables, fun = .mergeAchillesScratchTables,
-                                       connectionDetails = connectionDetails,
-                                       connection = ifelse(numThreads == 1, connection, NULL),
-                                       schemaDelim = schemaDelim,
-                                       scratchDatabaseSchema = scratchDatabaseSchema,
-                                       resultsDatabaseSchema = resultsDatabaseSchema,
-                                       cdmVersion = cdmVersion,
-                                       tempAchillesPrefix = tempAchillesPrefix,
-                                       sqlOnly = sqlOnly,
-                                       smallcellcount = smallcellcount)
-    
-    OhdsiRTools::stopCluster(cluster)  
   }
+  
+  cluster <- OhdsiRTools::makeCluster(numberOfThreads = numThreads, singleThreadToMain = TRUE)
+  dummy <- OhdsiRTools::clusterApply(cluster = cluster, x = analysisDetails$ANALYSIS_ID, 
+                                     fun = .runAchillesAnalysisId,
+                                     connectionDetails = connectionDetails,
+                                     connection = connection,
+                                     schemaDelim = schemaDelim,
+                                     scratchDatabaseSchema = scratchDatabaseSchema,
+                                     cdmDatabaseSchema = cdmDatabaseSchema,
+                                     cdmVersion = cdmVersion,
+                                     tempAchillesPrefix = tempAchillesPrefix,
+                                     detailTables = detailTables,
+                                     sourceName = sourceName,
+                                     numThreads = numThreads,
+                                     sqlOnly = sqlOnly)
+  OhdsiRTools::stopCluster(cluster)
+  
+  cluster <- OhdsiRTools::makeCluster(numberOfThreads = ifelse(numThreads > 1, 2, 1), singleThreadToMain = TRUE)
+  dummy <- OhdsiRTools::clusterApply(cluster = cluster, x = detailTables, fun = .mergeAchillesScratchTables,
+                                     connectionDetails = connectionDetails,
+                                     connection = connection,
+                                     createTable = createTable,
+                                     schemaDelim = schemaDelim,
+                                     scratchDatabaseSchema = scratchDatabaseSchema,
+                                     resultsDatabaseSchema = resultsDatabaseSchema,
+                                     cdmVersion = cdmVersion,
+                                     tempAchillesPrefix = tempAchillesPrefix,
+                                     numThreads = numThreads,
+                                     sqlOnly = sqlOnly,
+                                     smallcellcount = smallcellcount)
+  
+  OhdsiRTools::stopCluster(cluster)  
+
   if (sqlOnly) {
     writeLines(paste0("All Achilles SQL scripts can be found in folder: ", outputFolder))
   } else {
@@ -335,7 +354,9 @@ achilles <- function (connectionDetails,
   
   # Create indices -----------------------------------------------------------------
   
-  if (createIndices && connectionDetails$dbms != "redshift") {
+  if (createIndices && 
+      connectionDetails$dbms != "redshift" &&
+      connectionDetails$dbms != "netezza") {
     sql <- SqlRender::loadRenderTranslateSql(sqlFilename = "post_processing/achilles_indices.sql",
                                              packageName = "Achilles",
                                              dbms = connectionDetails$dbms,
@@ -460,6 +481,15 @@ achillesHeel <- function(connectionDetails,
     # first invocation of the connection, to persist throughout to maintain temp tables
   }
   
+  # Clean up earlier scratch tables -------------------------------------------------
+  
+  if (numThreads > 1 && !sqlOnly) {
+    dropAllScratchTables(connectionDetails = connectionDetails, 
+                         scratchDatabaseSchema = scratchDatabaseSchema, 
+                         tempAchillesPrefix = tempAchillesPrefix, 
+                         numThreads = numThreads)
+  }
+  
   # Sub-functions to handle cluster applied operations----------------------------------------------------------------------------------
   
   writeLines("Executing Achilles Heel. This could take a while")
@@ -495,6 +525,7 @@ achillesHeel <- function(connectionDetails,
                                      scratchDatabaseSchema = scratchDatabaseSchema,
                                      schemaDelim = schemaDelim,
                                      tempHeelPrefix = tempHeelPrefix,
+                                     numThreads = numThreads,
                                      sqlOnly = sqlOnly,
                                      inputFolder = inputFolder,
                                      outputFolder = outputFolder)
@@ -780,6 +811,7 @@ dropAllScratchTables <- function(connectionDetails,
                                    tempAchillesPrefix, 
                                    detailTables,
                                    sourceName,
+                                   numThreads,
                                    sqlOnly = FALSE) {
   outputFolder <- "output"
   
@@ -810,7 +842,7 @@ dropAllScratchTables <- function(connectionDetails,
                           paste(outputFolder, 
                                 paste(paste("analysis", analysisId, sep = "_"), "sql", sep = "."), sep = "/"))
   } else {
-    if (is.null(connection)) {
+    if (numThreads > 1) {
       connection <- DatabaseConnector::connect(connectionDetails = connectionDetails)
       DatabaseConnector::executeSql(connection = connection, sql = sql)
       DatabaseConnector::disconnect(connection = connection)
@@ -822,6 +854,7 @@ dropAllScratchTables <- function(connectionDetails,
 }
 
 .mergeAchillesScratchTables <- function(detailTable, 
+                                        createTable,
                                         connectionDetails,
                                         connection,
                                         schemaDelim,
@@ -830,6 +863,7 @@ dropAllScratchTables <- function(connectionDetails,
                                         cdmVersion,
                                         tempAchillesPrefix,
                                         sqlOnly,
+                                        numThreads,
                                         smallcellcount = 5) {
   outputFolder <- "output"
   
@@ -853,17 +887,18 @@ dropAllScratchTables <- function(connectionDetails,
   sql <- SqlRender::loadRenderTranslateSql(sqlFilename = "analyses/merge_achilles_tables.sql",
                                            packageName = "Achilles",
                                            dbms = connectionDetails$dbms,
+                                           createTable = createTable,
                                            resultsDatabaseSchema = resultsDatabaseSchema,
                                            detailType = detailTable$detailType,
                                            detailSqls = paste(detailSqls, collapse = " \nunion all\n "),
                                            fieldNames = paste(detailTable$schema$FIELD_NAME, collapse = ", "),
-                                           smallcellcount = smallcellcount)
+                                           smallCellCount = smallcellcount)
   if (sqlOnly) {
     SqlRender::writeSql(sql = sql, 
                         targetFile = file.path(outputFolder, 
                                            paste(paste("Merge", detailTable$detailType, sep = "_"), "sql", sep = ".")))
   } else {
-    if (is.null(connection)) {
+    if (numThreads > 1) {
       connection <- DatabaseConnector::connect(connectionDetails = connectionDetails)
       DatabaseConnector::executeSql(connection = connection, sql = sql)
       DatabaseConnector::disconnect(connection = connection)
@@ -882,6 +917,7 @@ dropAllScratchTables <- function(connectionDetails,
                        scratchDatabaseSchema,
                        schemaDelim,
                        tempHeelPrefix, 
+                       numThreads,
                        sqlOnly, 
                        inputFolder,
                        outputFolder) {
@@ -902,7 +938,7 @@ dropAllScratchTables <- function(connectionDetails,
   if (sqlOnly) {
     SqlRender::writeSql(sql = sql, targetFile = paste(outputFolder, basename(heelFile), sep = "/"))
   } else {
-    if (scratchDatabaseSchema != "#") {
+    if (numThreads > 1) {
       connection <- DatabaseConnector::connect(connectionDetails = connectionDetails)
       DatabaseConnector::executeSql(connection = connection, sql = sql)
       DatabaseConnector::disconnect(connection = connection)

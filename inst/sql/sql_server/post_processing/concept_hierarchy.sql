@@ -17,7 +17,7 @@ IF OBJECT_ID('@results_database_schema.concept_hierarchy', 'U') IS NOT NULL
   SELECT
     snomed.concept_id,
     snomed.concept_name AS concept_name,
-    CAST('Condition' AS VARCHAR(20)) AS treemap,
+    'Condition' AS treemap,
     pt_to_hlt.pt_concept_name as level1_concept_name,
     hlt_to_hlgt.hlt_concept_name as level2_concept_name,
     hlgt_to_soc.hlgt_concept_name as level3_concept_name,
@@ -118,7 +118,7 @@ into #ch_condition
   SELECT
     rxnorm.concept_id,
     rxnorm.concept_name AS concept_name,
-    CAST('Drug' AS VARCHAR(20)) AS treemap,
+    'Drug' AS treemap,
     rxnorm.rxnorm_ingredient_concept_name as level1_concept_name,
     atc5_to_atc3.atc5_concept_name as level2_concept_name,
     atc3_to_atc1.atc3_concept_name as level3_concept_name,
@@ -210,7 +210,7 @@ into #ch_drug
   SELECT
     rxnorm.rxnorm_ingredient_concept_id as concept_id,
     rxnorm.rxnorm_ingredient_concept_name as concept_name,
-    CAST('Drug Era' AS VARCHAR(20)) AS treemap,
+    'Drug Era' AS treemap,
     atc5_to_atc3.atc5_concept_name as level1_concept_name,
     atc3_to_atc1.atc3_concept_name as level2_concept_name,
     atc1.concept_name AS atc1_concept_name as level3_concept_name,
@@ -297,10 +297,10 @@ into #ch_drug_era
   SELECT
     m.concept_id,
     m.concept_name,
-    CAST('Measurement' AS VARCHAR(20)) AS treemap,
-    CAST(max(c1.concept_name) AS VARCHAR(255)) AS level1_concept_name,
-    CAST(max(c2.concept_name) AS VARCHAR(255)) AS level2_concept_name,
-    CAST(max(c3.concept_name) AS VARCHAR(255)) AS level3_concept_name,
+    'Measurement' AS treemap,
+    max(c1.concept_name) AS level1_concept_name,
+    CAST(max(c2.concept_name)  AS level2_concept_name,
+    max(c3.concept_name) AS level3_concept_name,
     null as level4_concept_name
 into #ch_measurement
   FROM
@@ -327,10 +327,10 @@ into #ch_measurement
   SELECT
     obs.concept_id,
     obs.concept_name,
-    CAST('Observation' AS VARCHAR(20)) AS treemap,
-    CAST(max(c1.concept_name) AS VARCHAR(255)) AS level1_concept_name,
-    CAST(max(c2.concept_name) AS VARCHAR(255)) AS level2_concept_name,
-    CAST(max(c3.concept_name) AS VARCHAR(255)) AS level3_concept_name,
+    'Observation' AS treemap,
+    max(c1.concept_name) AS level1_concept_name,
+    max(c2.concept_name) AS level2_concept_name,
+    max(c3.concept_name) AS level3_concept_name,
     null as level4_concept_name
 into #ch_observation
   FROM
@@ -356,18 +356,18 @@ into #ch_observation
 
   SELECT
     procs.concept_id,
-    CAST(procs.proc_concept_name AS VARCHAR(400)) as concept_name,
-    CAST('Procedure' AS VARCHAR(20)) AS treemap,
-    CAST(max(proc_hierarchy.os3_concept_name) AS VARCHAR(255)) AS level1_concept_name,
-    CAST(max(proc_hierarchy.os2_concept_name) AS VARCHAR(255)) AS level2_concept_name,
-    CAST(max(proc_hierarchy.os1_concept_name) AS VARCHAR(255)) AS level3_concept_name,
+    procs.proc_concept_name as concept_name,
+    'Procedure' AS treemap,
+    max(proc_hierarchy.os3_concept_name) AS level1_concept_name,
+    max(proc_hierarchy.os2_concept_name) AS level2_concept_name,
+    max(proc_hierarchy.os1_concept_name) AS level3_concept_name,
     null as level4_concept_name
 into #ch_procedure
   FROM
     (
       SELECT
         c1.concept_id,
-        CONCAT(v1.vocabulary_name, ' ', c1.concept_code, ': ', c1.concept_name) AS proc_concept_name
+        v1.vocabulary_name + ' ' + c1.concept_code + ': ' + c1.concept_name AS proc_concept_name
       FROM @vocab_database_schema.concept c1
         INNER JOIN @vocab_database_schema.vocabulary v1
           ON c1.vocabulary_id = v1.vocabulary_id

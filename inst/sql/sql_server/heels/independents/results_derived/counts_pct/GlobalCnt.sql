@@ -11,13 +11,16 @@
 --               in measure_id column (or make that separate sql calls for each category)
 
 
-select 
+select analysis_id, stratum_1, stratum_2, statistic_value, measure_id
+from
+(
   --100000+analysis_id, 
   NULL as analysis_id,
   stratum_2 as stratum_1,
   null as stratum_2,
   sum(count_value) as statistic_value,
   CAST(concat('ach_',CAST(analysis_id as VARCHAR), ':GlobalCnt') as varchar(255)) as measure_id
+) Q
 into @scratchDatabaseSchema@schemaDelim@tempHeelPrefix_@heelName
 from @resultsDatabaseSchema.ACHILLES_results 
 where analysis_id in(1805,705,605,805,405) group by analysis_id,stratum_2,measure_id;

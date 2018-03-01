@@ -1,4 +1,4 @@
-DOMAIN_ID,V5,V5_0_1
+DOMAIN_ID,OLD,CURRENT
 Drug,paid_copay,paid_patient_copay
 Drug,paid_coinsurance,paid_patient_coinsurance
 Drug,paid_toward_deductible,paid_patient_deductible

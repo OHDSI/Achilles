@@ -4,6 +4,9 @@
 select 891 as analysis_id,   
 	CAST(observation_concept_id as varchar(255)) as stratum_1,
 	CAST(obs_cnt as varchar(255)) as stratum_2,
+	null as stratum_3,
+	null as stratum_4,
+	null as stratum_5,
 	sum(count(person_id)) over (partition by observation_concept_id order by obs_cnt desc) as count_value
 into @scratchDatabaseSchema@schemaDelim@tempAchillesPrefix_891
 from 
