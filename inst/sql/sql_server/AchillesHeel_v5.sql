@@ -101,7 +101,7 @@ select
   NULL as analysis_id,
   stratum_2 as stratum_1,
   sum(count_value) as statistic_value,
-  CAST(CONCAT('ach_',CAST(analysis_id as VARCHAR),':GlobalCnt') AS VARCHAR(255)) as measure_id
+  CAST(CONCAT('ach_',CAST(analysis_id as VARCHAR(10)),':GlobalCnt') AS VARCHAR(255)) as measure_id
 from @results_database_schema.achilles_results 
 where analysis_id in(1805,705,605,805,405) group by analysis_id,stratum_2,measure_id;
 
@@ -139,7 +139,7 @@ insert into @results_database_schema.ACHILLES_results_derived (statistic_value,m
 insert into @results_database_schema.ACHILLES_results_derived (statistic_value,measure_id)    
 select 
    CAST(100.0*count_value/statistic.total_pts AS FLOAT) as statistic_value,
-   CAST(CONCAT('ach_',CAST(analysis_id as VARCHAR),':Percentage') AS VARCHAR(255)) as measure_id
+   CAST(CONCAT('ach_',CAST(analysis_id as VARCHAR(10)),':Percentage') AS VARCHAR(255)) as measure_id
   from @results_database_schema.achilles_results 
 	cross join (SELECT TOP 1 count_value as total_pts from @results_database_schema.achilles_results r where analysis_id =1) as statistic
   where analysis_id in (2000,2001,2002,2003);
