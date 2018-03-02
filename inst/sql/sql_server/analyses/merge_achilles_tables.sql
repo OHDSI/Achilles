@@ -16,7 +16,5 @@ select @fieldNames
   into @resultsDatabaseSchema.achilles_@detailType
 }
 from cte_merged
-{@smallCellCount != ''}?{
-  where count_value > @smallCellCount
-}
+where count_value > @smallCellCount
 ;
