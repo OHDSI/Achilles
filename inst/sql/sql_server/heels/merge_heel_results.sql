@@ -1,15 +1,14 @@
-IF OBJECT_ID('@resultsDatabaseSchema.achilles_heel_results', 'U') IS NOT NULL 
-  DROP TABLE @resultsDatabaseSchema.achilles_heel_results;
+IF OBJECT_ID('@schema@schemaDelim@destination', 'U') IS NOT NULL 
+  DROP TABLE @schema@schemaDelim@destination;
 
-with cte_results
-as
-(
-  @resultSqls
-)
 select 
   analysis_id,
-	ACHILLES_HEEL_warning,
+	achillies_heel_warning,
 	rule_id,
 	record_count
-into @resultsDatabaseSchema.achilles_heel_results
-from cte_results;
+into @schema@schemaDelim@destination
+from
+(
+  @resultSqls
+) Q
+;

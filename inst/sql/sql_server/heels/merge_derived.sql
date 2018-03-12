@@ -1,16 +1,15 @@
-IF OBJECT_ID('@resultsDatabaseSchema.achilles_results_derived', 'U') IS NOT NULL 
-  DROP TABLE @resultsDatabaseSchema.achilles_results_derived;
+IF OBJECT_ID('@schema@schemaDelim@destination', 'U') IS NOT NULL 
+  DROP TABLE @schema@schemaDelim@destination;
 
-with cte_derived
-as
-(
-  @derivedSqls
-)
 select 
   analysis_id, 
 	stratum_1,
 	stratum_2,
 	statistic_value,
 	measure_id
-into @resultsDatabaseSchema.achilles_results_derived
-from cte_derived;
+into @schema@schemaDelim@destination
+from
+(
+  @derivedSqls
+) Q
+;

@@ -4,12 +4,14 @@
 \alias{fetchAchillesAnalysisResults}
 \title{fetchAchillesAnalysisResults}
 \usage{
-fetchAchillesAnalysisResults(connectionDetails, resultsDatabase, analysisId)
+fetchAchillesAnalysisResults(connectionDetails, resultsDatabaseSchema,
+  analysisId)
 }
 \arguments{
-\item{connectionDetails}{An R object of type ConnectionDetail (details for the function that contains server info, database type, optionally username/password, port)}
+\item{connectionDetails}{An R object of type \code{connectionDetails} created using the function \code{createConnectionDetails} in the \code{DatabaseConnector} package.}
 
-\item{resultsDatabase}{Name of database containing the Achilles descriptive statistics.}
+\item{resultsDatabaseSchema}{Fully qualified name of database schema that we can fetch final results from.
+On SQL Server, this should specifiy both the database and the schema, so for example, on SQL Server, 'cdm_results.dbo'.}
 
 \item{analysisId}{A single analysisId}
 }
@@ -23,9 +25,9 @@ An object of type \code{achillesAnalysisResults}
 See \code{data(analysesDetails)} for a list of all Achilles analyses and their Ids.
 }
 \examples{
-\dontrun{
-  connectionDetails <- DatabaseConnector::createConnectionDetails(dbms="sql server", server="myserver")
-  achillesResults <- achilles(connectionDetails, "cdm4_sim", "scratch", "TestDB")
-  fetchAchillesAnalysisResults(connectionDetails, "scratch",106)
-}
+                              \dontrun{
+                                           connectionDetails <- DatabaseConnector::createConnectionDetails(dbms="sql server", server="myserver")
+                                           achillesResults <- achilles(connectionDetails, "cdm4_sim", "scratch", "TestDB")
+                                           fetchAchillesAnalysisResults(connectionDetails, "scratch",106)
+                                        }
 }

@@ -4,12 +4,13 @@
 \alias{fetchAchillesHeelResults}
 \title{fetchAchillesHeelResults}
 \usage{
-fetchAchillesHeelResults(connectionDetails, resultsDatabase)
+fetchAchillesHeelResults(connectionDetails, resultsDatabaseSchema)
 }
 \arguments{
-\item{connectionDetails}{An R object of type ConnectionDetail (details for the function that contains server info, database type, optionally username/password, port)}
+\item{connectionDetails}{An R object of type \code{connectionDetails} created using the function \code{createConnectionDetails} in the \code{DatabaseConnector} package.}
 
-\item{resultsDatabase}{Name of database containing the Achilles descriptive statistics.}
+\item{resultsDatabaseSchema}{Fully qualified name of database schema that we can fetch final results from.
+On SQL Server, this should specifiy both the database and the schema, so for example, on SQL Server, 'cdm_results.dbo'.}
 }
 \value{
 A table listing all identified issues
@@ -22,9 +23,9 @@ AchillesHeel is a part of the Achilles analysis aimed at identifying potential d
 that should really be fixed) and warnings (things that should at least be investigated).
 }
 \examples{
-\dontrun{
-  connectionDetails <- DatabaseConnector::createConnectionDetails(dbms="sql server", server="myserver")
-  achillesResults <- achilles(connectionDetails, "cdm4_sim", "scratch", "TestDB")
-  fetchAchillesHeelResults(connectionDetails, "scratch")
-}
+                              \dontrun{
+                                           connectionDetails <- DatabaseConnector::createConnectionDetails(dbms="sql server", server="myserver")
+                                           achillesResults <- achilles(connectionDetails, "cdm5_sim", "scratch", "TestDB")
+                                           fetchAchillesHeelResults(connectionDetails, "scratch")
+                                        }
 }

@@ -8,7 +8,7 @@ validateSchema(connectionDetails, cdmDatabaseSchema, runCostAnalysis,
   sqlOnly = FALSE)
 }
 \arguments{
-\item{connectionDetails}{An R object of type ConnectionDetail (details for the function that contains server info, database type, optionally username/password, port)}
+\item{connectionDetails}{An R object of type \code{connectionDetails} created using the function \code{createConnectionDetails} in the \code{DatabaseConnector} package.}
 
 \item{cdmDatabaseSchema}{string name of database schema that contains OMOP CDM. On SQL Server, this should specifiy both the database and the schema, so for example 'cdm_instance.dbo'.}
 

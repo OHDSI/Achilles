@@ -2,14 +2,14 @@
 % Please edit documentation in R/Achilles.R
 \name{dropAllScratchTables}
 \alias{dropAllScratchTables}
-\title{Drop all the scratch tables}
+\title{Drop all possible scratch tables}
 \usage{
 dropAllScratchTables(connectionDetails, scratchDatabaseSchema,
   tempAchillesPrefix = "tmpach", tempHeelPrefix = "tmpheel",
   numThreads = 1)
 }
 \arguments{
-\item{connectionDetails}{An R object of type ConnectionDetail (details for the function that contains server info, database type, optionally username/password, port)}
+\item{connectionDetails}{An R object of type \code{connectionDetails} created using the function \code{createConnectionDetails} in the \code{DatabaseConnector} package.}
 
 \item{scratchDatabaseSchema}{string name of database schema that Achilles scratch tables were written to.}
 
@@ -20,7 +20,7 @@ dropAllScratchTables(connectionDetails, scratchDatabaseSchema,
 \item{numThreads}{The number of threads to use to run this function. Default is 1 thread.}
 }
 \description{
-Drop all the scratch tables
+Drop all possible scratch tables
 }
 \details{
 Drop all possible Achilles and Heel scratch tables

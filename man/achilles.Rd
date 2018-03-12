@@ -2,7 +2,7 @@
 % Please edit documentation in R/Achilles.R
 \name{achilles}
 \alias{achilles}
-\title{The main Achilles analysis (for v5.x)}
+\title{The main Achilles analyses (for v5.x)}
 \usage{
 achilles(connectionDetails, cdmDatabaseSchema,
   oracleTempSchema = cdmDatabaseSchema,
@@ -16,9 +16,9 @@ achilles(connectionDetails, cdmDatabaseSchema,
   sqlOnly = FALSE, outputFolder = "output")
 }
 \arguments{
-\item{connectionDetails}{An R object of type ConnectionDetails (details for the function that contains server info, database type, optionally username/password, port)}
+\item{connectionDetails}{An R object of type \code{connectionDetails} created using the function \code{createConnectionDetails} in the \code{DatabaseConnector} package.}
 
-\item{cdmDatabaseSchema}{Fully qualified name of database schema that contains OMOP CDM (including Vocabulary). 
+\item{cdmDatabaseSchema}{Fully qualified name of database schema that contains OMOP CDM schema.
 On SQL Server, this should specifiy both the database and the schema, so for example, on SQL Server, 'cdm_instance.dbo'.}
 
 \item{resultsDatabaseSchema}{Fully qualified name of database schema that we can write final results to. Default is cdmDatabaseSchema. 
@@ -30,7 +30,7 @@ Making this "#" will run Achilles in single-threaded mode and use temporary tabl
 
 \item{vocabDatabaseSchema}{String name of database schema that contains OMOP Vocabulary. Default is cdmDatabaseSchema. On SQL Server, this should specifiy both the database and the schema, so for example 'results.dbo'.}
 
-\item{sourceName}{String name of the database, as recorded in results.}
+\item{sourceName}{String name of the data source name. If blank, CDM_SOURCE table will be queried to try to obtain this.}
 
 \item{analysisIds}{(OPTIONAL) A vector containing the set of Achilles analysisIds for which results will be generated. 
 If not specified, all analyses will be executed. Use \code{\link{getAnalysisDetails}} to get a list of all Achilles analyses and their Ids.}
@@ -39,15 +39,15 @@ If not specified, all analyses will be executed. Use \code{\link{getAnalysisDeta
 
 \item{smallcellcount}{To avoid patient identifiability, cells with small counts (<= smallcellcount) are deleted. Set to NULL if you don't want any deletions.}
 
-\item{cdmVersion}{Define the OMOP CDM version used:  currently supports v5 and above.  Default = "5". v4 support is in \code{\link{achilles_v4}}.}
+\item{cdmVersion}{Define the OMOP CDM version used:  currently supports v5 and above.}
 
 \item{runHeel}{Boolean to determine if Achilles Heel data quality reporting will be produced based on the summary statistics.  Default = TRUE}
 
-\item{validateSchema}{Boolean to determine if CDM Schema Validation should be run. This could be very slow.  Default = FALSE}
+\item{validateSchema}{Boolean to determine if CDM Schema Validation should be run. Default = FALSE}
 
 \item{runCostAnalysis}{Boolean to determine if cost analysis should be run. Note: only works on v5.1+ style cost tables.}
 
-\item{conceptHierarchy}{Boolean to determine if the concept_hierarchy result table should be created, for use by Atlas treemaps. Note: only works on CDM v5.0 tables.}
+\item{conceptHierarchy}{Boolean to determine if the concept_hierarchy result table should be created, for use by Atlas treemaps.}
 
 \item{createIndices}{Boolean to determine if indices should be created on the resulting Achilles and concept_hierarchy table. Default= TRUE}
 
@@ -57,9 +57,9 @@ If not specified, all analyses will be executed. Use \code{\link{getAnalysisDeta
 
 \item{dropScratchTables}{(OPTIONAL, multi-threaded mode) TRUE = drop the scratch tables (may take time depending on dbms), FALSE = leave them in place for later removal.}
 
-\item{sqlOnly}{TRUE = just generate SQL files, don't actually run, FALSE = run Achilles}
+\item{sqlOnly}{Boolean to determine if Achilles should be fully executed. TRUE = just generate SQL files, don't actually run, FALSE = run Achilles}
 
-\item{outputFolder}{(OPTIONAL, sql only mode) Path to store SQL files}
+\item{outputFolder}{(OPTIONAL, SQL-only mode) Path to store SQL files}
 }
 \value{
 An object of type \code{achillesResults} containing details for connecting to the database containing the results

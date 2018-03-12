@@ -24,7 +24,7 @@
 # @author Ajit Londhe
 
 
-#' The main Achilles analysis (for v5.x)
+#' The main Achilles analyses (for v5.x)
 #'
 #' @description
 #' \code{achilles} creates descriptive statistics summary for an entire OMOP CDM instance.
@@ -32,8 +32,8 @@
 #' @details
 #' \code{achilles} creates descriptive statistics summary for an entire OMOP CDM instance.
 #' 
-#' @param connectionDetails                An R object of type ConnectionDetails (details for the function that contains server info, database type, optionally username/password, port)
-#' @param cdmDatabaseSchema    	           Fully qualified name of database schema that contains OMOP CDM (including Vocabulary). 
+#' @param connectionDetails                An R object of type \code{connectionDetails} created using the function \code{createConnectionDetails} in the \code{DatabaseConnector} package.
+#' @param cdmDatabaseSchema    	           Fully qualified name of database schema that contains OMOP CDM schema.
 #'                                         On SQL Server, this should specifiy both the database and the schema, so for example, on SQL Server, 'cdm_instance.dbo'.
 #' @param resultsDatabaseSchema		         Fully qualified name of database schema that we can write final results to. Default is cdmDatabaseSchema. 
 #'                                         On SQL Server, this should specifiy both the database and the schema, so for example, on SQL Server, 'cdm_results.dbo'.
@@ -41,22 +41,22 @@
 #'                                         Must be accessible to/from the cdmDatabaseSchema and the resultsDatabaseSchema. Default is resultsDatabaseSchema. 
 #'                                         Making this "#" will run Achilles in single-threaded mode and use temporary tables instead of permanent tables.
 #' @param vocabDatabaseSchema		           String name of database schema that contains OMOP Vocabulary. Default is cdmDatabaseSchema. On SQL Server, this should specifiy both the database and the schema, so for example 'results.dbo'.
-#' @param sourceName		                   String name of the database, as recorded in results.
+#' @param sourceName		                   String name of the data source name. If blank, CDM_SOURCE table will be queried to try to obtain this.
 #' @param analysisIds		                   (OPTIONAL) A vector containing the set of Achilles analysisIds for which results will be generated. 
 #'                                         If not specified, all analyses will be executed. Use \code{\link{getAnalysisDetails}} to get a list of all Achilles analyses and their Ids.
 #' @param createTable                      If true, new results tables will be created in the results schema. If not, the tables are assumed to already exist, and analysis results will be inserted (slower on MPP).
 #' @param smallcellcount                   To avoid patient identifiability, cells with small counts (<= smallcellcount) are deleted. Set to NULL if you don't want any deletions.
-#' @param cdmVersion                       Define the OMOP CDM version used:  currently supports v5 and above.  Default = "5". v4 support is in \code{\link{achilles_v4}}.
+#' @param cdmVersion                       Define the OMOP CDM version used:  currently supports v5 and above.
 #' @param runHeel                          Boolean to determine if Achilles Heel data quality reporting will be produced based on the summary statistics.  Default = TRUE
-#' @param validateSchema                   Boolean to determine if CDM Schema Validation should be run. This could be very slow.  Default = FALSE
+#' @param validateSchema                   Boolean to determine if CDM Schema Validation should be run. Default = FALSE
 #' @param runCostAnalysis                  Boolean to determine if cost analysis should be run. Note: only works on v5.1+ style cost tables.
-#' @param conceptHierarchy                 Boolean to determine if the concept_hierarchy result table should be created, for use by Atlas treemaps. Note: only works on CDM v5.0 tables.
+#' @param conceptHierarchy                 Boolean to determine if the concept_hierarchy result table should be created, for use by Atlas treemaps. 
 #' @param createIndices                    Boolean to determine if indices should be created on the resulting Achilles and concept_hierarchy table. Default= TRUE
 #' @param numThreads                       (OPTIONAL, multi-threaded mode) The number of threads to use to run Achilles in parallel. Default is 1 thread.
 #' @param tempAchillesPrefix               (OPTIONAL, multi-threaded mode) The prefix to use for the scratch Achilles analyses tables. Default is "tmpach"
 #' @param dropScratchTables                (OPTIONAL, multi-threaded mode) TRUE = drop the scratch tables (may take time depending on dbms), FALSE = leave them in place for later removal.
-#' @param sqlOnly                          TRUE = just generate SQL files, don't actually run, FALSE = run Achilles
-#' @param outputFolder                     (OPTIONAL, sql only mode) Path to store SQL files
+#' @param sqlOnly                          Boolean to determine if Achilles should be fully executed. TRUE = just generate SQL files, don't actually run, FALSE = run Achilles
+#' @param outputFolder                     (OPTIONAL, SQL-only mode) Path to store SQL files
 #' 
 #' @return                                 An object of type \code{achillesResults} containing details for connecting to the database containing the results 
 #' @examples                               \dontrun{
@@ -93,6 +93,16 @@ achilles <- function (connectionDetails,
                       sqlOnly = FALSE,
                       outputFolder = "output") {
   
+  achillesSql <- c()
+  
+  # Try to get CDM Version if not provided ----------------------------------------------------------------------------------------
+  
+  if (missing(cdmVersion)) {
+    cdmVersion <- .getCdmVersion(connectionDetails, cdmDatabaseSchema)
+  }
+  
+  # Check CDM version is valid ---------------------------------------------------------------------------------------------------
+  
   if (compareVersion(a = cdmVersion, b = "5") < 0) {
     stop("Error: Invalid CDM Version number; this function is only for v5 and above. 
          See Achilles Git Repo to find v4 compatible version of Achilles.")
@@ -100,8 +110,7 @@ achilles <- function (connectionDetails,
   
   # Establish folder paths --------------------------------------------------------------------------------------------------------
   
-  if (sqlOnly) {
-    unlink(x = outputFolder, recursive = TRUE, force = TRUE)
+  if (sqlOnly & !dir.exists(outputFolder)) {
     dir.create(path = outputFolder, recursive = TRUE)
   }
   
@@ -116,7 +125,7 @@ achilles <- function (connectionDetails,
   
   # Get source name if none provided --------------------------------------------------
   
-  if (is.null(sourceName)) {
+  if (missing(sourceName)) {
     sql <- SqlRender::renderSql(sql = "select top 1 cdm_source_name 
                                 from @cdmDatabaseSchema.cdm_source",
                                 cdmDatabaseSchema = cdmDatabaseSchema)$sql
@@ -127,7 +136,7 @@ achilles <- function (connectionDetails,
       s <- ""
     }, finally = {
       DatabaseConnector::disconnect(connection = connection)
-      connection <- NULL
+      rm(connection)
     })
   }
   
@@ -154,7 +163,7 @@ achilles <- function (connectionDetails,
                            header = TRUE),
                       analysisIds = analysisDetails[abs(analysisDetails$DISTRIBUTION) == 1, ]$ANALYSIS_ID))
   
-  # Initialize serial execution (use temp tables and 1 thread only) ----------------------------------------------------------------
+  # Initialize thread and scratchDatabaseSchema settings ----------------------------------------------------------------------------
   
   schemaDelim <- "."
   
@@ -190,6 +199,8 @@ achilles <- function (connectionDetails,
                                              resultsDatabaseSchema = resultsDatabaseSchema,
                                              analysesSqls = paste(analysesSqls, collapse = " \nunion all\n "))
     
+    achillesSql <- c(achillesSql, sql)
+    
     if (sqlOnly) {
       SqlRender::writeSql(sql = sql, 
                           targetFile = file.path(outputFolder, "CreateAnalysisTable.sql"))
@@ -198,9 +209,9 @@ achilles <- function (connectionDetails,
         # connection is already alive
         DatabaseConnector::executeSql(connection = connection, sql = sql)
       } else {
-        connection <- DatabaseConnector::connect(connectionDetails)
+        connection <- DatabaseConnector::connect(connectionDetails = connectionDetails)
         DatabaseConnector::executeSql(connection = connection, sql = sql)
-        DatabaseConnector::disconnect(connection)
+        DatabaseConnector::disconnect(connection = connection)
       }
     }
   }
@@ -253,25 +264,26 @@ achilles <- function (connectionDetails,
                                                        tempAchillesPrefix = tempAchillesPrefix)
               })
     
+    distCostAnalysisSqls <- c(distCostDrugSqls, distCostProcedureSqls)
+    achillesSql <- c(achillesSql, paste(distCostAnalysisSqls, collapse = "\n\n"))
     if (sqlOnly) {
-      SqlRender::writeSql(sql = paste(distCostDrugSqls, distCostProcedureSqls, sep = "\n\n"), 
+      SqlRender::writeSql(sql = paste(distCostAnalysisSqls, collapse = "\n\n"), 
                           targetFile = file.path(outputFolder, "DistributedCosts.sql"))
     } else {
-        distCostAnalysisSqls <- c(distCostDrugSqls, distCostProcedureSqls)
-        cluster <- OhdsiRTools::makeCluster(numberOfThreads = ifelse(numThreads > 1, length(distCostAnalysisDetails), 1), 
+        cluster <- OhdsiRTools::makeCluster(numberOfThreads = ifelse(numThreads > 1, 2, 1), 
                                             singleThreadToMain = TRUE)
         dummy <- OhdsiRTools::clusterApply(cluster = cluster, 
                                            x = distCostAnalysisSqls, 
                                            function(distCostAnalysisSql) {
                                              if (numThreads > 1) {
-                                               connection <- DatabaseConnector::connect(connectionDetails)
-                                               }
+                                               connection <- DatabaseConnector::connect(connectionDetails = connectionDetails)
+                                             }
                                              DatabaseConnector::executeSql(connection = connection, sql = distCostAnalysisSql)
                                              if (numThreads > 1) {
-                                               DatabaseConnector::disconnect(connection)
-                                               }
-                                             })
-        OhdsiRTools::stopCluster(cluster)
+                                               DatabaseConnector::disconnect(connection = connection)
+                                             }
+                                           })
+        OhdsiRTools::stopCluster(cluster = cluster)
     }
   }
   
@@ -284,7 +296,7 @@ achilles <- function (connectionDetails,
   }
   
   cluster <- OhdsiRTools::makeCluster(numberOfThreads = numThreads, singleThreadToMain = TRUE)
-  dummy <- OhdsiRTools::clusterApply(cluster = cluster, x = analysisDetails$ANALYSIS_ID, 
+  mainSqls <- OhdsiRTools::clusterApply(cluster = cluster, x = analysisDetails$ANALYSIS_ID, 
                                      fun = .runAchillesAnalysisId,
                                      connectionDetails = connectionDetails,
                                      connection = connection,
@@ -297,17 +309,18 @@ achilles <- function (connectionDetails,
                                      sourceName = sourceName,
                                      numThreads = numThreads,
                                      sqlOnly = sqlOnly)
-  OhdsiRTools::stopCluster(cluster)
+  OhdsiRTools::stopCluster(cluster = cluster)
+  achillesSql <- c(achillesSql, paste(mainSqls, collapse = "\n\n"))
   
   # Merge scratch tables into final analysis tables -------------------------------------------------------------------------------------------
   
   include <- sapply(resultsTables, function(d) { any(d$analysisIds %in% analysisDetails$ANALYSIS_ID) })
   resultsTablesToMerge <- resultsTables[include]
   
-  cluster <- OhdsiRTools::makeCluster(numberOfThreads = length(resultsTablesToMerge),
+  cluster <- OhdsiRTools::makeCluster(numberOfThreads = ifelse(numThreads > 1, length(resultsTablesToMerge), 1),
                                       singleThreadToMain = TRUE)
   
-  dummy <- OhdsiRTools::clusterApply(cluster = cluster, x = resultsTablesToMerge, 
+  mergeSqls <- OhdsiRTools::clusterApply(cluster = cluster, x = resultsTablesToMerge, 
                                      fun = .mergeAchillesScratchTables,
                                      connectionDetails = connectionDetails,
                                      connection = connection,
@@ -322,12 +335,13 @@ achilles <- function (connectionDetails,
                                      sqlOnly = sqlOnly,
                                      smallcellcount = smallcellcount)
   
-  OhdsiRTools::stopCluster(cluster)  
+  OhdsiRTools::stopCluster(cluster = cluster)
+  achillesSql <- c(achillesSql, paste(mergeSqls, collapse = "\n\n"))
 
   if (sqlOnly) {
-    writeLines(paste0("All Achilles SQL scripts can be found in folder: ", outputFolder))
+    writeLines(sprintf("All Achilles SQL scripts can be found in folder: %s", outputFolder))
   } else {
-    writeLines(paste0("Done. Achilles results can now be found in schema ", resultsDatabaseSchema))
+    writeLines(sprintf("Done. Achilles results can now be found in schema %s", resultsDatabaseSchema))
   }
   
   # Create concept hierarchy table -----------------------------------------------------------------
@@ -339,27 +353,28 @@ achilles <- function (connectionDetails,
                                                       resultsDatabaseSchema = resultsDatabaseSchema,
                                                       vocabDatabaseSchema = vocabDatabaseSchema
     )
-    
+    achillesSql <- c(achillesSql, hierarchySql)
     if (sqlOnly) {
-      SqlRender::writeSql(sql = sql, targetFile = file.path(outputFolder, "CreateConceptHierarchy.sql"))
+      SqlRender::writeSql(sql = hierarchySql, targetFile = file.path(outputFolder, "CreateConceptHierarchy.sql"))
     } else {
       writeLines("Executing Concept Hierarchy creation. This could take a while")
       connection <- DatabaseConnector::connect(connectionDetails = connectionDetails)
       DatabaseConnector::executeSql(connection = connection, sql = hierarchySql)
       DatabaseConnector::disconnect(connection = connection)
-      writeLines(paste0("Done. Concept Hierarchy table can now be found in ", resultsDatabaseSchema))  
+      writeLines(sprintf("Done. Concept Hierarchy table can now be found in %s", resultsDatabaseSchema))  
     }
   } 
   
   # Create indices -----------------------------------------------------------------
   
   if (createIndices && 
-      connectionDetails$dbms != "redshift" &&
-      connectionDetails$dbms != "netezza") {
+      !(connectionDetails$dbms %in% c("redshift", "netezza"))) {
     sql <- SqlRender::loadRenderTranslateSql(sqlFilename = "post_processing/achilles_indices.sql",
                                              packageName = "Achilles",
                                              dbms = connectionDetails$dbms,
                                              resultsDatabaseSchema = resultsDatabaseSchema)
+    
+    achillesSql <- c(achillesSql, sql)
     
     if (sqlOnly) {
       SqlRender::writeSql(sql = sql, targetFile = file.path(outputFolder, "CreateIndices.sql"))
@@ -378,7 +393,7 @@ achilles <- function (connectionDetails,
     DatabaseConnector::disconnect(connection = connection)
   } else if (dropScratchTables) {
     # Drop the scratch tables
-    writeLines(paste0("Dropping scratch Achilles tables from schema ", scratchDatabaseSchema))
+    writeLines(sprintf("Dropping scratch Achilles tables from schema %s", scratchDatabaseSchema))
     
     cluster <- OhdsiRTools::makeCluster(numberOfThreads = numThreads)
     dummy <- OhdsiRTools::clusterApply(cluster = cluster, x = analysisDetails$ANALYSIS_ID,
@@ -390,23 +405,36 @@ achilles <- function (connectionDetails,
                                        sqlOnly = sqlOnly)
     
     OhdsiRTools::stopCluster(cluster = cluster)
-    writeLines(paste0("Temporary Achilles tables removed from schema ", scratchDatabaseSchema))
+    writeLines(sprintf("Temporary Achilles tables removed from schema %s", scratchDatabaseSchema))
   }
   
   # Run Heel? ---------------------------------------------------------------
   
   if (runHeel) {
-    achillesHeel(connectionDetails = connectionDetails,
-                 cdmDatabaseSchema = cdmDatabaseSchema,
-                 resultsDatabaseSchema = resultsDatabaseSchema,
-                 scratchDatabaseSchema = scratchDatabaseSchema,
-                 cdmVersion = cdmVersion,
-                 sqlOnly = sqlOnly,
-                 numThreads = numThreads,
-                 tempHeelPrefix = "tmpheel",
-                 dropScratchTables = dropScratchTables,
-                 outputFolder = outputFolder)
+    heelSql <- achillesHeel(connectionDetails = connectionDetails,
+                               cdmDatabaseSchema = cdmDatabaseSchema,
+                               resultsDatabaseSchema = resultsDatabaseSchema,
+                               scratchDatabaseSchema = scratchDatabaseSchema,
+                               cdmVersion = cdmVersion,
+                               sqlOnly = sqlOnly,
+                               numThreads = numThreads,
+                               tempHeelPrefix = "tmpheel",
+                               dropScratchTables = dropScratchTables,
+                               outputFolder = outputFolder)
   }
+  
+  achillesResults <- list(resultsConnectionDetails = connectionDetails,
+                          resultsTable = "achilles_results",
+                          resultsDistributionTable = "achilles_results_dist",
+                          analysis_table = "achilles_analysis",
+                          sourceName = sourceName,
+                          analysisIds = analysisIds,
+                          AchillesSql = paste(achillesSql, collapse = "\n\n"),
+                          HeelSql = heelSql,
+                          call = match.call())
+  
+  class(achillesResults) <- "achillesResults"
+  return (achillesResults)
 }
 
 
@@ -418,7 +446,7 @@ achilles <- function (connectionDetails,
 #' @details
 #' \code{achillesHeel} contains number of rules (authored in SQL) that are executed against achilles results tables.
 #' 
-#' @param connectionDetails                An R object of type ConnectionDetail (details for the function that contains server info, database type, optionally username/password, port)
+#' @param connectionDetails                An R object of type \code{connectionDetails} created using the function \code{createConnectionDetails} in the \code{DatabaseConnector} package.
 #' @param cdmDatabaseSchema    	           string name of database schema that contains OMOP CDM. On SQL Server, this should specifiy both the database and the schema, so for example 'cdm_instance.dbo'.
 #' @param resultsDatabaseSchema		         string name of database schema that we can write final results to. Default is cdmDatabaseSchema. On SQL Server, this should specifiy both the database and the schema, 
 #'                                         so for example 'results.dbo'.
@@ -426,11 +454,11 @@ achilles <- function (connectionDetails,
 #' @param cdmVersion                       Define the OMOP CDM version used:  currently supports v5 and above.  Default = "5". 
 #' @param numThreads                       (OPTIONAL, multi-threaded mode) The number of threads to use to run Achilles in parallel. Default is 1 thread.
 #' @param tempHeelPrefix                   (OPTIONAL, multi-threaded mode) The prefix to use for the "temporary" (but actually permanent) Heel tables. Default is "tmpheel"
-#' @param dropScratchTables                In multi-threaded mode: TRUE = drop the scratch tables (may take time depending on dbms), FALSE = leave them in place
+#' @param dropScratchTables                (OPTIONAL, multi-threaded mode) TRUE = drop the scratch tables (may take time depending on dbms), FALSE = leave them in place
 #' @param ThresholdAgeWarning              The maximum age to allow in Heel
 #' @param ThresholdOutpatientVisitPerc     The maximum percentage of outpatient visits among all visits
 #' @param ThresholdMinimalPtMeasDxRx       The minimum percentage of patients with at least 1 Measurement, 1 Dx, and 1 Rx
-#' @param sqlOnly                          TRUE = just generate SQL files, don't actually run, FALSE = run Achilles
+#' @param sqlOnly                          Boolean to determine if Heel should be fully executed. TRUE = just generate SQL files, don't actually run, FALSE = run Achilles Heel
 #' @param outputFolder                     (OPTIONAL, sql only mode) Path to store SQL files
 #' 
 #' @return nothing is returned
@@ -458,17 +486,28 @@ achillesHeel <- function(connectionDetails,
                          outputFolder = "output",
                          sqlOnly = FALSE) {
   
+  # Try to get CDM Version if not provided ----------------------------------------------------------------------------------------
+  
+  if (missing(cdmVersion)) {
+    cdmVersion <- .getCdmVersion(connectionDetails, cdmDatabaseSchema)
+  }
+  
+  # Check CDM version is valid ---------------------------------------------------------------------------------------------------
+  
   if (compareVersion(a = cdmVersion, b = "5") < 0) {
     stop("Error: Invalid CDM Version number; this function is only for v5 and above. 
          See Achilles Git Repo to find v4 compatible version of Achilles.")
   }
   
-  if (sqlOnly) {
-    unlink(x = outputFolder, recursive = TRUE, force = TRUE)
+  # Establish folder paths --------------------------------------------------------------------------------------------------------
+  
+  if (sqlOnly & !dir.exists(outputFolder)) {
     dir.create(path = outputFolder, recursive = TRUE)
   }
   
-  # Initialize serial execution (use temp tables and 1 thread only) ----------------------------------------------------------------
+  heelSql <- c()
+  
+  # Initialize thread and scratchDatabaseSchema settings ----------------------------------------------------------------
   
   schemaDelim <- "."
   
@@ -476,47 +515,23 @@ achillesHeel <- function(connectionDetails,
     numThreads <- 1
     scratchDatabaseSchema <- "#"
     schemaDelim <- "s_"
-    connection <- DatabaseConnector::connect(connectionDetails) 
     # first invocation of the connection, to persist throughout to maintain temp tables
+    connection <- DatabaseConnector::connect(connectionDetails = connectionDetails) 
   }
-  
-  # Clean up existing scratch tables -------------------------------------------------
-  
-  if (numThreads > 1 && !sqlOnly) {
-    writeLines("Dropping existing scratch Heel tables")
-    dropAllScratchTables(connectionDetails = connectionDetails, 
-                         scratchDatabaseSchema = scratchDatabaseSchema, 
-                         tempAchillesPrefix = tempAchillesPrefix, 
-                         numThreads = numThreads)
-  }
-  
-  # Sub-functions to handle cluster applied operations----------------------------------------------------------------------------------
   
   writeLines("Executing Achilles Heel. This could take a while")
   
-  heelFiles <- list.files(path = paste(system.file(package = 'Achilles'), 
-                                       "sql/sql_server", inputFolder, "independents", sep = "/"), 
-                          recursive = TRUE, 
-                          full.names = TRUE, 
-                          all.files = FALSE,
-                          pattern = "\\.sql$")
+  # Generate parallel Heels ---------------------------------------------------------------------------------------------------------
   
-  
-  # Generate parallel Heels --------------------------------------------------------
-  
-  if (numThreads > 1) {
-    cluster <- OhdsiRTools::makeCluster(numberOfThreads = numThreads)
-    dummy <- OhdsiRTools::clusterApply(cluster = cluster, x = heelFiles,
-                                       fun = .dropHeelScratchTable,
-                                       connectionDetails = connectionDetails, 
-                                       scratchDatabaseSchema = scratchDatabaseSchema,
-                                       tempHeelPrefix = tempHeelPrefix, 
-                                       sqlOnly = sqlOnly)
-    OhdsiRTools::stopCluster(cluster)     
-  }
-
+  parallelFiles <- list.files(path = file.path(system.file(package = "Achilles"), 
+                                               "sql", "sql_server", "heels", "parallel"), 
+                              recursive = TRUE, 
+                              full.names = TRUE, 
+                              all.files = FALSE,
+                              pattern = "\\.sql$")
+    
   cluster <- OhdsiRTools::makeCluster(numberOfThreads = numThreads, singleThreadToMain = TRUE)
-  dummy <- OhdsiRTools::clusterApply(cluster = cluster, x = heelFiles,
+  parallelSqls <- OhdsiRTools::clusterApply(cluster = cluster, x = parallelFiles,
                                      fun = .runHeelId,
                                      connectionDetails = connectionDetails,
                                      connection = ifelse(numThreads == 1, connection, NULL),
@@ -529,59 +544,66 @@ achillesHeel <- function(connectionDetails,
                                      sqlOnly = sqlOnly,
                                      inputFolder = inputFolder,
                                      outputFolder = outputFolder)
-  OhdsiRTools::stopCluster(cluster)
+  OhdsiRTools::stopCluster(cluster = cluster)
   
+  heelSql <- c(heelSql, paste(parallelSqls, collapse = "\n\n"))
   
-  # Merge scratch Heel tables into final tables ----------------------------------------
+  # Merge scratch Heel tables into staging tables ----------------------------------------
   
-  isDerived <- sapply(heelFiles, function(heelFile) { grepl(pattern = "derived", heelFile) })
+  isDerived <- sapply(parallelFiles, function(parallelFile) { grepl(pattern = "derived", parallelFile) })
   
-  derivedSqls <- lapply(heelFiles[isDerived], function(heelFile) {
+  derivedSqls <- lapply(parallelFiles[isDerived], function(parallelFile) {
     SqlRender::renderSql(sql = 
-                           "select 
-                         cast(analysis_id as int) as analysis_id, 
-                         cast(stratum_1 as varchar(255)) as stratum_1, 
-                         cast(stratum_2 as varchar(255)) as stratum_2, 
-                         cast(statistic_value as float) as statistic_value, 
-                         cast(measure_id as varchar(255)) as measure_id
+                         "select 
+                           cast(analysis_id as int) as analysis_id, 
+                           cast(stratum_1 as varchar(255)) as stratum_1, 
+                           cast(stratum_2 as varchar(255)) as stratum_2, 
+                           cast(statistic_value as float) as statistic_value, 
+                           cast(measure_id as varchar(255)) as measure_id
                          from @scratchDatabaseSchema@schemaDelim@tempHeelPrefix_@heelName", 
                          scratchDatabaseSchema = scratchDatabaseSchema, 
                          schemaDelim = ifelse(scratchDatabaseSchema == "#", "s_", "."),
                          tempHeelPrefix = tempHeelPrefix,
-                         heelName = gsub(pattern = ".sql", replacement = "", x = basename(heelFile)))$sql   
+                         heelName = gsub(pattern = ".sql", replacement = "", x = basename(parallelFile)))$sql   
   })
   
   derivedSql <- SqlRender::loadRenderTranslateSql(sqlFilename = "heels/merge_derived.sql", 
                                                   packageName = "Achilles", 
                                                   dbms = connectionDetails$dbms,
-                                                  resultsDatabaseSchema = resultsDatabaseSchema,
+                                                  schema = scratchDatabaseSchema,
+                                                  schemaDelim = schemaDelim,
+                                                  destination = sprintf("%s_stg_achilles_results_derived"),
                                                   derivedSqls = paste(derivedSqls, collapse = " \nunion all\n "))
   
-  resultSqls <- lapply(X = heelFiles[!isDerived], function(heelFile) {
+  resultSqls <- lapply(X = parallelFiles[!isDerived], function(parallelFile) {
     SqlRender::renderSql(sql = 
-                "select 
-              cast(analysis_id as int) as analysis_id, 
-              cast(ACHILLES_HEEL_warning as varchar(255)) as ACHILLES_HEEL_warning, 
-              cast(rule_id as int) as rule_id, 
-              cast(record_count as bigint) as record_count
-              from @scratchDatabaseSchema@schemaDelim@tempHeelPrefix_@heelName",
+                         "select 
+                            cast(analysis_id as int) as analysis_id, 
+                            cast(ACHILLES_HEEL_warning as varchar(255)) as ACHILLES_HEEL_warning, 
+                            cast(rule_id as int) as rule_id, 
+                            cast(record_count as bigint) as record_count
+                         from @scratchDatabaseSchema@schemaDelim@tempHeelPrefix_@heelName",
               scratchDatabaseSchema = scratchDatabaseSchema,
-              schemaDelim = ifelse(scratchDatabaseSchema == "#", "s_", "."),
+              schemaDelim = schemaDelim,
               tempHeelPrefix = tempHeelPrefix,
-              heelName = gsub(pattern = ".sql", replacement = "", x = basename(heelFile)))$sql   
+              heelName = gsub(pattern = ".sql", replacement = "", x = basename(parallelFile)))$sql   
   })
   
-  resultSql <- SqlRender::loadRenderTranslateSql(sqlFilename = paste(inputFolder, "merge_heel_results.sql", sep = "/"), 
+  resultSql <- SqlRender::loadRenderTranslateSql(sqlFilename = "heels/merge_heel_results.sql", 
                                                  packageName = "Achilles", 
                                                  dbms = connectionDetails$dbms,
-                                                 resultsDatabaseSchema = resultsDatabaseSchema,
+                                                 schema = scratchDatabaseSchema,
+                                                 schemaDelim = schemaDelim,
+                                                 destination = sprintf("%1s_stg_achilles_heel_results", tempHeelPrefix),
                                                  resultSqls = paste(resultSqls, collapse = " \nunion all\n "))
   
+  heelSql <- c(heelSql, derivedSql, resultSql)
+  
   if (sqlOnly) {
-    SqlRender::writeSql(sql = derivedSql, targetFile = paste(outputFolder, "merge_derived.sql", sep = "/"))
-    SqlRender::writeSql(sql = resultSql, targetFile = paste(outputFolder, "merge_heel_results.sql", sep = "/"))
+    SqlRender::writeSql(sql = derivedSql, targetFile = file.path(outputFolder, "merge_derived.sql"))
+    SqlRender::writeSql(sql = resultSql, targetFile = file.path(outputFolder, "merge_heel_results.sql"))
   } else {
-    cluster <- OhdsiRTools::makeCluster(numberOfThreads = ifelse(numThreads > 1, 2, 1), singleThreadToMain = TRUE)
+    cluster <- OhdsiRTools::makeCluster(numberOfThreads = 2, singleThreadToMain = TRUE)
     dummy <- OhdsiRTools::clusterApply(cluster = cluster, x = c(derivedSql, resultSql), 
                                        function(sql) {
                                          if (numThreads > 1) {
@@ -593,30 +615,113 @@ achillesHeel <- function(connectionDetails,
                                          }
                                        }
     )
-    OhdsiRTools::stopCluster(cluster)
+    OhdsiRTools::stopCluster(cluster = cluster)
   }
   
   # Run serial queries to finish up ---------------------------------------------------
   
-  sql <- SqlRender::loadRenderTranslateSql(sqlFilename = "heels/dependents.sql",
-                                           packageName = "Achilles",
-                                           dbms = connectionDetails$dbms,
-                                           scratchDatabaseSchema = scratchDatabaseSchema,
-                                           resultsDatabaseSchema = resultsDatabaseSchema,
-                                           ThresholdAgeWarning = ThresholdAgeWarning,
-                                           ThresholdOutpatientVisitPerc = ThresholdOutpatientVisitPerc,
-                                           ThresholdMinimalPtMeasDxRx = ThresholdMinimalPtMeasDxRx
-  )
+  serialFiles <- read.csv(file = system.file("csv", "serial_heel_files.csv", package = "Achilles"), 
+           header = TRUE, stringsAsFactors = FALSE)
   
-  if (sqlOnly) {
-    SqlRender::writeSql(sql = sql, targetFile = file.path(outputFolder, "Serial.sql"))
-  } else {
-    connection <- DatabaseConnector::connect(connectionDetails = connectionDetails)
-    DatabaseConnector::executeSql(connection = connection, sql = sql)
-    DatabaseConnector::disconnect(connection = connection)
+  for (i in 1:nrow(serialFiles)) {
+    row <- serialFiles[i,]
+    newId <- as.integer(row$ID)
+    
+    rdOldId = max(serialFiles$ID[serialFiles$DESTINATION %in% c("results_dervied", "both") & 
+                                   serialFiles$ID < newId])
+    hrOldId = max(serialFiles$ID[serialFiles$DESTINATION %in% c("heel_results", "both") & 
+                                   serialFiles$ID < newId])
+    
+    serialSql <- SqlRender::loadRenderTranslateSql(sqlFilename = sprintf("heels/serial/%s.sql", row$ID),
+                                             packageName = "Achilles",
+                                             dbms = connectionDetails$dbms,
+                                             schemaDelim = schemaDelim,
+                                             scratchDatabaseSchema = scratchDatabaseSchema,
+                                             resultsDatabaseSchema = resultsDatabaseSchema,
+                                             heelPrefix = tempHeelPrefix,
+                                             rdOldId = rdOldId,
+                                             hrOldId = hrOldId,
+                                             rdNewId = newId,
+                                             hrNewId = newId,
+                                             ThresholdAgeWarning = ThresholdAgeWarning,
+                                             ThresholdOutpatientVisitPerc = ThresholdOutpatientVisitPerc,
+                                             ThresholdMinimalPtMeasDxRx = ThresholdMinimalPtMeasDxRx)
+    
+    if (row$DESTINATION == "results_derived") {
+      drops <- c(sprintf("rd_%d", rdOldId))
+    } else if (row$DESTINATION == "heel_results") {
+      drops <- c(sprintf("hr_%d", hrOldId))
+    } else {
+      drops <- c(sprintf("rd_%d", rdOldId), sprintf("hr_%d", hrOldId))
+    }
+    
+    sqlDropPriors <- lapply(drops, function(drop) {
+      SqlRender::renderSql(sql = "IF OBJECT_ID('@scratchDatabaseSchema@schemaDelim@heelPrefix_serial_@drop', 'U') IS NOT NULL 
+                                  DROP TABLE @scratchDatabaseSchema@schemaDelim@heelPrefix_serial_@drop;",
+                           scratchDatabaseSchema = scratchDatabaseSchema,
+                           schemaDelim = schemaDelim,
+                           heelPrefix = tempHeelPrefix,
+                           drop = drop)$sql
+    }) 
+    sqlDropPrior <- paste(sqlDropPriors, collapse = "; \r\n")
+    
+    sql <- paste(sqlDropPrior, serialSql, collapse = "; \r\n")
+    heelSql <- c(heelSql, sql)
+    
+    if (sqlOnly) {
+      SqlRender::writeSql(sql = sql, 
+                          targetFile = file.path(outputFolder, "heel_serial.sql"))
+      
+    } else {
+      if (numThreads > 1) {
+        connection <- DatabaseConnector::connect(connectionDetails = connectionDetails)
+      }
+      DatabaseConnector::executeSql(connection = connection, sql = sql)
+      if (numThreads > 1) {
+        DatabaseConnector::disconnect(connection = connection)
+      }
+    }
   }
   
-  # Drop scratch tables -----------------------------------------------
+  # Create final Heel Tables ---------------------------------------------------
+  
+  rdId = max(serialFiles$ID[serialFiles$DESTINATION %in% c("results_dervied", "both")])
+  hrId = max(serialFiles$ID[serialFiles$DESTINATION %in% c("heel_results", "both")])
+  
+  sqlRd <- SqlRender::renderSql(sql = "select * into @resultsDatabaseSchema.achilles_results_derived from 
+                                       @scratchDatabaseSchema@schemaelim@heelPrefix_serial_rd_@id",
+                                resultsDatabaseSchema = resultsDatabaseSchema,
+                                schemaDelim = schemaDelim,
+                                id = rdId)$sql
+  sqlRd <- SqlRender::translateSql(sql = sqlRd, targetDialect = connectionDetails$dbms)$sql
+  
+  sqlHr <- SqlRender::renderSql(sql = "select * into @resultsDatabaseSchema.achilles_heel_results from 
+                                       @scratchDatabaseSchema@schemaelim@heelPrefix_serial_hr_@id",
+                                resultsDatabaseSchema = resultsDatabaseSchema,
+                                schemaDelim = schemaDelim,
+                                id = hrId)$sql
+  sqlHr <- SqlRender::translateSql(sql = sqlHr, targetDialect = connectionDetails$dbms)$sql
+  
+  if (sqlOnly) {
+    SqlRender::writeSql(sql = derivedSql, targetFile = file.path(outputFolder, "merge_derived.sql"))
+    SqlRender::writeSql(sql = resultSql, targetFile = file.path(outputFolder, "merge_heel_results.sql"))
+  } else {
+    cluster <- OhdsiRTools::makeCluster(numberOfThreads = 2, singleThreadToMain = TRUE)
+    dummy <- OhdsiRTools::clusterApply(cluster = cluster, x = c(derivedSql, resultSql), 
+                                       function(sql) {
+                                         if (numThreads > 1) {
+                                           connection <- DatabaseConnector::connect(connectionDetails)
+                                         }
+                                         DatabaseConnector::executeSql(connection = connection, sql = sql)
+                                         if (numThreads > 1) {
+                                           DatabaseConnector::disconnect(connection)
+                                         }
+                                       }
+    )
+    OhdsiRTools::stopCluster(cluster = cluster)
+  }
+  
+  # Drop scratch parallel tables -----------------------------------------------
   
   if (numThreads == 1) {
     # Dropping the connection removes the temporary scratch tables if running in serial
@@ -624,17 +729,19 @@ achillesHeel <- function(connectionDetails,
   } else {
     if (dropScratchTables) {
       cluster <- OhdsiRTools::makeCluster(numberOfThreads = numThreads)
-      dummy <- OhdsiRTools::clusterApply(cluster = cluster, x = heelFiles, 
+      dummy <- OhdsiRTools::clusterApply(cluster = cluster, x = parallelFiles, 
                                          fun = .dropHeelScratchTable,
                                          connectionDetails = connectionDetails,
                                          resultsDatabaseSchema = resultsDatabaseSchema,
                                          tempHeelPrefix = tempHeelPrefix,
                                          sqlOnly = sqlOnly)
-      
-      OhdsiRTools::stopCluster(cluster)  
+      OhdsiRTools::stopCluster(cluster = cluster)  
     }
   }
-  writeLines(paste("Done. Achilles Heel results can now be found in", resultsDatabaseSchema))
+  
+  writeLines(sprintf("Done. Achilles Heel results can now be found in %s", resultsDatabaseSchema))
+  
+  return (paste(heelSql, collapse = "\n\n"))
 }
 
 
@@ -644,7 +751,7 @@ achillesHeel <- function(connectionDetails,
 #' @details 
 #' Runs a validation script to ensure the CDM is valid based on v5.x
 #' 
-#' @param connectionDetails                An R object of type ConnectionDetail (details for the function that contains server info, database type, optionally username/password, port)
+#' @param connectionDetails                An R object of type \code{connectionDetails} created using the function \code{createConnectionDetails} in the \code{DatabaseConnector} package.
 #' @param cdmDatabaseSchema    	           string name of database schema that contains OMOP CDM. On SQL Server, this should specifiy both the database and the schema, so for example 'cdm_instance.dbo'.
 #' @param runCostAnalysis                  Boolean to determine if cost analysis should be run. Note: only works on CDM v5 and v5.1.0+ style cost tables.
 #' @param sqlOnly                          TRUE = just generate SQL files, don't actually run, FALSE = run Achilles
@@ -671,6 +778,8 @@ validateSchema <- function(connectionDetails,
     writeLines(paste("CDM Schema is valid:", paste(unlist(tables), collapse = ", "), sep = "\n\n"))
     DatabaseConnector::disconnect(connection = connection)
   }
+  
+  return (sql)
 }
 
 #' Get all analysis details
@@ -682,25 +791,22 @@ validateSchema <- function(connectionDetails,
 #' A data.frame with the analysis details.
 #' 
 #' @export
-getAnalysisDetails <- function()
-{
+getAnalysisDetails <- function() {
   pathToCsv <- system.file("csv", "analysisDetails.csv", package = "Achilles")
   analysisDetails <- read.csv(file = pathToCsv, header = TRUE, stringsAsFactors = FALSE)
-  return(analysisDetails)
+  return (analysisDetails)
 }
 
-
-#' Drop all the scratch tables
+#' Drop all possible scratch tables
 #' 
 #' @details 
 #' Drop all possible Achilles and Heel scratch tables
 #' 
-#' @param connectionDetails                An R object of type ConnectionDetail (details for the function that contains server info, database type, optionally username/password, port)
+#' @param connectionDetails                An R object of type \code{connectionDetails} created using the function \code{createConnectionDetails} in the \code{DatabaseConnector} package.
 #' @param scratchDatabaseSchema            string name of database schema that Achilles scratch tables were written to. 
 #' @param tempAchillesPrefix               The prefix to use for the "temporary" (but actually permanent) Achilles analyses tables. Default is "tmpach"
 #' @param tempHeelPrefix                   The prefix to use for the "temporary" (but actually permanent) Heel tables. Default is "tmpheel"
 #' @param numThreads                       The number of threads to use to run this function. Default is 1 thread.
-#' 
 #' 
 #' @export
 dropAllScratchTables <- function(connectionDetails, 
@@ -711,6 +817,7 @@ dropAllScratchTables <- function(connectionDetails,
   # Drop Achilles Scratch Tables ------------------------------------------------------
   
   analysisDetails <- getAnalysisDetails()
+  
   resultsTables <- list(
     list(detailType = "results",
          tablePrefix = tempAchillesPrefix, 
@@ -732,12 +839,12 @@ dropAllScratchTables <- function(connectionDetails,
                                      resultsTables = resultsTables,
                                      sqlOnly = FALSE)
   
-  OhdsiRTools::stopCluster(cluster)
+  OhdsiRTools::stopCluster(cluster = cluster)
   
   # Drop Heel Scratch Tables ------------------------------------------------------
   
-  heelFiles <- list.files(path = file.path(system.file(package = "Achilles"), 
-                                       "sql/sql_server/heels/independents"), 
+  parallelFiles <- list.files(path = file.path(system.file(package = "Achilles"), 
+                                       "sql/sql_server/heels/parallel"), 
                           recursive = TRUE, 
                           full.names = TRUE, 
                           all.files = FALSE,
@@ -745,16 +852,32 @@ dropAllScratchTables <- function(connectionDetails,
   
   cluster <- OhdsiRTools::makeCluster(numberOfThreads = numThreads, singleThreadToMain = TRUE)
   
-  dummy <- OhdsiRTools::clusterApply(cluster = cluster, x = heelFiles, 
+  dummy <- OhdsiRTools::clusterApply(cluster = cluster, x = parallelFiles, 
                                      fun = .dropHeelScratchTable,
                                      connectionDetails = connectionDetails,
                                      scratchDatabaseSchema = scratchDatabaseSchema,
                                      tempHeelPrefix = tempHeelPrefix,
                                      sqlOnly = FALSE)
   
-  OhdsiRTools::stopCluster(cluster)
+  OhdsiRTools::stopCluster(cluster = cluster)
 }
 
+.getCdmVersion <- function(connectionDetails, cdmDatabaseSchema) {
+  sql <- SqlRender::renderSql(sql = "select top 1 cdm_version 
+                                from @cdmDatabaseSchema.cdm_source",
+                              cdmDatabaseSchema = cdmDatabaseSchema)$sql
+  connection <- DatabaseConnector::connect(connectionDetails = connectionDetails)
+  cdmVersion <- tryCatch({
+    c <- DatabaseConnector::querySql(connection = connection, sql = sql)
+  }, error = function (e) {
+    c <- ""
+  }, finally = {
+    DatabaseConnector::disconnect(connection = connection)
+    connection <- NULL
+  })
+  
+  return (c)
+}
 
 .dropAchillesScratchTable <- function(analysisId,
                                       connectionDetails, 
@@ -814,9 +937,10 @@ dropAllScratchTables <- function(connectionDetails,
                                    numThreads,
                                    sqlOnly = FALSE) {
   outputFolder <- "output"
+  dropSql <- ""
   
   if (scratchDatabaseSchema != "#") {
-    .dropAchillesScratchTable(analysisId = analysisId,
+    dropSql <- .dropAchillesScratchTable(analysisId = analysisId,
                               connectionDetails = connectionDetails, 
                               scratchDatabaseSchema = scratchDatabaseSchema, 
                               tempAchillesPrefix = tempAchillesPrefix, 
@@ -836,6 +960,8 @@ dropAllScratchTables <- function(connectionDetails,
                                            cdmVersion = cdmVersion,
                                            singleThreaded = (scratchDatabaseSchema == "#"))
   
+  sql <- paste(dropSql, sql, sep = "\n\n")
+  
   if (sqlOnly) {
     SqlRender::writeSql(sql = sql, 
                         targetFile = 
@@ -851,6 +977,8 @@ dropAllScratchTables <- function(connectionDetails,
       DatabaseConnector::executeSql(connection = connection, sql = sql)
     }
   }
+  
+  return (sql)
 }
 
 .mergeAchillesScratchTables <- function(resultsTable,
@@ -876,14 +1004,14 @@ dropAllScratchTables <- function(connectionDetails,
   
   detailSqls <- lapply(resultsTable$analysisIds[resultsTable$analysisIds %in% analysisIds], function(analysisId) { 
                   sql <- SqlRender::renderSql(sql = "select @castedNames from 
-                                @scratchDatabaseSchema@schemaDelim@tablePrefix_@analysisId", 
-                                scratchDatabaseSchema = scratchDatabaseSchema,
-                                schemaDelim = schemaDelim,
-                                castedNames = paste(castedNames, collapse = ", "), 
-                                tablePrefix = resultsTable$tablePrefix, 
-                                analysisId = analysisId)$sql
-    
-    sql <- SqlRender::translateSql(sql = sql, targetDialect = connectionDetails$dbms)$sql
+                                                    @scratchDatabaseSchema@schemaDelim@tablePrefix_@analysisId", 
+                                                    scratchDatabaseSchema = scratchDatabaseSchema,
+                                                    schemaDelim = schemaDelim,
+                                                    castedNames = paste(castedNames, collapse = ", "), 
+                                                    tablePrefix = resultsTable$tablePrefix, 
+                                                    analysisId = analysisId)$sql
+  
+                  sql <- SqlRender::translateSql(sql = sql, targetDialect = connectionDetails$dbms)$sql
   })
   
   sql <- SqlRender::loadRenderTranslateSql(sqlFilename = "analyses/merge_achilles_tables.sql",
@@ -909,6 +1037,8 @@ dropAllScratchTables <- function(connectionDetails,
       DatabaseConnector::executeSql(connection = connection, sql = sql)
     }
   }
+  
+  return (sql)
 }
 
 .runHeelId <- function(heelFile, 
@@ -924,6 +1054,17 @@ dropAllScratchTables <- function(connectionDetails,
                        inputFolder,
                        outputFolder) {
   
+  dropSql <- ""
+  
+  if (scratchDatabaseSchema != "#") {
+    dropSql <- .dropHeelScratchTable(analysisId = analysisId,
+                                         connectionDetails = connectionDetails, 
+                                         scratchDatabaseSchema = scratchDatabaseSchema, 
+                                         tempAchillesPrefix = tempAchillesPrefix, 
+                                         resultsTables = resultsTables,
+                                         sqlOnly = sqlOnly)
+  }
+  
   sql <- SqlRender::loadRenderTranslateSql(sqlFilename = gsub(pattern = 
                                                                 file.path(system.file(package = "Achilles"), 
                                                                       "sql/sql_server/"), 
@@ -936,6 +1077,8 @@ dropAllScratchTables <- function(connectionDetails,
                                            schemaDelim = schemaDelim,
                                            tempHeelPrefix = tempHeelPrefix,
                                            heelName = gsub(pattern = ".sql", replacement = "", x = basename(heelFile)))
+  
+  sql <- paste(dropSql, sql, sep = "\n\n")
   
   if (sqlOnly) {
     SqlRender::writeSql(sql = sql, targetFile = paste(outputFolder, basename(heelFile), sep = "/"))
@@ -950,21 +1093,7 @@ dropAllScratchTables <- function(connectionDetails,
       DatabaseConnector::executeSql(connection = connection, sql = sql)
     }
   }
-}
-
-
-
-#new function to extract Heel resutls now when there are extra columns from inside R
-#' @export
-fetchAchillesHeelResults <- function (connectionDetails, resultsDatabaseSchema){
-  connectionDetails$schema = resultsDatabaseSchema
-  conn <- DatabaseConnector::connect(connectionDetails)
   
-  
-  sql <- "SELECT * FROM ACHILLES_heel_results"
-  sql <- SqlRender::renderSql(sql)$sql
-  res <- DatabaseConnector::querySql(conn,sql)
-  DatabaseConnector::disconnect(conn)
-  res
+  return (sql)
 }
 

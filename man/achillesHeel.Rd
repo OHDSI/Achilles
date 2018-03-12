@@ -13,7 +13,7 @@ achillesHeel(connectionDetails, cdmDatabaseSchema,
   sqlOnly = FALSE)
 }
 \arguments{
-\item{connectionDetails}{An R object of type ConnectionDetail (details for the function that contains server info, database type, optionally username/password, port)}
+\item{connectionDetails}{An R object of type \code{connectionDetails} created using the function \code{createConnectionDetails} in the \code{DatabaseConnector} package.}
 
 \item{cdmDatabaseSchema}{string name of database schema that contains OMOP CDM. On SQL Server, this should specifiy both the database and the schema, so for example 'cdm_instance.dbo'.}
 
@@ -28,7 +28,7 @@ so for example 'results.dbo'.}
 
 \item{tempHeelPrefix}{(OPTIONAL, multi-threaded mode) The prefix to use for the "temporary" (but actually permanent) Heel tables. Default is "tmpheel"}
 
-\item{dropScratchTables}{In multi-threaded mode: TRUE = drop the scratch tables (may take time depending on dbms), FALSE = leave them in place}
+\item{dropScratchTables}{(OPTIONAL, multi-threaded mode) TRUE = drop the scratch tables (may take time depending on dbms), FALSE = leave them in place}
 
 \item{ThresholdAgeWarning}{The maximum age to allow in Heel}
 
@@ -38,7 +38,7 @@ so for example 'results.dbo'.}
 
 \item{outputFolder}{(OPTIONAL, sql only mode) Path to store SQL files}
 
-\item{sqlOnly}{TRUE = just generate SQL files, don't actually run, FALSE = run Achilles}
+\item{sqlOnly}{Boolean to determine if Heel should be fully executed. TRUE = just generate SQL files, don't actually run, FALSE = run Achilles Heel}
 }
 \value{
 nothing is returned
