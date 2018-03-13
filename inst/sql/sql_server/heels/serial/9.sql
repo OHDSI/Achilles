@@ -6,11 +6,11 @@
   
   --does not work on redshift :-( --commenting it out
 IF OBJECT_ID('@cdmDatabaseSchema.CDM_SOURCE', 'U') IS NOT NULL
-  select 
+  select distinct
     null as analysis_id,
     null as stratum_1,
     null as stratum_2,
-    distinct analysis_id as statistic_value,
+    analysis_id as statistic_value,
     'MetaData:TblExists' as measure_id
   into @scratchDatabaseSchema@schemaDelim@heelPrefix_serial_rd_@rdNewId
   from @resultsDatabaseSchema.ACHILLES_results

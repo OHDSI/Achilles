@@ -3,15 +3,18 @@
 --(count of Measurment records with no numerical value is in analysis_id 1821)
 
 
-
-with t1 (all_count) as 
-  (select sum(count_value) as all_count from @resultsDatabaseSchema.achilles_results where analysis_id = 1820)
-select 
-CAST(ct.count_value*CAST(100.0 AS FLOAT)/all_count AS FLOAT) as statistic_value,
-	CAST('Meas:NoNumValue:Percentage' AS VARCHAR(100)) as measure_id
-into #tempResults 
-from t1
-join (select CAST(count_value AS FLOAT) as count_value from @resultsDatabaseSchema.achilles_results where analysis_id = 1821) as ct;
+select * into #tempResults
+from 
+(
+  select 
+  (select count_value from @resultsDatabaseSchema.achilles_results where analysis_id = 1821)*100.0/all_count as statistic_value,
+  CAST('Meas:NoNumValue:Percentage' AS VARCHAR(100)) as measure_id
+  from 
+  (
+    select sum(count_value) as all_count from @resultsDatabaseSchema.achilles_results where analysis_id = 1820
+  ) t1
+) t2
+;
 
 
 select  
@@ -21,7 +24,9 @@ select
   statistic_value,
   measure_id
 into @scratchDatabaseSchema@schemaDelim@heelPrefix_serial_rd_@rdNewId
-from #tempResults;
+from #tempResults
+;
+
 
 
 SELECT 
@@ -32,7 +37,7 @@ SELECT
 into @scratchDatabaseSchema@schemaDelim@heelPrefix_serial_hr_@hrNewId
 FROM #tempResults t
 --WHERE t.analysis_id IN (100730,100430) --umbrella version
-WHERE measure_id='Meas:NoNumValue:Percentage' --t.analysis_id IN (100000)
+WHERE measure_id = 'Meas:NoNumValue:Percentage' --t.analysis_id IN (100000)
 --the intended threshold is 1 percent, this value is there to get pilot data from early adopters
 	AND t.statistic_value >= 80
 ;

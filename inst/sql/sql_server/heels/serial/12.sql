@@ -4,17 +4,11 @@
 
 select 
   null as analysis_id,
-  achilles_heel_warning,
-  rule_id,
+  CAST('NOTIFICATION: Percentage of patients with no visits exceeds threshold' AS VARCHAR(255)) as achilles_heel_warning,
+  32 as rule_id,
   null as record_count
 into @scratchDatabaseSchema@schemaDelim@heelPrefix_serial_hr_@hrNewId
-from
-(
-  SELECT 
-   CAST('NOTIFICATION: Percentage of patients with no visits exceeds threshold' AS VARCHAR(255)) as ACHILLES_HEEL_warning,
-    32 as rule_id
-  FROM @scratchDatabaseSchema@schemaDelim@heelPrefix_serial_rd_@rdOldId d
-  where d.measure_id = 'ach_2003:Percentage'
-  and 100-d.statistic_value > 27  --threshold identified in the DataQuality study
-) Q
+FROM @scratchDatabaseSchema@schemaDelim@heelPrefix_serial_rd_@rdOldId d
+where d.measure_id = 'ach_2003:Percentage'
+and 100-d.statistic_value > 27  --threshold identified in the DataQuality study
 ;

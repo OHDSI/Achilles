@@ -8,12 +8,12 @@ into @scratchDatabaseSchema@schemaDelim@heelPrefix_serial_rd_@rdNewId
 from
 (
   select
-  CAST(100.0*st.val/statistic_value AS FLOAT) as statistic_value,
+    CAST(100.0 * 
+      (select statistic_value from @scratchDatabaseSchema@schemaDelim@heelPrefix_serial_rd_@rdOldId 
+      where measure_id like 'UnmappedData:ach_1801:GlobalRowCnt')/statistic_value as FLOAT) as statistic_value,
     CAST('Measurement' AS VARCHAR(255)) as stratum_1, 
-    CAST(  'UnmappedData:byDomain:Percentage' AS VARCHAR(255)) as measure_id
+    CAST('UnmappedData:byDomain:Percentage' AS VARCHAR(255)) as measure_id
   from @scratchDatabaseSchema@schemaDelim@heelPrefix_serial_rd_@rdOldId
-  join (select statistic_value as val
-  from @scratchDatabaseSchema@schemaDelim@heelPrefix_serial_rd_@rdOldId where measure_id ='UnmappedData:ach_1801:GlobalRowCnt') as st
-  where measure_id ='ach_1801:GlobalRowCnt'
+  where measure_id = 'ach_1801:GlobalRowCnt'
 ) Q
 ;

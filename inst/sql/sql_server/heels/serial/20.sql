@@ -5,20 +5,15 @@
 
 select 
   null as analysis_id,
-  achilles_heel_warning,
-  rule_id,
-  record_count
+  CAST('NOTIFICATION: [GeneralPopulationOnly] In some years, number of deaths is too low considering the number of births (lifetime record DQ assumption)' AS VARCHAR(255)) as achilles_heel_warning,
+  39 as rule_id,
+  year_cnt as record_count 
 into @scratchDatabaseSchema@schemaDelim@heelPrefix_serial_hr_@hrNewId
 from
 (
-  select 
-  CAST('NOTIFICATION: [GeneralPopulationOnly] In some years, number of deaths is too low considering the number of births (lifetime record DQ assumption)' AS VARCHAR(255))
-   as achilles_heel_warning,
-   39 as rule_id,
-   year_cnt as record_count 
-   from
-   (select count(*) as year_cnt from @resultsDatabaseSchema.ACHILLES_results_derived 
-   where measure_id =  'Death:BornDeceasedRatio' and statistic_value > 30000) a
-  where a.year_cnt> 0
-) Q
+  select count(*) as year_cnt 
+  from @scratchDatabaseSchema@schemaDelim@heelPrefix_serial_rd_@rdOldId
+  where measure_id =  'Death:BornDeceasedRatio' and statistic_value > 30000
+) a
+where a.year_cnt > 0
 ;

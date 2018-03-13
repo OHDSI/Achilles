@@ -4,26 +4,17 @@
 --Threshold was decided as 10th percentile in empiric comparison of 12 real world datasets in the DQ-Study2
 
 
-
 select 
   null as analysis_id,
-  achilles_heel_warning,
-  rule_id,
+  CAST('NOTIFICATION: [GeneralPopulationOnly] Percentage of outpatient visits is below threshold' AS VARCHAR(255)) as achilles_heel_warning,
+  42 as rule_id,
   null as record_count
 into @scratchDatabaseSchema@schemaDelim@heelPrefix_serial_hr_@hrNewId
 from
 (
-  select CAST('NOTIFICATION: [GeneralPopulationOnly] Percentage of outpatient visits is below threshold' AS VARCHAR(255))
-   as achilles_heel_warning,
-   42 as rule_id
-  from
-   (
-    select 
-       1.0*achilles_results.count_value/c1.count_value as outp_perc
-    from @resultsDatabaseSchema.achilles_results
-  		join (select sum(count_value) as count_value from @resultsDatabaseSchema.achilles_results where analysis_id = 201) c1
-  	where analysis_id = 201 and stratum_1='9202'
-    ) d
-  where d.outp_perc < @ThresholdOutpatientVisitPerc
-) Q
+  select 
+    1.0*count_value/(select sum(count_value) from @resultsDatabaseSchema.achilles_results where analysis_id = 201)  as outp_perc  
+  from @resultsDatabaseSchema.achilles_results where analysis_id = 201 and stratum_1 = '9202'
+) d
+where d.outp_perc < @ThresholdOutpatientVisitPerc
 ;

@@ -1,15 +1,17 @@
 --age at first observation by decile
-select analysis_id, stratum_1, stratum_2, statistic_value, measure_id
-from (
-  null as analysis_id,
-  cast(floor(cast(stratum_1 as int)/10) as varchar(255)) as stratum_1,
-  null as stratum_2,
-  sum(count_value) as statistic_value,
-  cast('AgeAtFirstObsByDecile:PersonCnt' as varchar(255)) as measure_id
-) Q
+select analysis_id, stratum_1, stratum_2, sum(count_value) as statistic_value, measure_id
 into #temp_0
-from @resultsDatabaseSchema.ACHILLES_results where analysis_id = 101
-group by stratum_1, measure_id;
+from (
+  select 
+    null as analysis_id,
+    cast(floor(cast(stratum_1 as int)/10) as varchar(255)) as stratum_1,
+    null as stratum_2,
+    count_value,
+    cast('AgeAtFirstObsByDecile:PersonCnt' as varchar(255)) as measure_id
+  from @resultsDatabaseSchema.ACHILLES_results where analysis_id = 101
+) Q
+group by analysis_id, stratum_1, stratum_2, measure_id
+;
 
 --count whether all deciles from 0 to 8 are there  (has later a rule: if less the threshold, issue notification)
 select 

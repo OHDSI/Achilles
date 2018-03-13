@@ -619,7 +619,7 @@ achillesHeel <- function(connectionDetails,
                                                   dbms = connectionDetails$dbms,
                                                   schema = scratchDatabaseSchema,
                                                   schemaDelim = schemaDelim,
-                                                  destination = sprintf("%s_stg_achilles_results_derived"),
+                                                  destination = sprintf("%s_stg_achilles_results_derived", tempHeelPrefix),
                                                   derivedSqls = paste(derivedSqls, collapse = " \nunion all\n "))
   
   resultSqls <- lapply(X = parallelFiles[!isDerived], function(parallelFile) {
@@ -641,7 +641,7 @@ achillesHeel <- function(connectionDetails,
                                                  dbms = connectionDetails$dbms,
                                                  schema = scratchDatabaseSchema,
                                                  schemaDelim = schemaDelim,
-                                                 destination = sprintf("%1s_stg_achilles_heel_results", tempHeelPrefix),
+                                                 destination = sprintf("%s_stg_achilles_heel_results", tempHeelPrefix),
                                                  resultSqls = paste(resultSqls, collapse = " \nunion all\n "))
   
   heelSql <- c(heelSql, derivedSql, resultSql)
@@ -670,13 +670,16 @@ achillesHeel <- function(connectionDetails,
            header = TRUE, stringsAsFactors = FALSE)
   
   for (i in 1:nrow(serialFiles)) {
+    writeLines(sprintf("Serial File %d", i))
     row <- serialFiles[i,]
-    newId <- as.integer(row$ID)
+    newId <- rdOldId <- hrOldId <- as.integer(row$ID)
     
-    rdOldId = max(serialFiles$ID[serialFiles$DESTINATION %in% c("results_dervied", "both") & 
-                                   serialFiles$ID < newId])
-    hrOldId = max(serialFiles$ID[serialFiles$DESTINATION %in% c("heel_results", "both") & 
-                                   serialFiles$ID < newId])
+    if (i > 1) {
+      rdOldId = as.integer(max(serialFiles$ID[serialFiles$DESTINATION %in% c("results_derived", "both") & 
+                                     serialFiles$ID < newId]))
+      hrOldId = as.integer(max(serialFiles$ID[serialFiles$DESTINATION %in% c("heel_results", "both") & 
+                                     serialFiles$ID < newId]))
+    }
     
     serialSql <- SqlRender::loadRenderTranslateSql(sqlFilename = sprintf("heels/serial/%s.sql", row$ID),
                                              packageName = "Achilles",
@@ -709,9 +712,9 @@ achillesHeel <- function(connectionDetails,
                            heelPrefix = tempHeelPrefix,
                            drop = drop)$sql
     }) 
-    sqlDropPrior <- paste(sqlDropPriors, collapse = "; \r\n")
+    sqlDropPrior <- paste(sqlDropPriors, collapse = "\n\n")
+    sql <- paste(sqlDropPrior, serialSql, sep = "\n\n")
     
-    sql <- paste(sqlDropPrior, serialSql, collapse = "; \r\n")
     heelSql <- c(heelSql, sql)
     
     if (!sqlOnly) {
@@ -731,14 +734,14 @@ achillesHeel <- function(connectionDetails,
   hrId = max(serialFiles$ID[serialFiles$DESTINATION %in% c("heel_results", "both")])
   
   sqlRd <- SqlRender::renderSql(sql = "select * into @resultsDatabaseSchema.achilles_results_derived from 
-                                       @scratchDatabaseSchema@schemaelim@heelPrefix_serial_rd_@id",
+                                       @scratchDatabaseSchema@schemaelim@heelPrefix_serial_rd_@id;",
                                 resultsDatabaseSchema = resultsDatabaseSchema,
                                 schemaDelim = schemaDelim,
                                 id = rdId)$sql
   sqlRd <- SqlRender::translateSql(sql = sqlRd, targetDialect = connectionDetails$dbms)$sql
   
   sqlHr <- SqlRender::renderSql(sql = "select * into @resultsDatabaseSchema.achilles_heel_results from 
-                                       @scratchDatabaseSchema@schemaelim@heelPrefix_serial_hr_@id",
+                                       @scratchDatabaseSchema@schemaelim@heelPrefix_serial_hr_@id;",
                                 resultsDatabaseSchema = resultsDatabaseSchema,
                                 schemaDelim = schemaDelim,
                                 id = hrId)$sql

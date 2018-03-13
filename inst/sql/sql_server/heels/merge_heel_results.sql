@@ -3,7 +3,7 @@ IF OBJECT_ID('@schema@schemaDelim@destination', 'U') IS NOT NULL
 
 select 
   analysis_id,
-	achillies_heel_warning,
+	achilles_heel_warning,
 	rule_id,
 	record_count
 into @schema@schemaDelim@destination
