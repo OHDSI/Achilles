@@ -7,6 +7,10 @@ select
 into @scratchDatabaseSchema@schemaDelim@heelPrefix_serial_hr_@hrNewId
 from
 (
+  select * from @scratchDatabaseSchema@schemaDelim@heelPrefix_serial_hr_@hrOldId
+  
+  union all
+  
   SELECT or1.analysis_id,
   	CAST(CONCAT('WARNING: ', cast(or1.analysis_id as VARCHAR), '-', oa1.analysis_name, '; should not have age > @ThresholdAgeWarning, (n=', cast(sum(or1.count_value) as VARCHAR), ')') AS VARCHAR(255)) AS ACHILLES_HEEL_warning,
     36 as rule_id,

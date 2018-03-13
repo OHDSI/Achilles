@@ -4,12 +4,24 @@
 --typical dataset has at least 28 specialties present in provider table
 
 select 
-  null as analysis_id,
-  CAST('NOTIFICATION: [GeneralPopulationOnly] Count of distinct specialties of providers in the PROVIDER table is below threshold' AS VARCHAR(255)) as ACHILLES_HEEL_warning,
-  38 as rule_id,
-  cast(statistic_value as int) as record_count
+  analysis_id,
+  achilles_heel_warning,
+  rule_id,
+  record_count
 into @scratchDatabaseSchema@schemaDelim@heelPrefix_serial_hr_@hrNewId
-FROM @scratchDatabaseSchema@schemaDelim@heelPrefix_serial_rd_@rdOldId d
-where measure_id = 'Provider:SpeciatlyCnt'
-and statistic_value < 2 --DataQuality data indicate median of 55 specialties (percentile25 is 28; percentile10 is 2)
+from
+(
+  select * from @scratchDatabaseSchema@schemaDelim@heelPrefix_serial_hr_@hrOldId
+  
+  union all
+  
+  select
+    null as analysis_id,
+    CAST('NOTIFICATION: [GeneralPopulationOnly] Count of distinct specialties of providers in the PROVIDER table is below threshold' AS VARCHAR(255)) as ACHILLES_HEEL_warning,
+    38 as rule_id,
+    cast(statistic_value as int) as record_count
+  FROM @scratchDatabaseSchema@schemaDelim@heelPrefix_serial_rd_@rdOldId d
+  where measure_id = 'Provider:SpeciatlyCnt'
+  and statistic_value < 2 --DataQuality data indicate median of 55 specialties (percentile25 is 28; percentile10 is 2)
+) Q
 ;

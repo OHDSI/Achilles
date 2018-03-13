@@ -9,11 +9,11 @@ from
 (
   select
     CAST(100.0 * 
-      (select statistic_value from @scratchDatabaseSchema@schemaDelim@heelPrefix_stg_achilles_results_derived 
+      (select statistic_value from @scratchDatabaseSchema@schemaDelim@heelPrefix_achilles_results_derived_0
       where measure_id like 'UnmappedData:ach_401:GlobalRowCnt')/statistic_value as FLOAT) as statistic_value,
     CAST('Condition' AS VARCHAR(255)) as stratum_1, 
     CAST('UnmappedData:byDomain:Percentage' AS VARCHAR(255)) as measure_id
-  from @scratchDatabaseSchema@schemaDelim@heelPrefix_stg_achilles_results_derived 
+  from @scratchDatabaseSchema@schemaDelim@heelPrefix_achilles_results_derived_0
   where measure_id = 'ach_401:GlobalRowCnt'
 ) Q
 ;

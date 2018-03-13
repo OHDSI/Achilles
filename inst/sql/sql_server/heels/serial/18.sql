@@ -8,12 +8,24 @@
 
 
 select 
-  null as analysis_id,
-  CAST('NOTIFICATION: Notes data density is below threshold' AS VARCHAR(255)) as ACHILLES_HEEL_warning,
-  37 as rule_id,
-  cast(statistic_value as int) as record_count
+  analysis_id,
+  achilles_heel_warning,
+  rule_id,
+  record_count
 into @scratchDatabaseSchema@schemaDelim@heelPrefix_serial_hr_@hrNewId
-FROM @scratchDatabaseSchema@schemaDelim@heelPrefix_serial_rd_@rdOldId d
-where measure_id = 'Note:NoteVisitRatio'
-and statistic_value < 0.01 --threshold will be decided in DataQuality study
+from
+(
+  select * from @scratchDatabaseSchema@schemaDelim@heelPrefix_serial_hr_@hrOldId
+  
+  union all
+  
+  select
+    null as analysis_id,
+    CAST('NOTIFICATION: Notes data density is below threshold' AS VARCHAR(255)) as ACHILLES_HEEL_warning,
+    37 as rule_id,
+    cast(statistic_value as int) as record_count
+  FROM @scratchDatabaseSchema@schemaDelim@heelPrefix_serial_rd_@rdOldId d
+  where measure_id = 'Note:NoteVisitRatio'
+  and statistic_value < 0.01 --threshold will be decided in DataQuality study
+) Q
 ;

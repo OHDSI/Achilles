@@ -30,16 +30,28 @@ from #tempResults
 
 
 SELECT 
-  null as analysis_id,
-   CAST('NOTIFICATION: percentage of non-numerical measurement records exceeds general population threshold ' AS VARCHAR(255)) as ACHILLES_HEEL_warning,
-	28 as rule_id,
-	cast(statistic_value as int) as record_count
+  analysis_id,
+  ACHILLES_HEEL_warning,
+  rule_id,
+  record_count
 into @scratchDatabaseSchema@schemaDelim@heelPrefix_serial_hr_@hrNewId
-FROM #tempResults t
---WHERE t.analysis_id IN (100730,100430) --umbrella version
-WHERE measure_id = 'Meas:NoNumValue:Percentage' --t.analysis_id IN (100000)
---the intended threshold is 1 percent, this value is there to get pilot data from early adopters
-	AND t.statistic_value >= 80
+FROM 
+(
+  select * from @scratchDatabaseSchema@schemaDelim@heelPrefix_serial_hr_@hrOldId
+  
+  union all
+  
+  select  
+    null as analysis_id,
+    CAST('NOTIFICATION: percentage of non-numerical measurement records exceeds general population threshold ' AS VARCHAR(255)) as ACHILLES_HEEL_warning,
+  	28 as rule_id,
+  	cast(statistic_value as int) as record_count
+	from #tempResults t
+    --WHERE t.analysis_id IN (100730,100430) --umbrella version
+  WHERE measure_id = 'Meas:NoNumValue:Percentage' --t.analysis_id IN (100000)
+  --the intended threshold is 1 percent, this value is there to get pilot data from early adopters
+  	AND t.statistic_value >= 80
+) Q
 ;
 
 

@@ -1,18 +1,26 @@
 --actual rule27
   
 select 
+  analysis_id,
   achilles_heel_warning,
   rule_id,
-  null as record_count
+  record_count
 into @scratchDatabaseSchema@schemaDelim@heelPrefix_serial_hr_@hrNewId
 from
 (
+  select * from @scratchDatabaseSchema@schemaDelim@heelPrefix_achilles_heel_results_0
+  
+  union all
+  
   SELECT 
-   CAST(CONCAT('NOTIFICATION:Unmapped data over percentage threshold in:', cast(d.stratum_1 as varchar)) AS VARCHAR(255)) as ACHILLES_HEEL_warning,
-    27 as rule_id
-  FROM @scratchDatabaseSchema@schemaDelim@heelPrefix_stg_achilles_results_derived d
+    null as analysis_id,
+    CAST(CONCAT('NOTIFICATION:Unmapped data over percentage threshold in:', cast(d.stratum_1 as varchar)) AS VARCHAR(255)) as ACHILLES_HEEL_warning,
+    27 as rule_id,
+    null as record_count
+  FROM @scratchDatabaseSchema@schemaDelim@heelPrefix_serial_rd_@rdOldId d
   where d.measure_id = 'UnmappedData:byDomain:Percentage'
   and d.statistic_value > 0.1  --thresholds will be decided in the ongoing DQ-Study2
-) Q;
+) Q
+;
 
 --end of rule27

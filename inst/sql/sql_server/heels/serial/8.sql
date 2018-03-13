@@ -18,12 +18,24 @@ from tempcnt where pt_cnt > 0;
 --and with clause makes the code more readable
 
 SELECT 
-  null as analysis_id,
- CAST('WARNING:[PLAUSIBILITY] infant-age diagnosis (195075) at age 50+' AS VARCHAR(255)) as ACHILLES_HEEL_warning,
-  29 as rule_id,
+  analysis_id,
+  ACHILLES_HEEL_warning,
+  rule_id,
   record_count
 into @scratchDatabaseSchema@schemaDelim@heelPrefix_serial_hr_@hrNewId
-FROM #tempResults t;
+FROM 
+(
+  select * from @scratchDatabaseSchema@schemaDelim@heelPrefix_serial_hr_@hrOldId
+  
+  union all
+  
+  select 
+    null as analysis_id,
+    CAST('WARNING:[PLAUSIBILITY] infant-age diagnosis (195075) at age 50+' AS VARCHAR(255)) as ACHILLES_HEEL_warning,
+    29 as rule_id,
+    null as record_count
+  from #tempResults
+) Q;
 
 truncate table #tempResults;
 drop table #tempResults;
