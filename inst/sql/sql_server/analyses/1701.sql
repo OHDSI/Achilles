@@ -6,6 +6,6 @@ select 1701 as analysis_id,
 	COUNT_BIG(subject_ID) as count_value
 into @scratchDatabaseSchema@schemaDelim@tempAchillesPrefix_1701
 from
-	@cdmDatabaseSchema.cohort c1
+	@resultsDatabaseSchema.cohort c1
 where c1.cohort_end_date < c1.cohort_start_date
 ;
