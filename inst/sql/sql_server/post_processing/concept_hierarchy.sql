@@ -18,6 +18,7 @@ IF OBJECT_ID('@resultsDatabaseSchema.concept_hierarchy', 'U') IS NOT NULL
     snomed.concept_id,
     snomed.concept_name AS concept_name,
     'Condition' AS treemap,
+    null as concept_hierarchy_type,
     pt_to_hlt.pt_concept_name as level1_concept_name,
     hlt_to_hlgt.hlt_concept_name as level2_concept_name,
     hlgt_to_soc.hlgt_concept_name as level3_concept_name,
@@ -119,6 +120,7 @@ into #ch_condition
     rxnorm.concept_id,
     rxnorm.concept_name AS concept_name,
     'Drug' AS treemap,
+    null as concept_hierarchy_type,    
     rxnorm.rxnorm_ingredient_concept_name as level1_concept_name,
     atc5_to_atc3.atc5_concept_name as level2_concept_name,
     atc3_to_atc1.atc3_concept_name as level3_concept_name,
@@ -211,6 +213,7 @@ into #ch_drug
     rxnorm.rxnorm_ingredient_concept_id as concept_id,
     rxnorm.rxnorm_ingredient_concept_name as concept_name,
     'Drug Era' AS treemap,
+    null as concept_hierarchy_type,
     atc5_to_atc3.atc5_concept_name as level1_concept_name,
     atc3_to_atc1.atc3_concept_name as level2_concept_name,
     atc1.concept_name as level3_concept_name,
@@ -298,6 +301,7 @@ into #ch_drug_era
     m.concept_id,
     m.concept_name,
     'Measurement' AS treemap,
+    null as concept_hierarchy_type,
     max(c1.concept_name) AS level1_concept_name,
     max(c2.concept_name) AS level2_concept_name,
     max(c3.concept_name) AS level3_concept_name,
@@ -328,6 +332,7 @@ into #ch_measurement
     obs.concept_id,
     obs.concept_name,
     'Observation' AS treemap,
+    null as concept_hierarchy_type,
     max(c1.concept_name) AS level1_concept_name,
     max(c2.concept_name) AS level2_concept_name,
     max(c3.concept_name) AS level3_concept_name,
@@ -358,6 +363,7 @@ into #ch_observation
     procs.concept_id,
     procs.proc_concept_name as concept_name,
     'Procedure' AS treemap,
+    null as concept_hierarchy_type,
     max(proc_hierarchy.os3_concept_name) AS level1_concept_name,
     max(proc_hierarchy.os2_concept_name) AS level2_concept_name,
     max(proc_hierarchy.os1_concept_name) AS level3_concept_name,
@@ -469,17 +475,81 @@ select * into
 @resultsDatabaseSchema.concept_hierarchy
 from
 (
-  select * from #ch_condition
+  select 
+  concept_id,
+  cast(concept_name as VARCHAR(400)) as concept_name,
+  cast(treemap as VARCHAR(20)) as treemap,
+  cast(concept_hierarchy_type as VARCHAR(20)) as concept_hierarchy_type,
+  cast(level1_concept_name as VARCHAR(255)) as level1_concept_name,
+  cast(level2_concept_name as VARCHAR(255)) as level2_concept_name,
+  cast(level3_concept_name as VARCHAR(255)) as level3_concept_name,
+  cast(level4_concept_name as VARCHAR(255)) as level4_concept_name
+  from #ch_condition
+  
   union all
-  select * from #ch_drug
+  
+  select 
+  concept_id,
+  cast(concept_name as VARCHAR(400)) as concept_name,
+  cast(treemap as VARCHAR(20)) as treemap,
+  cast(concept_hierarchy_type as VARCHAR(20)) as concept_hierarchy_type,
+  cast(level1_concept_name as VARCHAR(255)) as level1_concept_name,
+  cast(level2_concept_name as VARCHAR(255)) as level2_concept_name,
+  cast(level3_concept_name as VARCHAR(255)) as level3_concept_name,
+  cast(level4_concept_name as VARCHAR(255)) as level4_concept_name
+  from #ch_drug
+  
   union all 
-  select * from #ch_drug_era
+  
+  select
+  concept_id,
+  cast(concept_name as VARCHAR(400)) as concept_name,
+  cast(treemap as VARCHAR(20)) as treemap,
+  cast(concept_hierarchy_type as VARCHAR(20)) as concept_hierarchy_type,
+  cast(level1_concept_name as VARCHAR(255)) as level1_concept_name,
+  cast(level2_concept_name as VARCHAR(255)) as level2_concept_name,
+  cast(level3_concept_name as VARCHAR(255)) as level3_concept_name,
+  cast(level4_concept_name as VARCHAR(255)) as level4_concept_name
+  from #ch_drug_era
+  
   union all
-  select * from #ch_measurement
+  
+  select 
+  concept_id,
+  cast(concept_name as VARCHAR(400)) as concept_name,
+  cast(treemap as VARCHAR(20)) as treemap,
+  cast(concept_hierarchy_type as VARCHAR(20)) as concept_hierarchy_type,
+  cast(level1_concept_name as VARCHAR(255)) as level1_concept_name,
+  cast(level2_concept_name as VARCHAR(255)) as level2_concept_name,
+  cast(level3_concept_name as VARCHAR(255)) as level3_concept_name,
+  cast(level4_concept_name as VARCHAR(255)) as level4_concept_name
+  from #ch_measurement
+  
   union all
-  select * from #ch_observation
+  
+  select
+  concept_id,
+  cast(concept_name as VARCHAR(400)) as concept_name,
+  cast(treemap as VARCHAR(20)) as treemap,
+  cast(concept_hierarchy_type as VARCHAR(20)) as concept_hierarchy_type,
+  cast(level1_concept_name as VARCHAR(255)) as level1_concept_name,
+  cast(level2_concept_name as VARCHAR(255)) as level2_concept_name,
+  cast(level3_concept_name as VARCHAR(255)) as level3_concept_name,
+  cast(level4_concept_name as VARCHAR(255)) as level4_concept_name
+  from #ch_observation
+  
   union all 
-  select * from #ch_procedure
+  
+  select 
+  concept_id,
+  cast(concept_name as VARCHAR(400)) as concept_name,
+  cast(treemap as VARCHAR(20)) as treemap,
+  cast(concept_hierarchy_type as VARCHAR(20)) as concept_hierarchy_type,
+  cast(level1_concept_name as VARCHAR(255)) as level1_concept_name,
+  cast(level2_concept_name as VARCHAR(255)) as level2_concept_name,
+  cast(level3_concept_name as VARCHAR(255)) as level3_concept_name,
+  cast(level4_concept_name as VARCHAR(255)) as level4_concept_name
+  from #ch_procedure
 ) Q
 ;
 

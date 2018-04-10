@@ -402,42 +402,24 @@ achilles <- function (connectionDetails,
   
   hierarchySql <- "/* CONCEPT HIERARCHY EXECUTION SKIPPED PER USER REQUEST */"
   if (conceptHierarchy) {
-    hierarchySql <- SqlRender::loadRenderTranslateSql(sqlFilename = "post_processing/concept_hierarchy.sql",
-                                                      packageName = "Achilles",
-                                                      dbms = connectionDetails$dbms,
-                                                      resultsDatabaseSchema = resultsDatabaseSchema,
-                                                      vocabDatabaseSchema = vocabDatabaseSchema)
+    hierarchySql <- createConceptHierarchy(connectionDetails, 
+                                           resultsDatabaseSchema,
+                                           vocabDatabaseSchema,
+                                           sqlOnly)
   }
   achillesSql <- c(achillesSql, hierarchySql)
-  
-  if (!sqlOnly) {
-    writeLines("Executing Concept Hierarchy creation. This could take a while")
-    connection <- DatabaseConnector::connect(connectionDetails = connectionDetails)
-    DatabaseConnector::executeSql(connection = connection, sql = hierarchySql)
-    DatabaseConnector::disconnect(connection = connection)
-    writeLines(sprintf("Done. Concept Hierarchy table can now be found in %s", resultsDatabaseSchema))  
-  }
+
   
   # Create indices -----------------------------------------------------------------
   
   indicesSql <- "/* INDEX CREATION SKIPPED PER USER REQUEST */"
   
-  if (createIndices && 
-      !(connectionDetails$dbms %in% c("redshift"))) {
-    indicesSql <- SqlRender::loadRenderTranslateSql(sqlFilename = "post_processing/achilles_indices.sql",
-                                             packageName = "Achilles",
-                                             dbms = connectionDetails$dbms,
-                                             resultsDatabaseSchema = resultsDatabaseSchema)
-    
+  if (createIndices) {
+    indicesSql <- createIndices(connectionDetails,
+                                resultsDatabaseSchema,
+                                sqlOnly)    
   }
-  
   achillesSql <- c(achillesSql, indicesSql)
-    
-  if (!sqlOnly) {
-    connection <- DatabaseConnector::connect(connectionDetails = connectionDetails)
-    DatabaseConnector::executeSql(connection = connection, sql = indicesSql)
-    DatabaseConnector::disconnect(connection = connection)
-  }
   
   # Run Heel? ---------------------------------------------------------------
   
@@ -480,6 +462,72 @@ achilles <- function (connectionDetails,
   return (achillesResults)
 }
 
+#' Create the concept hierarchy
+#' 
+#' @details 
+#' Post-processing, create the concept hierarchy
+#' 
+#' @param connectionDetails                An R object of type \code{connectionDetails} created using the function \code{createConnectionDetails} in the \code{DatabaseConnector} package.
+#' @param resultsDatabaseSchema		         Fully qualified name of database schema that we can write final results to. Default is cdmDatabaseSchema. 
+#'                                         On SQL Server, this should specifiy both the database and the schema, so for example, on SQL Server, 'cdm_results.dbo'.
+#' @param vocabDatabaseSchema		           String name of database schema that contains OMOP Vocabulary. Default is cdmDatabaseSchema. On SQL Server, this should specifiy both the database and the schema, so for example 'results.dbo'.
+#' @param sqlOnly                          TRUE = just generate SQL files, don't actually run, FALSE = run Achilles
+#' 
+#' @export
+createConceptHierarchy <- function(connectionDetails, 
+                                   resultsDatabaseSchema,
+                                   vocabDatabaseSchema,
+                                   sqlOnly = FALSE) {
+  
+  hierarchySql <- SqlRender::loadRenderTranslateSql(sqlFilename = "post_processing/concept_hierarchy.sql",
+                                                    packageName = "Achilles",
+                                                    dbms = connectionDetails$dbms,
+                                                    resultsDatabaseSchema = resultsDatabaseSchema,
+                                                    vocabDatabaseSchema = vocabDatabaseSchema)
+  
+  if (!sqlOnly) {
+    writeLines("Executing Concept Hierarchy creation. This could take a while")
+    connection <- DatabaseConnector::connect(connectionDetails = connectionDetails)
+    DatabaseConnector::executeSql(connection = connection, sql = hierarchySql)
+    DatabaseConnector::disconnect(connection = connection)
+    writeLines(sprintf("Done. Concept Hierarchy table can now be found in %s", resultsDatabaseSchema))  
+  }
+  
+  return (hierarchySql)
+}
+
+
+#' Create indicies
+#' 
+#' @details 
+#' Post-processing, create indices to help performance. Cannot be used with Redshift.
+#' 
+#' @param connectionDetails                An R object of type \code{connectionDetails} created using the function \code{createConnectionDetails} in the \code{DatabaseConnector} package.
+#' @param resultsDatabaseSchema		         Fully qualified name of database schema that we can write final results to. Default is cdmDatabaseSchema. 
+#'                                         On SQL Server, this should specifiy both the database and the schema, so for example, on SQL Server, 'cdm_results.dbo'.
+#' @param sqlOnly                          TRUE = just generate SQL files, don't actually run, FALSE = run Achilles
+#' 
+#' @export
+createIndices <- function(connectionDetails,
+                          resultsDatabaseSchema,
+                          sqlOnly = FALSE) {
+  
+  if (connectionDetails$dbms %in% c("redshift")) {
+    return <- "/* INDEX CREATION SKIPPED, INDICES NOT SUPPORTED IN REDSHIFT */"
+  }
+  indicesSql <- SqlRender::loadRenderTranslateSql(sqlFilename = "post_processing/achilles_indices.sql",
+                                                  packageName = "Achilles",
+                                                  dbms = connectionDetails$dbms,
+                                                  resultsDatabaseSchema = resultsDatabaseSchema)
+    
+  if (!sqlOnly) {
+    connection <- DatabaseConnector::connect(connectionDetails = connectionDetails)
+    DatabaseConnector::executeSql(connection = connection, sql = indicesSql)
+    DatabaseConnector::disconnect(connection = connection)
+  }
+  
+  return (indicesSql)
+}
 
 
 
