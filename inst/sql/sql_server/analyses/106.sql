@@ -1,18 +1,19 @@
 -- 106	Length of observation (days) of first observation period by gender
 
-with rawData(gender_concept_id, count_value) as
+
+select p.gender_concept_id, op.count_value
+into #rawData
+FROM
 (
-  select p.gender_concept_id, op.count_value
-  FROM
-  (
-    select person_id, DATEDIFF(dd,op.observation_period_start_date, op.observation_period_end_date) as count_value,
-      ROW_NUMBER() over (PARTITION by op.person_id order by op.observation_period_start_date asc) as rn
-    from @cdmDatabaseSchema.OBSERVATION_PERIOD op
-	) op
-  JOIN @cdmDatabaseSchema.PERSON p on op.person_id = p.person_id
-	where op.rn = 1
-),
-overallStats (gender_concept_id, avg_value, stdev_value, min_value, max_value, total) as
+  select person_id, DATEDIFF(dd,op.observation_period_start_date, op.observation_period_end_date) as count_value,
+    ROW_NUMBER() over (PARTITION by op.person_id order by op.observation_period_start_date asc) as rn
+  from @cdmDatabaseSchema.OBSERVATION_PERIOD op
+) op
+JOIN @cdmDatabaseSchema.PERSON p on op.person_id = p.person_id
+where op.rn = 1
+;
+
+with overallStats (gender_concept_id, avg_value, stdev_value, min_value, max_value, total) as
 (
   select gender_concept_id,
     CAST(avg(1.0 * count_value) AS FLOAT) as avg_value,
@@ -20,13 +21,13 @@ overallStats (gender_concept_id, avg_value, stdev_value, min_value, max_value, t
     min(count_value) as min_value,
     max(count_value) as max_value,
     count_big(*) as total
-  FROM rawData
+  FROM #rawData
   group by gender_concept_id
 ),
 statsView (gender_concept_id, count_value, total, rn) as
 (
   select gender_concept_id, count_value, count_big(*) as total, row_number() over (order by count_value) as rn
-  FROM rawData
+  FROM #rawData
   group by gender_concept_id, count_value
 ),
 priorStats (gender_concept_id,count_value, total, accumulated) as
@@ -61,6 +62,9 @@ count_value, min_value, max_value, avg_value, stdev_value, median_value, p10_val
 into @scratchDatabaseSchema@schemaDelim@tempAchillesPrefix_dist_106
 FROM #tempResults
 ;
+
+truncate table #rawData;
+drop table #rawData;
 
 truncate table #tempResults;
 drop table #tempResults;
