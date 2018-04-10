@@ -81,7 +81,6 @@ showReportTypes <- function()
 #' @param resultsDatabaseSchema     		Name of the database schema that contains the Achilles analysis files. Default is cdmDatabaseSchema
 #' @param outputPath		                A folder location to save the JSON files. Default is current working folder
 #' @param reports                       A character vector listing the set of reports to generate. Default is all reports. 
-#' @param cdmVersion                    Define the OMOP CDM version used:  currently support "4" and "5".  Default = "4"
 #' @param vocabDatabaseSchema		        string name of database schema that contains OMOP Vocabulary. Default is cdmDatabaseSchema. On SQL Server, this should specifiy both the database and the schema, so for example 'results.dbo'.
 #' @param compressIntoOneFile           Boolean indicating if the JSON files should be compressed into one gzip file
 #' See \code{data(allReports)} for a list of all report types
@@ -97,7 +96,6 @@ exportToJson <- function (connectionDetails,
                           resultsDatabaseSchema, 
                           outputPath = getwd(), 
                           reports = allReports, 
-                          cdmVersion = "4", 
                           vocabDatabaseSchema = cdmDatabaseSchema,
                           compressIntoOneFile = FALSE) {
   start <- Sys.time()
@@ -114,75 +112,75 @@ exportToJson <- function (connectionDetails,
   
   if ("CONDITION" %in% reports)
   {
-    generateConditionTreemap(conn, connectionDetails$dbms, cdmDatabaseSchema, resultsDatabaseSchema, outputPath, cdmVersion, vocabDatabaseSchema)  
-    generateConditionReports(conn, connectionDetails$dbms, cdmDatabaseSchema, resultsDatabaseSchema, outputPath, cdmVersion, vocabDatabaseSchema)
+    generateConditionTreemap(conn, connectionDetails$dbms, cdmDatabaseSchema, resultsDatabaseSchema, outputPath, vocabDatabaseSchema)  
+    generateConditionReports(conn, connectionDetails$dbms, cdmDatabaseSchema, resultsDatabaseSchema, outputPath, vocabDatabaseSchema)
   }
   
   if ("CONDITION_ERA" %in% reports)
   {
-    generateConditionEraTreemap(conn, connectionDetails$dbms, cdmDatabaseSchema, resultsDatabaseSchema, outputPath, cdmVersion, vocabDatabaseSchema)
-    generateConditionEraReports(conn, connectionDetails$dbms, cdmDatabaseSchema, resultsDatabaseSchema, outputPath, cdmVersion, vocabDatabaseSchema)
+    generateConditionEraTreemap(conn, connectionDetails$dbms, cdmDatabaseSchema, resultsDatabaseSchema, outputPath, vocabDatabaseSchema)
+    generateConditionEraReports(conn, connectionDetails$dbms, cdmDatabaseSchema, resultsDatabaseSchema, outputPath, vocabDatabaseSchema)
   }
   
   if ("DATA_DENSITY" %in% reports)
-    generateDataDensityReport(conn, connectionDetails$dbms, cdmDatabaseSchema, resultsDatabaseSchema, outputPath, cdmVersion, vocabDatabaseSchema)
+    generateDataDensityReport(conn, connectionDetails$dbms, cdmDatabaseSchema, resultsDatabaseSchema, outputPath, vocabDatabaseSchema)
   
   if ("DEATH" %in% reports)
   {
-    generateDeathReports(conn, connectionDetails$dbms, cdmDatabaseSchema, resultsDatabaseSchema, outputPath, cdmVersion, vocabDatabaseSchema)
+    generateDeathReports(conn, connectionDetails$dbms, cdmDatabaseSchema, resultsDatabaseSchema, outputPath, vocabDatabaseSchema)
   }
   
   if ("DRUG_ERA" %in% reports)
   {
-    generateDrugEraTreemap(conn,connectionDetails$dbms, cdmDatabaseSchema, resultsDatabaseSchema, outputPath, cdmVersion, vocabDatabaseSchema)
-    generateDrugEraReports(conn,connectionDetails$dbms, cdmDatabaseSchema, resultsDatabaseSchema, outputPath, cdmVersion, vocabDatabaseSchema)
+    generateDrugEraTreemap(conn,connectionDetails$dbms, cdmDatabaseSchema, resultsDatabaseSchema, outputPath, vocabDatabaseSchema)
+    generateDrugEraReports(conn,connectionDetails$dbms, cdmDatabaseSchema, resultsDatabaseSchema, outputPath, vocabDatabaseSchema)
   }
   
   if ("DRUG" %in% reports)
   {
-    generateDrugTreemap(conn, connectionDetails$dbms, cdmDatabaseSchema, resultsDatabaseSchema, outputPath, cdmVersion, vocabDatabaseSchema)  
-    generateDrugReports(conn, connectionDetails$dbms, cdmDatabaseSchema, resultsDatabaseSchema, outputPath, cdmVersion, vocabDatabaseSchema)
+    generateDrugTreemap(conn, connectionDetails$dbms, cdmDatabaseSchema, resultsDatabaseSchema, outputPath, vocabDatabaseSchema)  
+    generateDrugReports(conn, connectionDetails$dbms, cdmDatabaseSchema, resultsDatabaseSchema, outputPath, vocabDatabaseSchema)
   }
   
   if ("HEEL" %in% reports)
   {
-    generateAchillesHeelReport(conn, connectionDetails$dbms, cdmDatabaseSchema, resultsDatabaseSchema, outputPath, cdmVersion, vocabDatabaseSchema)
+    generateAchillesHeelReport(conn, connectionDetails$dbms, cdmDatabaseSchema, resultsDatabaseSchema, outputPath, vocabDatabaseSchema)
   }
   
-  if (("META" %in% reports) & (cdmVersion != "4"))
+  if (("META" %in% reports))
   {
-    generateDomainMetaReport(conn, connectionDetails$dbms, cdmDatabaseSchema, resultsDatabaseSchema, outputPath, cdmVersion, vocabDatabaseSchema)
+    generateDomainMetaReport(conn, connectionDetails$dbms, cdmDatabaseSchema, resultsDatabaseSchema, outputPath, vocabDatabaseSchema)
   }
   
-  if ( ("MEASUREMENT" %in% reports) & (cdmVersion != "4"))
+  if ( ("MEASUREMENT" %in% reports))
   {
-    generateMeasurementTreemap(conn, connectionDetails$dbms, cdmDatabaseSchema, resultsDatabaseSchema, outputPath, cdmVersion, vocabDatabaseSchema)
-    generateMeasurementReports(conn, connectionDetails$dbms, cdmDatabaseSchema, resultsDatabaseSchema, outputPath, cdmVersion, vocabDatabaseSchema)
+    generateMeasurementTreemap(conn, connectionDetails$dbms, cdmDatabaseSchema, resultsDatabaseSchema, outputPath, vocabDatabaseSchema)
+    generateMeasurementReports(conn, connectionDetails$dbms, cdmDatabaseSchema, resultsDatabaseSchema, outputPath, vocabDatabaseSchema)
   }
   
   
   if ("OBSERVATION" %in% reports)
   {  
-    generateObservationTreemap(conn, connectionDetails$dbms, cdmDatabaseSchema, resultsDatabaseSchema, outputPath, cdmVersion, vocabDatabaseSchema)
-    generateObservationReports(conn, connectionDetails$dbms, cdmDatabaseSchema, resultsDatabaseSchema, outputPath, cdmVersion, vocabDatabaseSchema)
+    generateObservationTreemap(conn, connectionDetails$dbms, cdmDatabaseSchema, resultsDatabaseSchema, outputPath, vocabDatabaseSchema)
+    generateObservationReports(conn, connectionDetails$dbms, cdmDatabaseSchema, resultsDatabaseSchema, outputPath, vocabDatabaseSchema)
   }
   
   if ("OBSERVATION_PERIOD" %in% reports)  
-    generateObservationPeriodReport(conn, connectionDetails$dbms, cdmDatabaseSchema, resultsDatabaseSchema, outputPath, cdmVersion, vocabDatabaseSchema)
+    generateObservationPeriodReport(conn, connectionDetails$dbms, cdmDatabaseSchema, resultsDatabaseSchema, outputPath, vocabDatabaseSchema)
   
   if ("PERSON" %in% reports)    
-    generatePersonReport(conn, connectionDetails$dbms, cdmDatabaseSchema, resultsDatabaseSchema, outputPath, cdmVersion, vocabDatabaseSchema)
+    generatePersonReport(conn, connectionDetails$dbms, cdmDatabaseSchema, resultsDatabaseSchema, outputPath, vocabDatabaseSchema)
   
   if ("PROCEDURE" %in% reports)
   {
-    generateProcedureTreemap(conn, connectionDetails$dbms, cdmDatabaseSchema, resultsDatabaseSchema, outputPath, cdmVersion, vocabDatabaseSchema)
-    generateProcedureReports(conn, connectionDetails$dbms, cdmDatabaseSchema, resultsDatabaseSchema, outputPath, cdmVersion, vocabDatabaseSchema)
+    generateProcedureTreemap(conn, connectionDetails$dbms, cdmDatabaseSchema, resultsDatabaseSchema, outputPath, vocabDatabaseSchema)
+    generateProcedureReports(conn, connectionDetails$dbms, cdmDatabaseSchema, resultsDatabaseSchema, outputPath, vocabDatabaseSchema)
   }
   
   if ("VISIT" %in% reports)
   {  
-    generateVisitTreemap(conn, connectionDetails$dbms, cdmDatabaseSchema, resultsDatabaseSchema, outputPath, cdmVersion, vocabDatabaseSchema)
-    generateVisitReports(conn, connectionDetails$dbms, cdmDatabaseSchema, resultsDatabaseSchema, outputPath, cdmVersion, vocabDatabaseSchema)
+    generateVisitTreemap(conn, connectionDetails$dbms, cdmDatabaseSchema, resultsDatabaseSchema, outputPath, vocabDatabaseSchema)
+    generateVisitReports(conn, connectionDetails$dbms, cdmDatabaseSchema, resultsDatabaseSchema, outputPath, vocabDatabaseSchema)
   }
   
   # dashboard is always last
@@ -194,9 +192,8 @@ exportToJson <- function (connectionDetails,
   DatabaseConnector::disconnect(conn)
   
   if (compressIntoOneFile) {
-    R.utils::gzip(filename = outputPath, 
-                  destname = sprintf("%s.gz", cdmDatabaseSchema),
-                  remove = FALSE)
+    zip(zipfile = file.path(dirname(outputPath), sprintf("%s.gz", cdmDatabaseSchema)), 
+        files = list.files(jsonPath, full.names = T))
   }
   
   delta <- Sys.time() - start
@@ -217,7 +214,6 @@ exportToJson <- function (connectionDetails,
 #' @param cdmDatabaseSchema      Name of the database schema that contains the vocabulary files
 #' @param resultsDatabaseSchema  		Name of the database schema that contains the Achilles analysis files. Default is cdmDatabaseSchema
 #' @param outputPath		A folder location to save the JSON files. Default is current working folder
-#' @param cdmVersion     Define the OMOP CDM version used:  currently support "4" and "5".  Default = "4"
 #' @param vocabDatabaseSchema		string name of database schema that contains OMOP Vocabulary. Default is cdmDatabaseSchema. On SQL Server, this should specifiy both the database and the schema, so for example 'results.dbo'.
 #' 
 #' @return none 
@@ -226,9 +222,9 @@ exportToJson <- function (connectionDetails,
 #'   exportConditionToJson(connectionDetails, cdmDatabaseSchema="cdm4_sim", outputPath="your/output/path")
 #' }
 #' @export
-exportConditionToJson <- function (connectionDetails, cdmDatabaseSchema, resultsDatabaseSchema, outputPath = getwd(), cdmVersion="4", vocabDatabaseSchema = cdmDatabaseSchema)
+exportConditionToJson <- function (connectionDetails, cdmDatabaseSchema, resultsDatabaseSchema, outputPath = getwd(), vocabDatabaseSchema = cdmDatabaseSchema)
 {
-  exportToJson(connectionDetails, cdmDatabaseSchema, resultsDatabaseSchema, outputPath, reports = c("CONDITION"), cdmVersion, vocabDatabaseSchema)  
+  exportToJson(connectionDetails, cdmDatabaseSchema, resultsDatabaseSchema, outputPath, reports = c("CONDITION"), vocabDatabaseSchema)  
 }
 
 #' @title exportConditionEraToJson
@@ -244,7 +240,6 @@ exportConditionToJson <- function (connectionDetails, cdmDatabaseSchema, results
 #' @param cdmDatabaseSchema      Name of the database schema that contains the vocabulary files
 #' @param resultsDatabaseSchema  		Name of the database schema that contains the Achilles analysis files. Default is cdmDatabaseSchema
 #' @param outputPath		A folder location to save the JSON files. Default is current working folder
-#' @param cdmVersion     Define the OMOP CDM version used:  currently support "4" and "5".  Default = "4"
 #' @param vocabDatabaseSchema		string name of database schema that contains OMOP Vocabulary. Default is cdmDatabaseSchema. On SQL Server, this should specifiy both the database and the schema, so for example 'results.dbo'.
 #' 
 #' @return none 
@@ -253,9 +248,9 @@ exportConditionToJson <- function (connectionDetails, cdmDatabaseSchema, results
 #'   exportConditionEraToJson(connectionDetails, cdmDatabaseSchema="cdm4_sim", outputPath="your/output/path")
 #' }
 #' @export
-exportConditionEraToJson <- function (connectionDetails, cdmDatabaseSchema, resultsDatabaseSchema, outputPath = getwd(), cdmVersion="4", vocabDatabaseSchema = cdmDatabaseSchema)
+exportConditionEraToJson <- function (connectionDetails, cdmDatabaseSchema, resultsDatabaseSchema, outputPath = getwd(), vocabDatabaseSchema = cdmDatabaseSchema)
 {
-  exportToJson(connectionDetails, cdmDatabaseSchema, resultsDatabaseSchema, outputPath, reports = c("CONDITION_ERA"), cdmVersion, vocabDatabaseSchema)  
+  exportToJson(connectionDetails, cdmDatabaseSchema, resultsDatabaseSchema, outputPath, reports = c("CONDITION_ERA"), vocabDatabaseSchema)  
 }
 
 #' @title exportDashboardToJson
@@ -272,7 +267,7 @@ exportConditionEraToJson <- function (connectionDetails, cdmDatabaseSchema, resu
 #' @param cdmDatabaseSchema      Name of the database schema that contains the vocabulary files
 #' @param resultsDatabaseSchema  		Name of the database schema that contains the Achilles analysis files. Default is cdmDatabaseSchema
 #' @param outputPath		A folder location to save the JSON files. Default is current working folder
-#' @param cdmVersion     Define the OMOP CDM version used:  currently support "4" and "5".  Default = "4"
+#'
 #' @param vocabDatabaseSchema		string name of database schema that contains OMOP Vocabulary. Default is cdmDatabaseSchema. On SQL Server, this should specifiy both the database and the schema, so for example 'results.dbo'.
 #' 
 #' @return none 
@@ -281,9 +276,9 @@ exportConditionEraToJson <- function (connectionDetails, cdmDatabaseSchema, resu
 #'   exportDashboardToJson(connectionDetails, cdmDatabaseSchema="cdm4_sim", outputPath="your/output/path")
 #' }
 #' @export
-exportDashboardToJson <- function (connectionDetails, cdmDatabaseSchema, resultsDatabaseSchema, outputPath = getwd(), cdmVersion="4", vocabDatabaseSchema = cdmDatabaseSchema)
+exportDashboardToJson <- function (connectionDetails, cdmDatabaseSchema, resultsDatabaseSchema, outputPath = getwd(), vocabDatabaseSchema = cdmDatabaseSchema)
 {
-  exportToJson(connectionDetails, cdmDatabaseSchema, resultsDatabaseSchema, outputPath, reports = c("DASHBOARD"), cdmVersion, vocabDatabaseSchema)  
+  exportToJson(connectionDetails, cdmDatabaseSchema, resultsDatabaseSchema, outputPath, reports = c("DASHBOARD"), vocabDatabaseSchema)  
 }
 
 #' @title exportDataDensityToJson
@@ -299,7 +294,7 @@ exportDashboardToJson <- function (connectionDetails, cdmDatabaseSchema, results
 #' @param cdmDatabaseSchema      Name of the database schema that contains the vocabulary files
 #' @param resultsDatabaseSchema  		Name of the database schema that contains the Achilles analysis files. Default is cdmDatabaseSchema
 #' @param outputPath		A folder location to save the JSON files. Default is current working folder
-#' @param cdmVersion     Define the OMOP CDM version used:  currently support "4" and "5".  Default = "4"
+#'
 #' @param vocabDatabaseSchema		string name of database schema that contains OMOP Vocabulary. Default is cdmDatabaseSchema. On SQL Server, this should specifiy both the database and the schema, so for example 'results.dbo'.
 #' 
 #' @return none 
@@ -308,9 +303,9 @@ exportDashboardToJson <- function (connectionDetails, cdmDatabaseSchema, results
 #'   exportDataDensityToJson(connectionDetails, cdmDatabaseSchema="cdm4_sim", outputPath="your/output/path")
 #' }
 #' @export
-exportDataDensityToJson <- function (connectionDetails, cdmDatabaseSchema, resultsDatabaseSchema, outputPath = getwd(), cdmVersion="4", vocabDatabaseSchema = cdmDatabaseSchema)
+exportDataDensityToJson <- function (connectionDetails, cdmDatabaseSchema, resultsDatabaseSchema, outputPath = getwd(), vocabDatabaseSchema = cdmDatabaseSchema)
 {
-  exportToJson(connectionDetails, cdmDatabaseSchema, resultsDatabaseSchema, outputPath, reports = c("DATA_DENSITY"), cdmVersion, vocabDatabaseSchema)  
+  exportToJson(connectionDetails, cdmDatabaseSchema, resultsDatabaseSchema, outputPath, reports = c("DATA_DENSITY"), vocabDatabaseSchema)  
 }
 
 #' @title exportDeathToJson
@@ -326,7 +321,7 @@ exportDataDensityToJson <- function (connectionDetails, cdmDatabaseSchema, resul
 #' @param cdmDatabaseSchema      Name of the database schema that contains the vocabulary files
 #' @param resultsDatabaseSchema  		Name of the database schema that contains the Achilles analysis files. Default is cdmDatabaseSchema
 #' @param outputPath		A folder location to save the JSON files. Default is current working folder
-#' @param cdmVersion     Define the OMOP CDM version used:  currently support "4" and "5".  Default = "4"
+#'
 #' @param vocabDatabaseSchema		string name of database schema that contains OMOP Vocabulary. Default is cdmDatabaseSchema. On SQL Server, this should specifiy both the database and the schema, so for example 'results.dbo'.
 #' 
 #' @return none 
@@ -335,9 +330,9 @@ exportDataDensityToJson <- function (connectionDetails, cdmDatabaseSchema, resul
 #'   exportDeathToJson(connectionDetails, cdmDatabaseSchema="cdm4_sim", outputPath="your/output/path")
 #' }
 #' @export
-exportDeathToJson <- function (connectionDetails, cdmDatabaseSchema, resultsDatabaseSchema, outputPath = getwd(), cdmVersion="4", vocabDatabaseSchema = cdmDatabaseSchema)
+exportDeathToJson <- function (connectionDetails, cdmDatabaseSchema, resultsDatabaseSchema, outputPath = getwd(), vocabDatabaseSchema = cdmDatabaseSchema)
 {
-  exportToJson(connectionDetails, cdmDatabaseSchema, resultsDatabaseSchema, outputPath, reports = c("DEATH"), cdmVersion, vocabDatabaseSchema)  
+  exportToJson(connectionDetails, cdmDatabaseSchema, resultsDatabaseSchema, outputPath, reports = c("DEATH"), vocabDatabaseSchema)  
 }
 
 #' @title exportDrugToJson
@@ -353,7 +348,7 @@ exportDeathToJson <- function (connectionDetails, cdmDatabaseSchema, resultsData
 #' @param cdmDatabaseSchema      Name of the database schema that contains the vocabulary files
 #' @param resultsDatabaseSchema  		Name of the database schema that contains the Achilles analysis files. Default is cdmDatabaseSchema
 #' @param outputPath		A folder location to save the JSON files. Default is current working folder
-#' @param cdmVersion     Define the OMOP CDM version used:  currently support "4" and "5".  Default = "4"
+#'
 #' @param vocabDatabaseSchema		string name of database schema that contains OMOP Vocabulary. Default is cdmDatabaseSchema. On SQL Server, this should specifiy both the database and the schema, so for example 'results.dbo'.
 #' 
 #' @return none 
@@ -362,9 +357,9 @@ exportDeathToJson <- function (connectionDetails, cdmDatabaseSchema, resultsData
 #'   exportDrugToJson(connectionDetails, cdmDatabaseSchema="cdm4_sim", outputPath="your/output/path")
 #' }
 #' @export
-exportDrugToJson <- function (connectionDetails, cdmDatabaseSchema, resultsDatabaseSchema, outputPath = getwd(), cdmVersion="4", vocabDatabaseSchema = cdmDatabaseSchema)
+exportDrugToJson <- function (connectionDetails, cdmDatabaseSchema, resultsDatabaseSchema, outputPath = getwd(), vocabDatabaseSchema = cdmDatabaseSchema)
 {
-  exportToJson(connectionDetails, cdmDatabaseSchema, resultsDatabaseSchema, outputPath, reports = c("DRUG"), cdmVersion, vocabDatabaseSchema)  
+  exportToJson(connectionDetails, cdmDatabaseSchema, resultsDatabaseSchema, outputPath, reports = c("DRUG"), vocabDatabaseSchema)  
 }
 
 #' @title exportDrugEraToJson
@@ -380,7 +375,7 @@ exportDrugToJson <- function (connectionDetails, cdmDatabaseSchema, resultsDatab
 #' @param cdmDatabaseSchema      Name of the database schema that contains the vocabulary files
 #' @param resultsDatabaseSchema  		Name of the database schema that contains the Achilles analysis files. Default is cdmDatabaseSchema
 #' @param outputPath		A folder location to save the JSON files. Default is current working folder
-#' @param cdmVersion     Define the OMOP CDM version used:  currently support "4" and "5".  Default = "4"
+#'
 #' @param vocabDatabaseSchema		string name of database schema that contains OMOP Vocabulary. Default is cdmDatabaseSchema. On SQL Server, this should specifiy both the database and the schema, so for example 'results.dbo'.
 #' 
 #' @return none 
@@ -389,9 +384,9 @@ exportDrugToJson <- function (connectionDetails, cdmDatabaseSchema, resultsDatab
 #'   exportDrugEraToJson(connectionDetails, cdmDatabaseSchema="cdm4_sim", outputPath="your/output/path")
 #' }
 #' @export
-exportDrugEraToJson <- function (connectionDetails, cdmDatabaseSchema, resultsDatabaseSchema, outputPath = getwd(), cdmVersion="4", vocabDatabaseSchema = cdmDatabaseSchema)
+exportDrugEraToJson <- function (connectionDetails, cdmDatabaseSchema, resultsDatabaseSchema, outputPath = getwd(), vocabDatabaseSchema = cdmDatabaseSchema)
 {
-  exportToJson(connectionDetails, cdmDatabaseSchema, resultsDatabaseSchema, outputPath, reports = c("DRUG_ERA"), cdmVersion, vocabDatabaseSchema)  
+  exportToJson(connectionDetails, cdmDatabaseSchema, resultsDatabaseSchema, outputPath, reports = c("DRUG_ERA"), vocabDatabaseSchema)  
 }
 
 #' @title exportHeelToJson
@@ -407,7 +402,7 @@ exportDrugEraToJson <- function (connectionDetails, cdmDatabaseSchema, resultsDa
 #' @param cdmDatabaseSchema      Name of the database schema that contains the vocabulary files
 #' @param resultsDatabaseSchema  		Name of the database schema that contains the Achilles analysis files. Default is cdmDatabaseSchema
 #' @param outputPath		A folder location to save the JSON files. Default is current working folder
-#' @param cdmVersion     Define the OMOP CDM version used:  currently support "4" and "5".  Default = "4"
+#'
 #' @param vocabDatabaseSchema		string name of database schema that contains OMOP Vocabulary. Default is cdmDatabaseSchema. On SQL Server, this should specifiy both the database and the schema, so for example 'results.dbo'.
 #' 
 #' @return none 
@@ -416,9 +411,9 @@ exportDrugEraToJson <- function (connectionDetails, cdmDatabaseSchema, resultsDa
 #'   exportHeelToJson(connectionDetails, cdmDatabaseSchema="cdm4_sim", outputPath="your/output/path")
 #' }
 #' @export
-exportHeelToJson <- function (connectionDetails, cdmDatabaseSchema, resultsDatabaseSchema, outputPath = getwd(), cdmVersion="4", vocabDatabaseSchema = cdmDatabaseSchema)
+exportHeelToJson <- function (connectionDetails, cdmDatabaseSchema, resultsDatabaseSchema, outputPath = getwd(), vocabDatabaseSchema = cdmDatabaseSchema)
 {
-  exportToJson(connectionDetails, cdmDatabaseSchema, resultsDatabaseSchema, outputPath, reports = c("HEEL"), cdmVersion, vocabDatabaseSchema)  
+  exportToJson(connectionDetails, cdmDatabaseSchema, resultsDatabaseSchema, outputPath, reports = c("HEEL"), vocabDatabaseSchema)  
 }
 
 #' @title exportMetaToJson
@@ -434,7 +429,7 @@ exportHeelToJson <- function (connectionDetails, cdmDatabaseSchema, resultsDatab
 #' @param cdmDatabaseSchema      Name of the database schema that contains the vocabulary files
 #' @param resultsDatabaseSchema  		Name of the database schema that contains the Achilles analysis files. Default is cdmDatabaseSchema
 #' @param outputPath		A folder location to save the JSON files. Default is current working folder
-#' @param cdmVersion     Define the OMOP CDM version used:  currently support "4" and "5".  Default = "4"
+#'
 #' @param vocabDatabaseSchema		string name of database schema that contains OMOP Vocabulary. Default is cdmDatabaseSchema. On SQL Server, this should specifiy both the database and the schema, so for example 'results.dbo'.
 #' 
 #' @return none 
@@ -443,9 +438,9 @@ exportHeelToJson <- function (connectionDetails, cdmDatabaseSchema, resultsDatab
 #'   exportMetaToJson(connectionDetails, cdmDatabaseSchema="cdm4_sim", outputPath="your/output/path")
 #' }
 #' @export
-exportMetaToJson <- function (connectionDetails, cdmDatabaseSchema, resultsDatabaseSchema, outputPath = getwd(), cdmVersion="4", vocabDatabaseSchema = cdmDatabaseSchema)
+exportMetaToJson <- function (connectionDetails, cdmDatabaseSchema, resultsDatabaseSchema, outputPath = getwd(), vocabDatabaseSchema = cdmDatabaseSchema)
 {
-  exportToJson(connectionDetails, cdmDatabaseSchema, resultsDatabaseSchema, outputPath, reports = c("META"), cdmVersion, vocabDatabaseSchema)  
+  exportToJson(connectionDetails, cdmDatabaseSchema, resultsDatabaseSchema, outputPath, reports = c("META"), vocabDatabaseSchema)  
 }
 
 #' @title exportMeasurementToJson
@@ -461,7 +456,7 @@ exportMetaToJson <- function (connectionDetails, cdmDatabaseSchema, resultsDatab
 #' @param cdmDatabaseSchema      Name of the database schema that contains the vocabulary files
 #' @param resultsDatabaseSchema  		Name of the database schema that contains the Achilles analysis files. Default is cdmDatabaseSchema
 #' @param outputPath		A folder location to save the JSON files. Default is current working folder
-#' @param cdmVersion     Define the OMOP CDM version used:  currently support "4" and "5".  Default = "4"
+#'
 #' @param vocabDatabaseSchema		string name of database schema that contains OMOP Vocabulary. Default is cdmDatabaseSchema. On SQL Server, this should specifiy both the database and the schema, so for example 'results.dbo'.
 #' 
 #' @return none 
@@ -470,9 +465,9 @@ exportMetaToJson <- function (connectionDetails, cdmDatabaseSchema, resultsDatab
 #'   exportMeasurementToJson(connectionDetails, cdmDatabaseSchema="cdm4_sim", outputPath="your/output/path")
 #' }
 #' @export
-exportMeasurementToJson <- function (connectionDetails, cdmDatabaseSchema, resultsDatabaseSchema, outputPath = getwd(), cdmVersion="4", vocabDatabaseSchema = cdmDatabaseSchema)
+exportMeasurementToJson <- function (connectionDetails, cdmDatabaseSchema, resultsDatabaseSchema, outputPath = getwd(), vocabDatabaseSchema = cdmDatabaseSchema)
 {
-  exportToJson(connectionDetails, cdmDatabaseSchema, resultsDatabaseSchema, outputPath, reports = c("MEASUREMENT"), cdmVersion, vocabDatabaseSchema)  
+  exportToJson(connectionDetails, cdmDatabaseSchema, resultsDatabaseSchema, outputPath, reports = c("MEASUREMENT"), vocabDatabaseSchema)  
 }
 
 #' @title exportObservationToJson
@@ -488,7 +483,7 @@ exportMeasurementToJson <- function (connectionDetails, cdmDatabaseSchema, resul
 #' @param cdmDatabaseSchema      Name of the database schema that contains the vocabulary files
 #' @param resultsDatabaseSchema  		Name of the database schema that contains the Achilles analysis files. Default is cdmDatabaseSchema
 #' @param outputPath		A folder location to save the JSON files. Default is current working folder
-#' @param cdmVersion     Define the OMOP CDM version used:  currently support "4" and "5".  Default = "4"
+#'
 #' @param vocabDatabaseSchema		string name of database schema that contains OMOP Vocabulary. Default is cdmDatabaseSchema. On SQL Server, this should specifiy both the database and the schema, so for example 'results.dbo'.
 #' 
 #' @return none 
@@ -497,9 +492,9 @@ exportMeasurementToJson <- function (connectionDetails, cdmDatabaseSchema, resul
 #'   exportObservationToJson(connectionDetails, cdmDatabaseSchema="cdm4_sim", outputPath="your/output/path")
 #' }
 #' @export
-exportObservationToJson <- function (connectionDetails, cdmDatabaseSchema, resultsDatabaseSchema, outputPath = getwd(), cdmVersion="4", vocabDatabaseSchema = cdmDatabaseSchema)
+exportObservationToJson <- function (connectionDetails, cdmDatabaseSchema, resultsDatabaseSchema, outputPath = getwd(), vocabDatabaseSchema = cdmDatabaseSchema)
 {
-  exportToJson(connectionDetails, cdmDatabaseSchema, resultsDatabaseSchema, outputPath, reports = c("OBSERVATION"), cdmVersion, vocabDatabaseSchema)  
+  exportToJson(connectionDetails, cdmDatabaseSchema, resultsDatabaseSchema, outputPath, reports = c("OBSERVATION"), vocabDatabaseSchema)  
 }
 
 #' @title exportObservationPeriodToJson
@@ -515,7 +510,7 @@ exportObservationToJson <- function (connectionDetails, cdmDatabaseSchema, resul
 #' @param cdmDatabaseSchema      Name of the database schema that contains the vocabulary files
 #' @param resultsDatabaseSchema  		Name of the database schema that contains the Achilles analysis files. Default is cdmDatabaseSchema
 #' @param outputPath		A folder location to save the JSON files. Default is current working folder
-#' @param cdmVersion     Define the OMOP CDM version used:  currently support "4" and "5".  Default = "4"
+#'
 #' @param vocabDatabaseSchema		string name of database schema that contains OMOP Vocabulary. Default is cdmDatabaseSchema. On SQL Server, this should specifiy both the database and the schema, so for example 'results.dbo'.
 #' 
 #' @return none 
@@ -524,9 +519,9 @@ exportObservationToJson <- function (connectionDetails, cdmDatabaseSchema, resul
 #'   exportObservationPeriodToJson(connectionDetails, cdmDatabaseSchema="cdm4_sim", outputPath="your/output/path")
 #' }
 #' @export
-exportObservationPeriodToJson <- function (connectionDetails, cdmDatabaseSchema, resultsDatabaseSchema, outputPath = getwd(), cdmVersion="4", vocabDatabaseSchema = cdmDatabaseSchema)
+exportObservationPeriodToJson <- function (connectionDetails, cdmDatabaseSchema, resultsDatabaseSchema, outputPath = getwd(), vocabDatabaseSchema = cdmDatabaseSchema)
 {
-  exportToJson(connectionDetails, cdmDatabaseSchema, resultsDatabaseSchema, outputPath, reports = c("OBSERVATION_PERIOD"), cdmVersion, vocabDatabaseSchema)  
+  exportToJson(connectionDetails, cdmDatabaseSchema, resultsDatabaseSchema, outputPath, reports = c("OBSERVATION_PERIOD"), vocabDatabaseSchema)  
 }
 
 #' @title exportPersonToJson
@@ -542,7 +537,7 @@ exportObservationPeriodToJson <- function (connectionDetails, cdmDatabaseSchema,
 #' @param cdmDatabaseSchema    	Name of the database schema that contains the vocabulary files
 #' @param resultsDatabaseSchema			Name of the database schema that contains the Achilles analysis files. Default is cdmDatabaseSchema
 #' @param outputPath		A folder location to save the JSON files. Default is current working folder
-#' @param cdmVersion     Define the OMOP CDM version used:  currently support "4" and "5".  Default = "4"
+#'
 #' @param vocabDatabaseSchema		string name of database schema that contains OMOP Vocabulary. Default is cdmDatabaseSchema. On SQL Server, this should specifiy both the database and the schema, so for example 'results.dbo'.
 #' 
 #' @return none 
@@ -551,9 +546,9 @@ exportObservationPeriodToJson <- function (connectionDetails, cdmDatabaseSchema,
 #'   exportPersonToJson(connectionDetails, cdmDatabaseSchema="cdm4_sim", outputPath="your/output/path")
 #' }
 #' @export
-exportPersonToJson <- function (connectionDetails, cdmDatabaseSchema, resultsDatabaseSchema, outputPath = getwd(), cdmVersion="4", vocabDatabaseSchema = cdmDatabaseSchema)
+exportPersonToJson <- function (connectionDetails, cdmDatabaseSchema, resultsDatabaseSchema, outputPath = getwd(), vocabDatabaseSchema = cdmDatabaseSchema)
 {
-  exportToJson(connectionDetails, cdmDatabaseSchema, resultsDatabaseSchema, outputPath, reports = c("PERSON"), cdmVersion, vocabDatabaseSchema)  
+  exportToJson(connectionDetails, cdmDatabaseSchema, resultsDatabaseSchema, outputPath, reports = c("PERSON"), vocabDatabaseSchema)  
 }
 
 #' @title exportProcedureToJson
@@ -569,7 +564,7 @@ exportPersonToJson <- function (connectionDetails, cdmDatabaseSchema, resultsDat
 #' @param cdmDatabaseSchema      Name of the database schema that contains the vocabulary files
 #' @param resultsDatabaseSchema  		Name of the database schema that contains the Achilles analysis files. Default is cdmDatabaseSchema
 #' @param outputPath		A folder location to save the JSON files. Default is current working folder
-#' @param cdmVersion     Define the OMOP CDM version used:  currently support "4" and "5".  Default = "4"
+#'
 #' @param vocabDatabaseSchema		string name of database schema that contains OMOP Vocabulary. Default is cdmDatabaseSchema. On SQL Server, this should specifiy both the database and the schema, so for example 'results.dbo'.
 #' 
 #' @return none 
@@ -578,9 +573,9 @@ exportPersonToJson <- function (connectionDetails, cdmDatabaseSchema, resultsDat
 #'   exportProcedureToJson(connectionDetails, cdmDatabaseSchema="cdm4_sim", outputPath="your/output/path")
 #' }
 #' @export
-exportProcedureToJson <- function (connectionDetails, cdmDatabaseSchema, resultsDatabaseSchema, outputPath = getwd(), cdmVersion="4", vocabDatabaseSchema = cdmDatabaseSchema)
+exportProcedureToJson <- function (connectionDetails, cdmDatabaseSchema, resultsDatabaseSchema, outputPath = getwd(), vocabDatabaseSchema = cdmDatabaseSchema)
 {
-  exportToJson(connectionDetails, cdmDatabaseSchema, resultsDatabaseSchema, outputPath, reports = c("PROCEDURE"), cdmVersion, vocabDatabaseSchema)  
+  exportToJson(connectionDetails, cdmDatabaseSchema, resultsDatabaseSchema, outputPath, reports = c("PROCEDURE"), vocabDatabaseSchema)  
 }
 
 #' @title exportVisitToJson
@@ -596,7 +591,6 @@ exportProcedureToJson <- function (connectionDetails, cdmDatabaseSchema, results
 #' @param cdmDatabaseSchema      Name of the database schema that contains the vocabulary files
 #' @param resultsDatabaseSchema  		Name of the database schema that contains the Achilles analysis files. Default is cdmDatabaseSchema
 #' @param outputPath		A folder location to save the JSON files. Default is current working folder
-#' @param cdmVersion     Define the OMOP CDM version used:  currently support "4" and "5".  Default = "4"
 #' @param vocabDatabaseSchema		string name of database schema that contains OMOP Vocabulary. Default is cdmDatabaseSchema. On SQL Server, this should specifiy both the database and the schema, so for example 'results.dbo'.
 #' 
 #' @return none 
@@ -605,12 +599,12 @@ exportProcedureToJson <- function (connectionDetails, cdmDatabaseSchema, results
 #'   exportVisitToJson(connectionDetails, cdmDatabaseSchema="cdm4_sim", outputPath="your/output/path")
 #' }
 #' @export
-exportVisitToJson <- function (connectionDetails, cdmDatabaseSchema, resultsDatabaseSchema, outputPath = getwd(), cdmVersion="4", vocabDatabaseSchema = cdmDatabaseSchema)
+exportVisitToJson <- function (connectionDetails, cdmDatabaseSchema, resultsDatabaseSchema, outputPath = getwd(), vocabDatabaseSchema = cdmDatabaseSchema)
 {
-  exportToJson(connectionDetails, cdmDatabaseSchema, resultsDatabaseSchema, outputPath, reports = c("VISIT"), cdmVersion, vocabDatabaseSchema)  
+  exportToJson(connectionDetails, cdmDatabaseSchema, resultsDatabaseSchema, outputPath, reports = c("VISIT"), vocabDatabaseSchema)  
 }
 
-generateAchillesHeelReport <- function(conn, dbms, cdmDatabaseSchema, resultsDatabaseSchema, outputPath, cdmVersion = "4", vocabDatabaseSchema = cdmDatabaseSchema) {
+generateAchillesHeelReport <- function(conn, dbms, cdmDatabaseSchema, resultsDatabaseSchema, outputPath, vocabDatabaseSchema = cdmDatabaseSchema) {
   writeLines("Generating achilles heel report")
   output <- {}
   
@@ -627,7 +621,7 @@ generateAchillesHeelReport <- function(conn, dbms, cdmDatabaseSchema, resultsDat
   write(jsonOutput, file=paste(outputPath, "/achillesheel.json", sep=""))  
 }
 
-generateDomainMetaReport <- function(conn, dbms, cdmDatabaseSchema, resultsDatabaseSchema, outputPath, cdmVersion = "4", vocabDatabaseSchema = cdmDatabaseSchema) {
+generateDomainMetaReport <- function(conn, dbms, cdmDatabaseSchema, resultsDatabaseSchema, outputPath, vocabDatabaseSchema = cdmDatabaseSchema) {
   writeLines("Generating domain meta report")
   output <- {}
   
@@ -649,12 +643,12 @@ generateDomainMetaReport <- function(conn, dbms, cdmDatabaseSchema, resultsDatab
   }
 }
 
-generateDrugEraTreemap <- function(conn, dbms,cdmDatabaseSchema, resultsDatabaseSchema, outputPath, cdmVersion = "4", vocabDatabaseSchema = cdmDatabaseSchema) {
+generateDrugEraTreemap <- function(conn, dbms,cdmDatabaseSchema, resultsDatabaseSchema, outputPath, vocabDatabaseSchema = cdmDatabaseSchema) {
   writeLines("Generating drug era treemap")
   progressBar <- utils::txtProgressBar(max=1,style=3)
   progress = 0
   
-queryDrugEraTreemap <- SqlRender::loadRenderTranslateSql(sqlFilename = "/drugera/sqlDrugEraTreemap.sql",
+queryDrugEraTreemap <- SqlRender::loadRenderTranslateSql(sqlFilename = "export/drugera/sqlDrugEraTreemap.sql",
                                                 packageName = "Achilles",
                                                 dbms = dbms,
                                                 cdm_database_schema = cdmDatabaseSchema,
@@ -671,7 +665,7 @@ queryDrugEraTreemap <- SqlRender::loadRenderTranslateSql(sqlFilename = "/drugera
   close(progressBar)  
 }
 
-generateDrugTreemap <- function(conn, dbms,cdmDatabaseSchema, resultsDatabaseSchema, outputPath, cdmVersion = "4", vocabDatabaseSchema = cdmDatabaseSchema) {
+generateDrugTreemap <- function(conn, dbms,cdmDatabaseSchema, resultsDatabaseSchema, outputPath, vocabDatabaseSchema = cdmDatabaseSchema) {
   writeLines("Generating drug treemap")
   progressBar <- utils::txtProgressBar(max=1,style=3)
   progress = 0
@@ -693,7 +687,7 @@ generateDrugTreemap <- function(conn, dbms,cdmDatabaseSchema, resultsDatabaseSch
   close(progressBar)  
 }
 
-generateConditionTreemap <- function(conn, dbms, cdmDatabaseSchema, resultsDatabaseSchema, outputPath, cdmVersion = "4", vocabDatabaseSchema = cdmDatabaseSchema) {
+generateConditionTreemap <- function(conn, dbms, cdmDatabaseSchema, resultsDatabaseSchema, outputPath, vocabDatabaseSchema = cdmDatabaseSchema) {
   writeLines("Generating condition treemap")
   progressBar <- utils::txtProgressBar(max=1,style=3)
   progress = 0
@@ -715,7 +709,7 @@ generateConditionTreemap <- function(conn, dbms, cdmDatabaseSchema, resultsDatab
   close(progressBar)
 }
 
-generateConditionEraTreemap <- function(conn, dbms, cdmDatabaseSchema, resultsDatabaseSchema, outputPath, cdmVersion = "4", vocabDatabaseSchema = cdmDatabaseSchema) {
+generateConditionEraTreemap <- function(conn, dbms, cdmDatabaseSchema, resultsDatabaseSchema, outputPath, vocabDatabaseSchema = cdmDatabaseSchema) {
   writeLines("Generating condition era treemap")
   progressBar <- utils::txtProgressBar(max=1,style=3)
   progress = 0
@@ -737,7 +731,7 @@ generateConditionEraTreemap <- function(conn, dbms, cdmDatabaseSchema, resultsDa
   close(progressBar)
 }
 
-generateConditionReports <- function(conn, dbms, cdmDatabaseSchema, resultsDatabaseSchema, outputPath, cdmVersion = "4", vocabDatabaseSchema = cdmDatabaseSchema) {
+generateConditionReports <- function(conn, dbms, cdmDatabaseSchema, resultsDatabaseSchema, outputPath, vocabDatabaseSchema = cdmDatabaseSchema) {
   writeLines("Generating condition reports")
   
   treemapFile <- file.path(outputPath,"condition_treemap.json")
@@ -823,7 +817,7 @@ generateConditionReports <- function(conn, dbms, cdmDatabaseSchema, resultsDatab
   close(progressBar)
 }
 
-generateConditionEraReports <- function(conn, dbms, cdmDatabaseSchema, resultsDatabaseSchema, outputPath, cdmVersion = "4", vocabDatabaseSchema = cdmDatabaseSchema) {
+generateConditionEraReports <- function(conn, dbms, cdmDatabaseSchema, resultsDatabaseSchema, outputPath, vocabDatabaseSchema = cdmDatabaseSchema) {
   writeLines("Generating condition era reports")
   
   treemapFile <- file.path(outputPath,"conditionera_treemap.json")
@@ -908,7 +902,7 @@ generateConditionEraReports <- function(conn, dbms, cdmDatabaseSchema, resultsDa
   close(progressBar)
 }
 
-generateDrugEraReports <- function(conn, dbms, cdmDatabaseSchema, resultsDatabaseSchema, outputPath, cdmVersion = "4", vocabDatabaseSchema = cdmDatabaseSchema) {
+generateDrugEraReports <- function(conn, dbms, cdmDatabaseSchema, resultsDatabaseSchema, outputPath, vocabDatabaseSchema = cdmDatabaseSchema) {
   writeLines("Generating drug era reports")
   
   
@@ -994,7 +988,7 @@ generateDrugEraReports <- function(conn, dbms, cdmDatabaseSchema, resultsDatabas
   close(progressBar)
 }
 
-generateDrugReports <- function(conn, dbms, cdmDatabaseSchema, resultsDatabaseSchema, outputPath, cdmVersion = "4", vocabDatabaseSchema = cdmDatabaseSchema) {
+generateDrugReports <- function(conn, dbms, cdmDatabaseSchema, resultsDatabaseSchema, outputPath, vocabDatabaseSchema = cdmDatabaseSchema) {
   writeLines("Generating drug reports")
   
   treemapFile <- file.path(outputPath,"drug_treemap.json")
@@ -1118,7 +1112,7 @@ generateDrugReports <- function(conn, dbms, cdmDatabaseSchema, resultsDatabaseSc
   close(progressBar)
 }
 
-generateProcedureTreemap <- function(conn, dbms, cdmDatabaseSchema, resultsDatabaseSchema, outputPath, cdmVersion = "4", vocabDatabaseSchema = cdmDatabaseSchema) {
+generateProcedureTreemap <- function(conn, dbms, cdmDatabaseSchema, resultsDatabaseSchema, outputPath, vocabDatabaseSchema = cdmDatabaseSchema) {
   writeLines("Generating procedure treemap")
   progressBar <- utils::txtProgressBar(max=1,style=3)
   progress = 0
@@ -1140,7 +1134,7 @@ generateProcedureTreemap <- function(conn, dbms, cdmDatabaseSchema, resultsDatab
   close(progressBar)
 }
 
-generateProcedureReports <- function(conn, dbms, cdmDatabaseSchema, resultsDatabaseSchema, outputPath, cdmVersion = "4", vocabDatabaseSchema = cdmDatabaseSchema) {
+generateProcedureReports <- function(conn, dbms, cdmDatabaseSchema, resultsDatabaseSchema, outputPath, vocabDatabaseSchema = cdmDatabaseSchema) {
   writeLines("Generating procedure reports")
   
   treemapFile <- file.path(outputPath,"procedure_treemap.json")
@@ -1234,7 +1228,7 @@ generateProcedureReports <- function(conn, dbms, cdmDatabaseSchema, resultsDatab
   close(progressBar)
 }
 
-generatePersonReport <- function(conn, dbms, cdmDatabaseSchema, resultsDatabaseSchema, outputPath, cdmVersion = "4", vocabDatabaseSchema = cdmDatabaseSchema)
+generatePersonReport <- function(conn, dbms, cdmDatabaseSchema, resultsDatabaseSchema, outputPath, vocabDatabaseSchema = cdmDatabaseSchema)
 {
   writeLines("Generating person reports")
   progressBar <- utils::txtProgressBar(max=7,style=3)
@@ -1360,7 +1354,7 @@ generatePersonReport <- function(conn, dbms, cdmDatabaseSchema, resultsDatabaseS
   close(progressBar)
 }
 
-generateObservationPeriodReport <- function(conn, dbms, cdmDatabaseSchema, resultsDatabaseSchema, outputPath, cdmVersion = "4", vocabDatabaseSchema = cdmDatabaseSchema)
+generateObservationPeriodReport <- function(conn, dbms, cdmDatabaseSchema, resultsDatabaseSchema, outputPath, vocabDatabaseSchema = cdmDatabaseSchema)
 {
   writeLines("Generating observation period reports")
   progressBar <- utils::txtProgressBar(max=11,style=3)
@@ -1614,7 +1608,7 @@ generateDashboardReport <- function(outputPath)
   close(progressBar)
 }
 
-generateDataDensityReport <- function(conn, dbms,cdmDatabaseSchema, resultsDatabaseSchema, outputPath, cdmVersion = "4", vocabDatabaseSchema = cdmDatabaseSchema)
+generateDataDensityReport <- function(conn, dbms,cdmDatabaseSchema, resultsDatabaseSchema, outputPath, vocabDatabaseSchema = cdmDatabaseSchema)
 {
   writeLines("Generating data density reports")
   progressBar <- utils::txtProgressBar(max=3,style=3)
@@ -1684,7 +1678,7 @@ generateDataDensityReport <- function(conn, dbms,cdmDatabaseSchema, resultsDatab
   
 }
 
-generateMeasurementTreemap <- function(conn, dbms, cdmDatabaseSchema, resultsDatabaseSchema, outputPath, cdmVersion = "4", vocabDatabaseSchema = cdmDatabaseSchema) {
+generateMeasurementTreemap <- function(conn, dbms, cdmDatabaseSchema, resultsDatabaseSchema, outputPath, vocabDatabaseSchema = cdmDatabaseSchema) {
   writeLines("Generating measurement treemap")
   progressBar <- utils::txtProgressBar(max=1,style=3)
   progress = 0
@@ -1707,7 +1701,7 @@ generateMeasurementTreemap <- function(conn, dbms, cdmDatabaseSchema, resultsDat
   
 }
 
-generateMeasurementReports <- function(conn, dbms, cdmDatabaseSchema, resultsDatabaseSchema, outputPath, cdmVersion = "4", vocabDatabaseSchema = cdmDatabaseSchema)
+generateMeasurementReports <- function(conn, dbms, cdmDatabaseSchema, resultsDatabaseSchema, outputPath, vocabDatabaseSchema = cdmDatabaseSchema)
 {
   writeLines("Generating Measurement reports")
   
@@ -1855,7 +1849,7 @@ generateMeasurementReports <- function(conn, dbms, cdmDatabaseSchema, resultsDat
   
 }
 
-generateObservationTreemap <- function(conn, dbms, cdmDatabaseSchema, resultsDatabaseSchema, outputPath, cdmVersion = "4", vocabDatabaseSchema = cdmDatabaseSchema) {
+generateObservationTreemap <- function(conn, dbms, cdmDatabaseSchema, resultsDatabaseSchema, outputPath, vocabDatabaseSchema = cdmDatabaseSchema) {
   writeLines("Generating observation treemap")
   progressBar <- utils::txtProgressBar(max=1,style=3)
   progress = 0
@@ -1878,7 +1872,7 @@ generateObservationTreemap <- function(conn, dbms, cdmDatabaseSchema, resultsDat
   
 }
 
-generateObservationReports <- function(conn, dbms, cdmDatabaseSchema, resultsDatabaseSchema, outputPath, cdmVersion = "4", vocabDatabaseSchema = cdmDatabaseSchema)
+generateObservationReports <- function(conn, dbms, cdmDatabaseSchema, resultsDatabaseSchema, outputPath, vocabDatabaseSchema = cdmDatabaseSchema)
 {
   writeLines("Generating Observation reports")
   
@@ -1943,62 +1937,13 @@ generateObservationReports <- function(conn, dbms, cdmDatabaseSchema, resultsDat
                                                       vocab_database_schema = vocabDatabaseSchema
   )
   
-  if (cdmVersion == "4")
-  {
   
-    queryRecordsByUnit <- SqlRender::loadRenderTranslateSql(sqlFilename = "export/observation/sqlRecordsByUnit.sql",
-                                                 packageName = "Achilles",
-                                                 dbms = dbms,
-                                                 cdm_database_schema = cdmDatabaseSchema,
-                                                 results_database_schema = resultsDatabaseSchema,
-                                                 vocab_database_schema = vocabDatabaseSchema
-    )
-    
-    queryObservationValueDistribution <- SqlRender::loadRenderTranslateSql(sqlFilename = "export/observation/sqlObservationValueDistribution.sql",
-                                                                packageName = "Achilles",
-                                                                dbms = dbms,
-                                                                cdm_database_schema = cdmDatabaseSchema,
-                                                                results_database_schema = resultsDatabaseSchema,
-                                                                vocab_database_schema = vocabDatabaseSchema
-    )
-    
-    queryLowerLimitDistribution <- SqlRender::loadRenderTranslateSql(sqlFilename = "export/observation/sqlLowerLimitDistribution.sql",
-                                                          packageName = "Achilles",
-                                                          dbms = dbms,
-                                                          cdm_database_schema = cdmDatabaseSchema,
-                                                          results_database_schema = resultsDatabaseSchema,
-                                                          vocab_database_schema = vocabDatabaseSchema
-    )
-    
-    queryUpperLimitDistribution <- SqlRender::loadRenderTranslateSql(sqlFilename = "export/observation/sqlUpperLimitDistribution.sql",
-                                                          packageName = "Achilles",
-                                                          dbms = dbms,
-                                                          cdm_database_schema = cdmDatabaseSchema,
-                                                          results_database_schema = resultsDatabaseSchema,
-                                                          vocab_database_schema = vocabDatabaseSchema
-    )
-    
-    queryValuesRelativeToNorm <- SqlRender::loadRenderTranslateSql(sqlFilename = "export/observation/sqlValuesRelativeToNorm.sql",
-                                                        packageName = "Achilles",
-                                                        dbms = dbms,
-                                                        cdm_database_schema = cdmDatabaseSchema,
-                                                        results_database_schema = resultsDatabaseSchema,
-                                                        vocab_database_schema = vocabDatabaseSchema
-    )
-  }  
   dataPrevalenceByGenderAgeYear <- DatabaseConnector::querySql(conn,queryPrevalenceByGenderAgeYear) 
   dataPrevalenceByMonth <- DatabaseConnector::querySql(conn,queryPrevalenceByMonth)  
   dataObservationsByType <- DatabaseConnector::querySql(conn,queryObservationsByType)    
   dataAgeAtFirstOccurrence <- DatabaseConnector::querySql(conn,queryAgeAtFirstOccurrence)
   dataObsFrequencyDistribution <- DatabaseConnector::querySql(conn,queryObsFrequencyDistribution)
-  if (cdmVersion == "4")
-  {
-    dataRecordsByUnit <- DatabaseConnector::querySql(conn,queryRecordsByUnit)
-    dataObservationValueDistribution <- DatabaseConnector::querySql(conn,queryObservationValueDistribution)
-    dataLowerLimitDistribution <- DatabaseConnector::querySql(conn,queryLowerLimitDistribution)
-    dataUpperLimitDistribution <- DatabaseConnector::querySql(conn,queryUpperLimitDistribution)
-    dataValuesRelativeToNorm <- DatabaseConnector::querySql(conn,queryValuesRelativeToNorm)
-  }
+
   
   buildObservationReport <- function(concept_id) {
     report <- {}
@@ -2008,14 +1953,6 @@ generateObservationReports <- function(conn, dbms, cdmDatabaseSchema, resultsDat
     report$OBSERVATIONS_BY_TYPE <- dataObservationsByType[dataObservationsByType$OBSERVATION_CONCEPT_ID == concept_id,c(4,5)]
     report$AGE_AT_FIRST_OCCURRENCE <- dataAgeAtFirstOccurrence[dataAgeAtFirstOccurrence$CONCEPT_ID == concept_id,c(2,3,4,5,6,7,8,9)]
     
-    if (cdmVersion == "4")
-    {
-      report$RECORDS_BY_UNIT <- dataRecordsByUnit[dataRecordsByUnit$OBSERVATION_CONCEPT_ID == concept_id,c(4,5)]
-      report$OBSERVATION_VALUE_DISTRIBUTION <- dataObservationValueDistribution[dataObservationValueDistribution$CONCEPT_ID == concept_id,c(2,3,4,5,6,7,8,9)]
-      report$LOWER_LIMIT_DISTRIBUTION <- dataLowerLimitDistribution[dataLowerLimitDistribution$CONCEPT_ID == concept_id,c(2,3,4,5,6,7,8,9)]
-      report$UPPER_LIMIT_DISTRIBUTION <- dataUpperLimitDistribution[dataUpperLimitDistribution$CONCEPT_ID == concept_id,c(2,3,4,5,6,7,8,9)]
-      report$VALUES_RELATIVE_TO_NORM <- dataValuesRelativeToNorm[dataValuesRelativeToNorm$OBSERVATION_CONCEPT_ID == concept_id,c(4,5)]
-    }
 
     filename <- paste(outputPath, "/observations/observation_" , concept_id , ".json", sep='')  
     
@@ -2035,7 +1972,7 @@ generateObservationReports <- function(conn, dbms, cdmDatabaseSchema, resultsDat
   
 }
 
-generateVisitTreemap <- function(conn, dbms, cdmDatabaseSchema, resultsDatabaseSchema, outputPath, cdmVersion = "4", vocabDatabaseSchema = cdmDatabaseSchema){
+generateVisitTreemap <- function(conn, dbms, cdmDatabaseSchema, resultsDatabaseSchema, outputPath, vocabDatabaseSchema = cdmDatabaseSchema){
   writeLines("Generating visit_occurrence treemap")
   progressBar <- utils::txtProgressBar(max=1,style=3)
   progress = 0
@@ -2057,7 +1994,7 @@ generateVisitTreemap <- function(conn, dbms, cdmDatabaseSchema, resultsDatabaseS
   close(progressBar)  
 }
 
-generateVisitReports <- function(conn, dbms, cdmDatabaseSchema, resultsDatabaseSchema, outputPath, cdmVersion = "4", vocabDatabaseSchema = cdmDatabaseSchema){
+generateVisitReports <- function(conn, dbms, cdmDatabaseSchema, resultsDatabaseSchema, outputPath, vocabDatabaseSchema = cdmDatabaseSchema){
   writeLines("Generating visit reports")
   
   treemapFile <- file.path(outputPath,"visit_treemap.json")
@@ -2141,7 +2078,7 @@ generateVisitReports <- function(conn, dbms, cdmDatabaseSchema, resultsDatabaseS
   close(progressBar)  
 }
 
-generateDeathReports <- function(conn, dbms, cdmDatabaseSchema, resultsDatabaseSchema, outputPath, cdmVersion = "4", vocabDatabaseSchema = cdmDatabaseSchema){
+generateDeathReports <- function(conn, dbms, cdmDatabaseSchema, resultsDatabaseSchema, outputPath, vocabDatabaseSchema = cdmDatabaseSchema){
   writeLines("Generating death reports")
   progressBar <- utils::txtProgressBar(max=4,style=3)
   progress = 0

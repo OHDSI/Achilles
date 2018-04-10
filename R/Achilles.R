@@ -373,29 +373,10 @@ achilles <- function (connectionDetails,
   } else if (dropScratchTables) {
     # Drop the scratch tables
     writeLines(sprintf("Dropping scratch Achilles tables from schema %s", scratchDatabaseSchema))
-    
-    # dropSqls <- lapply(analysisDetails$ANALYSIS_ID, function(analysisId) {
-    #   .dropAchillesScratchTable(connectionDetails = connectionDetails,
-    #                             scratchDatabaseSchema = scratchDatabaseSchema,
-    #                             tempAchillesPrefix = tempAchillesPrefix,
-    #                             resultsTables = resultsTables)
-    # })
-    # 
-    # cluster <- OhdsiRTools::makeCluster(numberOfThreads = numThreads)
-    # dummy <- OhdsiRTools::clusterApply(cluster = cluster, 
-    #                                    x = dropSqls, 
-    #                                    function(sql) {
-    #                                      connection <- DatabaseConnector::connect(connectionDetails = connectionDetails)
-    #                                      DatabaseConnector::executeSql(connection = connection, sql = sql)
-    #                                      DatabaseConnector::disconnect(connection = connection)
-    #                                    })
-    # 
-    # OhdsiRTools::stopCluster(cluster = cluster)
-    
+   
     dropAllScratchTables(connectionDetails = connectionDetails, 
                          scratchDatabaseSchema = scratchDatabaseSchema, 
                          tempAchillesPrefix = tempAchillesPrefix, 
-                         tempHeelPrefix = tempHeelPrefix, 
                          numThreads = numThreads)
     
     writeLines(sprintf("Temporary Achilles tables removed from schema %s", scratchDatabaseSchema))
@@ -426,7 +407,7 @@ achilles <- function (connectionDetails,
   indicesSql <- "/* INDEX CREATION SKIPPED PER USER REQUEST */"
   
   if (createIndices && 
-      !(connectionDetails$dbms %in% c("redshift", "netezza"))) {
+      !(connectionDetails$dbms %in% c("redshift"))) {
     indicesSql <- SqlRender::loadRenderTranslateSql(sqlFilename = "post_processing/achilles_indices.sql",
                                              packageName = "Achilles",
                                              dbms = connectionDetails$dbms,
@@ -883,7 +864,8 @@ dropAllScratchTables <- function(connectionDetails,
          analysisIds = analysisDetails[analysisDetails$DISTRIBUTION == 1, ]$ANALYSIS_ID))
   
   dropSqls <- lapply(analysisDetails$ANALYSIS_ID, function(analysisId) {
-    .dropAchillesScratchTable(connectionDetails = connectionDetails,
+    .dropAchillesScratchTable(analysisId = analysisId,
+                              connectionDetails = connectionDetails,
                               scratchDatabaseSchema = scratchDatabaseSchema,
                               tempAchillesPrefix = tempAchillesPrefix,
                               resultsTables = resultsTables)

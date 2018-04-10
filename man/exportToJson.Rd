@@ -5,7 +5,7 @@
 \title{exportToJson}
 \usage{
 exportToJson(connectionDetails, cdmDatabaseSchema, resultsDatabaseSchema,
-  outputPath = getwd(), reports = allReports, cdmVersion = "4",
+  outputPath = getwd(), reports = allReports,
   vocabDatabaseSchema = cdmDatabaseSchema, compressIntoOneFile = FALSE)
 }
 \arguments{
@@ -18,8 +18,6 @@ exportToJson(connectionDetails, cdmDatabaseSchema, resultsDatabaseSchema,
 \item{outputPath}{A folder location to save the JSON files. Default is current working folder}
 
 \item{reports}{A character vector listing the set of reports to generate. Default is all reports.}
-
-\item{cdmVersion}{Define the OMOP CDM version used:  currently support "4" and "5".  Default = "4"}
 
 \item{vocabDatabaseSchema}{string name of database schema that contains OMOP Vocabulary. Default is cdmDatabaseSchema. On SQL Server, this should specifiy both the database and the schema, so for example 'results.dbo'.}
 

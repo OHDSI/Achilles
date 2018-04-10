@@ -2,7 +2,7 @@ Package: Achilles
 Type: Package
 Title: Creates descriptive statistics summary for an entire OMOP CDM instance
 Version: 1.6
-Date: 2018-02-01
+Date: 2018-04-09
 Author: Patrick Ryan, Martijn Schuemie, Vojtech Huser, Chris Knoll, Ajit Londhe
 Maintainer: Patrick Ryan <ryan@ohdsi.org>
 LazyData: true

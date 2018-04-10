@@ -1,42 +1,34 @@
 -- 105	Length of observation (days) of first observation period
 
-with rawData (count_value) as
+select count_value, rn 
+into #tempObs
+FROM
 (
-  select count_value
-  FROM
-  (
-    select DATEDIFF(dd,op.observation_period_start_date, op.observation_period_end_date) as count_value,
-  	  ROW_NUMBER() over (PARTITION by op.person_id order by op.observation_period_start_date asc) as rn
-    from @cdmDatabaseSchema.OBSERVATION_PERIOD op
-	) op
-	where op.rn = 1
-),
-overallStats (avg_value, stdev_value, min_value, max_value, total) as
+  select DATEDIFF(dd,op.observation_period_start_date, op.observation_period_end_date) as count_value,
+	  ROW_NUMBER() over (PARTITION by op.person_id order by op.observation_period_start_date asc) as rn
+  from @cdmDatabaseSchema.OBSERVATION_PERIOD op
+) A
+where rn = 1;
+	
+select count_value, count_big(*) as total, row_number() over (order by count_value) as rn
+into #statsView
+FROM #tempObs
+group by count_value;
+
+with overallStats (avg_value, stdev_value, min_value, max_value, total) as
 (
   select CAST(avg(1.0 * count_value) AS FLOAT) as avg_value,
   CAST(stdev(count_value) AS FLOAT) as stdev_value,
   min(count_value) as min_value,
   max(count_value) as max_value,
   count_big(*) as total
-  from rawData
-),
-statsView (count_value, total, rn) as
-(
-  select count_value, count_big(*) as total, row_number() over (order by count_value) as rn
-  FROM
-  (
-    select DATEDIFF(dd,op.observation_period_start_date, op.observation_period_end_date) as count_value,
-  	  ROW_NUMBER() over (PARTITION by op.person_id order by op.observation_period_start_date asc) as rn
-    from @cdmDatabaseSchema.OBSERVATION_PERIOD op
-	) op
-  where op.rn = 1
-  group by count_value
+  from #tempObs
 ),
 priorStats (count_value, total, accumulated) as
 (
   select s.count_value, s.total, sum(p.total) as accumulated
-  from statsView s
-  join statsView p on p.rn <= s.rn
+  from #statsView s
+  join #statsView p on p.rn <= s.rn
   group by s.count_value, s.total, s.rn
 )
 select 105 as analysis_id,
@@ -63,6 +55,12 @@ min_value, max_value, avg_value, stdev_value, median_value, p10_value, p25_value
 into @scratchDatabaseSchema@schemaDelim@tempAchillesPrefix_dist_105
 from #tempResults
 ;
+
+truncate table #tempObs;
+drop table #tempObs;
+
+truncate table #statsView;
+drop table #statsView;
 
 truncate table #tempResults;
 drop table #tempResults;
