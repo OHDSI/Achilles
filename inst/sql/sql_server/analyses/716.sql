@@ -1,4 +1,6 @@
 -- 716	Distribution of refills by drug_concept_id
+
+--HINT DISTRIBUTE_ON_KEY(stratum_id)
 with rawData(stratum_id, count_value) as
 (
   select drug_concept_id,
@@ -19,7 +21,7 @@ overallStats (stratum_id, avg_value, stdev_value, min_value, max_value, total) a
 ),
 statsView (stratum_id, count_value, total, rn) as
 (
-  select stratum_id, count_value, count_big(*) as total, row_number() over (order by count_value) as rn
+  select stratum_id, count_value, count_big(*) as total, row_number() over (partition by stratum_id order by count_value) as rn
   FROM rawData
   group by stratum_id, count_value
 ),
@@ -48,7 +50,7 @@ join overallStats o on p.stratum_id = o.stratum_id
 GROUP BY o.stratum_id, o.total, o.min_value, o.max_value, o.avg_value, o.stdev_value
 ;
 
---HINT DISTRIBUTE_ON_KEY(analysis_id)
+--HINT DISTRIBUTE_ON_KEY(stratum_1)
 select analysis_id, stratum_id as stratum_1, 
 null as stratum_2, null as stratum_3, null as stratum_4, null as stratum_5,
 count_value, min_value, max_value, avg_value, stdev_value, median_value, p10_value, p25_value, p75_value, p90_value

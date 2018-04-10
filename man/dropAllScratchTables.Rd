@@ -6,7 +6,7 @@
 \usage{
 dropAllScratchTables(connectionDetails, scratchDatabaseSchema,
   tempAchillesPrefix = "tmpach", tempHeelPrefix = "tmpheel",
-  numThreads = 1)
+  numThreads = 1, tableTypes = c("achilles", "heel"))
 }
 \arguments{
 \item{connectionDetails}{An R object of type \code{connectionDetails} created using the function \code{createConnectionDetails} in the \code{DatabaseConnector} package.}
@@ -18,6 +18,8 @@ dropAllScratchTables(connectionDetails, scratchDatabaseSchema,
 \item{tempHeelPrefix}{The prefix to use for the "temporary" (but actually permanent) Heel tables. Default is "tmpheel"}
 
 \item{numThreads}{The number of threads to use to run this function. Default is 1 thread.}
+
+\item{tableTypes}{The types of Achilles scratch tables to drop: achilles or heel or both}
 }
 \description{
 Drop all possible scratch tables
