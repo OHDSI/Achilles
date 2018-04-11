@@ -652,9 +652,9 @@ dropAllScratchTables <- function(connectionDetails,
                             all.files = FALSE,
                             pattern = "\\.sql$")
     
-    parallelHeelTables <- lapply(parallelFiles, function(t) sprintf("%1s_%2s",
+    parallelHeelTables <- lapply(parallelFiles, function(t) tolower(sprintf("%1s_%2s",
                                                                    tempHeelPrefix,
-                                                                   tools::file_path_sans_ext(basename(t))))
+                                                                   tools::file_path_sans_ext(basename(t)))))
     
     dropTables <- Reduce(intersect, list(scratchTables, parallelHeelTables))
   

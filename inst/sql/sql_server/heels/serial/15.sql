@@ -1,10 +1,5 @@
---rule35 DQ rule, NOTIFICATION
---this rule analyzes Units recorded for measurement
-select
-  analysis_id,
-  achilles_heel_warning,
-  rule_id,
-  record_count
+--ruleid 36 WARNING: age > 125   (related to an error grade rule 21 that has higher threshold)
+select *
 into @scratchDatabaseSchema@schemaDelim@heelPrefix_serial_hr_@hrNewId
 from
 (
@@ -12,28 +7,17 @@ from
   
   union all
   
-  select 
-    null as analysis_id,
-    achilles_heel_warning,
-    rule_id,
-    record_count
-  from
-  (
-    SELECT
-    CAST('NOTIFICATION: Count of measurement_ids with more than 5 distinct units  exceeds threshold' AS VARCHAR(255)) as ACHILLES_HEEL_warning,
-    35 as rule_id,
-    cast(meas_concept_id_cnt as int) as record_count
-    from (
-          select meas_concept_id_cnt from (select sum(freq) as meas_concept_id_cnt from
-                          (select u_cnt, count(*) as freq from 
-                                  (select stratum_1, count(*) as u_cnt
-                                      from @resultsDatabaseSchema.ACHILLES_results where analysis_id = 1807 group by stratum_1) a 
-                                      group by u_cnt
-                          ) b 
-                  where u_cnt >= 5 --threshold one for the rule
-              ) c
-             where meas_concept_id_cnt >= 10 --threshold two for the rule
-         ) d 
-  ) Q
-) A
-;       
+  SELECT or1.analysis_id,
+  	CAST(CONCAT('WARNING: ', cast(or1.analysis_id as VARCHAR), '-', oa1.analysis_name, '; should not have age > @ThresholdAgeWarning, (n=', cast(sum(or1.count_value) as VARCHAR), ')') AS VARCHAR(255)) AS ACHILLES_HEEL_warning,
+    36 as rule_id,
+    sum(or1.count_value) as record_count
+  FROM @resultsDatabaseSchema.ACHILLES_results or1
+  INNER JOIN @resultsDatabaseSchema.ACHILLES_analysis oa1
+  	ON or1.analysis_id = oa1.analysis_id
+  WHERE or1.analysis_id IN (101)
+  	AND CAST(or1.stratum_1 AS INT) > @ThresholdAgeWarning
+  	AND or1.count_value > 0
+  GROUP BY or1.analysis_id,
+    oa1.analysis_name
+) Q
+;

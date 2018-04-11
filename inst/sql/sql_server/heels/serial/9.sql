@@ -1,21 +1,22 @@
---rule30 CDM-conformance rule: is CDM metadata table created at all?
-  --create a derived measure for rule30
-  --done strangly to possibly avoid from dual error on Oracle
-  --done as not null just in case sqlRender has NOT NULL  hard coded
-  --check if table exist and if yes - derive 1 for a derived measure
+--rule31 DQ rule
+--ratio of providers to total patients
+
+--compute a derived reatio
+--TODO if provider count is zero it will generate division by zero (not sure how dirrerent db engins will react)
+select * into @scratchDatabaseSchema@schemaDelim@heelPrefix_serial_rd_@rdNewId 
+from
+(
+  select * from @scratchDatabaseSchema@schemaDelim@heelPrefix_serial_rd_@rdOldId
   
-  --does not work on redshift :-( --commenting it out
-IF OBJECT_ID('@cdmDatabaseSchema.CDM_SOURCE', 'U') IS NOT NULL
-  select distinct
-    null as analysis_id,
-    null as stratum_1,
-    null as stratum_2,
-    analysis_id as statistic_value,
-    'MetaData:TblExists' as measure_id
-  into @scratchDatabaseSchema@schemaDelim@heelPrefix_serial_rd_@rdNewId
-  from @resultsDatabaseSchema.ACHILLES_results
-  where analysis_id = 1;
+  union all
   
-  --actual rule30
-  
---end of rule30
+  select 
+  null as analysis_id,
+  null as stratum_1,
+  null as stratum_2,
+  1.0*(select count_value as total_pts from @resultsDatabaseSchema.achilles_results r where analysis_id =1)/count_value as statistic_value,
+  'Provider:PatientProviderRatio' as measure_id
+  from @resultsDatabaseSchema.achilles_results
+  where analysis_id = 300
+) Q
+;

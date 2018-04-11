@@ -17,11 +17,7 @@ from tempcnt where pt_cnt > 0;
 --using temp table because with clause that occurs prior insert into is causing problems 
 --and with clause makes the code more readable
 
-SELECT 
-  analysis_id,
-  ACHILLES_HEEL_warning,
-  rule_id,
-  record_count
+SELECT *
 into @scratchDatabaseSchema@schemaDelim@heelPrefix_serial_hr_@hrNewId
 FROM 
 (

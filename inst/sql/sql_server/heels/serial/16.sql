@@ -1,27 +1,27 @@
---ruleid 36 WARNING: age > 125   (related to an error grade rule 21 that has higher threshold)
-select 
-  analysis_id,
-  achilles_heel_warning,
-  rule_id,
-  record_count
-into @scratchDatabaseSchema@schemaDelim@heelPrefix_serial_hr_@hrNewId
+--ruleid 37 DQ rule
+
+--derived measure for this rule - ratio of notes over the number of visits
+
+select * into @scratchDatabaseSchema@schemaDelim@heelPrefix_serial_rd_@rdNewId
 from
 (
-  select * from @scratchDatabaseSchema@schemaDelim@heelPrefix_serial_hr_@hrOldId
+  select * from @scratchDatabaseSchema@schemaDelim@heelPrefix_serial_rd_@rdOldId
   
   union all
   
-  SELECT or1.analysis_id,
-  	CAST(CONCAT('WARNING: ', cast(or1.analysis_id as VARCHAR), '-', oa1.analysis_name, '; should not have age > @ThresholdAgeWarning, (n=', cast(sum(or1.count_value) as VARCHAR), ')') AS VARCHAR(255)) AS ACHILLES_HEEL_warning,
-    36 as rule_id,
-    sum(or1.count_value) as record_count
-  FROM @resultsDatabaseSchema.ACHILLES_results or1
-  INNER JOIN @resultsDatabaseSchema.ACHILLES_analysis oa1
-  	ON or1.analysis_id = oa1.analysis_id
-  WHERE or1.analysis_id IN (101)
-  	AND CAST(or1.stratum_1 AS INT) > @ThresholdAgeWarning
-  	AND or1.count_value > 0
-  GROUP BY or1.analysis_id,
-    oa1.analysis_name
-) Q
+  select 
+    null as analysis_id,
+    null as stratum_1,
+    null as stratum_2,
+    statistic_value,
+    measure_id
+  from
+  (
+    SELECT 1.0*(SELECT sum(count_value) as all_notes 
+    FROM @resultsDatabaseSchema.achilles_results r 
+    WHERE analysis_id =2201 )/1.0*(SELECT sum(count_value) as all_visits 
+    FROM @resultsDatabaseSchema.achilles_results r WHERE  analysis_id =201 ) as statistic_value,
+     'Note:NoteVisitRatio' as measure_id
+  ) Q
+) A
 ;

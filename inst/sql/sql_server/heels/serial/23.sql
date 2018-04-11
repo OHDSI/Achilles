@@ -1,13 +1,9 @@
---ruleid 42 DQ rule
---Percentage of outpatient visits (concept_id 9202) is too low (for general population).
---This may indicate a dataset with mostly inpatient data (that may be biased and missing some EHR events)
---Threshold was decided as 10th percentile in empiric comparison of 12 real world datasets in the DQ-Study2
+--ruleid 43 DQ rule
+--looks at observation period data, if all patients have exactly one the rule alerts the user
+--This rule is based on majority of real life datasets. 
+--For some datasets (e.g., UK national data with single payor, one observation period is perfectly valid)
 
-select
-  analysis_id,
-  achilles_heel_warning,
-  rule_id,
-  record_count
+select *
 into @scratchDatabaseSchema@schemaDelim@heelPrefix_serial_hr_@hrNewId
 from
 (
@@ -17,15 +13,14 @@ from
   
   select 
     null as analysis_id,
-    CAST('NOTIFICATION: [GeneralPopulationOnly] Percentage of outpatient visits is below threshold' AS VARCHAR(255)) as achilles_heel_warning,
-    42 as rule_id,
+    CAST('NOTIFICATION: 99+ percent of persons have exactly one observation period' AS VARCHAR(255)) as achilles_heel_warning,
+    43 as rule_id,
     null as record_count
   from
   (
-    select 
-      1.0*count_value/(select sum(count_value) from @resultsDatabaseSchema.achilles_results where analysis_id = 201)  as outp_perc  
-    from @resultsDatabaseSchema.achilles_results where analysis_id = 201 and stratum_1 = '9202'
+    select 100.0*count_value/(select count_value as total_pts from @resultsDatabaseSchema.achilles_results r where analysis_id =1) as one_obs_per_perc 
+    from @resultsDatabaseSchema.achilles_results where analysis_id = 113 and stratum_1 = '1'
   ) d
-  where d.outp_perc < @ThresholdOutpatientVisitPerc
+  where d.one_obs_per_perc >= 99.0
 ) Q
 ;

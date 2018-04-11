@@ -1,14 +1,10 @@
---rule32 DQ rule
---uses iris: patients with at least one visit visit 
---does 100-THE IRIS MEASURE to check for percentage of patients with no visits
+--rule33 DQ rule (for general population only)
+--NOTIFICATION: database does not have all age 0-80 represented
 
-select 
-  analysis_id,
-  achilles_heel_warning,
-  rule_id,
-  record_count
+
+select *
 into @scratchDatabaseSchema@schemaDelim@heelPrefix_serial_hr_@hrNewId
-FROM 
+from
 (
   select * from @scratchDatabaseSchema@schemaDelim@heelPrefix_serial_hr_@hrOldId
   
@@ -16,11 +12,11 @@ FROM
   
   select 
     null as analysis_id,
-    CAST('NOTIFICATION: Percentage of patients with no visits exceeds threshold' AS VARCHAR(255)) as achilles_heel_warning,
-    32 as rule_id,
+    CAST('NOTIFICATION: [GeneralPopulationOnly] Not all deciles represented at first observation' AS VARCHAR(255)) as achilles_heel_warning,
+    33 as rule_id,
     null as record_count
-  from @scratchDatabaseSchema@schemaDelim@heelPrefix_serial_rd_@rdOldId d
-  where d.measure_id = 'ach_2003:Percentage'
-  and 100-d.statistic_value > 27  --threshold identified in the DataQuality study
+  FROM @scratchDatabaseSchema@schemaDelim@heelPrefix_serial_rd_@rdOldId d
+  where d.measure_id = 'AgeAtFirstObsByDecile:DecileCnt' 
+  and d.statistic_value < 9  --we expect deciles 0,1,2,3,4,5,6,7,8 
 ) Q
 ;

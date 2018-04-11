@@ -1,13 +1,7 @@
---ruleid 43 DQ rule
---looks at observation period data, if all patients have exactly one the rule alerts the user
---This rule is based on majority of real life datasets. 
---For some datasets (e.g., UK national data with single payor, one observation period is perfectly valid)
+--ruleid 44 DQ rule
+--uses iris measure: patients with at least 1 Meas, 1 Dx and 1 Rx 
 
-select
-  analysis_id,
-  achilles_heel_warning,
-  rule_id,
-  record_count
+select *
 into @scratchDatabaseSchema@schemaDelim@heelPrefix_serial_hr_@hrNewId
 from
 (
@@ -15,16 +9,13 @@ from
   
   union all
   
-  select 
+  SELECT 
     null as analysis_id,
-    CAST('NOTIFICATION: 99+ percent of persons have exactly one observation period' AS VARCHAR(255)) as achilles_heel_warning,
-    43 as rule_id,
+    CAST('NOTIFICATION: Percentage of patients with at least 1 Measurement, 1 Dx and 1 Rx is below threshold' AS VARCHAR(255)) as ACHILLES_HEEL_warning,
+    44 as rule_id,
     null as record_count
-  from
-  (
-    select 100.0*count_value/(select count_value as total_pts from @resultsDatabaseSchema.achilles_results r where analysis_id =1) as one_obs_per_perc 
-    from @resultsDatabaseSchema.achilles_results where analysis_id = 113 and stratum_1 = '1'
-  ) d
-  where d.one_obs_per_perc >= 99.0
+  FROM @scratchDatabaseSchema@schemaDelim@heelPrefix_serial_rd_@rdOldId d
+  where d.measure_id = 'ach_2002:Percentage'
+  and d.statistic_value < @ThresholdMinimalPtMeasDxRx  --threshold identified in the DataQuality study
 ) Q
 ;

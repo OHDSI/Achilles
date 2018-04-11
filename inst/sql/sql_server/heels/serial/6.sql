@@ -1,10 +1,6 @@
 --actual rule27
   
-select 
-  analysis_id,
-  achilles_heel_warning,
-  rule_id,
-  record_count
+select *
 into @scratchDatabaseSchema@schemaDelim@heelPrefix_serial_hr_@hrNewId
 from
 (
@@ -14,7 +10,8 @@ from
   
   SELECT 
     null as analysis_id,
-    CAST(CONCAT('NOTIFICATION:Unmapped data over percentage threshold in:', cast(d.stratum_1 as varchar)) AS VARCHAR(255)) as ACHILLES_HEEL_warning,
+    CAST(CONCAT('NOTIFICATION:Unmapped data over percentage threshold in:', 
+    cast(d.stratum_1 as varchar)) AS VARCHAR(255)) as ACHILLES_HEEL_warning,
     27 as rule_id,
     null as record_count
   FROM @scratchDatabaseSchema@schemaDelim@heelPrefix_serial_rd_@rdOldId d

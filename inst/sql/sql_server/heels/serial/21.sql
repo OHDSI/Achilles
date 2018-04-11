@@ -1,10 +1,8 @@
---ruleid 40  this rule was under umbrella rule 1 and was made into a separate rule
-
-select
-  analysis_id,
-  achilles_heel_warning,
-  rule_id,
-  record_count
+--ruleid 41 DQ rule, data density
+--porting a Sentinel rule that checks for certain vital signs data (weight, in this case)
+--multiple concepts_ids may be added to broaden the rule, however standardizing on a single
+--concept would be more optimal
+select *
 into @scratchDatabaseSchema@schemaDelim@heelPrefix_serial_hr_@hrNewId
 from
 (
@@ -12,14 +10,17 @@ from
   
   union all
   
-  SELECT DISTINCT or1.analysis_id,
-  	CAST(CONCAT('ERROR: Death event outside observation period, ', cast(or1.analysis_id as VARCHAR), '-', oa1.analysis_name, '; count (n=', cast(or1.count_value as VARCHAR), ') should not be > 0') AS VARCHAR(255)) AS ACHILLES_HEEL_warning,
-  	40 as rule_id,
-  	or1.count_value as record_count
-  FROM @resultsDatabaseSchema.ACHILLES_results or1
-  INNER JOIN @resultsDatabaseSchema.ACHILLES_analysis oa1
-  	ON or1.analysis_id = oa1.analysis_id
-  WHERE or1.analysis_id IN (510)
-  	AND or1.count_value > 0
+  select 
+    null as analysis_id,
+    CAST('NOTIFICATION:No body weight data in MEASUREMENT table (under concept_id 3025315 (LOINC code 29463-7))' AS VARCHAR(255)) as achilles_heel_warning,
+    41 as rule_id,
+    null as record_count
+  from
+  (
+    select count(*) as row_present  
+    from @resultsDatabaseSchema.ACHILLES_results 
+    where analysis_id = 1800 and stratum_1 = '3025315'
+  ) a
+  where a.row_present = 0
 ) Q
 ;

@@ -16,24 +16,26 @@ from
 ) t2
 ;
 
-
-select  
-  null as analysis_id,
-  null as stratum_1,
-  null as stratum_2,
-  statistic_value,
-  measure_id
-into @scratchDatabaseSchema@schemaDelim@heelPrefix_serial_rd_@rdNewId
-from #tempResults
+select * into @scratchDatabaseSchema@schemaDelim@heelPrefix_serial_rd_@rdNewId
+from
+(
+  select * from @scratchDatabaseSchema@schemaDelim@heelPrefix_serial_rd_@rdOldId
+  
+  union all
+  
+  select  
+    null as analysis_id,
+    null as stratum_1,
+    null as stratum_2,
+    statistic_value,
+    measure_id
+  from #tempResults
+) Q
 ;
 
 
 
-SELECT 
-  analysis_id,
-  ACHILLES_HEEL_warning,
-  rule_id,
-  record_count
+SELECT *
 into @scratchDatabaseSchema@schemaDelim@heelPrefix_serial_hr_@hrNewId
 FROM 
 (

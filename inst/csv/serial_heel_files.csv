@@ -8,14 +8,14 @@ ID,DESTINATION
 7,both
 8,heel_results
 9,results_derived
-10,results_derived
+10,heel_results
 11,heel_results
 12,heel_results
 13,heel_results
 14,heel_results
 15,heel_results
-16,heel_results
-17,results_derived
+16,results_derived
+17,heel_results
 18,heel_results
 19,heel_results
 20,heel_results
@@ -23,4 +23,3 @@ ID,DESTINATION
 22,heel_results
 23,heel_results
 24,heel_results
-25,heel_results

@@ -1,13 +1,6 @@
---ruleid 39 DQ rule; Given lifetime record DQ assumption if more than 30k patients is born for every deceased patient
---the dataset may not be recording complete records for all senior patients in that year
---derived ratio measure Death:BornDeceasedRatio only exists for years where death data exist
---to avoid alerting on too early years such as 1925 where births exist but no deaths
+--ruleid 40  this rule was under umbrella rule 1 and was made into a separate rule
 
-select 
-  analysis_id,
-  achilles_heel_warning,
-  rule_id,
-  record_count
+select *
 into @scratchDatabaseSchema@schemaDelim@heelPrefix_serial_hr_@hrNewId
 from
 (
@@ -15,17 +8,14 @@ from
   
   union all
   
-  select
-    null as analysis_id,
-    CAST('NOTIFICATION: [GeneralPopulationOnly] In some years, number of deaths is too low considering the number of births (lifetime record DQ assumption)' AS VARCHAR(255)) as achilles_heel_warning,
-    39 as rule_id,
-    year_cnt as record_count 
-  from
-  (
-    select count(*) as year_cnt 
-    from @scratchDatabaseSchema@schemaDelim@heelPrefix_serial_rd_@rdOldId
-    where measure_id =  'Death:BornDeceasedRatio' and statistic_value > 30000
-  ) a
-  where a.year_cnt > 0
+  SELECT DISTINCT or1.analysis_id,
+  	CAST(CONCAT('ERROR: Death event outside observation period, ', cast(or1.analysis_id as VARCHAR), '-', oa1.analysis_name, '; count (n=', cast(or1.count_value as VARCHAR), ') should not be > 0') AS VARCHAR(255)) AS ACHILLES_HEEL_warning,
+  	40 as rule_id,
+  	or1.count_value as record_count
+  FROM @resultsDatabaseSchema.ACHILLES_results or1
+  INNER JOIN @resultsDatabaseSchema.ACHILLES_analysis oa1
+  	ON or1.analysis_id = oa1.analysis_id
+  WHERE or1.analysis_id IN (510)
+  	AND or1.count_value > 0
 ) Q
 ;
