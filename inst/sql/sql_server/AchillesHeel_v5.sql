@@ -1048,7 +1048,7 @@ where measure_id ='ach_1801:GlobalRowCnt';
 
   INSERT INTO @results_database_schema.ACHILLES_HEEL_results (ACHILLES_HEEL_warning,rule_id)
   SELECT 
-   CAST(CONCAT('NOTIFICATION:Unmapped data over percentage threshold in:', cast(d.stratum_1 as varchar)) AS VARCHAR(255)) as ACHILLES_HEEL_warning,
+   CAST(CONCAT('NOTIFICATION:Unmapped data over percentage threshold in:', cast(d.stratum_1 as varchar(100))) AS VARCHAR(255)) as ACHILLES_HEEL_warning,
     27 as rule_id
   FROM @results_database_schema.ACHILLES_results_derived d
   where d.measure_id = 'UnmappedData:byDomain:Percentage'
@@ -1155,7 +1155,7 @@ drop table #tempResults;
 insert into @results_database_schema.ACHILLES_results_derived (statistic_value,measure_id)    
     select CAST(1.0*ct.total_pts/count_value AS FLOAT) as statistic_value, CAST('Provider:PatientProviderRatio' AS VARCHAR(255)) as measure_id
     from @results_database_schema.achilles_results
-		join (select count_value as total_pts from @results_database_schema.achilles_results r where analysis_id =1) ct
+		cross join (select count_value as total_pts from @results_database_schema.achilles_results r where analysis_id =1) ct
 		where analysis_id = 300
 ;
 
