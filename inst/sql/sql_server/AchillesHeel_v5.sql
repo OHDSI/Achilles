@@ -103,7 +103,7 @@ select
   sum(count_value) as statistic_value,
   CAST(CONCAT('ach_',CAST(analysis_id as VARCHAR(10)),':GlobalCnt') AS VARCHAR(100)) as measure_id
 from @results_database_schema.achilles_results 
-where analysis_id in(1805,705,605,805,405) group by analysis_id,stratum_2,measure_id;
+where analysis_id in(1805,705,605,805,405) group by analysis_id,stratum_2,CAST(CONCAT('ach_',CAST(analysis_id as VARCHAR(10)),':GlobalCnt') AS VARCHAR(100));
 
 
 
