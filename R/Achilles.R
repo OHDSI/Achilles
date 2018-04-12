@@ -478,8 +478,11 @@ achilles <- function (connectionDetails,
   if (conceptHierarchy) {
     hierarchySql <- createConceptHierarchy(connectionDetails, 
                                            resultsDatabaseSchema,
+                                           scratchDatabaseSchema,
                                            vocabDatabaseSchema,
-                                           sqlOnly)
+                                           numThreads = numThreads,
+                                           tempAchillesPrefix = tempAchillesPrefix,
+                                           sqlOnly = sqlOnly)
   }
   achillesSql <- c(achillesSql, hierarchySql)
 
