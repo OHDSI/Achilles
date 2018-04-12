@@ -112,7 +112,7 @@ achillesHeel <- function(connectionDetails,
   
   # Clean up existing scratch tables -----------------------------------------------
   
-  if (numThreads > 1) {
+  if (numThreads > 1 & !sqlOnly) {
     # Drop the scratch tables
     writeLines(sprintf("Dropping scratch Heel tables from schema %s", scratchDatabaseSchema))
     
@@ -325,7 +325,7 @@ achillesHeel <- function(connectionDetails,
   
   # Clean up scratch parallel tables -----------------------------------------------
   
-  if (numThreads > 1) {
+  if (numThreads > 1 & !sqlOnly) {
     # Drop the scratch tables
     writeLines(sprintf("Dropping scratch Heel tables from schema %s", scratchDatabaseSchema))
     

@@ -125,7 +125,7 @@ achilles <- function (connectionDetails,
   
   # Get source name if none provided --------------------------------------------------
   
-  if (missing(sourceName)) {
+  if (missing(sourceName) & !sqlOnly) {
     sql <- SqlRender::renderSql(sql = "select top 1 cdm_source_name 
                                 from @cdmDatabaseSchema.cdm_source",
                                 cdmDatabaseSchema = cdmDatabaseSchema)$sql
@@ -216,14 +216,59 @@ achilles <- function (connectionDetails,
   # Generate cost analyses ----------------------------------------------------------
   
   if (runCostAnalysis) {
+    
     distCostAnalysisDetails <- analysisDetails[analysisDetails$COST == 1 & analysisDetails$DISTRIBUTION == 1, ]
-    analysisDetails <- dplyr::anti_join(x = analysisDetails, y = distCostAnalysisDetails, by = "ANALYSIS_ID")
- 
     costMappings <- read.csv(system.file("csv", "cost_columns.csv", package = "Achilles"), 
                              header = TRUE, stringsAsFactors = FALSE)
     
     drugCostMappings <- costMappings[costMappings$DOMAIN == "Drug", ]
     procedureCostMappings <- costMappings[costMappings$DOMAIN == "Procedure", ]
+    
+    ## Create raw cost tables before generating cost analyses
+    
+    rawCostSqls <- lapply(c("Drug", "Procedure"), function(domainId) {
+      costMappings <- get(sprintf("%sCostMappings", tolower(domainId)))
+      
+      if (cdmVersion == "5") { 
+        costColumns <- apply(costMappings, 1, function(c) {
+          sprintf("%1s as %2s", c["OLD"], c["CURRENT"])
+        })
+      } else {
+        costColumns <- costMappings$CURRENT
+      }
+      
+      SqlRender::loadRenderTranslateSql(sqlFilename = "analyses/raw_cost_template.sql", 
+                                        packageName = "Achilles", 
+                                        dbms = connectionDetails$dbms,
+                                        cdmDatabaseSchema = cdmDatabaseSchema,
+                                        scratchDatabaseSchema = scratchDatabaseSchema,
+                                        schemaDelim = schemaDelim,
+                                        tempAchillesPrefix = tempAchillesPrefix,
+                                        domainId = domainId,
+                                        domainTable = ifelse(domainId == "Drug", "drug_exposure", "procedure_occurrence"), 
+                                        costColumns = paste(costColumns, collapse = ","))
+    })
+    
+    achillesSql <- c(achillesSql, rawCostSqls)
+    
+    if (!sqlOnly) {
+      if (numThreads == 1) {
+        for (sql in rawCostSqls) {
+          DatabaseConnector::executeSql(connection = connection, sql = sql)
+        }
+      } else {
+        cluster <- OhdsiRTools::makeCluster(numberOfThreads = length(rawCostSqls), 
+                                            singleThreadToMain = TRUE)
+        dummy <- OhdsiRTools::clusterApply(cluster = cluster, 
+                                           x = rawCostSqls, 
+                                           function(rawCostSqls) {
+                                             connection <- DatabaseConnector::connect(connectionDetails = connectionDetails)
+                                             DatabaseConnector::executeSql(connection = connection, sql = distCostAnalysisSql)
+                                             DatabaseConnector::disconnect(connection = connection)
+                                           })
+        OhdsiRTools::stopCluster(cluster = cluster) 
+      }
+    }
     
     distCostDrugSqls <- 
       apply(distCostAnalysisDetails[distCostAnalysisDetails$STRATUM_1_NAME == "drug_concept_id", ], 1, 
@@ -236,8 +281,7 @@ achilles <- function (connectionDetails,
                                                        cdmDatabaseSchema = cdmDatabaseSchema,
                                                        scratchDatabaseSchema = scratchDatabaseSchema,
                                                        costColumn = drugCostMappings[drugCostMappings$OLD == analysisDetail["DISTRIBUTED_FIELD"][[1]], ]$CURRENT,
-                                                       countValue = analysisDetail["DISTRIBUTED_FIELD"][[1]],
-                                                       domain = "Drug",
+                                                       domainId = "Drug",
                                                        domainTable = "drug_exposure", 
                                                        analysisId = analysisDetail["ANALYSIS_ID"][[1]],
                                                        tempAchillesPrefix = tempAchillesPrefix)
@@ -253,20 +297,31 @@ achilles <- function (connectionDetails,
                                                        schemaDelim = schemaDelim,
                                                        cdmDatabaseSchema = cdmDatabaseSchema,
                                                        scratchDatabaseSchema = scratchDatabaseSchema,
-                                                       costColumn = procedureCostMappings[drugCostMappings$OLD == analysisDetail["DISTRIBUTED_FIELD"][[1]], ]$CURRENT,
-                                                       countValue = analysisDetail["DISTRIBUTED_FIELD"],
-                                                       domain = "Procedure",
+                                                       costColumn = procedureCostMappings[procedureCostMappings$OLD == analysisDetail["DISTRIBUTED_FIELD"][[1]], ]$CURRENT,
+                                                       domainId = "Procedure",
                                                        domainTable = "procedure_occurrence", 
-                                                       analysisId = analysisDetail["ANALYSIS_ID"],
+                                                       analysisId = analysisDetail["ANALYSIS_ID"][[1]],
                                                        tempAchillesPrefix = tempAchillesPrefix)
               })
     
     distCostAnalysisSqls <- c(distCostDrugSqls, distCostProcedureSqls)
-    achillesSql <- c(achillesSql, paste(distCostAnalysisSqls, collapse = "\n\n"))
+    
+    dropRawCostSqls <- lapply(c("Drug", "Procedure"), function(domainId) {
+      SqlRender::renderSql(sql = "drop table @scratchDatabaseSchema@schemaDelim@tempAchillesPrefix_@domainId_cost_raw;",
+                           scratchDatabaseSchema = scratchDatabaseSchema,
+                           schemaDelim = schemaDelim,
+                           tempAchillesPrefix = tempAchillesPrefix,
+                           domainId = domainId)$sql
+    })
+    
+    achillesSql <- c(achillesSql, distCostAnalysisSqls, dropRawCostSqls)
     
     if (!sqlOnly) {
       if (numThreads == 1) {
         for (sql in distCostAnalysisSqls) {
+          DatabaseConnector::executeSql(connection = connection, sql = sql)
+        }
+        for (sql in dropRawCostSqls) {
           DatabaseConnector::executeSql(connection = connection, sql = sql)
         }
       } else {
@@ -280,13 +335,24 @@ achilles <- function (connectionDetails,
                                              DatabaseConnector::disconnect(connection = connection)
                                            })
         OhdsiRTools::stopCluster(cluster = cluster) 
+        
+        cluster <- OhdsiRTools::makeCluster(numberOfThreads = length(dropRawCostSqls), 
+                                            singleThreadToMain = TRUE)
+        dummy <- OhdsiRTools::clusterApply(cluster = cluster, 
+                                           x = dropRawCostSqls, 
+                                           function(dropRawCostSqls) {
+                                             connection <- DatabaseConnector::connect(connectionDetails = connectionDetails)
+                                             DatabaseConnector::executeSql(connection = connection, sql = distCostAnalysisSql)
+                                             DatabaseConnector::disconnect(connection = connection)
+                                           })
+        OhdsiRTools::stopCluster(cluster = cluster) 
       }
     }
   }
   
   # Clean up existing scratch tables -----------------------------------------------
   
-  if (numThreads > 1) {
+  if (numThreads > 1 & !sqlOnly) {
     # Drop the scratch tables
     writeLines(sprintf("Dropping scratch Achilles tables from schema %s", scratchDatabaseSchema))
     
@@ -301,7 +367,12 @@ achilles <- function (connectionDetails,
   
   # Generate Main Analyses ----------------------------------------------------------------------------------------------------------------
   
-  mainSqls <- lapply(analysisDetails$ANALYSIS_ID, function(analysisId) {
+  mainAnalysisIds <- analysisDetails$ANALYSIS_ID
+  if (runCostAnalysis) {
+    # remove distributed cost analysis ids, since that's been executed already
+    mainAnalysisIds <- dplyr::anti_join(x = analysisDetails, y = distCostAnalysisDetails, by = "ANALYSIS_ID")$ANALYSIS_ID
+  }
+  mainSqls <- lapply(mainAnalysisIds, function(analysisId) {
     .getAnalysisSql(analysisId = analysisId,
       connectionDetails = connectionDetails,
       schemaDelim = schemaDelim,
@@ -315,7 +386,7 @@ achilles <- function (connectionDetails,
       numThreads = numThreads)
   })
   
-  achillesSql <- c(achillesSql, paste(mainSqls, collapse = "\n\n"))
+  achillesSql <- c(achillesSql, mainSqls)
     
   if (!sqlOnly) {
     writeLines("Executing multiple queries. This could take a while")
@@ -356,9 +427,12 @@ achilles <- function (connectionDetails,
                                smallcellcount = smallcellcount)
   })
   
-  achillesSql <- c(achillesSql, paste(mergeSqls, collapse = "\n\n"))
+  achillesSql <- c(achillesSql, mergeSqls)
 
   if (!sqlOnly) {
+    
+    writeLines("Merging scratch Achilles tables")
+    
     if (numThreads == 1) {
       for (sql in mergeSqls) {
         DatabaseConnector::executeSql(connection = connection, sql = sql)
@@ -385,7 +459,7 @@ achilles <- function (connectionDetails,
   if (numThreads == 1) {
     # Dropping the connection removes the temporary scratch tables if running in serial
     DatabaseConnector::disconnect(connection = connection)
-  } else if (dropScratchTables) {
+  } else if (dropScratchTables & !sqlOnly) {
     # Drop the scratch tables
     writeLines(sprintf("Dropping scratch Achilles tables from schema %s", scratchDatabaseSchema))
    

@@ -1,5 +1,5 @@
-IF OBJECT_ID('@resultsDatabaseSchema.ACHILLES_analysis', 'U') IS NOT NULL
-  drop table @resultsDatabaseSchema.ACHILLES_analysis;
+IF OBJECT_ID('@resultsDatabaseSchema.achilles_analysis', 'U') IS NOT NULL
+  drop table @resultsDatabaseSchema.achilles_analysis;
 
 with cte_analyses
 as
