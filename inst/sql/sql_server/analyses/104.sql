@@ -1,5 +1,6 @@
 -- 104	Distribution of age at first observation period by gender
 
+--HINT DISTRIBUTE_ON_KEY(stratum_1) 
 with rawData (gender_concept_id, age_value) as
 (
   select p.gender_concept_id, MIN(YEAR(observation_period_start_date)) - P.YEAR_OF_BIRTH as age_value
@@ -49,7 +50,7 @@ join overallStats o on p.gender_concept_id = o.gender_concept_id
 GROUP BY o.gender_concept_id, o.total, o.min_value, o.max_value, o.avg_value, o.stdev_value
 ;
 
---HINT DISTRIBUTE_ON_KEY(analysis_id) 
+--HINT DISTRIBUTE_ON_KEY(stratum_1) 
 select analysis_id, stratum_1, 
 null as stratum_2, null as stratum_3, null as stratum_4, null as stratum_5,
 count_value, min_value, max_value, avg_value, stdev_value, median_value, p10_value, p25_value, p75_value, p90_value

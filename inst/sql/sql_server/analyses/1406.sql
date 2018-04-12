@@ -1,4 +1,6 @@
 -- 1406	Length of payer plan (days) of first payer plan period by gender
+
+--HINT DISTRIBUTE_ON_KEY(stratum_1)
 with rawData(stratum1_id, count_value) as
 (
   select p1.gender_concept_id as stratum1_id,
@@ -59,7 +61,7 @@ join overallStats o on p.stratum1_id = o.stratum1_id
 GROUP BY p.stratum1_id, o.total, o.min_value, o.max_value, o.avg_value, o.stdev_value
 ;
 
---HINT DISTRIBUTE_ON_KEY(analysis_id)
+--HINT DISTRIBUTE_ON_KEY(stratum_1)
 select analysis_id, stratum_1, 
 null as stratum_2, null as stratum_3, null as stratum_4, null as stratum_5,
 count_value, min_value, max_value, avg_value, stdev_value, median_value, p10_value, p25_value, p75_value, p90_value

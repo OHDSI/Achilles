@@ -1,6 +1,6 @@
 -- 791	Number of total persons that have at least x drug exposures
 
---HINT DISTRIBUTE_ON_KEY(analysis_id)
+--HINT DISTRIBUTE_ON_KEY(stratum_1)
 select 791 as analysis_id,   
 	CAST(drug_concept_id as varchar(255)) as stratum_1,
 	CAST(drg_cnt as varchar(255)) as stratum_2,

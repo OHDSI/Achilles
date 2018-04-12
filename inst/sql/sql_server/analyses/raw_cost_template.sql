@@ -4,7 +4,7 @@ IF OBJECT_ID('@scratchDatabaseSchema@schemaDelim@tempAchillesPrefix_@domainId_co
 {@cdmVersion == '5'}?{
   --HINT DISTRIBUTE_ON_KEY(cost_event_id) 
   select 
-    @domainTable_id as cost_event_id,
+    @domainId_id as cost_event_id,
     @costColumns
   into #rawCost
   from @cdmDatabaseSchema.@domainId_cost
@@ -19,7 +19,8 @@ IF OBJECT_ID('@scratchDatabaseSchema@schemaDelim@tempAchillesPrefix_@domainId_co
   where cost_domain_id = '@domainId'
   ;
 }
-  
+
+--HINT DISTRIBUTE_ON_KEY(subject_id) 
 select 
   B.@domainId_concept_id as subject_id,
   @costColumns

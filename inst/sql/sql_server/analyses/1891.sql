@@ -1,6 +1,6 @@
 -- 1891	Number of total persons that have at least x measurements
 
---HINT DISTRIBUTE_ON_KEY(analysis_id)
+--HINT DISTRIBUTE_ON_KEY(stratum_1)
 select 1891 as analysis_id,   
 	CAST(measurement_concept_id as varchar(255)) as stratum_1,
 	CAST(meas_cnt as varchar(255)) as stratum_2,

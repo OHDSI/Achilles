@@ -1,9 +1,7 @@
 -- 109	Number of persons with continuous observation in each year
 -- Note: using temp table instead of nested query because this gives vastly improved performance in Oracle
 
-IF OBJECT_ID('tempdb..#temp_dates', 'U') IS NOT NULL
-	DROP TABLE #temp_dates;
-
+--HINT DISTRIBUTE_ON_KEY(obs_year)
 SELECT DISTINCT 
   YEAR(observation_period_start_date) AS obs_year,
   DATEFROMPARTS(YEAR(observation_period_start_date), 1, 1) AS obs_year_start,
@@ -13,7 +11,7 @@ INTO
 FROM @cdmDatabaseSchema.observation_period
 ;
 
---HINT DISTRIBUTE_ON_KEY(analysis_id)
+--HINT DISTRIBUTE_ON_KEY(stratum_1)
 SELECT 
   109 AS analysis_id,  
 	CAST(obs_year AS VARCHAR(255)) AS stratum_1,

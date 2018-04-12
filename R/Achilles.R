@@ -544,30 +544,91 @@ achilles <- function (connectionDetails,
 #' @param connectionDetails                An R object of type \code{connectionDetails} created using the function \code{createConnectionDetails} in the \code{DatabaseConnector} package.
 #' @param resultsDatabaseSchema		         Fully qualified name of database schema that we can write final results to. Default is cdmDatabaseSchema. 
 #'                                         On SQL Server, this should specifiy both the database and the schema, so for example, on SQL Server, 'cdm_results.dbo'.
+#' @param scratchDatabaseSchema            Fully qualified name of the database schema that will store all of the intermediate scratch tables, so for example, on SQL Server, 'cdm_scratch.dbo'. 
+#'                                         Must be accessible to/from the cdmDatabaseSchema and the resultsDatabaseSchema. Default is resultsDatabaseSchema. 
+#'                                         Making this "#" will run Achilles in single-threaded mode and use temporary tables instead of permanent tables.
 #' @param vocabDatabaseSchema		           String name of database schema that contains OMOP Vocabulary. Default is cdmDatabaseSchema. On SQL Server, this should specifiy both the database and the schema, so for example 'results.dbo'.
+#' @param numThreads                       (OPTIONAL, multi-threaded mode) The number of threads to use to run Achilles in parallel. Default is 1 thread.
+#' @param tempAchillesPrefix               (OPTIONAL, multi-threaded mode) The prefix to use for the scratch Achilles analyses tables. Default is "tmpach"
 #' @param sqlOnly                          TRUE = just generate SQL files, don't actually run, FALSE = run Achilles
 #' 
 #' @export
 createConceptHierarchy <- function(connectionDetails, 
                                    resultsDatabaseSchema,
+                                   scratchDatabaseSchema,
                                    vocabDatabaseSchema,
+                                   numThreads = 1,
+                                   tempAchillesPrefix = "tmpach",
                                    sqlOnly = FALSE) {
   
-  hierarchySql <- SqlRender::loadRenderTranslateSql(sqlFilename = "post_processing/concept_hierarchy.sql",
-                                                    packageName = "Achilles",
-                                                    dbms = connectionDetails$dbms,
-                                                    resultsDatabaseSchema = resultsDatabaseSchema,
-                                                    vocabDatabaseSchema = vocabDatabaseSchema)
+  schemaDelim <- "."
+  
+  if (numThreads == 1 || scratchDatabaseSchema == "#") {
+    numThreads <- 1
+    scratchDatabaseSchema <- "#"
+    schemaDelim <- "s_"
+  }
+  
+  hierarchySqlFiles <- list.files(path = file.path(system.file(package = "Achilles"), 
+                                               "sql", "sql_server", "post_processing", "concept_hierarchies"), 
+                              recursive = TRUE, 
+                              full.names = FALSE, 
+                              all.files = FALSE,
+                              pattern = "\\.sql$")
+  
+  hierarchySqls <- lapply(hierarchySqlFiles, function(hierarchySqlFile) {
+    sql <- SqlRender::loadRenderTranslateSql(sqlFilename = file.path("post_processing", 
+                                                                     "concept_hierarchies", 
+                                                                     hierarchySqlFile),
+                                             packageName = "Achilles",
+                                             dbms = connectionDetails$dbms,
+                                             scratchDatabaseSchema = scratchDatabaseSchema,
+                                             vocabDatabaseSchema = vocabDatabaseSchema,
+                                             schemaDelim = schemaDelim,
+                                             tempAchillesPrefix = tempAchillesPrefix)
+  })
+  
+  mergeSql <- SqlRender::loadRenderTranslateSql(sqlFilename = file.path("post_processing", 
+                                                                        "concept_hierarchies", 
+                                                                        "merge_concept_hierarchy.sql"),
+                                                packageName = "Achilles",
+                                                dbms = connectionDetails$dbms,
+                                                resultsDatabaseSchema = resultsDatabaseSchema,
+                                                scratchDatabaseSchema = scratchDatabaseSchema,
+                                                schemaDelim = schemaDelim,
+                                                tempAchillesPrefix = tempAchillesPrefix)
+
   
   if (!sqlOnly) {
     writeLines("Executing Concept Hierarchy creation. This could take a while")
-    connection <- DatabaseConnector::connect(connectionDetails = connectionDetails)
-    DatabaseConnector::executeSql(connection = connection, sql = hierarchySql)
-    DatabaseConnector::disconnect(connection = connection)
+  
+    if (numThreads == 1) {
+      connection <- DatabaseConnector::connect(connectionDetails = connectionDetails)
+      for (sql in hierarchySqls) {
+        DatabaseConnector::executeSql(connection = connection, sql = sql)
+      }
+      DatabaseConnector::executeSql(connection = connection, sql = mergeSql)
+      DatabaseConnector::disconnect(connection = connection)
+    } else {
+      cluster <- OhdsiRTools::makeCluster(numberOfThreads = numThreads, singleThreadToMain = TRUE)
+      dummy <- OhdsiRTools::clusterApply(cluster = cluster, 
+                                         x = hierarchySqls, 
+                                         function(sql) {
+                                           connection <- DatabaseConnector::connect(connectionDetails = connectionDetails)
+                                           DatabaseConnector::executeSql(connection = connection, sql = sql)
+                                           DatabaseConnector::disconnect(connection = connection)
+                                         })
+      OhdsiRTools::stopCluster(cluster = cluster)
+      
+      connection <- DatabaseConnector::connect(connectionDetails = connectionDetails)
+      DatabaseConnector::executeSql(connection = connection, sql = mergeSql)
+      DatabaseConnector::disconnect(connection = connection)
+    }
+    
     writeLines(sprintf("Done. Concept Hierarchy table can now be found in %s", resultsDatabaseSchema))  
   }
-  
-  return (hierarchySql)
+
+  return (hierarchySqls)
 }
 
 

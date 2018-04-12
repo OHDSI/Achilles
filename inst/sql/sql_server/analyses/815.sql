@@ -1,3 +1,5 @@
+
+--HINT DISTRIBUTE_ON_KEY(stratum1_id)
 select subject_id as stratum1_id,
   unit_concept_id as stratum2_id,
   CAST(avg(1.0 * count_value) AS FLOAT) as avg_value,
@@ -18,6 +20,7 @@ select subject_id as stratum1_id,
 	group by subject_id, unit_concept_id
 ;
 
+--HINT DISTRIBUTE_ON_KEY(stratum1_id)
 select subject_id as stratum1_id, unit_concept_id as stratum2_id, count_value, count_big(*) as total, row_number() over (partition by subject_id, unit_concept_id order by count_value) as rn
 into #statsView
 FROM 
@@ -32,6 +35,7 @@ FROM
 group by subject_id, unit_concept_id, count_value
 ;
 
+--HINT DISTRIBUTE_ON_KEY(stratum1_id)
 with priorStats (stratum1_id, stratum2_id, count_value, total, accumulated) as
 (
   select s.stratum1_id, s.stratum2_id, s.count_value, s.total, sum(p.total) as accumulated

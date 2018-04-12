@@ -1,4 +1,6 @@
 -- 706	Distribution of age by drug_concept_id
+
+--HINT DISTRIBUTE_ON_KEY(subject_id)
 select de1.drug_concept_id as subject_id,
   p1.gender_concept_id,
 	de1.drug_start_year - p1.year_of_birth as count_value
@@ -12,6 +14,7 @@ inner join
 ) de1 on p1.person_id = de1.person_id
 ;
 
+--HINT DISTRIBUTE_ON_KEY(stratum1_id)
 with overallStats (stratum1_id, stratum2_id, avg_value, stdev_value, min_value, max_value, total) as
 (
   select subject_id as stratum1_id,
@@ -56,7 +59,7 @@ join overallStats o on p.stratum1_id = o.stratum1_id and p.stratum2_id = o.strat
 GROUP BY o.stratum1_id, o.stratum2_id, o.total, o.min_value, o.max_value, o.avg_value, o.stdev_value
 ;
 
---HINT DISTRIBUTE_ON_KEY(analysis_id)
+--HINT DISTRIBUTE_ON_KEY(stratum_1)
 select analysis_id, stratum1_id as stratum_1, stratum2_id as stratum_2, 
 null as stratum_3, null as stratum_4, null as stratum_5,
 count_value, min_value, max_value, avg_value, stdev_value, median_value, p10_value, p25_value, p75_value, p90_value

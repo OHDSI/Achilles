@@ -1,6 +1,6 @@
 -- 106	Length of observation (days) of first observation period by gender
 
-
+--HINT DISTRIBUTE_ON_KEY(gender_concept_id)
 select p.gender_concept_id, op.count_value
 into #rawData
 FROM
@@ -13,6 +13,7 @@ JOIN @cdmDatabaseSchema.PERSON p on op.person_id = p.person_id
 where op.rn = 1
 ;
 
+--HINT DISTRIBUTE_ON_KEY(gender_concept_id)
 with overallStats (gender_concept_id, avg_value, stdev_value, min_value, max_value, total) as
 (
   select gender_concept_id,
@@ -55,7 +56,7 @@ join overallStats o on p.gender_concept_id = o.gender_concept_id
 GROUP BY o.gender_concept_id, o.total, o.min_value, o.max_value, o.avg_value, o.stdev_value
 ;
 
---HINT DISTRIBUTE_ON_KEY(analysis_id)
+--HINT DISTRIBUTE_ON_KEY(stratum_1)
 select analysis_id, gender_concept_id as stratum_1, 
 null as stratum_2, null as stratum_3, null as stratum_4, null as stratum_5,
 count_value, min_value, max_value, avg_value, stdev_value, median_value, p10_value, p25_value, p75_value, p90_value

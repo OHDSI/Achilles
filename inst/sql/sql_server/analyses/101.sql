@@ -1,6 +1,6 @@
 -- 101	Number of persons by age, with age at first observation period
 
---HINT DISTRIBUTE_ON_KEY(analysis_id)
+--HINT DISTRIBUTE_ON_KEY(stratum_1)
 select 101 as analysis_id,   CAST(year(op1.index_date) - p1.YEAR_OF_BIRTH AS VARCHAR(255)) as stratum_1, 
 null as stratum_2, null as stratum_3, null as stratum_4, null as stratum_5,
 COUNT_BIG(p1.person_id) as count_value

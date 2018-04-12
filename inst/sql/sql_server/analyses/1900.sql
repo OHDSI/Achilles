@@ -1,6 +1,6 @@
 -- 1900	concept_0 report
 
---HINT DISTRIBUTE_ON_KEY(analysis_id)
+--HINT DISTRIBUTE_ON_KEY(stratum_1)
 select 1900 as analysis_id, CAST(table_name AS VARCHAR(255)) as stratum_1, source_value as stratum_2, 
 null as stratum_3, null as stratum_4, null as stratum_5,
 cnt as count_value

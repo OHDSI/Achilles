@@ -1,4 +1,6 @@
 -- 1817	Distribution of high range, by observation_concept_id and unit_concept_id
+
+--HINT DISTRIBUTE_ON_KEY(subject_id)
 select measurement_concept_id as subject_id, 
 	unit_concept_id,
 	CAST(range_high AS FLOAT) as count_value
@@ -10,6 +12,7 @@ where m.unit_concept_id is not null
 	and m.range_high is not null
 ;
 
+--HINT DISTRIBUTE_ON_KEY(stratum1_id)
 with overallStats (stratum1_id, stratum2_id, avg_value, stdev_value, min_value, max_value, total) as
 (
   select subject_id as stratum1_id,
@@ -54,7 +57,7 @@ join overallStats o on p.stratum1_id = o.stratum1_id and p.stratum2_id = o.strat
 GROUP BY o.stratum1_id, o.stratum2_id, o.total, o.min_value, o.max_value, o.avg_value, o.stdev_value
 ;
 
---HINT DISTRIBUTE_ON_KEY(analysis_id)
+--HINT DISTRIBUTE_ON_KEY(stratum_1)
 select analysis_id, stratum1_id as stratum_1, stratum2_id as stratum_2, 
 null as stratum_3, null as stratum_4, null as stratum_5,
 count_value, min_value, max_value, avg_value, stdev_value, median_value, p10_value, p25_value, p75_value, p90_value

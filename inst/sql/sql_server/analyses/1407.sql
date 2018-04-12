@@ -1,4 +1,6 @@
 -- 1407	Length of payer plan (days) of first payer plan period by age decile
+
+--HINT DISTRIBUTE_ON_KEY(stratum_id)
 with rawData(stratum_id, count_value) as
 (
   select floor((year(ppp1.payer_plan_period_START_DATE) - p1.YEAR_OF_BIRTH)/10) as stratum_id,
@@ -56,7 +58,7 @@ join overallStats o on p.stratum_id = o.stratum_id
 GROUP BY o.stratum_id, o.total, o.min_value, o.max_value, o.avg_value, o.stdev_value
 ;
 
---HINT DISTRIBUTE_ON_KEY(analysis_id)
+--HINT DISTRIBUTE_ON_KEY(stratum_1)
 select analysis_id, stratum_id as stratum_1, 
 null as stratum_2, null as stratum_3, null as stratum_4, null as stratum_5,
 count_value, min_value, max_value, avg_value, stdev_value, median_value, p10_value, p25_value, p75_value, p90_value

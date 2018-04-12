@@ -1,6 +1,6 @@
 -- 405	Number of condition occurrence records, by condition_concept_id by condition_type_concept_id
 
---HINT DISTRIBUTE_ON_KEY(analysis_id)
+--HINT DISTRIBUTE_ON_KEY(stratum_1)
 select 405 as analysis_id, 
 	CAST(co1.condition_CONCEPT_ID AS VARCHAR(255)) as stratum_1,
 	CAST(co1.condition_type_concept_id AS VARCHAR(255)) as stratum_2,

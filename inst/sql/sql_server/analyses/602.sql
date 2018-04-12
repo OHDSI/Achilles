@@ -1,6 +1,6 @@
 -- 602	Number of persons by procedure occurrence start month, by procedure_concept_id
 
---HINT DISTRIBUTE_ON_KEY(analysis_id)
+--HINT DISTRIBUTE_ON_KEY(stratum_1)
 select 602 as analysis_id,   
 	CAST(po1.procedure_concept_id AS VARCHAR(255)) as stratum_1,
 	CAST(YEAR(procedure_date)*100 + month(procedure_date) AS VARCHAR(255)) as stratum_2,

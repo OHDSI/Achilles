@@ -1,6 +1,6 @@
 -- 2100	Number of persons with at least one device exposure , by device_concept_id
 
---HINT DISTRIBUTE_ON_KEY(analysis_id)
+--HINT DISTRIBUTE_ON_KEY(stratum_1)
 select 2100 as analysis_id, 
 	CAST(m.device_CONCEPT_ID AS VARCHAR(255)) as stratum_1,
 	null as stratum_2, null as stratum_3, null as stratum_4, null as stratum_5,

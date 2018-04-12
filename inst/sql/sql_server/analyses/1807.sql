@@ -1,6 +1,6 @@
 -- 1807	Number of measurement occurrence records, by measurement_concept_id and unit_concept_id
 
---HINT DISTRIBUTE_ON_KEY(analysis_id)
+--HINT DISTRIBUTE_ON_KEY(stratum_1)
 select 1807 as analysis_id, 
 	CAST(m.measurement_concept_id AS VARCHAR(255)) as stratum_1,
 	CAST(m.unit_concept_id AS VARCHAR(255)) as stratum_2,

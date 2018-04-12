@@ -1,8 +1,7 @@
 -- 116	Number of persons with at least one day of observation in each year by gender and age decile
 -- Note: using temp table instead of nested query because this gives vastly improved performance in Oracle
 
-IF OBJECT_ID('tempdb..#temp_dates', 'U') IS NOT NULL
-	DROP TABLE #temp_dates;
+
 
 select distinct 
   YEAR(observation_period_start_date) as obs_year 
@@ -12,7 +11,7 @@ from
   @cdmDatabaseSchema.OBSERVATION_PERIOD
 ;
 
---HINT DISTRIBUTE_ON_KEY(analysis_id)
+--HINT DISTRIBUTE_ON_KEY(stratum_1)
 select 116 as analysis_id,  
 	CAST(t1.obs_year AS VARCHAR(255)) as stratum_1,
 	CAST(p1.gender_concept_id AS VARCHAR(255)) as stratum_2,

@@ -1,6 +1,6 @@
 -- 2000	patients with at least 1 Dx and 1 Rx
 
---HINT DISTRIBUTE_ON_KEY(analysis_id)
+
 select 2000 as analysis_id,  
 	null as stratum_1, null as stratum_2, null as stratum_3, null as stratum_4, null as stratum_5,
 --gender_concept_id as stratum_1, COUNT_BIG(distinct person_id) as count_value

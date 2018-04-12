@@ -1,6 +1,6 @@
 -- 1804	Number of persons with at least one measurement occurrence, by measurement_concept_id by calendar year by gender by age decile
 
---HINT DISTRIBUTE_ON_KEY(analysis_id)
+--HINT DISTRIBUTE_ON_KEY(stratum_1)
 select 1804 as analysis_id,   
 	CAST(m.measurement_concept_id AS VARCHAR(255)) as stratum_1,
 	CAST(YEAR(measurement_date) AS VARCHAR(255)) as stratum_2,

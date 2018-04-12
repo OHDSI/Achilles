@@ -1,6 +1,6 @@
 -- 1413	Number of persons by number of payer plan periods
 
---HINT DISTRIBUTE_ON_KEY(analysis_id)
+--HINT DISTRIBUTE_ON_KEY(stratum_1)
 select 1413 as analysis_id,  
 	CAST(ppp1.num_periods AS VARCHAR(255)) as stratum_1,
 	null as stratum_2, null as stratum_3, null as stratum_4, null as stratum_5,

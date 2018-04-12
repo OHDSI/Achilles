@@ -1,6 +1,6 @@
 -- 701	Number of drug occurrence records, by drug_concept_id
 
---HINT DISTRIBUTE_ON_KEY(analysis_id)
+--HINT DISTRIBUTE_ON_KEY(stratum_1)
 select 701 as analysis_id, 
 	CAST(de1.drug_CONCEPT_ID AS VARCHAR(255)) as stratum_1,
 	null as stratum_2, null as stratum_3, null as stratum_4, null as stratum_5,

@@ -1,6 +1,6 @@
 -- 704	Number of persons with at least one drug occurrence, by drug_concept_id by calendar year by gender by age decile
 
---HINT DISTRIBUTE_ON_KEY(analysis_id)
+--HINT DISTRIBUTE_ON_KEY(stratum_1)
 select 704 as analysis_id,   
 	CAST(de1.drug_concept_id AS VARCHAR(255)) as stratum_1,
 	CAST(YEAR(drug_exposure_start_date) AS VARCHAR(255)) as stratum_2,

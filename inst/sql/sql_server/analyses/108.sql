@@ -1,6 +1,6 @@
 -- 108	Number of persons by length of observation period, in 30d increments
 
---HINT DISTRIBUTE_ON_KEY(analysis_id)
+--HINT DISTRIBUTE_ON_KEY(stratum_1)
 select 108 as analysis_id,  CAST(floor(DATEDIFF(dd, op1.observation_period_start_date, op1.observation_period_end_date)/30) AS VARCHAR(255)) as stratum_1, 
 null as stratum_2, null as stratum_3, null as stratum_4, null as stratum_5,
 COUNT_BIG(distinct p1.person_id) as count_value

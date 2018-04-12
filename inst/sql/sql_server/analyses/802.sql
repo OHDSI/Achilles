@@ -1,6 +1,6 @@
 -- 802	Number of persons by observation occurrence start month, by observation_concept_id
 
---HINT DISTRIBUTE_ON_KEY(analysis_id)
+--HINT DISTRIBUTE_ON_KEY(stratum_1)
 select 802 as analysis_id,   
 	CAST(o1.observation_concept_id AS VARCHAR(255)) as stratum_1,
 	CAST(YEAR(observation_date)*100 + month(observation_date) AS VARCHAR(255)) as stratum_2,

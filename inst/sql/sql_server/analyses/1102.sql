@@ -1,6 +1,6 @@
 -- 1102	Number of care sites by location 3-digit zip
 
---HINT DISTRIBUTE_ON_KEY(analysis_id)
+--HINT DISTRIBUTE_ON_KEY(stratum_1)
 select 1102 as analysis_id,  
 	CAST(left(l1.zip,3) AS VARCHAR(255)) as stratum_1, 
 	null as stratum_2, null as stratum_3, null as stratum_4, null as stratum_5,

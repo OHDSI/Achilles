@@ -1,36 +1,25 @@
 -- 110	Number of persons with continuous observation in each month
 -- Note: using temp table instead of nested query because this gives vastly improved performance in Oracle
 
-IF OBJECT_ID('tempdb..#temp_dates', 'U') IS NOT NULL
-	DROP TABLE #temp_dates;
-
-SELECT DISTINCT 
-  YEAR(observation_period_start_date)*100 + MONTH(observation_period_start_date) AS obs_month,
-  DATEFROMPARTS(YEAR(observation_period_start_date), MONTH(observation_period_start_date), 1)
-  AS obs_month_start,
-  EOMONTH(observation_period_start_date) AS obs_month_end
-INTO
-  #temp_dates
-FROM @cdmDatabaseSchema.observation_period
-;
-
---HINT DISTRIBUTE_ON_KEY(analysis_id)
-SELECT 
-  110 AS analysis_id, 
-	CAST(obs_month AS VARCHAR(255)) as stratum_1,
+--HINT DISTRIBUTE_ON_KEY(stratum_1)
+SELECT
+  117 as analysis_id,  
+	CAST(t1.obs_month AS VARCHAR(255)) as stratum_1,
 	null as stratum_2, null as stratum_3, null as stratum_4, null as stratum_5,
-	COUNT_BIG(DISTINCT person_id) AS count_value
+	COUNT_BIG(distinct op1.PERSON_ID) as count_value
 into @scratchDatabaseSchema@schemaDelim@tempAchillesPrefix_110
 FROM
-	@cdmDatabaseSchema.observation_period,
-	#temp_Dates
-WHERE 
-		observation_period_start_date <= obs_month_start
-	AND
-		observation_period_end_date >= obs_month_end
-GROUP BY 
-	obs_month
-;
+@cdmDatabaseSchema.observation_period op1
+join 
+(
+  SELECT DISTINCT 
+    YEAR(observation_period_start_date)*100 + MONTH(observation_period_start_date) AS obs_month,
+    DATEFROMPARTS(YEAR(observation_period_start_date), MONTH(observation_period_start_date), 1)
+    AS obs_month_start,
+    EOMONTH(observation_period_start_date) AS obs_month_end
+  FROM @cdmDatabaseSchema.observation_period
+) t1 on	op1.observation_period_start_date <= t1.obs_month_start
+	and	op1.observation_period_end_date >= t1.obs_month_end
+group by t1.obs_month;
 
-TRUNCATE TABLE #temp_dates;
-DROP TABLE #temp_dates;
+

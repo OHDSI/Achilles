@@ -1,6 +1,6 @@
 -- 2104	Number of persons with at least one device occurrence, by device_concept_id by calendar year by gender by age decile
 
---HINT DISTRIBUTE_ON_KEY(analysis_id)
+--HINT DISTRIBUTE_ON_KEY(stratum_1)
 select 2104 as analysis_id,   
 	CAST(m.device_CONCEPT_ID AS VARCHAR(255)) as stratum_1,
 	CAST(YEAR(device_exposure_start_date) AS VARCHAR(255)) as stratum_2,

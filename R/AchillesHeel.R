@@ -146,7 +146,7 @@ achillesHeel <- function(connectionDetails,
                 outputFolder = outputFolder)
   })
   
-  heelSql <- c(heelSql, paste(parallelSqls, collapse = "\n\n"))
+  heelSql <- c(heelSql, parallelSqls)
   
   if (!sqlOnly) {
     if (numThreads == 1) {
@@ -314,7 +314,7 @@ achillesHeel <- function(connectionDetails,
                                                                   hrId))
   
   finalSqls <- c(sqlRd, sqlHr)
-  heelSql <- c(heelSql, paste(finalSqls, collapse = "\n\n"))
+  heelSql <- c(heelSql, finalSqls)
   
   if (!sqlOnly) {
     for (sql in finalSqls) {

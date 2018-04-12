@@ -1,6 +1,6 @@
 -- 1802	Number of persons by measurement occurrence start month, by measurement_concept_id
 
---HINT DISTRIBUTE_ON_KEY(analysis_id)
+--HINT DISTRIBUTE_ON_KEY(stratum_1)
 select 1802 as analysis_id,   
 	CAST(m.measurement_concept_id AS VARCHAR(255)) as stratum_1,
 	CAST(YEAR(measurement_date)*100 + month(measurement_date) AS VARCHAR(255)) as stratum_2,

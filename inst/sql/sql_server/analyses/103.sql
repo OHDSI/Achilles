@@ -1,6 +1,6 @@
 -- 103	Distribution of age at first observation period
 
---HINT DISTRIBUTE_ON_KEY(analysis_id)
+--HINT DISTRIBUTE_ON_KEY(count_value)
 with rawData (person_id, age_value) as
 (
 select p.person_id, 

@@ -1,6 +1,5 @@
 -- 8	Number of persons with invalid location_id
 
---HINT DISTRIBUTE_ON_KEY(analysis_id)
 select 8 as analysis_id,  
 null as stratum_1, null as stratum_2, null as stratum_3, null as stratum_4, null as stratum_5,
 COUNT_BIG(p1.person_id) as count_value

@@ -1,5 +1,6 @@
 -- 107	Length of observation (days) of first observation period by age decile
 
+--HINT DISTRIBUTE_ON_KEY(age_decile)
 with rawData (age_decile, count_value) as
 (
   select floor((year(op.OBSERVATION_PERIOD_START_DATE) - p.YEAR_OF_BIRTH)/10) as age_decile,
@@ -60,7 +61,7 @@ join overallStats o on p.age_decile = o.age_decile
 GROUP BY o.age_decile, o.total, o.min_value, o.max_value, o.avg_value, o.stdev_value
 ;
 
---HINT DISTRIBUTE_ON_KEY(analysis_id)
+--HINT DISTRIBUTE_ON_KEY(stratum_1)
 select analysis_id, age_decile as stratum_1, 
 null as stratum_2, null as stratum_3, null as stratum_4, null as stratum_5,
 count_value, min_value, max_value, avg_value, stdev_value, median_value, p10_value, p25_value, p75_value, p90_value

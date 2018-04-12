@@ -1,6 +1,6 @@
 -- 202	Number of persons by visit occurrence start month, by visit_concept_id
 
---HINT DISTRIBUTE_ON_KEY(analysis_id)
+--HINT DISTRIBUTE_ON_KEY(stratum_1)
 select 202 as analysis_id,   
 	CAST(vo1.visit_concept_id AS VARCHAR(255)) as stratum_1,
 	CAST(YEAR(visit_start_date)*100 + month(visit_start_date) AS VARCHAR(255)) as stratum_2,

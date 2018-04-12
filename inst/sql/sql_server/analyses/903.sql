@@ -1,4 +1,6 @@
 -- 903	Number of distinct drug era concepts per person
+
+--HINT DISTRIBUTE_ON_KEY(count_value)
 with rawData(count_value) as
 (
   select COUNT_BIG(distinct de1.drug_concept_id) as count_value
@@ -46,7 +48,7 @@ CROSS JOIN overallStats o
 GROUP BY o.total, o.min_value, o.max_value, o.avg_value, o.stdev_value
 ;
 
---HINT DISTRIBUTE_ON_KEY(analysis_id)
+--HINT DISTRIBUTE_ON_KEY(count_value)
 select analysis_id, 
 null as stratum_1, null as stratum_2, null as stratum_3, null as stratum_4, null as stratum_5,
 count_value, min_value, max_value, avg_value, stdev_value, median_value, p10_value, p25_value, p75_value, p90_value

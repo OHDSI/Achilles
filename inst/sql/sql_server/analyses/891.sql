@@ -1,6 +1,6 @@
 -- 891	Number of total persons that have at least x observations
 
---HINT DISTRIBUTE_ON_KEY(analysis_id)
+--HINT DISTRIBUTE_ON_KEY(stratum_1)
 select 891 as analysis_id,   
 	CAST(observation_concept_id as varchar(255)) as stratum_1,
 	CAST(obs_cnt as varchar(255)) as stratum_2,

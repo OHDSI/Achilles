@@ -1,6 +1,6 @@
 -- 1411	Number of persons by payer plan period start month
 
---HINT DISTRIBUTE_ON_KEY(analysis_id)
+--HINT DISTRIBUTE_ON_KEY(stratum_1)
 select 1411 as analysis_id, 
 	DATEFROMPARTS(YEAR(payer_plan_period_start_date), MONTH(payer_plan_period_start_date), 1) as stratum_1,
 	null as stratum_2, null as stratum_3, null as stratum_4, null as stratum_5,
