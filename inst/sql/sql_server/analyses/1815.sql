@@ -1,27 +1,6 @@
 -- 1815  Distribution of numeric values, by measurement_concept_id and unit_concept_id
 
 --HINT DISTRIBUTE_ON_KEY(stratum1_id)
-select subject_id as stratum1_id,
-  unit_concept_id as stratum2_id,
-  CAST(avg(1.0 * count_value) AS FLOAT) as avg_value,
-  CAST(stdev(count_value) AS FLOAT) as stdev_value,
-  min(count_value) as min_value,
-  max(count_value) as max_value,
-  count_big(*) as total
-into #overallStats
-FROM 
-(
-  select measurement_concept_id as subject_id, 
-	unit_concept_id,
-	CAST(value_as_number AS FLOAT) as count_value
-  from @cdmDatabaseSchema.measurement m
-  where m.unit_concept_id is not null
-	and m.value_as_number is not null
-) A
-group by subject_id, unit_concept_id
-;
-
---HINT DISTRIBUTE_ON_KEY(stratum1_id)
 select subject_id as stratum1_id, unit_concept_id as stratum2_id, count_value, count_big(*) as total, row_number() over (partition by subject_id, unit_concept_id order by count_value) as rn
 into #statsView
 FROM 
@@ -34,14 +13,6 @@ FROM
 	and m.value_as_number is not null
 ) A
 group by subject_id, unit_concept_id, count_value
-;
-
---HINT DISTRIBUTE_ON_KEY(stratum1_id)
-select s.stratum1_id, s.stratum2_id, s.count_value, s.total, sum(p.total) as accumulated
-into #priorStats
-from #statsView s
-join #statsView p on s.stratum1_id = p.stratum1_id and s.stratum2_id = p.stratum2_id and p.rn <= s.rn
-group by s.stratum1_id, s.stratum2_id, s.count_value, s.total, s.rn
 ;
 
 --HINT DISTRIBUTE_ON_KEY(stratum1_id)
@@ -59,8 +30,33 @@ select 1815 as analysis_id,
 	MIN(case when p.accumulated >= .75 * o.total then count_value else o.max_value end) as p75_value,
 	MIN(case when p.accumulated >= .90 * o.total then count_value else o.max_value end) as p90_value
 into #tempResults
-from #priorStats p
-join #overallStats o on p.stratum1_id = o.stratum1_id and p.stratum2_id = o.stratum2_id 
+from 
+(
+  select s.stratum1_id, s.stratum2_id, s.count_value, s.total, sum(p.total) as accumulated
+  from #statsView s
+  join #statsView p on s.stratum1_id = p.stratum1_id and s.stratum2_id = p.stratum2_id and p.rn <= s.rn
+  group by s.stratum1_id, s.stratum2_id, s.count_value, s.total, s.rn
+) p
+join 
+(
+	select subject_id as stratum1_id,
+	  unit_concept_id as stratum2_id,
+	  CAST(avg(1.0 * count_value) AS FLOAT) as avg_value,
+	  CAST(stdev(count_value) AS FLOAT) as stdev_value,
+	  min(count_value) as min_value,
+	  max(count_value) as max_value,
+	  count_big(*) as total
+	FROM 
+	(
+	  select measurement_concept_id as subject_id, 
+		unit_concept_id,
+		CAST(value_as_number AS FLOAT) as count_value
+	  from @cdmDatabaseSchema.measurement m
+	  where m.unit_concept_id is not null
+		and m.value_as_number is not null
+	) A
+	group by subject_id, unit_concept_id
+) o on p.stratum1_id = o.stratum1_id and p.stratum2_id = o.stratum2_id 
 GROUP BY o.stratum1_id, o.stratum2_id, o.total, o.min_value, o.max_value, o.avg_value, o.stdev_value
 ;
 
@@ -72,14 +68,8 @@ into @scratchDatabaseSchema@schemaDelim@tempAchillesPrefix_dist_1815
 from #tempResults
 ;
 
-truncate table #overallStats;
-drop table #overallStats;
-
 truncate table #statsView;
 drop table #statsView;
-
-truncate table #priorStats;
-drop table #priorStats;
 
 truncate table #tempResults;
 drop table #tempResults;

@@ -476,10 +476,10 @@ achilles <- function (connectionDetails,
   
   hierarchySql <- "/* CONCEPT HIERARCHY EXECUTION SKIPPED PER USER REQUEST */"
   if (conceptHierarchy) {
-    hierarchySql <- createConceptHierarchy(connectionDetails, 
-                                           resultsDatabaseSchema,
-                                           scratchDatabaseSchema,
-                                           vocabDatabaseSchema,
+    hierarchySql <- createConceptHierarchy(connectionDetails = connectionDetails, 
+                                           resultsDatabaseSchema = resultsDatabaseSchema,
+                                           scratchDatabaseSchema = scratchDatabaseSchema,
+                                           vocabDatabaseSchema = vocabDatabaseSchema,
                                            numThreads = numThreads,
                                            tempAchillesPrefix = tempAchillesPrefix,
                                            sqlOnly = sqlOnly)
@@ -592,7 +592,6 @@ createConceptHierarchy <- function(connectionDetails,
   })
   
   mergeSql <- SqlRender::loadRenderTranslateSql(sqlFilename = file.path("post_processing", 
-                                                                        "concept_hierarchies", 
                                                                         "merge_concept_hierarchy.sql"),
                                                 packageName = "Achilles",
                                                 dbms = connectionDetails$dbms,
@@ -631,7 +630,7 @@ createConceptHierarchy <- function(connectionDetails,
     writeLines(sprintf("Done. Concept Hierarchy table can now be found in %s", resultsDatabaseSchema))  
   }
 
-  return (hierarchySqls)
+  return (c(hierarchySqls, mergeSql))
 }
 
 
