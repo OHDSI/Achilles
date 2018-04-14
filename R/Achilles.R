@@ -244,17 +244,19 @@ achilles <- function (connectionDetails,
       } else {
         costColumns <- costMappings$CURRENT
       }
-      
-      SqlRender::loadRenderTranslateSql(sqlFilename = "analyses/raw_cost_template.sql", 
-                                        packageName = "Achilles", 
-                                        dbms = connectionDetails$dbms,
-                                        cdmDatabaseSchema = cdmDatabaseSchema,
-                                        scratchDatabaseSchema = scratchDatabaseSchema,
-                                        schemaDelim = schemaDelim,
-                                        tempAchillesPrefix = tempAchillesPrefix,
-                                        domainId = domainId,
-                                        domainTable = ifelse(domainId == "Drug", "drug_exposure", "procedure_occurrence"), 
-                                        costColumns = paste(costColumns, collapse = ","))
+      list(
+        analysisId = domainId,
+        sql = SqlRender::loadRenderTranslateSql(sqlFilename = "analyses/raw_cost_template.sql", 
+                                          packageName = "Achilles", 
+                                          dbms = connectionDetails$dbms,
+                                          cdmDatabaseSchema = cdmDatabaseSchema,
+                                          scratchDatabaseSchema = scratchDatabaseSchema,
+                                          schemaDelim = schemaDelim,
+                                          tempAchillesPrefix = tempAchillesPrefix,
+                                          domainId = domainId,
+                                          domainTable = ifelse(domainId == "Drug", "drug_exposure", "procedure_occurrence"), 
+                                          costColumns = paste(costColumns, collapse = ","))
+      )
     })
     
     achillesSql <- c(achillesSql, rawCostSqls)
@@ -277,8 +279,8 @@ achilles <- function (connectionDetails,
                                              DatabaseConnector::disconnect(connection = connection)
                                              
                                              df <- data.frame(
-                                               queryName = "raw cost",
-                                               queryId = NULL, 
+                                               queryName = "Raw Cost",
+                                               queryId = rawCostSql$analysisId, 
                                                executionTime = Sys.time() - start
                                              )
                                            })
@@ -343,7 +345,7 @@ achilles <- function (connectionDetails,
           DatabaseConnector::executeSql(connection = connection, sql = distCostAnalysisSql$sql)
         }
         for (dropRawCostSql in dropRawCostSqls) {
-          DatabaseConnector::executeSql(connection = connection, sql = dropRawCostSql$sql)
+          DatabaseConnector::executeSql(connection = connection, sql = dropRawCostSql)
         }
       } else {
         cluster <- OhdsiRTools::makeCluster(numberOfThreads = length(distCostAnalysisSqls), 
@@ -372,7 +374,7 @@ achilles <- function (connectionDetails,
                                            x = dropRawCostSqls, 
                                            function(dropRawCostSql) {
                                              connection <- DatabaseConnector::connect(connectionDetails = connectionDetails)
-                                             DatabaseConnector::executeSql(connection = connection, sql = dropRawCostSql$sql)
+                                             DatabaseConnector::executeSql(connection = connection, sql = dropRawCostSql)
                                              DatabaseConnector::disconnect(connection = connection)
                                            })
         OhdsiRTools::stopCluster(cluster = cluster) 
