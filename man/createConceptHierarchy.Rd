@@ -30,5 +30,7 @@ Making this "#" will run Achilles in single-threaded mode and use temporary tabl
 Create the concept hierarchy
 }
 \details{
-Post-processing, create the concept hierarchy
+Post-processing, create the concept hierarchy.
+Please note: this table creation only requires the Vocabulary, not the CDM itself. 
+You could run this once for 1 Vocab version, and then copy the table to all CDMs using that Vocab.
 }

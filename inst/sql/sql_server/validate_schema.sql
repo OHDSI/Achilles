@@ -14,6 +14,40 @@ from (
   @cdmDatabaseSchema.care_site
 ) CARE_SITE
 ),
+cte_cdm_source
+as
+(
+  select cast('cdm_source' as varchar(50)) as tablename
+  from (
+  select top 1
+  cdm_source_name,
+  cdm_source_abbreviation,
+  cdm_holder
+  source_description,
+  source_documentation_reference,
+  cdm_etl_reference,
+  source_release_date,
+  cdm_release_date,
+  cdm_version,
+  vocabulary_version
+  from 
+  @cdmDatabaseSchema.cdm_source
+) cdm_source
+),
+cte_cohort 
+as
+(
+  select cast('cohort' as varchar(50)) as tablename
+  from (
+  SELECT top 1
+  cohort_definition_id,
+  subject_id,
+  cohort_start_date,
+  cohort_end_date
+  FROM
+  @resultsDatabaseSchema.cohort
+) cohort
+),
 cte_condition_era
 as
 (
@@ -127,6 +161,7 @@ as
 select cast('drug_exposure' as varchar(50)) as tablename
 from (
   SELECT top 1
+  {@cdmVersion=='5'}?{
   drug_exposure_id,
   person_id,
   drug_concept_id,
@@ -148,6 +183,33 @@ from (
   drug_source_concept_id,
   route_source_value,
   dose_unit_source_value
+  }:{
+    drug_exposure_id,
+    person_id,
+    drug_concept_id,
+    drug_exposure_start_date,
+    drug_exposure_start_datetime,
+    drug_exposure_end_date,
+    drug_exposure_end_datetime,
+    verbatim_end_date,
+    drug_type_concept_id,
+    stop_reason,
+    refills,
+    quantity,
+    days_supply,
+    sig,
+    route_concept_id,
+    lot_number,
+    provider_id,
+    visit_occurrence_id,
+    {@cdmVersion == '5.3'}?{
+      visit_detail_id,
+    }
+    drug_source_value,
+    drug_source_concept_id,
+    route_source_value,
+    dose_unit_source_value
+  }
   FROM
   @cdmDatabaseSchema.drug_exposure
 ) drug_exposure
@@ -170,6 +232,25 @@ from (
   @cdmDatabaseSchema.location
 ) location
 ),
+{@cdmVersion == '5.3'}?{
+  cte_metadata
+  as
+  (
+    select cast('metadata' as varchar(50)) as tablename
+    from (
+      select top 1
+      metadata_concept_id,
+      metadata_type_concept_id,
+      name,
+      value_as_string,
+      value_as_concept_id,
+      metadata_date,
+      metadata_datetime
+      FROM
+      @cdmDatabaseSchema.metadata
+    ) metadata
+  ),
+}
 cte_observation
 as
 (
@@ -180,7 +261,9 @@ from (
   person_id,
   observation_concept_id,
   observation_date,
-  observation_time,
+  {@cdmVersion == '5.3'}?{
+    observation_time,
+  }
   value_as_number,
   value_as_string,
   value_as_concept_id,
@@ -310,115 +393,124 @@ from (
   @cdmDatabaseSchema.visit_occurrence
 ) visit_occurrence
 ),
-{@runCostAnalysis & @cdmVersion != '5.0.1'}?{
-  ctas_cost
-  as
-  (
-    select cast('cost' as varchar(50)) as tablename
-    from (
-      select top 1
-      cost_id,
-      cost_event_id,
-      cost_domain_id,
-      cost_type_concept_id,
-      currency_concept_id,
-      total_charge,
-      total_cost,
-      total_paid,
-      paid_by_payer,
-      paid_by_patient,
-      paid_patient_copay,
-      paid_patient_coinsurance,
-      paid_patient_deductible,
-      paid_by_primary,
-      paid_ingredient_cost,
-      paid_dispensing_fee,
-      payer_plan_period_id,
-      amount_allowed,
-      revenue_code_concept_id,
-      revenue_code_source_value
-      FROM
-      @cdmDatabaseSchema.drug_cost
-    ) cost
-  ),
-}
-{@runCostAnalysis & @cdmVersion=='5'}?{
-  ctas_drug_cost
-  as
-  (
-    select cast('drug_cost' as varchar(50)) as tablename
-    from (
-      SELECT top 1
-      drug_cost_id,
-      drug_exposure_id,
-      paid_copay,
-      paid_coinsurance,
-      paid_toward_deductible,
-      paid_by_payer,
-      paid_by_coordination_benefits,
-      total_out_of_pocket,
-      total_paid,
-      ingredient_cost,
-      dispensing_fee,
-      average_wholesale_price,
-      payer_plan_period_id
-      FROM
-      @cdmDatabaseSchema.drug_cost
-    ) drug_cost
-  ),
-  cte_device_cost
-  as
-  (
-    select cast('device_cost' as varchar(50)) as tablename
-    from (
-      select top 1
-      device_cost_id,
-      device_exposure_id,
-      currency_concept_id,
-      paid_copay,
-      paid_coinsurance,
-      paid_toward_deductible,
-      paid_by_payer,
-      paid_by_coordination_benefits,
-      total_out_of_pocket,
-      total_paid,
-      payer_plan_period_id
-      FROM
-      @cdmDatabaseSchema.device_cost
-    ) drug_cost
-  ),
-  cte_procedure_cost
-  as
-  (
-    select cast('procedure_cost' as varchar(50)) as tablename
-    from (
-      SELECT top 1
-      procedure_cost_id,
-      procedure_occurrence_id,
-      currency_concept_id,
-      paid_copay,
-      paid_coinsurance,
-      paid_toward_deductible,
-      paid_by_payer,
-      paid_by_coordination_benefits,
-      total_out_of_pocket,
-      total_paid,
-      revenue_code_concept_id,
-      payer_plan_period_id,
-      revenue_code_source_value
-      FROM
-      @cdmDatabaseSchema.procedure_cost
-    ) procedure_cost
-  ),
+{@runCostAnalysis}?{
+  {@cdmVersion == '5'}?{
+    cte_drug_cost
+    as
+    (
+      select cast('drug_cost' as varchar(50)) as tablename
+      from (
+        SELECT top 1
+        drug_cost_id,
+        drug_exposure_id,
+        paid_copay,
+        paid_coinsurance,
+        paid_toward_deductible,
+        paid_by_payer,
+        paid_by_coordination_benefits,
+        total_out_of_pocket,
+        total_paid,
+        ingredient_cost,
+        dispensing_fee,
+        average_wholesale_price,
+        payer_plan_period_id
+        FROM
+        @cdmDatabaseSchema.drug_cost
+      ) drug_cost
+    ),
+    cte_device_cost
+    as
+    (
+      select cast('device_cost' as varchar(50)) as tablename
+      from (
+        select top 1
+        device_cost_id,
+        device_exposure_id,
+        currency_concept_id,
+        paid_copay,
+        paid_coinsurance,
+        paid_toward_deductible,
+        paid_by_payer,
+        paid_by_coordination_benefits,
+        total_out_of_pocket,
+        total_paid,
+        payer_plan_period_id
+        FROM
+        @cdmDatabaseSchema.device_cost
+      ) drug_cost
+    ),
+    cte_procedure_cost
+    as
+    (
+      select cast('procedure_cost' as varchar(50)) as tablename
+      from (
+        SELECT top 1
+        procedure_cost_id,
+        procedure_occurrence_id,
+        currency_concept_id,
+        paid_copay,
+        paid_coinsurance,
+        paid_toward_deductible,
+        paid_by_payer,
+        paid_by_coordination_benefits,
+        total_out_of_pocket,
+        total_paid,
+        revenue_code_concept_id,
+        payer_plan_period_id,
+        revenue_code_source_value
+        FROM
+        @cdmDatabaseSchema.procedure_cost
+      ) procedure_cost
+    ),
+  }:{
+    cte_cost
+    as
+    (
+      select cast('cost' as varchar(50)) as tablename
+      from (
+        select top 1
+        cost_id,
+        cost_event_id,
+        cost_domain_id,
+        cost_type_concept_id,
+        currency_concept_id,
+        total_charge,
+        total_cost,
+        total_paid,
+        paid_by_payer,
+        paid_by_patient,
+        paid_patient_copay,
+        paid_patient_coinsurance,
+        paid_patient_deductible,
+        paid_by_primary,
+        paid_ingredient_cost,
+        paid_dispensing_fee,
+        payer_plan_period_id,
+        amount_allowed,
+        revenue_code_concept_id,
+        revenue_code_source_value
+        FROM
+        @cdmDatabaseSchema.cost
+      ) cost
+    ),
+  }  
 }
 cte_all
 as
 (
+  {@cdmVersion == '5.3'}?{
+    select tablename from cte_metadata
+    union all
+  }
   select tablename from cte_care_site
+  union all
+  select tablename from cte_cdm_source
   union all
   select tablename from cte_condition_era
   union all
   select tablename from cte_condition_occurrence
+  union all
+  select tablename from cte_cohort
   union all
   select tablename from cte_death
   union all
@@ -445,17 +537,18 @@ as
   select tablename from cte_provider
   union all
   select tablename from cte_visit_occurrence
-  {@runCostAnalysis & @cdmVersion == '5.0.1'}?{
-    union all
-    select tablename from cte_cost
-  }
-  {@runCostAnalysis & @cdmVersion == '5'}?{
-    union all
-    select tablename from cte_drug_cost
-    union all
-    select tablename from cte_device_cost
-    union all
-    select tablename from cte_procedure_cost
+  {@runCostAnalysis}?{
+    {@cdmVersion == '5'}?{
+      union all
+      select tablename from cte_drug_cost
+      union all
+      select tablename from cte_device_cost
+      union all
+      select tablename from cte_procedure_cost
+    }:{
+        union all
+        select tablename from cte_cost
+      }
   }
 )
 select tablename

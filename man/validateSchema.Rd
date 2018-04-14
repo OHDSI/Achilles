@@ -4,13 +4,19 @@
 \alias{validateSchema}
 \title{Validate the CDM schema}
 \usage{
-validateSchema(connectionDetails, cdmDatabaseSchema, runCostAnalysis,
+validateSchema(connectionDetails, cdmDatabaseSchema,
+  resultsDatabaseSchema = cdmDatabaseSchema, cdmVersion, runCostAnalysis,
   sqlOnly = FALSE)
 }
 \arguments{
 \item{connectionDetails}{An R object of type \code{connectionDetails} created using the function \code{createConnectionDetails} in the \code{DatabaseConnector} package.}
 
 \item{cdmDatabaseSchema}{string name of database schema that contains OMOP CDM. On SQL Server, this should specifiy both the database and the schema, so for example 'cdm_instance.dbo'.}
+
+\item{resultsDatabaseSchema}{Fully qualified name of database schema that the cohort table is written to. Default is cdmDatabaseSchema. 
+On SQL Server, this should specifiy both the database and the schema, so for example, on SQL Server, 'cdm_results.dbo'.}
+
+\item{cdmVersion}{Define the OMOP CDM version used:  currently supports v5 and above. Use major release number or minor number only (e.g. 5, 5.3)}
 
 \item{runCostAnalysis}{Boolean to determine if cost analysis should be run. Note: only works on CDM v5 and v5.1.0+ style cost tables.}
 
