@@ -734,10 +734,16 @@ validateSchema <- function(connectionDetails,
 
   outputFolder <- "output"
   
-  if (compareVersion(a = as.character(cdmVersion), b = "5.3") >= 0) {
-    cdmVersion <- "5.3"
-  }
+  majorVersions <- lapply(c("5", "5.1", "5.2", "5.3"), function(majorVersion) {
+    if (compareVersion(a = as.character(cdmVersion), b = majorVersion) >= 0) {
+      majorVersion
+    } else {
+      0
+    }
+  })
   
+  cdmVersion <- max(unlist(majorVersions))
+
   sql <- SqlRender::loadRenderTranslateSql(sqlFilename = "validate_schema.sql", 
                                            packageName = "Achilles", 
                                            dbms = connectionDetails$dbms,
