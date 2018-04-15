@@ -10,7 +10,7 @@ select
   count_big(*) as total,
   row_number() over (partition by subject_id order by @costColumn) as rn
 into #overallStats
-from @scratchDatabaseSchema@schemaDelim@domainId_cost_raw
+from @scratchDatabaseSchema@schemaDelim@tempAchillesPrefix_@domainId_cost_raw
 where @costColumn is not null
 group by subject_id, @costColumn
 ;

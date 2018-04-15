@@ -292,7 +292,7 @@ achilles <- function (connectionDetails,
     distCostDrugSqls <- 
       apply(distCostAnalysisDetails[distCostAnalysisDetails$STRATUM_1_NAME == "drug_concept_id", ], 1, 
             function (analysisDetail) {
-              list(analysisId = analysisDetail$ANALYSIS_ID,
+              list(analysisId = analysisDetail["ANALYSIS_ID"][[1]],
                    sql = SqlRender::loadRenderTranslateSql(sqlFilename = "analyses/cost_distribution_template.sql",
                                                        packageName = "Achilles",
                                                        dbms = connectionDetails$dbms,
@@ -311,7 +311,7 @@ achilles <- function (connectionDetails,
     distCostProcedureSqls <- 
       apply(distCostAnalysisDetails[distCostAnalysisDetails$STRATUM_1_NAME == "procedure_concept_id", ], 1,
             function (analysisDetail) {
-              list(analysisId = analysisDetail$ANALYSIS_ID,
+              list(analysisId = analysisDetail["ANALYSIS_ID"][[1]],
                    sql = SqlRender::loadRenderTranslateSql(sqlFilename = "analyses/cost_distribution_template.sql",
                                                        packageName = "Achilles",
                                                        dbms = connectionDetails$dbms,
