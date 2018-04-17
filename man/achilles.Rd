@@ -9,7 +9,7 @@ achilles(connectionDetails, cdmDatabaseSchema,
   resultsDatabaseSchema = cdmDatabaseSchema,
   scratchDatabaseSchema = resultsDatabaseSchema,
   vocabDatabaseSchema = cdmDatabaseSchema, sourceName = "", analysisIds,
-  createTable = TRUE, smallcellcount = 5, cdmVersion = "5",
+  createTable = TRUE, smallCellCount = 5, cdmVersion = "5",
   runHeel = TRUE, validateSchema = FALSE, runCostAnalysis = FALSE,
   conceptHierarchy = TRUE, createIndices = TRUE, numThreads = 1,
   tempAchillesPrefix = "tmpach", dropScratchTables = TRUE,
@@ -38,7 +38,7 @@ If not specified, all analyses will be executed. Use \code{\link{getAnalysisDeta
 
 \item{createTable}{If true, new results tables will be created in the results schema. If not, the tables are assumed to already exist, and analysis results will be inserted (slower on MPP).}
 
-\item{smallcellcount}{To avoid patient identifiability, cells with small counts (<= smallcellcount) are deleted. Set to NULL if you don't want any deletions.}
+\item{smallCellCount}{To avoid patient identifiability, cells with small counts (<= smallCellCount) are deleted. Set to NULL if you don't want any deletions.}
 
 \item{cdmVersion}{Define the OMOP CDM version used:  currently supports v5 and above. Use major release number or minor number only (e.g. 5, 5.3)}
 

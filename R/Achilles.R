@@ -45,7 +45,7 @@
 #' @param analysisIds		                   (OPTIONAL) A vector containing the set of Achilles analysisIds for which results will be generated. 
 #'                                         If not specified, all analyses will be executed. Use \code{\link{getAnalysisDetails}} to get a list of all Achilles analyses and their Ids.
 #' @param createTable                      If true, new results tables will be created in the results schema. If not, the tables are assumed to already exist, and analysis results will be inserted (slower on MPP).
-#' @param smallcellcount                   To avoid patient identifiability, cells with small counts (<= smallcellcount) are deleted. Set to NULL if you don't want any deletions.
+#' @param smallCellCount                   To avoid patient identifiability, cells with small counts (<= smallCellCount) are deleted. Set to NULL if you don't want any deletions.
 #' @param cdmVersion                       Define the OMOP CDM version used:  currently supports v5 and above. Use major release number or minor number only (e.g. 5, 5.3)
 #' @param runHeel                          Boolean to determine if Achilles Heel data quality reporting will be produced based on the summary statistics.  Default = TRUE
 #' @param validateSchema                   Boolean to determine if CDM Schema Validation should be run. Default = FALSE
@@ -83,7 +83,7 @@ achilles <- function (connectionDetails,
                       sourceName = "", 
                       analysisIds, 
                       createTable = TRUE,
-                      smallcellcount = 5, 
+                      smallCellCount = 5, 
                       cdmVersion = "5", 
                       runHeel = TRUE,
                       validateSchema = FALSE,
@@ -467,7 +467,7 @@ achilles <- function (connectionDetails,
                                cdmVersion = cdmVersion,
                                tempAchillesPrefix = tempAchillesPrefix,
                                numThreads = numThreads,
-                               smallcellcount = smallcellcount)
+                               smallCellCount = smallCellcount)
   })
   
   achillesSql <- c(achillesSql, mergeSqls)
@@ -931,7 +931,7 @@ dropAllScratchTables <- function(connectionDetails,
                                         cdmVersion,
                                         tempAchillesPrefix,
                                         numThreads,
-                                        smallcellcount) {
+                                        smallCellCount) {
   outputFolder <- "output"
   
   castedNames <- apply(resultsTable$schema, 1, function(field) {
@@ -960,7 +960,7 @@ dropAllScratchTables <- function(connectionDetails,
                                            detailType = resultsTable$detailType,
                                            detailSqls = paste(detailSqls, collapse = " \nunion all\n "),
                                            fieldNames = paste(resultsTable$schema$FIELD_NAME, collapse = ", "),
-                                           smallCellCount = smallcellcount)
+                                           smallCellCount = smallCellcount)
   
   return (sql)
 }

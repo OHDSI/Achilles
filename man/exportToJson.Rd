@@ -21,7 +21,8 @@ exportToJson(connectionDetails, cdmDatabaseSchema, resultsDatabaseSchema,
 
 \item{vocabDatabaseSchema}{string name of database schema that contains OMOP Vocabulary. Default is cdmDatabaseSchema. On SQL Server, this should specifiy both the database and the schema, so for example 'results.dbo'.}
 
-\item{compressIntoOneFile}{Boolean indicating if the JSON files should be compressed into one gzip file
+\item{compressIntoOneFile}{Boolean indicating if the JSON files should be compressed into one zip file
+
 See \code{data(allReports)} for a list of all report types}
 }
 \value{

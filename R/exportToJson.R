@@ -82,7 +82,8 @@ showReportTypes <- function()
 #' @param outputPath		                A folder location to save the JSON files. Default is current working folder
 #' @param reports                       A character vector listing the set of reports to generate. Default is all reports. 
 #' @param vocabDatabaseSchema		        string name of database schema that contains OMOP Vocabulary. Default is cdmDatabaseSchema. On SQL Server, this should specifiy both the database and the schema, so for example 'results.dbo'.
-#' @param compressIntoOneFile           Boolean indicating if the JSON files should be compressed into one gzip file
+#' @param compressIntoOneFile           Boolean indicating if the JSON files should be compressed into one zip file
+#' 
 #' See \code{data(allReports)} for a list of all report types
 #' 
 #' @return none 
@@ -192,7 +193,7 @@ exportToJson <- function (connectionDetails,
   DatabaseConnector::disconnect(conn)
   
   if (compressIntoOneFile) {
-    zip(zipfile = file.path(dirname(outputPath), sprintf("%s.gz", cdmDatabaseSchema)), 
+    zip(zipfile = file.path(dirname(outputPath), sprintf("%s.zip", cdmDatabaseSchema)), 
         files = list.files(jsonPath, full.names = T))
   }
   
