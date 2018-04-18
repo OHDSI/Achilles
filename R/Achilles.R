@@ -121,6 +121,7 @@ achilles <- function (connectionDetails,
     unlink(file.path(outputFolder, "achillesLog.rds"))
   }
   
+  
   # (optional) Validate CDM schema --------------------------------------------------------------------------------------------------
   
   if (validateSchema) {
@@ -182,6 +183,11 @@ achilles <- function (connectionDetails,
     
     # first invocation of the connection, to persist throughout to maintain temp tables
     connection <- DatabaseConnector::connect(connectionDetails = connectionDetails) 
+  } else {
+    if (!is_installed("OhdsiRTools")) {
+      writeLines("Installing OhdsiRTools for multi-threading support")
+      devtools::install_github("OHDSI/OhdsiRTools")
+    }
   }
   
   # Create analysis table -------------------------------------------------------------
@@ -975,3 +981,5 @@ dropAllScratchTables <- function(connectionDetails,
   
   saveRDS(object = newDf, file = logFile)
 }
+
+  
