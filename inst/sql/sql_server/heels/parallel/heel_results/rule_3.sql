@@ -23,6 +23,6 @@ from
   		514,
   		515
   		)
-  	AND ord1.max_value > 30
+  	AND ord1.max_value > 60
   GROUP BY ord1.analysis_id, oa1.analysis_name
 ) A;
