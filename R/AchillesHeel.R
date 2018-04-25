@@ -274,10 +274,8 @@ achillesHeel <- function(connectionDetails,
     
     if (i > 1) {
       sqlDropPriors <- lapply(drops, function(drop) {
-        SqlRender::renderSql(sql = "IF OBJECT_ID('tempdb..#@heelPrefix_serial_@drop', 'U') IS NOT NULL 
-                             DROP TABLE #@heelPrefix_serial_@drop;",
-                             heelPrefix = tempHeelPrefix,
-                             drop = drop)$sql
+        SqlRender::renderSql(sql = "IF OBJECT_ID('tempdb..#@table', 'U') IS NOT NULL DROP TABLE #@table;",
+                             table = sprintf("%1s_serial_%2s", tempHeelPrefix, drop))$sql
       }) 
       sqlDropPrior <- paste(sqlDropPriors, collapse = "\n\n")
     }
