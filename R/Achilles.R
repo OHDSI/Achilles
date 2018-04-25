@@ -160,6 +160,17 @@ achilles <- function (connectionDetails,
     analysisDetails <- analysisDetails[analysisDetails$COST == 0, ]
   }
   
+  # Check if cohort table is present
+  
+  connection <- DatabaseConnector::connect(connectionDetails = connectionDetails)
+  resultsTables <- lapply(DatabaseConnector::getTableNames(connection = connection, 
+                                                           databaseSchema = resultsDatabaseSchema), function(t) tolower(t))
+  DatabaseConnector::disconnect(connection = connection)
+  
+  if (!"cohort" %in% resultsTables) {
+    analysisDetails <- analysisDetails[!analysisDetails$ANALYSIS_ID %in% c(1700,1701),]
+  }
+  
   resultsTables <- list(
     list(detailType = "results",
                   tablePrefix = tempAchillesPrefix, 
@@ -172,7 +183,7 @@ achilles <- function (connectionDetails,
                            header = TRUE),
                       analysisIds = analysisDetails[abs(analysisDetails$DISTRIBUTION) == 1, ]$ANALYSIS_ID))
   
-  # Initialize thread and scratchDatabaseSchema settings ----------------------------------------------------------------------------
+  # Initialize thread and scratchDatabaseSchema settings and verify OhdsiRTools installed ---------------------------
   
   schemaDelim <- "."
   
@@ -184,7 +195,7 @@ achilles <- function (connectionDetails,
     # first invocation of the connection, to persist throughout to maintain temp tables
     connection <- DatabaseConnector::connect(connectionDetails = connectionDetails) 
   } else {
-    if (!is_installed("OhdsiRTools")) {
+    if (!.is_installed("OhdsiRTools")) {
       writeLines("Installing OhdsiRTools for multi-threading support")
       devtools::install_github("OHDSI/OhdsiRTools")
     }
@@ -700,8 +711,8 @@ createIndices <- function(connectionDetails,
                           resultsDatabaseSchema,
                           sqlOnly = FALSE) {
   
-  if (connectionDetails$dbms %in% c("redshift")) {
-    return <- "/* INDEX CREATION SKIPPED, INDICES NOT SUPPORTED IN REDSHIFT */"
+  if (connectionDetails$dbms %in% c("redshift", "netezza")) {
+    return <- sprintf("/* INDEX CREATION SKIPPED, INDICES NOT SUPPORTED IN %s */", toupper(connectionDetails$dbms))
   }
   indicesSql <- SqlRender::loadRenderTranslateSql(sqlFilename = "post_processing/achilles_indices.sql",
                                                   packageName = "Achilles",
@@ -982,4 +993,8 @@ dropAllScratchTables <- function(connectionDetails,
   saveRDS(object = newDf, file = logFile)
 }
 
+.is_installed <- function(pkg, version = 0) {
+  installed_version <- tryCatch(utils::packageVersion(pkg), error = function(e) NA)
+  !is.na(installed_version) && installed_version >= version
+}
   
