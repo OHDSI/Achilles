@@ -101,9 +101,9 @@ select
   NULL as analysis_id,
   stratum_2 as stratum_1,
   sum(count_value) as statistic_value,
-  CAST('ach_' + CAST(analysis_id as VARCHAR(10)) + ':GlobalCnt' as VARCHAR(100)) as measure_id
+  CAST(CONCAT('ach_',CAST(analysis_id as VARCHAR(10)),':GlobalCnt') AS VARCHAR(100)) as measure_id
 from @results_database_schema.achilles_results 
-where analysis_id in(1805,705,605,805,405) group by analysis_id,stratum_2;
+where analysis_id in(1805,705,605,805,405) group by analysis_id,stratum_2,CAST(CONCAT('ach_',CAST(analysis_id as VARCHAR(10)),':GlobalCnt') AS VARCHAR(100));
 
 
 
@@ -114,7 +114,7 @@ where analysis_id in(1805,705,605,805,405) group by analysis_id,stratum_2;
 --used as denominator in later measures
     insert into @results_database_schema.ACHILLES_results_derived (statistic_value,measure_id)    
     select sum(count_value) as statistic_value, 
-           CAST('ach_' + CAST(analysis_id as VARCHAR(10)) + ':GlobalRowCnt' as VARCHAR(100)) as measure_id
+           CAST(CONCAT('ach_',CAST(analysis_id as VARCHAR(10)),':GlobalRowCnt') AS VARCHAR(100)) as measure_id
     from @results_database_schema.achilles_results 
     where analysis_id in (401,601,701,801,1801) group by analysis_id
     ;
@@ -123,7 +123,7 @@ where analysis_id in(1805,705,605,805,405) group by analysis_id,stratum_2;
 --this is numerator for percentage value of unmapped rows (per domain)
 insert into @results_database_schema.ACHILLES_results_derived (statistic_value,measure_id)    
     select count_value as statistic_value, 
-           CAST('UnmappedData:ach_' + CAST(analysis_id as VARCHAR(10)) + ':GlobalRowCnt' as VARCHAR(100)) as measure_id
+           CAST(CONCAT('UnmappedData:ach_',CAST(analysis_id as VARCHAR(10)),':GlobalRowCnt') AS VARCHAR(100)) as measure_id
     from @results_database_schema.achilles_results 
     --TODO:stratum_1 is varchar and this comparison may fail on some db engines
     --indeed, mysql got error, changed to a string comparison
@@ -139,7 +139,7 @@ insert into @results_database_schema.ACHILLES_results_derived (statistic_value,m
 insert into @results_database_schema.ACHILLES_results_derived (statistic_value,measure_id)    
 select 
    CAST(100.0*count_value/statistic.total_pts AS FLOAT) as statistic_value,
-   CAST('ach_' + CAST(analysis_id as VARCHAR(10)) + ':Percentage' as VARCHAR(100)) as measure_id
+   CAST(CONCAT('ach_',CAST(analysis_id as VARCHAR(10)),':Percentage') AS VARCHAR(100)) as measure_id
   from @results_database_schema.achilles_results 
 	cross join (SELECT TOP 1 count_value as total_pts from @results_database_schema.achilles_results r where analysis_id =1) as statistic
   where analysis_id in (2000,2001,2002,2003);
@@ -156,7 +156,7 @@ insert into @results_database_schema.ACHILLES_results_derived (statistic_value,m
 
 --age at first observation by decile
 insert into @results_database_schema.ACHILLES_results_derived (stratum_1,statistic_value,measure_id)    
-select cast(floor(cast(stratum_1 as int)/10) as varchar(10)) as stratum_1,
+select cast(floor(cast(stratum_1 as int)/10) as varchar(10)),
   sum(count_value) as statistic_value,
   CAST('AgeAtFirstObsByDecile:PersonCnt' AS VARCHAR(255)) as measure_id
   from @results_database_schema.achilles_results where analysis_id = 101
@@ -1075,7 +1075,7 @@ cross join (select CAST(count_value AS FLOAT) as count_value from @results_datab
 
 
 insert into @results_database_schema.ACHILLES_results_derived (statistic_value, measure_id)    
-  select  statistic_value,measure_id from #tempResults;
+  select  statistic_value, measure_id from #tempResults;
 
 
 
@@ -1244,7 +1244,7 @@ INSERT INTO @results_database_schema.ACHILLES_HEEL_results (
 	record_count
 	)
 SELECT or1.analysis_id,
-	CAST(CONCAT('WARNING: ', cast(or1.analysis_id as VARCHAR), '-', oa1.analysis_name, '; should not have age > @ThresholdAgeWarning, (n=', cast(sum(or1.count_value) as VARCHAR(19)), ')') AS VARCHAR(255)) AS ACHILLES_HEEL_warning,
+	CAST(CONCAT('WARNING: ', cast(or1.analysis_id as VARCHAR(10)), '-', oa1.analysis_name, '; should not have age > @ThresholdAgeWarning, (n=', cast(sum(or1.count_value) as VARCHAR(19)), ')') AS VARCHAR(255)) AS ACHILLES_HEEL_warning,
   36 as rule_id,
   sum(or1.count_value) as record_count
 FROM @results_database_schema.ACHILLES_results or1
@@ -1326,7 +1326,7 @@ INSERT INTO @results_database_schema.ACHILLES_HEEL_results (
 	record_count
 	)
 SELECT DISTINCT or1.analysis_id,
-	CAST(CONCAT('ERROR: Death event outside observation period, ', cast(or1.analysis_id as VARCHAR(10)), '-', oa1.analysis_name, '; count (n=', cast(or1.count_value as VARCHAR), ') should not be > 0') AS VARCHAR(255)) AS ACHILLES_HEEL_warning,
+	CAST(CONCAT('ERROR: Death event outside observation period, ', cast(or1.analysis_id as VARCHAR(10)), '-', oa1.analysis_name, '; count (n=', cast(or1.count_value as VARCHAR(19)), ') should not be > 0') AS VARCHAR(255)) AS ACHILLES_HEEL_warning,
 	40 as rule_id,
 	or1.count_value
 FROM @results_database_schema.ACHILLES_results or1
