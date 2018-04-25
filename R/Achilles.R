@@ -301,7 +301,9 @@ achilles <- function (connectionDetails,
                                                executionTime = Sys.time() - start
                                              )
                                            })
-        .logMtPerformance(results, outputFolder)
+        if (logMultiThreadPerformance) {
+          .logMtPerformance(results, outputFolder)
+        }
         OhdsiRTools::stopCluster(cluster = cluster) 
       }
     }
@@ -382,7 +384,9 @@ achilles <- function (connectionDetails,
                                                executionTime = Sys.time() - start
                                              )
                                            })
-        .logMtPerformance(results, outputFolder)
+        if (logMultiThreadPerformance) {
+          .logMtPerformance(results, outputFolder)
+        }
         OhdsiRTools::stopCluster(cluster = cluster) 
         
         cluster <- OhdsiRTools::makeCluster(numberOfThreads = length(dropRawCostSqls), 
@@ -463,7 +467,9 @@ achilles <- function (connectionDetails,
                                              executionTime = Sys.time() - start
                                            )
                                          })
-      .logMtPerformance(results, outputFolder)
+      if (logMultiThreadPerformance) {
+        .logMtPerformance(results, outputFolder)
+      }
       OhdsiRTools::stopCluster(cluster = cluster)
     }
   }
