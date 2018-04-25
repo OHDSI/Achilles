@@ -490,7 +490,7 @@ achilles <- function (connectionDetails,
                                cdmVersion = cdmVersion,
                                tempAchillesPrefix = tempAchillesPrefix,
                                numThreads = numThreads,
-                               smallCellCount = smallCellcount)
+                               smallCellCount = smallCellCount)
   })
   
   achillesSql <- c(achillesSql, mergeSqls)
@@ -983,7 +983,7 @@ dropAllScratchTables <- function(connectionDetails,
                                            detailType = resultsTable$detailType,
                                            detailSqls = paste(detailSqls, collapse = " \nunion all\n "),
                                            fieldNames = paste(resultsTable$schema$FIELD_NAME, collapse = ", "),
-                                           smallCellCount = smallCellcount)
+                                           smallCellCount = smallCellCount)
   
   return (sql)
 }
