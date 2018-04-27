@@ -95,15 +95,18 @@ create table @results_database_schema.ACHILLES_results_derived
 --generate counts for meas type, drug type, proc type, obs type
 --optional TODO: possibly rewrite this with CASE statement to better make 705 into drug, 605 into proc ...etc
 --               in measure_id column (or make that separate sql calls for each category)
-insert into @results_database_schema.ACHILLES_results_derived (analysis_id, stratum_1, statistic_value,measure_id)    
+insert into @results_database_schema.ACHILLES_results_derived (analysis_id, stratum_1, statistic_value,measure_id)
+with t1(label_id, measure_id) as (select analysis_id as label_id, CAST(CONCAT('ach_',CAST(analysis_id as VARCHAR(10)),':GlobalCnt') AS VARCHAR(100)) as measure_id
+		from @results_database_schema.achilles_results
+		where analysis_id in(1805,705,605,805,405))
 select 
   --100000+analysis_id, 
   NULL as analysis_id,
   stratum_2 as stratum_1,
   sum(count_value) as statistic_value,
   CAST(CONCAT('ach_',CAST(analysis_id as VARCHAR(10)),':GlobalCnt') AS VARCHAR(100)) as measure_id
-from @results_database_schema.achilles_results 
-where analysis_id in(1805,705,605,805,405) group by analysis_id,stratum_2,CAST(CONCAT('ach_',CAST(analysis_id as VARCHAR(10)),':GlobalCnt') AS VARCHAR(100));
+from t1 inner join @results_database_schema.achilles_results on t1.label_id = analysis_id
+group by analysis_id,stratum_2,measure_id;
 
 
 
