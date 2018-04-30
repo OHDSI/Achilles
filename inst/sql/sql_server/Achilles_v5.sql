@@ -926,6 +926,9 @@ insert into @results_database_schema.ACHILLES_analysis (analysis_id, analysis_na
 
 insert into @results_database_schema.ACHILLES_analysis (analysis_id, analysis_name, stratum_1_name)
 	values (820, 'Number of observation records  by observation start month', 'calendar month');
+    
+insert into @results_database_schema.ACHILLES_analysis (analysis_id, analysis_name, stratum_1_name, stratum_2_name)
+	values (822, 'Number of observation records, by observation_concept_id and value_as_concept_id', 'observation_concept_id', 'value_as_concept_id');
 
 insert into @results_database_schema.ACHILLES_analysis (analysis_id, analysis_name, stratum_1_name, stratum_2_name)
 	values (891, 'Number of persons that have at least x observations', 'observation_concept_id', 'observation_count');
@@ -1219,6 +1222,9 @@ insert into @results_database_schema.ACHILLES_analysis (analysis_id, analysis_na
 
 insert into @results_database_schema.ACHILLES_analysis (analysis_id, analysis_name)
 	values (1821, 'Number of measurement records with no numeric value');
+    
+insert into @results_database_schema.ACHILLES_analysis (analysis_id, analysis_name, stratum_1_name, stratum_2_name)
+	values (1822, 'Number of measurement records, by measurement_concept_id and value_as_concept_id', 'measurement_concept_id', 'value_as_concept_id');
 
 insert into @results_database_schema.ACHILLES_analysis (analysis_id, analysis_name, stratum_1_name, stratum_2_name)
 	values (1891, 'Number of persons that have at least x measurements', 'measurement_concept_id', 'measurement_count');
@@ -4502,7 +4508,17 @@ group by YEAR(observation_date)*100 + month(observation_date)
 ;
 --}
 
-
+--{822 IN (@list_of_analysis_ids)}?{
+-- 822	Number of observation records, by observation_concept_id and value_as_concept_id","observation_concept_id
+INSERT INTO @results_database_schema.ACHILLES_results (analysis_id, stratum_1, stratum_2, count_value)
+SELECT
+	822 AS analysis_id,
+	CAST(observation_concept_id AS VARCHAR(255)) AS stratum1_id, 
+	CAST(value_as_concept_id AS VARCHAR(255)) AS stratum2_id,
+	COUNT_BIG(*) AS count_value
+FROM @cdm_database_schema.observation
+GROUP BY observation_concept_id, value_as_concept_id;
+--}
 
 --{891 IN (@list_of_analysis_ids)}?{
 -- 891	Number of total persons that have at least x observations
@@ -7479,6 +7495,17 @@ where m.value_as_number is null
 ;
 --}
 
+--{1822 IN (@list_of_analysis_ids)}?{
+-- 1822	Number of measurement records, by measurement_concept_id and value_as_concept_id
+INSERT INTO @results_database_schema.ACHILLES_results (analysis_id, stratum_1, stratum_2, count_value)
+SELECT
+	1822 AS analysis_id,
+	CAST(measurement_concept_id AS VARCHAR(255)) AS stratum1_id,
+	CAST(value_as_concept_id AS VARCHAR(255)) AS stratum2_id,
+	COUNT_BIG(*) AS total_count
+FROM @cdm_database_schema.measurement
+GROUP BY measurement_concept_id, value_as_concept_id;
+--}
 
 --{1891 IN (@list_of_analysis_ids)}?{
 -- 1891	Number of total persons that have at least x measurements
