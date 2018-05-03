@@ -27,12 +27,12 @@ INSERT INTO @results_database_schema.concept_hierarchy
 (concept_id, concept_name, treemap, level1_concept_name, level2_concept_name, level3_concept_name, level4_concept_name)
   SELECT
     snomed.concept_id,
-    snomed.concept_name AS snomed_concept_name,
+    CAST(snomed.concept_name AS VARCHAR(400)) AS snomed_concept_name,
     CAST('Condition' AS VARCHAR(20)) AS treemap,
-    pt_to_hlt.pt_concept_name,
-    hlt_to_hlgt.hlt_concept_name,
-    hlgt_to_soc.hlgt_concept_name,
-    soc.concept_name    AS soc_concept_name
+    CAST(pt_to_hlt.pt_concept_name AS VARCHAR(255)),
+    CAST(hlt_to_hlgt.hlt_concept_name AS VARCHAR(255)),
+    CAST(hlgt_to_soc.hlgt_concept_name AS VARCHAR(255)),
+    CAST(soc.concept_name AS VARCHAR(255)) AS soc_concept_name
   FROM
     (
       SELECT
@@ -128,12 +128,12 @@ INSERT INTO @results_database_schema.concept_hierarchy
 (concept_id, concept_name, treemap, level1_concept_name, level2_concept_name, level3_concept_name, level4_concept_name)
   SELECT
     rxnorm.concept_id,
-    rxnorm.concept_name AS rxnorm_concept_name,
+    CAST(rxnorm.concept_name AS VARCHAR(400)) AS rxnorm_concept_name,
     CAST('Drug' AS VARCHAR(20)) AS treemap,
-    rxnorm.rxnorm_ingredient_concept_name,
-    atc5_to_atc3.atc5_concept_name,
-    atc3_to_atc1.atc3_concept_name,
-    atc1.concept_name   AS atc1_concept_name
+    CAST(rxnorm.rxnorm_ingredient_concept_name AS VARCHAR(255)),
+    CAST(atc5_to_atc3.atc5_concept_name AS VARCHAR(255)),
+    CAST(atc3_to_atc1.atc3_concept_name AS VARCHAR(255)),
+    CAST(atc1.concept_name AS VARCHAR(255)) AS atc1_concept_name
   FROM
     (
       SELECT
@@ -220,11 +220,11 @@ INSERT INTO @results_database_schema.concept_hierarchy
 (concept_id, concept_name, treemap, level1_concept_name, level2_concept_name, level3_concept_name)
   SELECT
     rxnorm.rxnorm_ingredient_concept_id,
-    rxnorm.rxnorm_ingredient_concept_name,
+    CAST(rxnorm.rxnorm_ingredient_concept_name AS VARCHAR(400)),
     CAST('Drug Era' AS VARCHAR(20)) AS treemap,
-    atc5_to_atc3.atc5_concept_name,
-    atc3_to_atc1.atc3_concept_name,
-    atc1.concept_name AS atc1_concept_name
+    CAST(atc5_to_atc3.atc5_concept_name AS VARCHAR(255)),
+    CAST(atc3_to_atc1.atc3_concept_name AS VARCHAR(255)),
+    CAST(atc1.concept_name AS VARCHAR(255)) AS atc1_concept_name
   FROM
     (
       SELECT
@@ -306,7 +306,7 @@ INSERT INTO @results_database_schema.concept_hierarchy
 (concept_id, concept_name, treemap, level1_concept_name, level2_concept_name, level3_concept_name)
   SELECT
     m.concept_id,
-    m.concept_name,
+    CAST(m.concept_name AS VARCHAR(400)),
     CAST('Measurement' AS VARCHAR(20)) AS treemap,
     CAST(max(c1.concept_name) AS VARCHAR(255)) AS level1_concept_name,
     CAST(max(c2.concept_name) AS VARCHAR(255)) AS level2_concept_name,
@@ -335,7 +335,7 @@ INSERT INTO @results_database_schema.concept_hierarchy
 (concept_id, concept_name, treemap, level1_concept_name, level2_concept_name, level3_concept_name)
   SELECT
     obs.concept_id,
-    obs.concept_name,
+    CAST(obs.concept_name AS VARCHAR(400)),
     CAST('Observation' AS VARCHAR(20)) AS treemap,
     CAST(max(c1.concept_name) AS VARCHAR(255)) AS level1_concept_name,
     CAST(max(c2.concept_name) AS VARCHAR(255)) AS level2_concept_name,

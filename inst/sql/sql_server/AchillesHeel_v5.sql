@@ -95,15 +95,18 @@ create table @results_database_schema.ACHILLES_results_derived
 --generate counts for meas type, drug type, proc type, obs type
 --optional TODO: possibly rewrite this with CASE statement to better make 705 into drug, 605 into proc ...etc
 --               in measure_id column (or make that separate sql calls for each category)
-insert into @results_database_schema.ACHILLES_results_derived (analysis_id, stratum_1, statistic_value,measure_id)    
-select 
+with t1(label_id, measure_id) as (select analysis_id as label_id, CAST(CONCAT('ach_',CAST(analysis_id as VARCHAR(10)),':GlobalCnt') AS VARCHAR(100)) as measure_id
+                                  from @results_database_schema.achilles_results
+                                  where analysis_id in(1805,705,605,805,405))
+insert into @results_database_schema.ACHILLES_results_derived (analysis_id, stratum_1, statistic_value,measure_id)
+select
   --100000+analysis_id, 
   NULL as analysis_id,
   stratum_2 as stratum_1,
   sum(count_value) as statistic_value,
   CAST(CONCAT('ach_',CAST(analysis_id as VARCHAR(10)),':GlobalCnt') AS VARCHAR(100)) as measure_id
-from @results_database_schema.achilles_results 
-where analysis_id in(1805,705,605,805,405) group by analysis_id,stratum_2,CAST(CONCAT('ach_',CAST(analysis_id as VARCHAR(10)),':GlobalCnt') AS VARCHAR(100));
+from t1 inner join @results_database_schema.achilles_results on t1.label_id = analysis_id
+group by analysis_id,stratum_2,measure_id;
 
 
 
@@ -1008,7 +1011,7 @@ select
   CAST(100.0*st.val/statistic_value AS FLOAT) as statistic_value,
   CAST('Condition' AS VARCHAR(255)) as stratum_1, CAST(  'UnmappedData:byDomain:Percentage' AS VARCHAR(255)) as measure_id
 from @results_database_schema.achilles_results_derived
-join (select statistic_value as val from @results_database_schema.achilles_results_derived where measure_id like 'UnmappedData:ach_401:GlobalRowCnt') as st
+cross join (select statistic_value as val from @results_database_schema.achilles_results_derived where measure_id like 'UnmappedData:ach_401:GlobalRowCnt') as st
 where measure_id ='ach_401:GlobalRowCnt';
 
 insert into @results_database_schema.ACHILLES_results_derived (statistic_value,stratum_1,measure_id)    
@@ -1016,7 +1019,7 @@ select
   CAST(100.0*st.val/statistic_value AS FLOAT) as statistic_value,
   CAST('Procedure' AS VARCHAR(255)) as stratum_1, CAST(  'UnmappedData:byDomain:Percentage' AS VARCHAR(255)) as measure_id
 from @results_database_schema.achilles_results_derived
-join (select statistic_value as val from @results_database_schema.achilles_results_derived where measure_id = 'UnmappedData:ach_601:GlobalRowCnt') as st
+cross join (select statistic_value as val from @results_database_schema.achilles_results_derived where measure_id = 'UnmappedData:ach_601:GlobalRowCnt') as st
 where measure_id ='ach_601:GlobalRowCnt';
 
 insert into @results_database_schema.ACHILLES_results_derived (statistic_value,stratum_1,measure_id)    
@@ -1024,7 +1027,7 @@ select
   CAST(100.0*st.val/statistic_value AS FLOAT) as statistic_value,
   CAST('DrugExposure' AS VARCHAR(255)) as stratum_1, CAST(  'UnmappedData:byDomain:Percentage' AS VARCHAR(255)) as measure_id
 from @results_database_schema.achilles_results_derived
-join (select statistic_value as val from @results_database_schema.achilles_results_derived where measure_id = 'UnmappedData:ach_701:GlobalRowCnt') as st
+cross join (select statistic_value as val from @results_database_schema.achilles_results_derived where measure_id = 'UnmappedData:ach_701:GlobalRowCnt') as st
 where measure_id ='ach_701:GlobalRowCnt';
 
 insert into @results_database_schema.ACHILLES_results_derived (statistic_value,stratum_1,measure_id)    
@@ -1032,7 +1035,7 @@ select
   CAST(100.0*st.val/statistic_value AS FLOAT) as statistic_value,
   CAST('Observation' AS VARCHAR(255)) as stratum_1, CAST(  'UnmappedData:byDomain:Percentage' AS VARCHAR(255)) as measure_id
 from @results_database_schema.achilles_results_derived
-join (select statistic_value as val from @results_database_schema.achilles_results_derived where measure_id = 'UnmappedData:ach_801:GlobalRowCnt') as st
+cross join (select statistic_value as val from @results_database_schema.achilles_results_derived where measure_id = 'UnmappedData:ach_801:GlobalRowCnt') as st
 where measure_id ='ach_801:GlobalRowCnt';
 
 insert into @results_database_schema.ACHILLES_results_derived (statistic_value,stratum_1,measure_id)    
@@ -1040,7 +1043,7 @@ select
   CAST(100.0*st.val/statistic_value AS FLOAT) as statistic_value,
   CAST('Measurement' AS VARCHAR(255)) as stratum_1, CAST(  'UnmappedData:byDomain:Percentage' AS VARCHAR(255)) as measure_id
 from @results_database_schema.achilles_results_derived
-join (select statistic_value as val from @results_database_schema.achilles_results_derived where measure_id = 'UnmappedData:ach_1801:GlobalRowCnt') as st
+cross join (select statistic_value as val from @results_database_schema.achilles_results_derived where measure_id = 'UnmappedData:ach_1801:GlobalRowCnt') as st
 where measure_id ='ach_1801:GlobalRowCnt';
 
 
