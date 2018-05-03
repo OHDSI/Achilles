@@ -5604,7 +5604,7 @@ DROP TABLE #temp_dates;
 -- 1411	Number of persons by payer plan period start month
 insert into @results_database_schema.ACHILLES_results (analysis_id, stratum_1, count_value)
 select 1411 as analysis_id, 
-	DATEFROMPARTS(YEAR(payer_plan_period_start_date), MONTH(payer_plan_period_START_DATE), 1) AS stratum_1,
+	CAST(DATEFROMPARTS(YEAR(payer_plan_period_start_date), MONTH(payer_plan_period_START_DATE), 1) AS VARCHAR(255)) AS stratum_1,
 	 COUNT_BIG(distinct p1.PERSON_ID) as count_value
 from
 	@cdm_database_schema.PERSON p1
@@ -5620,7 +5620,7 @@ group by DATEFROMPARTS(YEAR(payer_plan_period_start_date), MONTH(payer_plan_peri
 -- 1412	Number of persons by payer plan period end month
 insert into @results_database_schema.ACHILLES_results (analysis_id, stratum_1, count_value)
 select 1412 as analysis_id,  
-	DATEFROMPARTS(YEAR(payer_plan_period_start_date), MONTH(payer_plan_period_START_DATE), 1) AS stratum_1,
+	CAST(DATEFROMPARTS(YEAR(payer_plan_period_start_date), MONTH(payer_plan_period_START_DATE), 1) AS VARCHAR(255)) AS stratum_1,
 	COUNT_BIG(distinct p1.PERSON_ID) as count_value
 from
 	@cdm_database_schema.PERSON p1
