@@ -1008,7 +1008,7 @@ select
   CAST(100.0*st.val/statistic_value AS FLOAT) as statistic_value,
   CAST('Condition' AS VARCHAR(255)) as stratum_1, CAST(  'UnmappedData:byDomain:Percentage' AS VARCHAR(255)) as measure_id
 from @results_database_schema.achilles_results_derived
-join (select statistic_value as val from @results_database_schema.achilles_results_derived where measure_id like 'UnmappedData:ach_401:GlobalRowCnt') as st
+cross join (select statistic_value as val from @results_database_schema.achilles_results_derived where measure_id like 'UnmappedData:ach_401:GlobalRowCnt') as st
 where measure_id ='ach_401:GlobalRowCnt';
 
 insert into @results_database_schema.ACHILLES_results_derived (statistic_value,stratum_1,measure_id)    
