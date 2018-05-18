@@ -132,13 +132,22 @@ achilles <- function (connectionDetails,
     SqlRender::writeSql(achillesSql,paste(outputFolder, achillesFile, sep="/"));
     
     writeLines(paste("Achilles sql generated in: ", paste(outputFolder, achillesFile, sep="/")));
-    
+
     return();
   } else {
     conn <- DatabaseConnector::connect(connectionDetails)
     writeLines("Executing multiple queries. This could take a while")
     #SqlRender::writeSql(achillesSql, 'achillesDebug.sql');
-    DatabaseConnector::executeSql(conn,achillesSql)
+    tryCatch({
+      DatabaseConnector::executeSql(conn,achillesSql)
+    }, finally = {
+      cleanupSql <- SqlRender::loadRenderTranslateSql(sqlFilename = "Cleanup_v5.sql",
+        packageName = "Achilles",
+        dbms = connectionDetails$dbms
+      )
+      DatabaseConnector::executeSql(conn, cleanupSql)
+    })
+
     writeLines(paste("Done. Achilles results can now be found in",resultsDatabaseSchema))
   }
   
@@ -159,8 +168,16 @@ achilles <- function (connectionDetails,
     )
     
     writeLines("Executing Achilles Heel. This could take a while")
-    DatabaseConnector::executeSql(conn,heelSql)
-    writeLines(paste("Done. Achilles Heel results can now be found in",resultsDatabaseSchema))    
+    tryCatch({
+      DatabaseConnector::executeSql(conn,heelSql)
+    }, finally = {
+      cleanupSql <- SqlRender::loadRenderTranslateSql(sqlFilename = "CleanupHeel_v5.sql",
+        packageName = "Achilles",
+        dbms = connectionDetails$dbms
+      )
+      DatabaseConnector::executeSql(conn, cleanupSql)
+    })
+    writeLines(paste("Done. Achilles Heel results can now be found in",resultsDatabaseSchema))
     
   } else heelSql='HEEL EXECUTION SKIPPED PER USER REQUEST'
   

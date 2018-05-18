@@ -1,0 +1,25 @@
+IF OBJECT_ID('#tempResults', 'U') IS NOT NULL DROP TABLE #tempResults;
+
+IF OBJECT_ID('#temp_dates', 'U') IS NOT NULL DROP TABLE #temp_dates;
+
+IF OBJECT_ID('#rawData_406', 'U') IS NOT NULL DROP TABLE #rawData_406;
+
+IF OBJECT_ID('#rawData_606', 'U') IS NOT NULL DROP TABLE #rawData_606;
+
+IF OBJECT_ID('#rawData_706', 'U') IS NOT NULL DROP TABLE #rawData_706;
+
+IF OBJECT_ID('#rawData_806', 'U') IS NOT NULL DROP TABLE #rawData_806;
+
+IF OBJECT_ID('#rawData_815', 'U') IS NOT NULL DROP TABLE #rawData_815;
+
+IF OBJECT_ID('#rawData_906', 'U') IS NOT NULL DROP TABLE #rawData_906;
+
+IF OBJECT_ID('#rawData_1006', 'U') IS NOT NULL DROP TABLE #rawData_1006;
+
+IF OBJECT_ID('#rawData_1806', 'U') IS NOT NULL DROP TABLE #rawData_1806;
+
+IF OBJECT_ID('#rawData_1815', 'U') IS NOT NULL DROP TABLE #rawData_1815;
+
+IF OBJECT_ID('#rawData_1816', 'U') IS NOT NULL DROP TABLE #rawData_1816;
+
+IF OBJECT_ID('#rawData_1817', 'U') IS NOT NULL DROP TABLE #rawData_1817;
