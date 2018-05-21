@@ -194,7 +194,7 @@ exportToJson <- function (connectionDetails,
   
   if (compressIntoOneFile) {
     zip(zipfile = file.path(dirname(outputPath), sprintf("%s.zip", cdmDatabaseSchema)), 
-        files = list.files(jsonPath, full.names = T))
+        files = list.files(outputPath, full.names = TRUE))
   }
   
   delta <- Sys.time() - start
