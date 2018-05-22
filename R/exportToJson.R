@@ -22,23 +22,7 @@
 # @author Ajit Londhe
 
 
-# Run this definition of allReports when adding a new report
-# allReports <- c("CONDITION",
-#                "CONDITION_ERA",
-#                "DASHBOARD",
-#                "DATA_DENSITY",
-#                "DEATH",
-#                "DRUG",
-#                "DRUG_ERA",
-#                "HEEL",
-#                "OBSERVATION",
-#                "OBSERVATION_PERIOD",
-#                "PERSON",
-#                "PROCEDURE",
-#                "VISIT",
-#                "MEASUREMENT",
-#                "META")
-# save(allReports,file="data/allReports.rda")
+# When adding a new report, append it to inst/csv/allReports.csv
 
 getAllReports <- function() {
   allReports <- read.csv(file = system.file("csv", "allReports.csv", package = "Achilles"), 
