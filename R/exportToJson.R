@@ -19,6 +19,7 @@
 # @author Observational Health Data Sciences and Informatics
 # @author Chris Knoll
 # @author Frank DeFalco
+# @author Ajit Londhe
 
 
 # Run this definition of allReports when adding a new report
@@ -38,6 +39,12 @@
 #                "MEASUREMENT",
 #                "META")
 # save(allReports,file="data/allReports.rda")
+
+getAllReports <- function() {
+  allReports <- read.csv(file = system.file("csv", "allReports.csv", package = "Achilles"), 
+                         stringsAsFactors = FALSE, header = TRUE)$REPORT
+  return (allReports)
+}
 
 initOutputPath <- function (outputPath){
   # create output path if it doesn't already exist, warn if it does
@@ -62,9 +69,8 @@ initOutputPath <- function (outputPath){
 #'   showReportTypes()
 #' }
 #' @export
-showReportTypes <- function()
-{
-  utils::View(allReports)
+showReportTypes <- function() {
+  utils::View(getAllReports())
 }
 
 #' @title exportToJson
@@ -96,9 +102,10 @@ exportToJson <- function (connectionDetails,
                           cdmDatabaseSchema, 
                           resultsDatabaseSchema, 
                           outputPath = getwd(), 
-                          reports = allReports, 
+                          reports = getAllReports(), 
                           vocabDatabaseSchema = cdmDatabaseSchema,
                           compressIntoOneFile = FALSE) {
+  
   start <- Sys.time()
   if (missing(resultsDatabaseSchema))
     resultsDatabaseSchema <- cdmDatabaseSchema
