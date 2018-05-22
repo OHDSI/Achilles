@@ -413,7 +413,7 @@ achilles <- function (connectionDetails,
                          scratchDatabaseSchema = scratchDatabaseSchema, 
                          tempAchillesPrefix = tempAchillesPrefix, 
                          numThreads = numThreads,
-                         tableTypes = c("achilles"))
+                         tableTypes = c("achilles", "concept_hierarchy"))
     
     writeLines(sprintf("Temporary Achilles tables removed from schema %s", scratchDatabaseSchema))
   }
@@ -806,14 +806,14 @@ getAnalysisDetails <- function() {
 #' Drop all possible scratch tables
 #' 
 #' @details 
-#' Drop all possible Achilles and Heel scratch tables
+#' Drop all possible Achilles, Heel, and Concept Hierarchy scratch tables
 #' 
 #' @param connectionDetails                An R object of type \code{connectionDetails} created using the function \code{createConnectionDetails} in the \code{DatabaseConnector} package.
 #' @param scratchDatabaseSchema            string name of database schema that Achilles scratch tables were written to. 
 #' @param tempAchillesPrefix               The prefix to use for the "temporary" (but actually permanent) Achilles analyses tables. Default is "tmpach"
 #' @param tempHeelPrefix                   The prefix to use for the "temporary" (but actually permanent) Heel tables. Default is "tmpheel"
 #' @param numThreads                       The number of threads to use to run this function. Default is 1 thread.
-#' @param tableTypes                       The types of Achilles scratch tables to drop: achilles or heel or both
+#' @param tableTypes                       The types of Achilles scratch tables to drop: achilles or heel or concept_hierarchy or all 3
 #' 
 #' @export
 dropAllScratchTables <- function(connectionDetails, 
@@ -821,7 +821,7 @@ dropAllScratchTables <- function(connectionDetails,
                                  tempAchillesPrefix = "tmpach", 
                                  tempHeelPrefix = "tmpheel", 
                                  numThreads = 1,
-                                 tableTypes = c("achilles", "heel")) {
+                                 tableTypes = c("achilles", "heel", "concept_hierarchy")) {
   
   connection <- DatabaseConnector::connect(connectionDetails = connectionDetails)
   
@@ -879,6 +879,39 @@ dropAllScratchTables <- function(connectionDetails,
     
     dropTables <- Reduce(intersect, list(scratchTables, parallelHeelTables))
   
+    dropSqls <- lapply(dropTables, function(scratchTable) {
+      SqlRender::renderSql("drop table @scratchDatabaseSchema.@scratchTable;", 
+                           scratchDatabaseSchema = scratchDatabaseSchema,
+                           scratchTable = scratchTable)$sql
+    })
+    
+    cluster <- OhdsiRTools::makeCluster(numberOfThreads = numThreads, singleThreadToMain = TRUE)
+    dummy <- OhdsiRTools::clusterApply(cluster = cluster, 
+                                       x = dropSqls, 
+                                       function(sql) {
+                                         connection <- DatabaseConnector::connect(connectionDetails = connectionDetails)
+                                         DatabaseConnector::executeSql(connection = connection, sql = sql)
+                                         DatabaseConnector::disconnect(connection = connection)
+                                       })
+    
+    OhdsiRTools::stopCluster(cluster = cluster)
+  }
+  
+  if ("concept_hierarchy" %in% tableTypes) {
+    # Drop Concept Hierarchy Tables ------------------------------------------------------
+    
+    hierarchySqlFiles <- list.files(path = file.path(system.file(package = "Achilles"), 
+                                                     "sql", "sql_server", "post_processing", "concept_hierarchies"), 
+                                    recursive = TRUE, 
+                                    full.names = FALSE, 
+                                    all.files = FALSE,
+                                    pattern = "\\.sql$")
+    
+    conceptHierarchyTables <- lapply(hierarchySqlFiles, function(t) tolower(paste(tempAchillesPrefix, "ch",
+                                                                          trimws(tools::file_path_sans_ext(basename(t))),
+                                                                          sep = "_")))
+    dropTables <- Reduce(intersect, list(scratchTables, conceptHierarchyTables))
+    
     dropSqls <- lapply(dropTables, function(scratchTable) {
       SqlRender::renderSql("drop table @scratchDatabaseSchema.@scratchTable;", 
                            scratchDatabaseSchema = scratchDatabaseSchema,

@@ -1,7 +1,7 @@
 IF OBJECT_ID('@schema@schemaDelim@destination', 'U') IS NOT NULL 
   DROP TABLE @schema@schemaDelim@destination;
 
-select 
+select distinct
   analysis_id,
 	achilles_heel_warning,
 	rule_id,
