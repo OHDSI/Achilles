@@ -18,6 +18,7 @@ RUN echo deb http://ppa.launchpad.net/marutter/rrutter/ubuntu trusty main >> /et
       r-cran-rjava \
       r-cran-dbi \
       r-cran-ffbase \
+      r-cran-urltools \
       littler \
       openjdk-7-jdk \
     && rm -rf /var/lib/apt/lists/* \
