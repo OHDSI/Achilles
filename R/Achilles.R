@@ -174,12 +174,12 @@ achilles <- function (connectionDetails,
   resultsTables <- list(
     list(detailType = "results",
                   tablePrefix = tempAchillesPrefix, 
-                  schema = read.csv(file = system.file("csv", "schema_achilles_results.csv", package = "Achilles"), 
+                  schema = read.csv(file = system.file("csv", "schemas", "schema_achilles_results.csv", package = "Achilles"), 
                            header = TRUE),
                   analysisIds = analysisDetails[analysisDetails$DISTRIBUTION <= 0, ]$ANALYSIS_ID),
     list(detailType = "results_dist",
                       tablePrefix = sprintf("%1s_%2s", tempAchillesPrefix, "dist"),
-                      schema = read.csv(file = system.file("csv", "schema_achilles_results_dist.csv", package = "Achilles"), 
+                      schema = read.csv(file = system.file("csv", "schemas", "schema_achilles_results_dist.csv", package = "Achilles"), 
                            header = TRUE),
                       analysisIds = analysisDetails[abs(analysisDetails$DISTRIBUTION) == 1, ]$ANALYSIS_ID))
   
@@ -221,6 +221,7 @@ achilles <- function (connectionDetails,
     sql <- SqlRender::loadRenderTranslateSql(sqlFilename = "analyses/create_analysis_table.sql", 
                                              packageName = "Achilles", 
                                              dbms = connectionDetails$dbms,
+                                             warnOnMissingParameters = FALSE,
                                              resultsDatabaseSchema = resultsDatabaseSchema,
                                              analysesSqls = paste(analysesSqls, collapse = " \nunion all\n "))
     
@@ -243,7 +244,7 @@ achilles <- function (connectionDetails,
   if (runCostAnalysis) {
     
     distCostAnalysisDetails <- analysisDetails[analysisDetails$COST == 1 & analysisDetails$DISTRIBUTION == 1, ]
-    costMappings <- read.csv(system.file("csv", "cost_columns.csv", package = "Achilles"), 
+    costMappings <- read.csv(system.file("csv", "achilles", "achilles_cost_columns.csv", package = "Achilles"), 
                              header = TRUE, stringsAsFactors = FALSE)
     
     drugCostMappings <- costMappings[costMappings$DOMAIN == "Drug", ]
@@ -266,6 +267,7 @@ achilles <- function (connectionDetails,
         sql = SqlRender::loadRenderTranslateSql(sqlFilename = "analyses/raw_cost_template.sql", 
                                           packageName = "Achilles", 
                                           dbms = connectionDetails$dbms,
+                                          warnOnMissingParameters = FALSE,
                                           cdmDatabaseSchema = cdmDatabaseSchema,
                                           scratchDatabaseSchema = scratchDatabaseSchema,
                                           schemaDelim = schemaDelim,
@@ -315,6 +317,7 @@ achilles <- function (connectionDetails,
                    sql = SqlRender::loadRenderTranslateSql(sqlFilename = "analyses/cost_distribution_template.sql",
                                                        packageName = "Achilles",
                                                        dbms = connectionDetails$dbms,
+                                                       warnOnMissingParameters = FALSE,
                                                        cdmVersion = cdmVersion,
                                                        schemaDelim = schemaDelim,
                                                        cdmDatabaseSchema = cdmDatabaseSchema,
@@ -334,6 +337,7 @@ achilles <- function (connectionDetails,
                    sql = SqlRender::loadRenderTranslateSql(sqlFilename = "analyses/cost_distribution_template.sql",
                                                        packageName = "Achilles",
                                                        dbms = connectionDetails$dbms,
+                                                       warnOnMissingParameters = FALSE,
                                                        cdmVersion = cdmVersion,
                                                        schemaDelim = schemaDelim,
                                                        cdmDatabaseSchema = cdmDatabaseSchema,
@@ -653,6 +657,7 @@ createConceptHierarchy <- function(connectionDetails,
                                                                      hierarchySqlFile),
                                              packageName = "Achilles",
                                              dbms = connectionDetails$dbms,
+                                             warnOnMissingParameters = FALSE,
                                              scratchDatabaseSchema = scratchDatabaseSchema,
                                              vocabDatabaseSchema = vocabDatabaseSchema,
                                              schemaDelim = schemaDelim,
@@ -663,6 +668,7 @@ createConceptHierarchy <- function(connectionDetails,
                                                                         "merge_concept_hierarchy.sql"),
                                                 packageName = "Achilles",
                                                 dbms = connectionDetails$dbms,
+                                                warnOnMissingParameters = FALSE,
                                                 resultsDatabaseSchema = resultsDatabaseSchema,
                                                 scratchDatabaseSchema = scratchDatabaseSchema,
                                                 schemaDelim = schemaDelim,
@@ -695,6 +701,12 @@ createConceptHierarchy <- function(connectionDetails,
       DatabaseConnector::disconnect(connection = connection)
     }
     
+    dropAllScratchTables(connectionDetails = connectionDetails, 
+                         scratchDatabaseSchema = scratchDatabaseSchema, 
+                         tempAchillesPrefix = tempAchillesPrefix, 
+                         numThreads = numThreads,
+                         tableTypes = c("concept_hierarchy"))
+    
     writeLines(sprintf("Done. Concept Hierarchy table can now be found in %s", resultsDatabaseSchema))  
   }
 
@@ -723,6 +735,7 @@ createIndices <- function(connectionDetails,
   indicesSql <- SqlRender::loadRenderTranslateSql(sqlFilename = "post_processing/achilles_indices.sql",
                                                   packageName = "Achilles",
                                                   dbms = connectionDetails$dbms,
+                                                  warnOnMissingParameters = FALSE,
                                                   resultsDatabaseSchema = resultsDatabaseSchema)
     
   if (!sqlOnly) {
@@ -772,6 +785,7 @@ validateSchema <- function(connectionDetails,
   sql <- SqlRender::loadRenderTranslateSql(sqlFilename = "validate_schema.sql", 
                                            packageName = "Achilles", 
                                            dbms = connectionDetails$dbms,
+                                           warnOnMissingParameters = FALSE,
                                            cdmDatabaseSchema = cdmDatabaseSchema,
                                            resultsDatabaseSchema = resultsDatabaseSchema,
                                            runCostAnalysis = runCostAnalysis,
@@ -798,7 +812,7 @@ validateSchema <- function(connectionDetails,
 #' 
 #' @export
 getAnalysisDetails <- function() {
-  pathToCsv <- system.file("csv", "analysisDetails.csv", package = "Achilles")
+  pathToCsv <- system.file("csv", "achilles", "achilles_analysis_details.csv", package = "Achilles")
   analysisDetails <- read.csv(file = pathToCsv, header = TRUE, stringsAsFactors = FALSE)
   return (analysisDetails)
 }
@@ -964,6 +978,7 @@ dropAllScratchTables <- function(connectionDetails,
   sql <- SqlRender::loadRenderTranslateSql(sqlFilename = file.path("analyses", paste(analysisId, "sql", sep = ".")),
                                            packageName = "Achilles",
                                            dbms = connectionDetails$dbms,
+                                           warnOnMissingParameters = FALSE,
                                            scratchDatabaseSchema = scratchDatabaseSchema,
                                            cdmDatabaseSchema = cdmDatabaseSchema,
                                            resultsDatabaseSchema = resultsDatabaseSchema,
@@ -1011,6 +1026,7 @@ dropAllScratchTables <- function(connectionDetails,
   sql <- SqlRender::loadRenderTranslateSql(sqlFilename = "analyses/merge_achilles_tables.sql",
                                            packageName = "Achilles",
                                            dbms = connectionDetails$dbms,
+                                           warnOnMissingParameters = FALSE,
                                            createTable = createTable,
                                            resultsDatabaseSchema = resultsDatabaseSchema,
                                            detailType = resultsTable$detailType,

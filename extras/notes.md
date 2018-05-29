@@ -1,7 +1,3 @@
-# Cost tables
-
-CDM version 5.0 had cost tables that were deleted in version 5.0.1. To avoid errors, use a parameter when calling the achilles function that specifies  runCostAnalysis = FALSE
-
 
 # How to run Achilles Heel only: 
 

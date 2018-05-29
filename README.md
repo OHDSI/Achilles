@@ -6,7 +6,7 @@ Automated Characterization of Health Information at Large-scale Longitudinal Evi
 Achilles consists of several parts: 
 1. Precomputations (for database characterization) 
 2. Achilles Heel for data quality
-3. Export feature for AchillesWeb
+3. Export feature for AchillesWeb (or, Atlas Data Sources can read the Achilles tables directly)
 4. Index generation for better performance with Atlas Data Sources
 
 Achilles is actively being developed for CDM v5.x only.
@@ -15,7 +15,7 @@ Getting Started
 ===============
 (Please review the [Achilles Wiki](https://github.com/OHDSI/Achilles/wiki/Additional-instructions-for-Linux) for specific details for Linux)
 
-1. Make sure you have your data in the OMOP CDM v4/v5.x format  (v4 link: http://omop.org/cdm, v5 link: https://github.com/OHDSI/CommonDataModel).
+1. Make sure you have your data in the OMOP CDM v5.x format (https://github.com/OHDSI/CommonDataModel).
 
 2. Make sure that you have Java installed. If you don't have Java already intalled on your computed (on most computers it already is installed), go to [java.com](http://java.com) to get the latest version.  (If you have trouble building with rJava below, be sure on Windows that your Path variable includes the path to jvm.dll: 
 
@@ -29,7 +29,7 @@ Getting Started
   install_github("OHDSI/SqlRender")
   install_github("OHDSI/DatabaseConnector")
   install_github("OHDSI/Achilles")
-  #install_github("OHDSI/Achilles",args="--no-multiarch")  #to avoid Java 32 vs 64 issues 
+  #install_github("OHDSI/Achilles", args="--no-multiarch")  #to avoid Java 32 vs 64 issues 
   ```
   
 4. To run the Achilles analysis, first determine if you'd like to run the function in multi-threaded mode or in single-threaded mode. Use 'runCostAnalysis = FALSE' to save on execution time, as cost analyses tend to run long.
@@ -130,6 +130,13 @@ Currently "sql server", "pdw", "oracle", "postgresql", "redshift", "mysql", "imp
 ```read.csv(system.file("csv","achilles_rule.csv",package="Achilles"),as.is=T)```
 
     - Also see [notes.md](extras/notes.md) for more information (in the extras folder).
+
+
+Collaborators: How to Navigate SQL Files
+==================================
+
+Please refer to the README-developers.md file.
+
 
 
 Getting Started with Docker

@@ -3,10 +3,10 @@
 --multiple concepts_ids may be added to broaden the rule, however standardizing on a single
 --concept would be more optimal
 select *
-into @scratchDatabaseSchema@schemaDelim@heelPrefix_serial_hr_@hrNewId
+into @scratchDatabaseSchema@schemaDelim@tempHeelPrefix_serial_hr_@hrNewId
 from
 (
-  select * from @scratchDatabaseSchema@schemaDelim@heelPrefix_serial_hr_@hrOldId
+  select * from @scratchDatabaseSchema@schemaDelim@tempHeelPrefix_serial_hr_@hrOldId
   
   union all
   

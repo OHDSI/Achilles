@@ -3,10 +3,10 @@
 
 --compute a derived reatio
 --TODO if provider count is zero it will generate division by zero (not sure how dirrerent db engins will react)
-select * into @scratchDatabaseSchema@schemaDelim@heelPrefix_serial_rd_@rdNewId 
+select * into @scratchDatabaseSchema@schemaDelim@tempHeelPrefix_serial_rd_@rdNewId 
 from
 (
-  select * from @scratchDatabaseSchema@schemaDelim@heelPrefix_serial_rd_@rdOldId
+  select * from @scratchDatabaseSchema@schemaDelim@tempHeelPrefix_serial_rd_@rdOldId
   
   union all
   

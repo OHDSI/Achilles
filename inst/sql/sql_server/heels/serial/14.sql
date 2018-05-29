@@ -1,10 +1,10 @@
 --rule35 DQ rule, NOTIFICATION
 --this rule analyzes Units recorded for measurement
 select *
-into @scratchDatabaseSchema@schemaDelim@heelPrefix_serial_hr_@hrNewId
+into @scratchDatabaseSchema@schemaDelim@tempHeelPrefix_serial_hr_@hrNewId
 from
 (
-  select * from @scratchDatabaseSchema@schemaDelim@heelPrefix_serial_hr_@hrOldId
+  select * from @scratchDatabaseSchema@schemaDelim@tempHeelPrefix_serial_hr_@hrOldId
   
   union all
   

@@ -4,10 +4,10 @@
 --Threshold was decided as 10th percentile in empiric comparison of 12 real world datasets in the DQ-Study2
 
 select *
-into @scratchDatabaseSchema@schemaDelim@heelPrefix_serial_hr_@hrNewId
+into @scratchDatabaseSchema@schemaDelim@tempHeelPrefix_serial_hr_@hrNewId
 from
 (
-  select * from @scratchDatabaseSchema@schemaDelim@heelPrefix_serial_hr_@hrOldId
+  select * from @scratchDatabaseSchema@schemaDelim@tempHeelPrefix_serial_hr_@hrOldId
   
   union all
   

@@ -16,10 +16,10 @@ from
 ) t2
 ;
 
-select * into @scratchDatabaseSchema@schemaDelim@heelPrefix_serial_rd_@rdNewId
+select * into @scratchDatabaseSchema@schemaDelim@tempHeelPrefix_serial_rd_@rdNewId
 from
 (
-  select * from @scratchDatabaseSchema@schemaDelim@heelPrefix_serial_rd_@rdOldId
+  select * from @scratchDatabaseSchema@schemaDelim@tempHeelPrefix_serial_rd_@rdOldId
   
   union all
   
@@ -36,10 +36,10 @@ from
 
 
 SELECT *
-into @scratchDatabaseSchema@schemaDelim@heelPrefix_serial_hr_@hrNewId
+into @scratchDatabaseSchema@schemaDelim@tempHeelPrefix_serial_hr_@hrNewId
 FROM 
 (
-  select * from @scratchDatabaseSchema@schemaDelim@heelPrefix_serial_hr_@hrOldId
+  select * from @scratchDatabaseSchema@schemaDelim@tempHeelPrefix_serial_hr_@hrOldId
   
   union all
   

@@ -1,10 +1,10 @@
 --actual rule27
   
 select *
-into @scratchDatabaseSchema@schemaDelim@heelPrefix_serial_hr_@hrNewId
+into @scratchDatabaseSchema@schemaDelim@tempHeelPrefix_serial_hr_@hrNewId
 from
 (
-  select * from @scratchDatabaseSchema@schemaDelim@heelPrefix_achilles_heel_results_0
+  select * from @scratchDatabaseSchema@schemaDelim@tempHeelPrefix_achilles_heel_results_0
   
   union all
   
@@ -14,7 +14,7 @@ from
     cast(d.stratum_1 as varchar)) AS VARCHAR(255)) as ACHILLES_HEEL_warning,
     27 as rule_id,
     null as record_count
-  FROM @scratchDatabaseSchema@schemaDelim@heelPrefix_serial_rd_@rdOldId d
+  FROM @scratchDatabaseSchema@schemaDelim@tempHeelPrefix_serial_rd_@rdOldId d
   where d.measure_id = 'UnmappedData:byDomain:Percentage'
   and d.statistic_value > 0.1  --thresholds will be decided in the ongoing DQ-Study2
 ) Q

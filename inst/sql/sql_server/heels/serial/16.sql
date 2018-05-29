@@ -2,10 +2,10 @@
 
 --derived measure for this rule - ratio of notes over the number of visits
 
-select * into @scratchDatabaseSchema@schemaDelim@heelPrefix_serial_rd_@rdNewId
+select * into @scratchDatabaseSchema@schemaDelim@tempHeelPrefix_serial_rd_@rdNewId
 from
 (
-  select * from @scratchDatabaseSchema@schemaDelim@heelPrefix_serial_rd_@rdOldId
+  select * from @scratchDatabaseSchema@schemaDelim@tempHeelPrefix_serial_rd_@rdOldId
   
   union all
   

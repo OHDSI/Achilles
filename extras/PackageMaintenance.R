@@ -4,4 +4,4 @@ connectionDetails$schema=resultsDatabaseSchema
 conn<-connect(connectionDetails)
 achilles_analysis<-querySql(conn,'select * from achilles_analysis')
 #this line caused issue 151: names(achilles_analysis) <- tolower(names(achilles_analysis))
-write.csv(achilles_analysis,file = 'inst/csv/analysisDetails.csv',na = '',row.names = F)
+write.csv(achilles_analysis,file = 'inst/csv/achilles/achilles_analysis_details.csv',na = '',row.names = F)
