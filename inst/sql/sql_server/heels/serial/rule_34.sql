@@ -14,7 +14,7 @@ from
   
   select
     null as analysis_id,
-    CAST(CONCAT('NOTIFICATION: Count of unmapped source values exceeds threshold in: ', cast(stratum_1 as varchar)) AS VARCHAR(255)) as ACHILLES_HEEL_warning,
+    CAST(CONCAT('NOTIFICATION: Count of unmapped source values exceeds threshold in: ', cast(stratum_1 as varchar(100))) AS VARCHAR(255)) as ACHILLES_HEEL_warning,
     34 as rule_id,
     cast(statistic_value as int) as record_count
   FROM @scratchDatabaseSchema@schemaDelim@tempHeelPrefix_serial_rd_@rdOldId d

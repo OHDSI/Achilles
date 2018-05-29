@@ -18,8 +18,11 @@ from
     null as record_count
   from
   (
-    select 100.0*count_value/(select count_value as total_pts from @resultsDatabaseSchema.achilles_results r where analysis_id =1) as one_obs_per_perc 
-    from @resultsDatabaseSchema.achilles_results where analysis_id = 113 and stratum_1 = '1'
+    select
+      100.0*achilles_results.count_value/ct.total_pts as one_obs_per_perc
+    from @resultsDatabaseSchema.achilles_results
+	  cross join (select count_value as total_pts from @resultsDatabaseSchema.achilles_results r where analysis_id =1) as ct
+	  where analysis_id = 113 and stratum_1 = '1'
   ) d
   where d.one_obs_per_perc >= 99.0
 ) Q

@@ -37,7 +37,7 @@ from
     CAST(100.0*st.val/statistic_value AS FLOAT) as statistic_value,
      CAST(  'UnmappedData:byDomain:Percentage' AS VARCHAR(255)) as measure_id
   from #rule27_1 A
-  join (select statistic_value as val from #rule27_1 
+  cross join (select statistic_value as val from #rule27_1 
         where measure_id = 'UnmappedData:ach_601:GlobalRowCnt') as st
     on A.statistic_value = st.val
   where measure_id ='ach_601:GlobalRowCnt'
@@ -62,7 +62,7 @@ from
     CAST(100.0*st.val/statistic_value AS FLOAT) as statistic_value,
     CAST(  'UnmappedData:byDomain:Percentage' AS VARCHAR(255)) as measure_id
   from #rule27_2 A
-  join (select statistic_value as val from #rule27_2 
+  cross join (select statistic_value as val from #rule27_2 
         where measure_id = 'UnmappedData:ach_701:GlobalRowCnt') as st
       on A.statistic_value = st.val
   where measure_id ='ach_701:GlobalRowCnt'
@@ -87,7 +87,7 @@ from
     CAST(100.0*st.val/statistic_value AS FLOAT) as statistic_value,
     CAST(  'UnmappedData:byDomain:Percentage' AS VARCHAR(255)) as measure_id
   from #rule27_3 A
-  join (select statistic_value as val from #rule27_3
+  cross join (select statistic_value as val from #rule27_3
         where measure_id = 'UnmappedData:ach_801:GlobalRowCnt') as st
     on A.statistic_value = st.val
   where measure_id ='ach_801:GlobalRowCnt'
@@ -111,7 +111,7 @@ from
     null as stratum_2,
     CAST(100.0*st.val/statistic_value AS FLOAT) as statistic_value,
     CAST(  'UnmappedData:byDomain:Percentage' AS VARCHAR(255)) as measure_id
-  from #rule27_4 A
+  cross from #rule27_4 A
   join (select statistic_value as val from #rule27_4
         where measure_id = 'UnmappedData:ach_1801:GlobalRowCnt') as st
     on A.statistic_value = st.val
@@ -157,7 +157,7 @@ from
   SELECT 
     null as analysis_id,
     CAST(CONCAT('NOTIFICATION:Unmapped data over percentage threshold in:', 
-    cast(d.stratum_1 as varchar)) AS VARCHAR(255)) as ACHILLES_HEEL_warning,
+    cast(d.stratum_1 as varchar(100))) AS VARCHAR(255)) as ACHILLES_HEEL_warning,
     27 as rule_id,
     null as record_count
   FROM @scratchDatabaseSchema@schemaDelim@tempHeelPrefix_serial_rd_@rdNewId

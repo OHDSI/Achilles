@@ -10,7 +10,7 @@ select
 from
 (
   SELECT or1.analysis_id,
-  	CAST(CONCAT('WARNING: ', cast(or1.analysis_id as VARCHAR), '-', oa1.analysis_name, '; data with unmapped concepts') AS VARCHAR(255)) AS ACHILLES_HEEL_warning,
+  	CAST(CONCAT('WARNING: ', cast(or1.analysis_id as VARCHAR(10)), '-', oa1.analysis_name, '; data with unmapped concepts') AS VARCHAR(255)) AS ACHILLES_HEEL_warning,
     6 as rule_id,
     null as record_count
   FROM @resultsDatabaseSchema.ACHILLES_results or1

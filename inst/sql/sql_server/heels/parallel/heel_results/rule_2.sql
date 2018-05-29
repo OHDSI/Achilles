@@ -10,7 +10,7 @@ select
 	from
 	(
     SELECT ord1.analysis_id,
-    CAST(CONCAT('ERROR: ', cast(ord1.analysis_id as VARCHAR), ' - ', oa1.analysis_name, ' (count = ', cast(COUNT_BIG(ord1.min_value) as VARCHAR), '); min value should not be negative') AS VARCHAR(255)) AS ACHILLES_HEEL_warning,
+    CAST(CONCAT('ERROR: ', cast(ord1.analysis_id as VARCHAR(10)), ' - ', oa1.analysis_name, ' (count = ', cast(COUNT_BIG(ord1.min_value) as VARCHAR(19)), '); min value should not be negative') AS VARCHAR(255)) AS ACHILLES_HEEL_warning,
     2 as rule_id,
     COUNT_BIG(ord1.min_value) as record_count
   FROM @resultsDatabaseSchema.ACHILLES_results_dist ord1

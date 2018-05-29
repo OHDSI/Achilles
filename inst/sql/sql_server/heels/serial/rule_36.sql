@@ -8,7 +8,7 @@ from
   union all
   
   SELECT or1.analysis_id,
-  	CAST(CONCAT('WARNING: ', cast(or1.analysis_id as VARCHAR), '-', oa1.analysis_name, '; should not have age > @ThresholdAgeWarning, (n=', cast(sum(or1.count_value) as VARCHAR), ')') AS VARCHAR(255)) AS ACHILLES_HEEL_warning,
+  	CAST(CONCAT('WARNING: ', cast(or1.analysis_id as VARCHAR), '-', oa1.analysis_name, '; should not have age > @ThresholdAgeWarning, (n=', cast(sum(or1.count_value) as VARCHAR(19)), ')') AS VARCHAR(255)) AS ACHILLES_HEEL_warning,
     36 as rule_id,
     sum(or1.count_value) as record_count
   FROM @resultsDatabaseSchema.ACHILLES_results or1

@@ -19,8 +19,10 @@ from
   from
   (
     select 
-      1.0*count_value/(select sum(count_value) from @resultsDatabaseSchema.achilles_results where analysis_id = 201)  as outp_perc  
-    from @resultsDatabaseSchema.achilles_results where analysis_id = 201 and stratum_1 = '9202'
+      1.0*achilles_results.count_value/c1.count_value as outp_perc
+    from @resultsDatabaseSchema.achilles_results
+		cross join (select sum(count_value) as count_value from @resultsDatabaseSchema.achilles_results where analysis_id = 201) c1
+	  where analysis_id = 201 and stratum_1='9202'
   ) d
   where d.outp_perc < @ThresholdOutpatientVisitPerc
 ) Q

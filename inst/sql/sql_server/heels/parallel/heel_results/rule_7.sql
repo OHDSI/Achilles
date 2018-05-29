@@ -11,7 +11,7 @@ select
 from
 (
   SELECT or1.analysis_id,
-  	CAST(CONCAT('ERROR: ', cast(or1.analysis_id as VARCHAR), '-', oa1.analysis_name, '; ', cast(COUNT_BIG(DISTINCT stratum_1) AS VARCHAR), ' concepts in data are not in correct vocabulary') AS VARCHAR(255)) AS ACHILLES_HEEL_warning,
+  	CAST(CONCAT('ERROR: ', cast(or1.analysis_id as VARCHAR(10)), '-', oa1.analysis_name, '; ', cast(COUNT_BIG(DISTINCT stratum_1) AS VARCHAR(19)), ' concepts in data are not in correct vocabulary') AS VARCHAR(255)) AS ACHILLES_HEEL_warning,
     7 as rule_id,
     COUNT_BIG(DISTINCT stratum_1) as record_count
   FROM @resultsDatabaseSchema.ACHILLES_results or1
