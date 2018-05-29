@@ -28,7 +28,13 @@ If you are interested in adding or modifying Achilles/Heel analyses, this is the
     - If the analysis is about the COST table, then COST = 1, else COST = 0
 
   + DISTRIBUTED_FIELD field
-    - The strata to distribute the analysis by
+    - For cost analyses, the CDM field to analyze
+    
+  + ANALYSIS_NAME field
+    - The full description of the analysis
+    
+  + STRATUM_1_NAME, STRATUM_2_NAME, STRATUM_3_NAME, STRATUM_4_NAME, STRATUM_5_NAME fields
+    - CDM fields or conceptual values to stratify the analysis by
   
 * **inst/csv/achilles/achilles_cost_columns.csv**: This file defines the cost table field names per domain.
 
@@ -72,13 +78,16 @@ Follow the conventions of existing analyses: `select <fields> into @scratchDatab
 * **inst/csv/heel/heel_rules_all.csv**: This file details all of the Heel data quality rules. These rules can be executed either in parallel or in serial.
 
   + RULE_ID field
-    - The identifier for the Heel rule
+    - The identifier for the Heel rule; this is used to identify the SQL files for parallel heel_results and serial results_derived. For serial Heel analyses, the RULE_ID is the ordinal value for serial processing.
     
   + RULE_NAME field
     - The name of the Heel rule
     
   + EXECUTION_TYPE field
     - If the data quality query can be run in parallel, then "parallel." If it is dependent upon the results_derived or heel_results tables existing, then "serial."
+    
+  + DESTINATION_TABLE field
+    - Where will the Heel rule write results to: achilles_heel_results, achilles_results_derived, or both?
     
   + RULE_TYPE field
     - The category of the rule; does it check data quality, some kind of error, or conformance to the CDM schema?
@@ -98,7 +107,7 @@ Follow the conventions of existing analyses: `select <fields> into @scratchDatab
   + LINKED_MEASURE field
     - A foreign key to Achilles main or other Heel analyses
     
-* **inst/csv/heel/heel_results_derived_details.csv**: This file details the derived results found in achilles_results_derived table.
+* **inst/csv/heel/heel_results_derived_details.csv**: This file details the derived results found in the achilles_results_derived table.
 
   + QUERY_ID field
     - The identifier of each derived Heel analysis; this identifier corresponds to SQL file names.
@@ -140,25 +149,15 @@ Follow the conventions of existing analyses: `select <fields> into @scratchDatab
     
   + CODE field
     - The SQL query to obtain the drilldown value
-    
-* **inst/csv/heel/heel_rules_serial_order.csv**: This file details the ordering of each serial Heel analysis, and the destination table(s) the analysis will write to.
-
-  + ID field
-    - The ordinal value of the serial Heel file. The achillesHeel function will run the serial Heel files in the order defined by this field.
-    
-  + DESTINATION field
-    - The destination table for the analysis. This can be either the results_derived table, heel_results table, or both.
 
 ### How to Add a Heel Analysis
 
-1. To add a new Heel analysis, first determine whether its results will reside in the achilles_heel_results table or the achilles_results_derived table. That is, will the new Heel analysis provide a data quality evaluation (achilles_heel_results) or will it provide a data quality summary metric (achilles_results_derived)?
+1. To add a new Heel analysis, first determine whether its results will reside in the achilles_heel_results table, the achilles_results_derived table, or both. 
 
-2. Next, determine if the analysis depends on other analyses. If so, then it should go into the *inst/sql/sql_server/heels/serial*. If not, then it should go into the *inst/sql/sql_server/heels/parallel* folder. 
+2. Next, determine if the analysis depends on other analyses. If so, then it should go into the *inst/sql/sql_server/heels/serial* folder. If not, then it should go into the *inst/sql/sql_server/heels/parallel* folder. 
+3. Document the Heel analysis in the pertinent CSV files so that they are transparent and reachable by the achillesHeel function. The rule should be added to the *inst/csv/heel/heel_rules_all.csv* file; the rule_id will be important if this analysis needs to run in serial. If the rule includes derived details, add it to the *inst/csv/heel/heel_results_derived_details.csv* file; make sure to tag the rule_id in the ASSOCIATED_RULES field and create a new QUERY_ID to use as the SQL file name. If the rule includes a drilldown metric, include it in the *inst/csv/heel/heel_rules_drilldown.csv* file. 
 
-3. Use the conventions below to write the SQL query.
-
-4. Document the Heel analysis in the pertinent CSV files so that they are transparent and reachable by the achillesHeel function. The rule should be added to the *inst/csv/heel/heel_rules_all.csv* file. If the rule includes derived details, add it to the *inst/csv/heel/heel_results_derived_details.csv* file; make sure to tag the rule_id in the ASSOCIATED_RULES field and create a new QUERY_ID to use as the SQL file name. If the rule includes a drilldown metric, include it in the *inst/csv/heel/heel_rules_drilldown.csv* file. Lastly, if the Heel analysis needs to run in serial, add it to the *inst/csv/heel/heel_rules_serial_order.csv* file, keeping in mind the prerequisites for the new Heel analysis; does it rely upon the achilles_results_derived or achilles_heel_results tables at a specific stage of the achillesHeel execution?
-
+4. Use the conventions below to write the SQL query. If the Heel analysis needs to run in serial, keep in mind the prerequisites for the new Heel analysis; does it rely upon the achilles_results_derived or achilles_heel_results tables at a specific stage of the achillesHeel execution? 
 
 **Achilles Heel SQL Conventions**
 
@@ -181,9 +180,9 @@ Follow the conventions of existing Heel Results queries:  `select <fields> into 
 
 Follow the conventions of existing Heel Results queries:  `select <fields> into @scratchDatabaseSchema@schemaDelim@tempHeelPrefix_serial_rd_@rdNewId from @scratchDatabaseSchema@schemaDelim@heelPrefix_serial_rd_@rdOldId`
 
-* The `@rdNewId` parameter refers to the serial file ID of the new achilles_results_derived analysis.
+* The `@rdNewId` parameter refers to the serial file ID of the new achilles_results_derived analysis. The achillesHeel function will assign this based on the rule_id.
 
-* The `@rdOldId` parameter refers to the serial file ID of the previous achilles_results_derived analysis.
+* The `@rdOldId` parameter refers to the serial file ID of the previous achilles_results_derived analysis. The achillesHeel function will assign this based on the rule_id.
 
 * The `@scratchDatabaseSchema` parameter refers to the schema that will hold the staging table for this analysis.
 
@@ -198,9 +197,9 @@ Follow the conventions of existing Heel Results queries:  `select <fields> into 
 
 Follow the conventions of existing Heel Results queries:  `select <fields> into @scratchDatabaseSchema@schemaDelim@tempHeelPrefix_serial_hr_@hrNewId from @scratchDatabaseSchema@schemaDelim@heelPrefix_serial_hr_@hrOldId`
 
-* The `@hrNewId` parameter refers to the serial file ID of the new achilles_heel_results analysis.
+* The `@hrNewId` parameter refers to the serial file ID of the new achilles_heel_results analysis. The achillesHeel function will assign this based on the rule_id.
 
-* The `@hrOldId` parameter refers to the serial file ID of the previous achilles_heel_results analysis.
+* The `@hrOldId` parameter refers to the serial file ID of the previous achilles_heel_results analysis. The achillesHeel function will assign this based on the rule_id.
 
 * The `@scratchDatabaseSchema` parameter refers to the schema that will hold the staging table for this analysis.
 

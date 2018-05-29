@@ -131,12 +131,10 @@ Currently "sql server", "pdw", "oracle", "postgresql", "redshift", "mysql", "imp
 
     - Also see [notes.md](extras/notes.md) for more information (in the extras folder).
 
-
-Collaborators: How to Navigate SQL Files
+Developers: How to Add or Modify Analyses
 ==================================
 
-Please refer to the README-developers.md file.
-
+Please refer to the [README-developers.md file](README-developers.md).
 
 
 Getting Started with Docker

@@ -235,21 +235,24 @@ achillesHeel <- function(connectionDetails,
   
   # Run serial queries to finish up ---------------------------------------------------
   
-  serialFiles <- read.csv(file = system.file("csv", "heel", "heel_rules_serial_order.csv", package = "Achilles"), 
+  serialFiles <- read.csv(file = system.file("csv", "heel", "heel_rules_all.csv", package = "Achilles"), 
                           header = TRUE, stringsAsFactors = FALSE)
+  
+  serialFiles <- serialFiles[serialFiles$execution_type == "serial", ]
   
   for (i in 1:nrow(serialFiles)) {
     row <- serialFiles[i,]
-    newId <- rdOldId <- hrOldId <- as.integer(row$ID)
+    newId <- rdOldId <- hrOldId <- as.integer(row$rule_id)
     
     if (i > 1) {
-      rdOldId = as.integer(max(serialFiles$ID[serialFiles$DESTINATION %in% c("results_derived", "both") & 
-                                                serialFiles$ID < newId]))
-      hrOldId = as.integer(max(serialFiles$ID[serialFiles$DESTINATION %in% c("heel_results", "both") & 
-                                                serialFiles$ID < newId]))
+      rdOldId = as.integer(max(serialFiles$rule_id[serialFiles$destination_table %in% c("results_derived", "both") & 
+                                                serialFiles$rule_id < newId]))
+      hrOldId = as.integer(max(serialFiles$rule_id[serialFiles$destination_table %in% c("heel_results", "both") & 
+                                                serialFiles$rule_id < newId]))
     }
     
-    serialSql <- SqlRender::loadRenderTranslateSql(sqlFilename = sprintf("heels/serial/%s.sql", row$ID),
+    serialSql <- SqlRender::loadRenderTranslateSql(sqlFilename = sprintf("heels/serial/rule_%d.sql", 
+                                                                         as.integer(row$rule_id)),
                                                    packageName = "Achilles",
                                                    dbms = connectionDetails$dbms,
                                                    warnOnMissingParameters = FALSE,
@@ -265,9 +268,9 @@ achillesHeel <- function(connectionDetails,
                                                    ThresholdOutpatientVisitPerc = ThresholdOutpatientVisitPerc,
                                                    ThresholdMinimalPtMeasDxRx = ThresholdMinimalPtMeasDxRx)
     
-    if (row$DESTINATION == "results_derived") {
+    if (row$destination_table == "results_derived") {
       drops <- c(sprintf("rd_%d", rdOldId))
-    } else if (row$DESTINATION == "heel_results") {
+    } else if (row$destination_table == "heel_results") {
       drops <- c(sprintf("hr_%d", hrOldId))
     } else {
       drops <- c(sprintf("rd_%d", rdOldId), sprintf("hr_%d", hrOldId))
@@ -295,8 +298,8 @@ achillesHeel <- function(connectionDetails,
   
   # Create final Heel Tables ---------------------------------------------------
   
-  rdId = as.integer(max(serialFiles$ID[serialFiles$DESTINATION %in% c("results_derived", "both")]))
-  hrId = as.integer(max(serialFiles$ID[serialFiles$DESTINATION %in% c("heel_results", "both")]))
+  rdId = as.integer(max(serialFiles$rule_id[serialFiles$destination_table %in% c("results_derived", "both")]))
+  hrId = as.integer(max(serialFiles$rule_id[serialFiles$destination_table %in% c("heel_results", "both")]))
   
   sqlRd <- SqlRender::loadRenderTranslateSql(sqlFilename = "heels/merge_derived.sql", 
                                              packageName = "Achilles", 
