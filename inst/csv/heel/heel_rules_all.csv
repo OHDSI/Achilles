@@ -13,8 +13,6 @@ rule_id,rule_name,execution_type,destination_table,severity,rule_type,rule_descr
 12,Dx is not a SNOMED code,parallel,heel_results,error,CDM conformance,"concept from the wrong vocabulary; Condition Occurrence, Condition Era (SNOMED)",,,,400,1000,,,
 13,Drug is not RxNorm concept,parallel,heel_results,error,CDM conformance,"concept from the wrong vocabulary; Drug Exposure, Drug Era (RxNorm)",,,,700,900,,,
 14,"Procedure is not CPT, ICD9Proc or HCPCS",parallel,heel_results,error,CDM conformance,procedure - 4 CPT4/5 HCPCS/3 ICD9P,,,,600,,,,
-15,incorrect terminology,parallel,heel_results,error,CDM conformance,CDM V4 only:LOINC,,,,,,,,
-16,incorrect terminology,parallel,heel_results,error,CDM conformance,CDM v4 only:DRG,,,,,,,,
 17,incorrect terminology,parallel,heel_results,error,CDM conformance,revenue code - 43 revenue code,,,,1610,,,,
 18,year of birth is in the future,parallel,heel_results,error,DQ,year of birth should not be in the future ,,plausibility,,3,,,,
 19,year of birth is prior 1800,parallel,heel_results,warning,DQ, year of birth < 1800,<1800,plausibility,,3,,,,
