@@ -730,7 +730,7 @@ createIndices <- function(connectionDetails,
                           sqlOnly = FALSE) {
   
   if (connectionDetails$dbms %in% c("redshift", "netezza")) {
-    return <- sprintf("/* INDEX CREATION SKIPPED, INDICES NOT SUPPORTED IN %s */", toupper(connectionDetails$dbms))
+    return (sprintf("/* INDEX CREATION SKIPPED, INDICES NOT SUPPORTED IN %s */", toupper(connectionDetails$dbms)))
   }
   indicesSql <- SqlRender::loadRenderTranslateSql(sqlFilename = "post_processing/achilles_indices.sql",
                                                   packageName = "Achilles",
