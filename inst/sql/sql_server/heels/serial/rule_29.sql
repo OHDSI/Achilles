@@ -18,10 +18,10 @@ from tempcnt where pt_cnt > 0;
 --and with clause makes the code more readable
 
 SELECT *
-into @scratchDatabaseSchema@schemaDelim@tempHeelPrefix_serial_hr_@hrNewId
+into #serial_hr_@hrNewId
 FROM 
 (
-  select * from @scratchDatabaseSchema@schemaDelim@tempHeelPrefix_serial_hr_@hrOldId
+  select * from #serial_hr_@hrOldId
   
   union all
   

@@ -4,10 +4,10 @@
 --For some datasets (e.g., UK national data with single payor, one observation period is perfectly valid)
 
 select *
-into @scratchDatabaseSchema@schemaDelim@tempHeelPrefix_serial_hr_@hrNewId
+into #serial_hr_@hrNewId
 from
 (
-  select * from @scratchDatabaseSchema@schemaDelim@tempHeelPrefix_serial_hr_@hrOldId
+  select * from #serial_hr_@hrOldId
   
   union all
   

@@ -3,10 +3,10 @@
 
 --compute a derived ratio
 --TODO if provider count is zero it will generate division by zero (not sure how dirrerent db engins will react)
-select * into @scratchDatabaseSchema@schemaDelim@tempHeelPrefix_serial_rd_@rdNewId 
+select * into #serial_rd_@rdNewId 
 from
 (
-  select * from @scratchDatabaseSchema@schemaDelim@tempHeelPrefix_serial_rd_@rdOldId
+  select * from #serial_rd_@rdOldId
   
   union all
   
@@ -25,10 +25,10 @@ from
 --actual rule
 
 select *
-into @scratchDatabaseSchema@schemaDelim@tempHeelPrefix_serial_hr_@hrNewId
+into #serial_hr_@hrNewId
 from 
 (
-  select * from @scratchDatabaseSchema@schemaDelim@tempHeelPrefix_serial_hr_@hrOldId
+  select * from #serial_hr_@hrOldId
   
   union all
   
@@ -37,7 +37,7 @@ from
     CAST('NOTIFICATION:[PLAUSIBILITY] database has too few providers defined (given the total patient number)' AS VARCHAR(255)) as achilles_heel_warning,
     31 as rule_id,
     null as record_count
-  from @scratchDatabaseSchema@schemaDelim@tempHeelPrefix_serial_rd_@rdNewId d
+  from #serial_rd_@rdNewId d
   where d.measure_id = 'Provider:PatientProviderRatio'
   and d.statistic_value > 10000  --thresholds will be decided in the ongoing DQ-Study2
 ) Q

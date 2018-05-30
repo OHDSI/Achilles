@@ -5,10 +5,10 @@
 
 
 select *
-into @scratchDatabaseSchema@schemaDelim@tempHeelPrefix_serial_hr_@hrNewId
+into #serial_hr_@hrNewId
 from
 (
-  select * from @scratchDatabaseSchema@schemaDelim@tempHeelPrefix_serial_hr_@hrOldId
+  select * from #serial_hr_@hrOldId
   
   union all
   
@@ -17,7 +17,7 @@ from
     CAST(CONCAT('NOTIFICATION: Count of unmapped source values exceeds threshold in: ', cast(stratum_1 as varchar(100))) AS VARCHAR(255)) as ACHILLES_HEEL_warning,
     34 as rule_id,
     cast(statistic_value as int) as record_count
-  FROM @scratchDatabaseSchema@schemaDelim@tempHeelPrefix_serial_rd_@rdOldId d
+  FROM #serial_rd_@rdOldId d
   where measure_id = 'UnmappedDataByDomain:SourceValueCnt'
   and statistic_value > 1000 --threshold will be decided in DQ study 2
 ) Q

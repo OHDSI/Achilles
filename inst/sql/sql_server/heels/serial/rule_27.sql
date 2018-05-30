@@ -122,7 +122,7 @@ from
 
 
 select * 
-into @scratchDatabaseSchema@schemaDelim@tempHeelPrefix_serial_rd_@rdNewId
+into #serial_rd_@rdNewId
 from
 (
   select * from #rule27_5
@@ -147,7 +147,7 @@ drop table #rule27_5;
 --actual rule27
   
 select *
-into @scratchDatabaseSchema@schemaDelim@tempHeelPrefix_serial_hr_@hrNewId
+into #serial_hr_@hrNewId
 from
 (
   select * from @scratchDatabaseSchema@schemaDelim@tempHeelPrefix_achilles_heel_results_0
@@ -166,5 +166,7 @@ from
 ) Q
 ;
 
-
 --end of rule27
+
+drop table @scratchDatabaseSchema@schemaDelim@tempHeelPrefix_achilles_heel_results_0;
+drop table @scratchDatabaseSchema@schemaDelim@tempHeelPrefix_achilles_results_derived_0;

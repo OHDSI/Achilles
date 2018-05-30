@@ -256,10 +256,7 @@ achillesHeel <- function(connectionDetails,
                                                    packageName = "Achilles",
                                                    dbms = connectionDetails$dbms,
                                                    warnOnMissingParameters = FALSE,
-                                                   schemaDelim = "",
-                                                   scratchDatabaseSchema = "#",
                                                    resultsDatabaseSchema = resultsDatabaseSchema,
-                                                   tempHeelPrefix = tempHeelPrefix,
                                                    rdOldId = rdOldId,
                                                    hrOldId = hrOldId,
                                                    rdNewId = newId,
@@ -281,7 +278,7 @@ achillesHeel <- function(connectionDetails,
     if (i > 1) {
       sqlDropPriors <- lapply(drops, function(drop) {
         sql <- SqlRender::renderSql(sql = "IF OBJECT_ID('tempdb..#@table', 'U') IS NOT NULL DROP TABLE #@table;",
-                             table = sprintf("%1s_serial_%2s", tempHeelPrefix, drop))$sql
+                             table = sprintf("serial_%2s", drop))$sql
         sql <- SqlRender::translateSql(sql = sql, targetDialect = connectionDetails$dbms)$sql
       }) 
       sqlDropPrior <- paste(sqlDropPriors, collapse = "\n\n")
@@ -308,8 +305,7 @@ achillesHeel <- function(connectionDetails,
                                              schema = resultsDatabaseSchema,
                                              schemaDelim = ".",
                                              destination = "achilles_results_derived",
-                                             derivedSqls = sprintf("select * from #%s_serial_rd_%d",
-                                                                   tempHeelPrefix,
+                                             derivedSqls = sprintf("select * from #serial_rd_%d",
                                                                    rdId))
   
   sqlHr <- SqlRender::loadRenderTranslateSql(sqlFilename = "heels/merge_heel_results.sql", 
@@ -319,8 +315,7 @@ achillesHeel <- function(connectionDetails,
                                              schema = resultsDatabaseSchema,
                                              schemaDelim = ".",
                                              destination = "achilles_heel_results",
-                                             resultSqls = sprintf("select * from #%s_serial_hr_%d",
-                                                                  tempHeelPrefix,
+                                             resultSqls = sprintf("select * from #serial_hr_%d",
                                                                   hrId))
   
   finalSqls <- c(sqlRd, sqlHr)

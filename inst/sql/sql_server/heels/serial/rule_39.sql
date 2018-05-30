@@ -4,10 +4,10 @@
 --to avoid alerting on too early years such as 1925 where births exist but no deaths
 
 select *
-into @scratchDatabaseSchema@schemaDelim@tempHeelPrefix_serial_hr_@hrNewId
+into #serial_hr_@hrNewId
 from
 (
-  select * from @scratchDatabaseSchema@schemaDelim@tempHeelPrefix_serial_hr_@hrOldId
+  select * from #serial_hr_@hrOldId
   
   union all
   
@@ -19,7 +19,7 @@ from
   from
   (
     select count(*) as year_cnt 
-    from @scratchDatabaseSchema@schemaDelim@tempHeelPrefix_serial_rd_@rdOldId
+    from #serial_rd_@rdOldId
     where measure_id =  'Death:BornDeceasedRatio' and statistic_value > 30000
   ) a
   where a.year_cnt > 0
