@@ -3,7 +3,7 @@ into #rule27_1
 from
 (
 
-  select * from @scratchDatabaseSchema@schemaDelim@tempHeelPrefix_achilles_results_derived_0
+  select * from #achilles_rd_0
   
   union all
   
@@ -13,8 +13,8 @@ from
     null as stratum_2,
     CAST(100.0*st.val/statistic_value AS FLOAT) as statistic_value,
     CAST('UnmappedData:byDomain:Percentage' AS VARCHAR(255)) as measure_id
-  from @scratchDatabaseSchema@schemaDelim@tempHeelPrefix_achilles_results_derived_0
-  cross join (select statistic_value as val from @scratchDatabaseSchema@schemaDelim@tempHeelPrefix_achilles_results_derived_0 
+  from #achilles_rd_0
+  cross join (select statistic_value as val from #achilles_rd_0
       where measure_id like 'UnmappedData:ach_401:GlobalRowCnt') as st
   where measure_id = 'ach_401:GlobalRowCnt'
 ) Q
@@ -39,7 +39,6 @@ from
   from #rule27_1 A
   cross join (select statistic_value as val from #rule27_1 
         where measure_id = 'UnmappedData:ach_601:GlobalRowCnt') as st
-    on A.statistic_value = st.val
   where measure_id ='ach_601:GlobalRowCnt'
     
 ) Q
@@ -64,7 +63,6 @@ from
   from #rule27_2 A
   cross join (select statistic_value as val from #rule27_2 
         where measure_id = 'UnmappedData:ach_701:GlobalRowCnt') as st
-      on A.statistic_value = st.val
   where measure_id ='ach_701:GlobalRowCnt'
   
 ) Q
@@ -89,7 +87,6 @@ from
   from #rule27_3 A
   cross join (select statistic_value as val from #rule27_3
         where measure_id = 'UnmappedData:ach_801:GlobalRowCnt') as st
-    on A.statistic_value = st.val
   where measure_id ='ach_801:GlobalRowCnt'
   
 ) Q
@@ -111,10 +108,9 @@ from
     null as stratum_2,
     CAST(100.0*st.val/statistic_value AS FLOAT) as statistic_value,
     CAST(  'UnmappedData:byDomain:Percentage' AS VARCHAR(255)) as measure_id
-  cross from #rule27_4 A
-  join (select statistic_value as val from #rule27_4
+  from #rule27_4 A
+  cross join (select statistic_value as val from #rule27_4
         where measure_id = 'UnmappedData:ach_1801:GlobalRowCnt') as st
-    on A.statistic_value = st.val
   where measure_id ='ach_1801:GlobalRowCnt'
   
 ) Q
@@ -150,7 +146,7 @@ select *
 into #serial_hr_@hrNewId
 from
 (
-  select * from @scratchDatabaseSchema@schemaDelim@tempHeelPrefix_achilles_heel_results_0
+  select * from #achilles_hr_0
   
   union all
   
@@ -160,7 +156,7 @@ from
     cast(d.stratum_1 as varchar(100))) AS VARCHAR(255)) as ACHILLES_HEEL_warning,
     27 as rule_id,
     null as record_count
-  FROM @scratchDatabaseSchema@schemaDelim@tempHeelPrefix_serial_rd_@rdNewId
+  FROM #serial_rd_@rdNewId d
   where d.measure_id = 'UnmappedData:byDomain:Percentage'
   and d.statistic_value > 0.1  --thresholds will be decided in the ongoing DQ-Study2
 ) Q
@@ -168,5 +164,5 @@ from
 
 --end of rule27
 
-drop table @scratchDatabaseSchema@schemaDelim@tempHeelPrefix_achilles_heel_results_0;
-drop table @scratchDatabaseSchema@schemaDelim@tempHeelPrefix_achilles_results_derived_0;
+drop table #achilles_hr_0;
+drop table #achilles_rd_0;

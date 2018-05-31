@@ -196,7 +196,7 @@ achillesHeel <- function(connectionDetails,
                                                   warnOnMissingParameters = FALSE,
                                                   schema = "#",
                                                   schemaDelim = "",
-                                                  destination = sprintf("%s_achilles_results_derived_0", tempHeelPrefix),
+                                                  destination = "achilles_rd_0",
                                                   derivedSqls = paste(derivedSqls, collapse = " \nunion all\n "))
   
   resultSqls <- lapply(X = parallelFiles[!isDerived], function(parallelFile) {
@@ -219,7 +219,7 @@ achillesHeel <- function(connectionDetails,
                                                  warnOnMissingParameters = FALSE,
                                                  schema = "#",
                                                  schemaDelim = "",
-                                                 destination = sprintf("%s_achilles_heel_results_0", tempHeelPrefix),
+                                                 destination = "achilles_hr_0",
                                                  resultSqls = paste(resultSqls, collapse = " \nunion all\n "))
   
   heelSql <- c(heelSql, derivedSql, resultSql)
