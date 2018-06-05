@@ -178,35 +178,22 @@ Follow the conventions of existing Heel Results queries:  `select <fields> into 
 
 #### Serial files: achilles_results_derived
 
-Follow the conventions of existing Heel Results queries:  `select <fields> into @scratchDatabaseSchema@schemaDelim@tempHeelPrefix_serial_rd_@rdNewId from @scratchDatabaseSchema@schemaDelim@heelPrefix_serial_rd_@rdOldId`
+Follow the conventions of existing Heel Results queries:  `select <fields> into #serial_rd_@rdNewId from #serial_rd_@rdOldId`
+
+* As these will be run in serial, there is no need to use permanent staging tables. Instead, we use temp staging tables that are then merged into the final permanent achilles_results_derived table. This is to ensure best performance from MPP database platforms.
 
 * The `@rdNewId` parameter refers to the serial file ID of the new achilles_results_derived analysis. The achillesHeel function will assign this based on the rule_id.
 
 * The `@rdOldId` parameter refers to the serial file ID of the previous achilles_results_derived analysis. The achillesHeel function will assign this based on the rule_id.
 
-* The `@scratchDatabaseSchema` parameter refers to the schema that will hold the staging table for this analysis.
-
-* The `@schemaDelim` parameter refers to the delimiter used for this destination staging table (either 's_' or '.'). This is changed based upon whether the user is selecting single threaded or multi-threaded mode.
-
-* The `@tempHeelPrefix` parameter refers to the staging table prefix to use for each staging table ('tmpheel' by default, or whatever the user provides).
-
-* The `@resultsDatabaseSchema` parameter refers to the schema that holds the Achilles tables.
-
 
 #### Serial files: achilles_heel_results
 
-Follow the conventions of existing Heel Results queries:  `select <fields> into @scratchDatabaseSchema@schemaDelim@tempHeelPrefix_serial_hr_@hrNewId from @scratchDatabaseSchema@schemaDelim@heelPrefix_serial_hr_@hrOldId`
+Follow the conventions of existing Heel Results queries:  `select <fields> into #serial_hr_@hrNewId from #serial_hr_@hrOldId`
+
+* As these will be run in serial, there is no need to use permanent staging tables. Instead, we use temp staging tables that are then merged into the final permanent achilles_heel_results table. This is to ensure best performance from MPP database platforms.
 
 * The `@hrNewId` parameter refers to the serial file ID of the new achilles_heel_results analysis. The achillesHeel function will assign this based on the rule_id.
 
 * The `@hrOldId` parameter refers to the serial file ID of the previous achilles_heel_results analysis. The achillesHeel function will assign this based on the rule_id.
-
-* The `@scratchDatabaseSchema` parameter refers to the schema that will hold the staging table for this analysis.
-
-* The `@schemaDelim` parameter refers to the delimiter used for this destination staging table (either 's_' or '.'). This is changed based upon whether the user is selecting single threaded or multi-threaded mode.
-
-* The `@tempHeelPrefix` parameter refers to the staging table prefix to use for each staging table ('tmpheel' by default, or whatever the user provides).
-
-* The `@resultsDatabaseSchema` parameter refers to the schema that holds the Achilles tables.
-
 
