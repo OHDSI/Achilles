@@ -43,7 +43,6 @@ SQL for OMOP CDM v5
 {DEFAULT @smallcellcount = 5}
 {DEFAULT @createTable = TRUE}
 {DEFAULT @validateSchema = FALSE}
-{DEFAULT @deleteFromTable = TRUE}
 
   /****
     developer comment about general ACHILLES calculation process:  
