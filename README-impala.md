@@ -35,7 +35,6 @@ achillesResults <- achilles(connectionDetails, cdmDatabaseSchema="omop_cdm_parqu
                             cdmVersion = "5", vocabDatabaseSchema="omop_cdm_parquet", analysisIds = c(1))
 ```
 
-
 Have a look at the output:
 
 ```bash
@@ -70,7 +69,6 @@ Finally, run all of the analyses with:
 achillesResults <- achilles(connectionDetails, cdmDatabaseSchema="omop_cdm_parquet",
                             resultsDatabaseSchema="achilles", sourceName="Impala trial", runHeel = FALSE,
                             cdmVersion = "5", vocabDatabaseSchema="omop_cdm_parquet")
-
 ```
 
 You can uninstall packages with 
@@ -84,7 +82,6 @@ If you want to delete all the Achilles results use the following:
 
 ```bash
 impala-shell -q 'drop database achilles cascade'
-
 ```
 
 
