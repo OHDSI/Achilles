@@ -40,6 +40,9 @@ SQL for ACHILLES results (for either OMOP CDM v4 or OMOP CDM v5)
 {DEFAULT @smallcellcount = 5}
 {DEFAULT @createTable = TRUE}
 {DEFAULT @derivedDataSmPtCount = 11} 
+{DEFAULT @ThresholdAgeWarning = 125} 
+{DEFAULT @ThresholdOutpatientVisitPerc = 0.43} 
+{DEFAULT @ThresholdMinimalPtMeasDxRx = 20.5} 
 
  
 --@results_database_schema.ACHILLES_Heel part:
@@ -62,6 +65,7 @@ CREATE TABLE @results_database_schema.ACHILLES_HEEL_results (
 --per DQI group suggestion: measure_id is made into a string to make derivation
 --and sql authoring easy
 --computation is quick so the whole table gets wiped every time Heel is executed
+--in derived table: analysis_id is not used, look at measure_id instead
 
 
 IF OBJECT_ID('@results_database_schema.ACHILLES_results_derived', 'U') IS NOT NULL
@@ -69,12 +73,15 @@ IF OBJECT_ID('@results_database_schema.ACHILLES_results_derived', 'U') IS NOT NU
 
 create table @results_database_schema.ACHILLES_results_derived
 (
-	analysis_id int,
+	analysis_id int, 
 	stratum_1 varchar(255),
-	statistic_type varchar(255),
+	stratum_2 varchar(255),
 	statistic_value float,
 	measure_id varchar(255)
 );
+
+
+
 
  
 --general derived measures
@@ -94,9 +101,9 @@ select
   NULL as analysis_id,
   stratum_2 as stratum_1,
   sum(count_value) as statistic_value,
-  'ach_'+CAST(analysis_id as VARCHAR) + ':GlobalCnt' as measure_id
+  CAST(CONCAT('ach_',CAST(analysis_id as VARCHAR(10)),':GlobalCnt') AS VARCHAR(100)) as measure_id
 from @results_database_schema.achilles_results 
-where analysis_id in(1805,705,605,805,405) group by analysis_id,stratum_2;
+where analysis_id in(1805,705,605,805,405) group by analysis_id,stratum_2,CAST(CONCAT('ach_',CAST(analysis_id as VARCHAR(10)),':GlobalCnt') AS VARCHAR(100));
 
 
 
@@ -107,7 +114,7 @@ where analysis_id in(1805,705,605,805,405) group by analysis_id,stratum_2;
 --used as denominator in later measures
     insert into @results_database_schema.ACHILLES_results_derived (statistic_value,measure_id)    
     select sum(count_value) as statistic_value, 
-           'ach_'+CAST(analysis_id as VARCHAR) + ':GlobalRowCnt' as measure_id
+           CAST(CONCAT('ach_',CAST(analysis_id as VARCHAR(10)),':GlobalRowCnt') AS VARCHAR(100)) as measure_id
     from @results_database_schema.achilles_results 
     where analysis_id in (401,601,701,801,1801) group by analysis_id
     ;
@@ -116,7 +123,7 @@ where analysis_id in(1805,705,605,805,405) group by analysis_id,stratum_2;
 --this is numerator for percentage value of unmapped rows (per domain)
 insert into @results_database_schema.ACHILLES_results_derived (statistic_value,measure_id)    
     select count_value as statistic_value, 
-           'UnmappedData:ach_'+CAST(analysis_id as VARCHAR) + ':GlobalRowCnt' as measure_id
+           CAST(CONCAT('UnmappedData:ach_',CAST(analysis_id as VARCHAR(10)),':GlobalRowCnt') AS VARCHAR(100)) as measure_id
     from @results_database_schema.achilles_results 
     --TODO:stratum_1 is varchar and this comparison may fail on some db engines
     --indeed, mysql got error, changed to a string comparison
@@ -131,17 +138,17 @@ insert into @results_database_schema.ACHILLES_results_derived (statistic_value,m
 
 insert into @results_database_schema.ACHILLES_results_derived (statistic_value,measure_id)    
 select 
-   100.0*count_value/(select count_value as total_pts from @results_database_schema.achilles_results r where analysis_id =1) as statistic_value,
-   'ach_'+CAST(analysis_id as VARCHAR) + ':Percentage' as measure_id
+   CAST(100.0*count_value/statistic.total_pts AS FLOAT) as statistic_value,
+   CAST(CONCAT('ach_',CAST(analysis_id as VARCHAR(10)),':Percentage') AS VARCHAR(100)) as measure_id
   from @results_database_schema.achilles_results 
-
+	cross join (SELECT TOP 1 count_value as total_pts from @results_database_schema.achilles_results r where analysis_id =1) as statistic
   where analysis_id in (2000,2001,2002,2003);
   
 
 
 insert into @results_database_schema.ACHILLES_results_derived (statistic_value,measure_id)    
     select sum(count_value) as statistic_value, 
-           'Visit:InstanceCnt' as measure_id
+           CAST('Visit:InstanceCnt' AS VARCHAR(255)) as measure_id
  from @results_database_schema.achilles_results where analysis_id = 201;
  
  --in dist analysis/measure 203 - a number similar to that is computed above but it is on person level 
@@ -149,16 +156,16 @@ insert into @results_database_schema.ACHILLES_results_derived (statistic_value,m
 
 --age at first observation by decile
 insert into @results_database_schema.ACHILLES_results_derived (stratum_1,statistic_value,measure_id)    
-select cast(floor(cast(stratum_1 as int)/10) as varchar) as stratum_1,
+select cast(floor(cast(stratum_1 as int)/10) as varchar(10)),
   sum(count_value) as statistic_value,
-  'AgeAtFirstObsByDecile:PersonCnt' as measure_id
+  CAST('AgeAtFirstObsByDecile:PersonCnt' AS VARCHAR(255)) as measure_id
   from @results_database_schema.achilles_results where analysis_id = 101
 group by floor(cast(stratum_1 as int)/10);
 
 --count whether all deciles from 0 to 8 are there  (has later a rule: if less the threshold, issue notification)
 insert into @results_database_schema.ACHILLES_results_derived (statistic_value,measure_id)    
 select count(*) as statistic_value,
- 'AgeAtFirstObsByDecile:DecileCnt' as measure_id
+ CAST('AgeAtFirstObsByDecile:DecileCnt' AS VARCHAR(255)) as measure_id
 from @results_database_schema.ACHILLES_results_derived
 where measure_id = 'AgeAtFirstObsByDecile:PersonCnt' 
 and cast(stratum_1 as int) <=8;
@@ -167,56 +174,64 @@ and cast(stratum_1 as int) <=8;
 --data density measures
 
 insert into @results_database_schema.ACHILLES_results_derived (statistic_value,measure_id)    
-select count(*) as statistic_value, 'DrugExposure:ConceptCnt' as measure_id 
+select count(*) as statistic_value, CAST('DrugExposure:ConceptCnt' AS VARCHAR(255)) as measure_id
 from @results_database_schema.ACHILLES_results where analysis_id = 701;
 
 insert into @results_database_schema.ACHILLES_results_derived (statistic_value,measure_id)    
-select count(*) as statistic_value, 'DrugEra:ConceptCnt' as measure_id 
+select count(*) as statistic_value, CAST('DrugEra:ConceptCnt' AS VARCHAR(255)) as measure_id
 from @results_database_schema.ACHILLES_results where analysis_id = 901;
 
 insert into @results_database_schema.ACHILLES_results_derived (statistic_value,measure_id)    
-select count(*) as statistic_value, 'Condition:ConceptCnt' as measure_id 
+select count(*) as statistic_value, CAST('Condition:ConceptCnt' AS VARCHAR(255)) as measure_id
 from @results_database_schema.ACHILLES_results where analysis_id = 401;
 
 insert into @results_database_schema.ACHILLES_results_derived (statistic_value,measure_id)    
-select count(*) as statistic_value, 'Procedure:ConceptCnt' as measure_id 
+select count(*) as statistic_value, CAST('Procedure:ConceptCnt' AS VARCHAR(255)) as measure_id
 from @results_database_schema.ACHILLES_results where analysis_id = 601;
 
 insert into @results_database_schema.ACHILLES_results_derived (statistic_value,measure_id)    
-select count(*) as statistic_value, 'Observation:ConceptCnt' as measure_id 
+select count(*) as statistic_value, CAST('Observation:ConceptCnt' AS VARCHAR(255)) as measure_id
 from @results_database_schema.ACHILLES_results where analysis_id = 801;
 
 insert into @results_database_schema.ACHILLES_results_derived (statistic_value,measure_id)    
-select count(*) as statistic_value, 'Measurement:ConceptCnt' as measure_id 
+select count(*) as statistic_value, CAST('Measurement:ConceptCnt' AS VARCHAR(255)) as measure_id
 from @results_database_schema.ACHILLES_results where analysis_id = 1801;
 
 insert into @results_database_schema.ACHILLES_results_derived (statistic_value,measure_id)    
-select count(*) as statistic_value, 'Visit:ConceptCnt' as measure_id 
+select count(*) as statistic_value, CAST('Visit:ConceptCnt' AS VARCHAR(255)) as measure_id
 from @results_database_schema.ACHILLES_results where analysis_id = 201;
 
 insert into @results_database_schema.ACHILLES_results_derived (statistic_value,measure_id)    
-select count(*) as statistic_value, 'Death:DeathType:ConceptCnt' as measure_id 
+select count(*) as statistic_value, CAST('Death:DeathType:ConceptCnt' AS VARCHAR(255)) as measure_id
 from @results_database_schema.ACHILLES_results where analysis_id = 505;
 
 insert into @results_database_schema.ACHILLES_results_derived (statistic_value,measure_id)    
-select count(*) as statistic_value, 'Death:DeathCause:ConceptCnt' as measure_id 
+select count(*) as statistic_value, CAST('Death:DeathCause:ConceptCnt' AS VARCHAR(255)) as measure_id
 from @results_database_schema.ACHILLES_results where analysis_id = 501;
 
 insert into @results_database_schema.ACHILLES_results_derived (statistic_value,measure_id)    
-select count(*) as statistic_value, 'Person:Race:ConceptCnt' as measure_id 
+select count(*) as statistic_value, CAST('Person:Race:ConceptCnt' AS VARCHAR(255)) as measure_id
 from @results_database_schema.ACHILLES_results where analysis_id = 4;
 
 insert into @results_database_schema.ACHILLES_results_derived (statistic_value,measure_id)    
-select count(*) as statistic_value, 'Person:Ethnicity:ConceptCnt' as measure_id 
+select count(*) as statistic_value, CAST('Person:Ethnicity:ConceptCnt' AS VARCHAR(255)) as measure_id
 from @results_database_schema.ACHILLES_results where analysis_id = 5;
 
+
+insert into @results_database_schema.ACHILLES_results_derived (statistic_value,measure_id)    
+select count(*) as statistic_value, CAST('Device:ConceptCnt' AS VARCHAR(255)) as measure_id
+from @results_database_schema.ACHILLES_results where analysis_id = 2101;
+
+insert into @results_database_schema.ACHILLES_results_derived (statistic_value,measure_id)    
+select count(*) as statistic_value, CAST('Note:ConceptCnt' AS VARCHAR(255)) as measure_id
+from @results_database_schema.ACHILLES_results where analysis_id = 2201;
 
 --unmapped data (concept_0) derived measures (focusing on source values)
 
 insert into @results_database_schema.ACHILLES_results_derived (stratum_1,statistic_value,measure_id)    
 select stratum_1,
 count(*) as statistic_value,
-'UnmappedDataByDomain:SourceValueCnt' as measure_id
+CAST('UnmappedDataByDomain:SourceValueCnt' AS VARCHAR(255)) as measure_id
 from @results_database_schema.achilles_results where analysis_id = 1900 group by stratum_1;
 
 
@@ -225,7 +240,7 @@ from @results_database_schema.achilles_results where analysis_id = 1900 group by
 insert into @results_database_schema.ACHILLES_results_derived (statistic_value,measure_id)    
 select 
 count(*) as statistic_value,
-'Provider:SpeciatlyCnt' as measure_id
+CAST('Provider:SpeciatlyCnt' AS VARCHAR(255)) as measure_id
 from @results_database_schema.achilles_results where analysis_id = 301;
 
 
@@ -235,8 +250,8 @@ from @results_database_schema.achilles_results where analysis_id = 301;
 
 
 insert into @results_database_schema.ACHILLES_results_derived (stratum_1,statistic_value,measure_id)    
-select decade as stratum_1,temp_cnt as statistic_value,
-'Death:byDecade:SafePatientCnt' as measure_id
+select CAST(decade AS VARCHAR(255)) as stratum_1,temp_cnt as statistic_value,
+CAST('Death:byDecade:SafePatientCnt' AS VARCHAR(255)) as measure_id
 from
    (select left(stratum_1,3) as decade,sum(count_value) as temp_cnt from  @results_database_schema.achilles_results where analysis_id = 504  group by left(stratum_1,3)
    )a
@@ -246,13 +261,49 @@ where temp_cnt >= @derivedDataSmPtCount;
 
 insert into @results_database_schema.ACHILLES_results_derived (stratum_1,statistic_value,measure_id)    
 select stratum_1,temp_cnt as statistic_value,
-'Death:byYear:SafePatientCnt' as measure_id
+CAST('Death:byYear:SafePatientCnt' AS VARCHAR(255)) as measure_id
 from
    (select stratum_1,sum(count_value) as temp_cnt from  @results_database_schema.achilles_results where analysis_id = 504  group by stratum_1
    )a
 where temp_cnt >= @derivedDataSmPtCount;
 
 
+
+--more aggregated view of visit type by decile (derived from analysis_id 204)
+--denominator calculation will be replaced with new measure 212 in next version
+
+insert into @results_database_schema.ACHILLES_results_derived (stratum_1,stratum_2,statistic_value,measure_id)    
+select a.stratum_1,
+  a.stratum_4 as stratum_2,
+  CAST(1.0*a.person_cnt/b.population_size AS FLOAT) as statistic_value,
+CAST('Visit:Type:PersonWithAtLeastOne:byDecile:Percentage' AS VARCHAR(255)) as measure_id
+from
+(select stratum_1,  stratum_4, sum(count_value) as person_cnt  from @results_database_schema.achilles_results where analysis_id = 204 group by stratum_1,  stratum_4) a
+inner join 
+(select   stratum_4, sum(count_value) as population_size  from @results_database_schema.achilles_results where analysis_id = 204 group by   stratum_4) b
+on  a.stratum_4=b.stratum_4
+where a.person_cnt >= @derivedDataSmPtCount;
+
+
+--size of Achilles Metadata
+insert into @results_database_schema.ACHILLES_results_derived (stratum_1,statistic_value,measure_id)    
+select CAST(analysis_id AS VARCHAR(255)) as stratum_1,COUNT_BIG(*) as statistic_value,
+CAST('Achilles:byAnalysis:RowCnt' AS VARCHAR(255)) as measure_id
+from @results_database_schema.achilles_results group by analysis_id
+;
+
+
+--General Population Only: ratio of born to deceased (indicates missing birth or death events) stratified by year
+insert into @results_database_schema.ACHILLES_results_derived (stratum_1,statistic_value,measure_id)    
+select a.stratum_1,
+  CAST(1.0*a.born_cnt/b.died_cnt AS FLOAT) as statistic_value,
+  CAST('Death:BornDeceasedRatio' AS VARCHAR(255)) as measure_id
+from (select stratum_1,count_value as born_cnt from @results_database_schema.achilles_results where analysis_id = 3) a 
+inner join 
+(select stratum_1, count(count_value) as died_cnt from @results_database_schema.achilles_results where analysis_id = 504 group by stratum_1) b 
+on a.stratum_1 = b.stratum_1
+where b.died_cnt > 0
+;
 
 
 
@@ -283,7 +334,7 @@ INSERT INTO @results_database_schema.ACHILLES_HEEL_results (
 	record_count
 	)
 SELECT DISTINCT or1.analysis_id,
-	'ERROR: ' + cast(or1.analysis_id as VARCHAR) + '-' + oa1.analysis_name + '; count (n=' + cast(or1.count_value as VARCHAR) + ') should not be > 0' AS ACHILLES_HEEL_warning,
+	CAST(CONCAT('ERROR: ', cast(or1.analysis_id as VARCHAR(10)), '-', oa1.analysis_name, '; count (n=', cast(or1.count_value as VARCHAR(19)), ') should not be > 0') AS VARCHAR(255)) AS ACHILLES_HEEL_warning,
 	1 as rule_id,
 	or1.count_value
 FROM @results_database_schema.ACHILLES_results or1
@@ -307,7 +358,7 @@ WHERE or1.analysis_id IN (
 		412,
 		413,
 		509,
-		510,
+		--510, taken out from this umbrella rule and implemented separately
 		609,
 		610,
 		612,
@@ -344,8 +395,8 @@ INSERT INTO @results_database_schema.ACHILLES_HEEL_results (
 	rule_id,
 	record_count
 	)
-SELECT DISTINCT ord1.analysis_id,
-  'ERROR: ' + cast(ord1.analysis_id as VARCHAR) + ' - ' + oa1.analysis_name + ' (count = ' + cast(COUNT_BIG(ord1.min_value) as VARCHAR) + '); min value should not be negative' AS ACHILLES_HEEL_warning,
+SELECT ord1.analysis_id,
+  CAST(CONCAT('ERROR: ', cast(ord1.analysis_id as VARCHAR(10)), ' - ', oa1.analysis_name, ' (count = ', cast(COUNT_BIG(ord1.min_value) as VARCHAR(19)), '); min value should not be negative') AS VARCHAR(255)) AS ACHILLES_HEEL_warning,
   2 as rule_id,
   COUNT_BIG(ord1.min_value) as record_count
 FROM @results_database_schema.ACHILLES_results_dist ord1
@@ -395,8 +446,8 @@ INSERT INTO @results_database_schema.ACHILLES_HEEL_results (
 	rule_id,
 	record_count
 )
-SELECT DISTINCT ord1.analysis_id,
-  'WARNING: ' + cast(ord1.analysis_id as VARCHAR) + '-' + oa1.analysis_name + ' (count = ' + cast(COUNT_BIG(ord1.max_value) as VARCHAR) + '); max value should not be positive, otherwise its a zombie with data >1mo after death ' AS ACHILLES_HEEL_warning,
+SELECT ord1.analysis_id,
+  CAST(CONCAT('WARNING: ', cast(ord1.analysis_id as VARCHAR(10)), '-', oa1.analysis_name, ' (count = ', cast(COUNT_BIG(ord1.max_value) as VARCHAR(19)), '); max value should not be positive, otherwise its a zombie with data >1mo after death ') AS VARCHAR(255)) AS ACHILLES_HEEL_warning,
   3 as rule_id,
   COUNT_BIG(ord1.max_value) as record_count
 FROM @results_database_schema.ACHILLES_results_dist ord1
@@ -420,14 +471,14 @@ INSERT INTO @results_database_schema.ACHILLES_HEEL_results (
 	record_count
 )
 SELECT or1.analysis_id,
-	'ERROR: ' + cast(or1.analysis_id as VARCHAR) + '-' + oa1.analysis_name + '; ' + cast(COUNT_BIG(DISTINCT stratum_1) AS VARCHAR) + ' concepts in data are not in vocabulary' AS ACHILLES_HEEL_warning,
+	CAST(CONCAT('ERROR: ', cast(or1.analysis_id as VARCHAR(10)), '-', oa1.analysis_name, '; ', cast(COUNT_BIG(DISTINCT stratum_1) AS VARCHAR(19)), ' concepts in data are not in vocabulary') AS VARCHAR(255)) AS ACHILLES_HEEL_warning,
   4 as rule_id,
   COUNT_BIG(DISTINCT stratum_1) as record_count
 FROM @results_database_schema.ACHILLES_results or1
 INNER JOIN @results_database_schema.ACHILLES_analysis oa1
 	ON or1.analysis_id = oa1.analysis_id
 LEFT JOIN @vocab_database_schema.concept c1
-	ON or1.stratum_1 = CAST(c1.concept_id AS VARCHAR)
+	ON or1.stratum_1 = CAST(c1.concept_id AS VARCHAR(19))
 WHERE or1.analysis_id IN (
 		2,
 		4,
@@ -451,6 +502,9 @@ GROUP BY or1.analysis_id,
 	oa1.analysis_name;
 
 --ruleid 5 CDM-conformance rule:invalid type concept_id
+--this rule is only checking that the concept is valid (joins to concept table at all)
+--it does not check the vocabulary_id to further restrict the scope of the valid concepts
+--to only include,for example, death types 
 INSERT INTO @results_database_schema.ACHILLES_HEEL_results (
 	analysis_id,
 	ACHILLES_HEEL_warning,
@@ -458,19 +512,20 @@ INSERT INTO @results_database_schema.ACHILLES_HEEL_results (
 	record_count
 	)
 SELECT or1.analysis_id,
-	'ERROR: ' + cast(or1.analysis_id as VARCHAR) + '-' + oa1.analysis_name + '; ' + cast(COUNT_BIG(DISTINCT stratum_2) AS VARCHAR) + ' concepts in data are not in vocabulary' AS ACHILLES_HEEL_warning,
+	CAST(CONCAT('ERROR: ', cast(or1.analysis_id as VARCHAR(10)), '-', oa1.analysis_name, '; ', cast(COUNT_BIG(DISTINCT stratum_2) AS VARCHAR(19)), ' concepts in data are not in vocabulary') AS VARCHAR(255)) AS ACHILLES_HEEL_warning,
   5 as rule_id,
   COUNT_BIG(DISTINCT stratum_2) as record_count
 FROM @results_database_schema.ACHILLES_results or1
 INNER JOIN @results_database_schema.ACHILLES_analysis oa1
 	ON or1.analysis_id = oa1.analysis_id
 LEFT JOIN @vocab_database_schema.concept c1
-	ON or1.stratum_2 = CAST(c1.concept_id AS VARCHAR)
+	ON or1.stratum_2 = CAST(c1.concept_id AS VARCHAR(19))
 WHERE or1.analysis_id IN (
 		405,
 		605,
 		705,
-		805
+		805,
+		1805
 		)
 	AND or1.stratum_2 IS NOT NULL
 	AND c1.concept_id IS NULL
@@ -485,7 +540,7 @@ INSERT INTO @results_database_schema.ACHILLES_HEEL_results (
 	record_count
 	)
 SELECT or1.analysis_id,
-	'WARNING: ' + cast(or1.analysis_id as VARCHAR) + '-' + oa1.analysis_name + '; data with unmapped concepts' AS ACHILLES_HEEL_warning,
+	CAST(CONCAT('WARNING: ', cast(or1.analysis_id as VARCHAR(10)), '-', oa1.analysis_name, '; data with unmapped concepts') AS VARCHAR(255)) AS ACHILLES_HEEL_warning,
   6 as rule_id,
   null as record_count
 FROM @results_database_schema.ACHILLES_results or1
@@ -521,14 +576,14 @@ INSERT INTO @results_database_schema.ACHILLES_HEEL_results (
 	record_count
 	)
 SELECT or1.analysis_id,
-	'ERROR: ' + cast(or1.analysis_id as VARCHAR) + '-' + oa1.analysis_name + '; ' + cast(COUNT_BIG(DISTINCT stratum_1) AS VARCHAR) + ' concepts in data are not in correct vocabulary' AS ACHILLES_HEEL_warning,
+	CAST(CONCAT('ERROR: ', cast(or1.analysis_id as VARCHAR(10)), '-', oa1.analysis_name, '; ', cast(COUNT_BIG(DISTINCT stratum_1) AS VARCHAR(19)), ' concepts in data are not in correct vocabulary') AS VARCHAR(255)) AS ACHILLES_HEEL_warning,
   7 as rule_id,
   COUNT_BIG(DISTINCT stratum_1) as record_count
 FROM @results_database_schema.ACHILLES_results or1
 INNER JOIN @results_database_schema.ACHILLES_analysis oa1
 	ON or1.analysis_id = oa1.analysis_id
 INNER JOIN @vocab_database_schema.concept c1
-	ON or1.stratum_1 = CAST(c1.concept_id AS VARCHAR)
+	ON or1.stratum_1 = CAST(c1.concept_id AS VARCHAR(19))
 WHERE or1.analysis_id IN (2)
 	AND or1.stratum_1 IS NOT NULL
 	AND c1.concept_id <> 0 
@@ -544,14 +599,14 @@ INSERT INTO @results_database_schema.ACHILLES_HEEL_results (
 	record_count
 	)
 SELECT or1.analysis_id,
-	'ERROR: ' + cast(or1.analysis_id as VARCHAR) + '-' + oa1.analysis_name + '; ' + cast(COUNT_BIG(DISTINCT stratum_1) AS VARCHAR) + ' concepts in data are not in correct vocabulary' AS ACHILLES_HEEL_warning,
+	CAST(CONCAT('ERROR: ', cast(or1.analysis_id as VARCHAR(10)), '-', oa1.analysis_name, '; ', cast(COUNT_BIG(DISTINCT stratum_1) AS VARCHAR(19)), ' concepts in data are not in correct vocabulary') AS VARCHAR(255)) AS ACHILLES_HEEL_warning,
   8 as rule_id,
   COUNT_BIG(DISTINCT stratum_1) as record_count
 FROM @results_database_schema.ACHILLES_results or1
 INNER JOIN @results_database_schema.ACHILLES_analysis oa1
 	ON or1.analysis_id = oa1.analysis_id
 INNER JOIN @vocab_database_schema.concept c1
-	ON or1.stratum_1 = CAST(c1.concept_id AS VARCHAR)
+	ON or1.stratum_1 = CAST(c1.concept_id AS VARCHAR(19))
 WHERE or1.analysis_id IN (4)
 	AND or1.stratum_1 IS NOT NULL
 	AND c1.concept_id <> 0 
@@ -567,14 +622,14 @@ INSERT INTO @results_database_schema.ACHILLES_HEEL_results (
 	record_count
 	)
 SELECT or1.analysis_id,
-	'ERROR: ' + cast(or1.analysis_id as VARCHAR) + '-' + oa1.analysis_name + '; ' + cast(COUNT_BIG(DISTINCT stratum_1) AS VARCHAR) + ' concepts in data are not in correct vocabulary (CMS Ethnicity)' AS ACHILLES_HEEL_warning,
+	CAST(CONCAT('ERROR: ', cast(or1.analysis_id as VARCHAR(10)), '-', oa1.analysis_name, '; ', cast(COUNT_BIG(DISTINCT stratum_1) AS VARCHAR(19)), ' concepts in data are not in correct vocabulary (CMS Ethnicity)') AS VARCHAR(255)) AS ACHILLES_HEEL_warning,
   9 as rule_id,
   COUNT_BIG(DISTINCT stratum_1) as record_count
 FROM @results_database_schema.ACHILLES_results or1
 INNER JOIN @results_database_schema.ACHILLES_analysis oa1
 	ON or1.analysis_id = oa1.analysis_id
 INNER JOIN @vocab_database_schema.concept c1
-	ON or1.stratum_1 = CAST(c1.concept_id AS VARCHAR)
+	ON or1.stratum_1 = CAST(c1.concept_id AS VARCHAR(19))
 WHERE or1.analysis_id IN (5)
 	AND or1.stratum_1 IS NOT NULL
 	AND c1.concept_id <> 0 
@@ -590,14 +645,14 @@ INSERT INTO @results_database_schema.ACHILLES_HEEL_results (
 	record_count
 	)
 SELECT or1.analysis_id,
-	'ERROR: ' + cast(or1.analysis_id as VARCHAR) + '-' + oa1.analysis_name + '; ' + cast(COUNT_BIG(DISTINCT stratum_1) AS VARCHAR) + ' concepts in data are not in correct vocabulary' AS ACHILLES_HEEL_warning,
+	CAST(CONCAT('ERROR: ', cast(or1.analysis_id as VARCHAR(10)), '-', oa1.analysis_name, '; ', cast(COUNT_BIG(DISTINCT stratum_1) AS VARCHAR(19)), ' concepts in data are not in correct vocabulary') AS VARCHAR(255)) AS ACHILLES_HEEL_warning,
   10 as rule_id,
   COUNT_BIG(DISTINCT stratum_1) as record_count
 FROM @results_database_schema.ACHILLES_results or1
 INNER JOIN @results_database_schema.ACHILLES_analysis oa1
 	ON or1.analysis_id = oa1.analysis_id
 INNER JOIN @vocab_database_schema.concept c1
-	ON or1.stratum_1 = CAST(c1.concept_id AS VARCHAR)
+	ON or1.stratum_1 = CAST(c1.concept_id AS VARCHAR(19))
 WHERE or1.analysis_id IN (202)
 	AND or1.stratum_1 IS NOT NULL
 	AND c1.concept_id <> 0 
@@ -613,14 +668,14 @@ INSERT INTO @results_database_schema.ACHILLES_HEEL_results (
 	record_count
 	)
 SELECT or1.analysis_id,
-	'ERROR: ' + cast(or1.analysis_id as VARCHAR) + '-' + oa1.analysis_name + '; ' + cast(COUNT_BIG(DISTINCT stratum_1) AS VARCHAR) + ' concepts in data are not in correct vocabulary (Specialty)' AS ACHILLES_HEEL_warning,
+	CAST(CONCAT('ERROR: ', cast(or1.analysis_id as VARCHAR(10)), '-', oa1.analysis_name, '; ', cast(COUNT_BIG(DISTINCT stratum_1) AS VARCHAR(19)), ' concepts in data are not in correct vocabulary (Specialty)') AS VARCHAR(255)) AS ACHILLES_HEEL_warning,
   11 as rule_id,
   COUNT_BIG(DISTINCT stratum_1) as record_count
 FROM @results_database_schema.ACHILLES_results or1
 INNER JOIN @results_database_schema.ACHILLES_analysis oa1
 	ON or1.analysis_id = oa1.analysis_id
 INNER JOIN @vocab_database_schema.concept c1
-	ON or1.stratum_1 = CAST(c1.concept_id AS VARCHAR)
+	ON or1.stratum_1 = CAST(c1.concept_id AS VARCHAR(19))
 WHERE or1.analysis_id IN (301)
 	AND or1.stratum_1 IS NOT NULL
 	AND c1.concept_id <> 0 
@@ -636,14 +691,14 @@ INSERT INTO @results_database_schema.ACHILLES_HEEL_results (
 	record_count
 	)
 SELECT or1.analysis_id,
-	'ERROR: ' + cast(or1.analysis_id as VARCHAR) + '-' + oa1.analysis_name + '; ' + cast(COUNT_BIG(DISTINCT stratum_1) AS VARCHAR) + ' concepts in data are not in correct vocabulary' AS ACHILLES_HEEL_warning,
+	CAST(CONCAT('ERROR: ', cast(or1.analysis_id as VARCHAR(10)), '-', oa1.analysis_name, '; ', cast(COUNT_BIG(DISTINCT stratum_1) AS VARCHAR(19)), ' concepts in data are not in correct vocabulary') AS VARCHAR(255)) AS ACHILLES_HEEL_warning,
   12 as rule_id,
   COUNT_BIG(DISTINCT stratum_1) as record_count
 FROM @results_database_schema.ACHILLES_results or1
 INNER JOIN @results_database_schema.ACHILLES_analysis oa1
 	ON or1.analysis_id = oa1.analysis_id
 INNER JOIN @vocab_database_schema.concept c1
-	ON or1.stratum_1 = CAST(c1.concept_id AS VARCHAR)
+	ON or1.stratum_1 = CAST(c1.concept_id AS VARCHAR(19))
 WHERE or1.analysis_id IN (
 		400,
 		1000
@@ -662,14 +717,14 @@ INSERT INTO @results_database_schema.ACHILLES_HEEL_results (
 	record_count
 	)
 SELECT or1.analysis_id,
-	'ERROR: ' + cast(or1.analysis_id as VARCHAR) + '-' + oa1.analysis_name + '; ' + cast(COUNT_BIG(DISTINCT stratum_1) AS VARCHAR) + ' concepts in data are not in correct vocabulary' AS ACHILLES_HEEL_warning,
+	CAST(CONCAT('ERROR: ', cast(or1.analysis_id as VARCHAR(10)), '-', oa1.analysis_name, '; ', cast(COUNT_BIG(DISTINCT stratum_1) AS VARCHAR(19)), ' concepts in data are not in correct vocabulary') AS VARCHAR(255)) AS ACHILLES_HEEL_warning,
   13 as rule_id,
   COUNT_BIG(DISTINCT stratum_1) as record_count
 FROM @results_database_schema.ACHILLES_results or1
 INNER JOIN @results_database_schema.ACHILLES_analysis oa1
 	ON or1.analysis_id = oa1.analysis_id
 INNER JOIN @vocab_database_schema.concept c1
-	ON or1.stratum_1 = CAST(c1.concept_id AS VARCHAR)
+	ON or1.stratum_1 = CAST(c1.concept_id AS VARCHAR(19))
 WHERE or1.analysis_id IN (
 		700,
 		900
@@ -688,14 +743,14 @@ INSERT INTO @results_database_schema.ACHILLES_HEEL_results (
 	record_count
 	)
 SELECT or1.analysis_id,
-	'ERROR: ' + cast(or1.analysis_id as VARCHAR) + '-' + oa1.analysis_name + '; ' + cast(COUNT_BIG(DISTINCT stratum_1) AS VARCHAR) + ' concepts in data are not in correct vocabulary' AS ACHILLES_HEEL_warning,
+	CAST(CONCAT('ERROR: ', cast(or1.analysis_id as VARCHAR(10)), '-', oa1.analysis_name, '; ', cast(COUNT_BIG(DISTINCT stratum_1) AS VARCHAR(19)), ' concepts in data are not in correct vocabulary') AS VARCHAR(255)) AS ACHILLES_HEEL_warning,
   14 as rule_id,
   COUNT_BIG(DISTINCT stratum_1) as record_count
 FROM @results_database_schema.ACHILLES_results or1
 INNER JOIN @results_database_schema.ACHILLES_analysis oa1
 	ON or1.analysis_id = oa1.analysis_id
 INNER JOIN @vocab_database_schema.concept c1
-	ON or1.stratum_1 = CAST(c1.concept_id AS VARCHAR)
+	ON or1.stratum_1 = CAST(c1.concept_id AS VARCHAR(19))
 WHERE or1.analysis_id IN (600)
 	AND or1.stratum_1 IS NOT NULL
 	AND c1.concept_id <> 0 
@@ -720,14 +775,14 @@ INSERT INTO @results_database_schema.ACHILLES_HEEL_results (
 	record_count
 	)
 SELECT or1.analysis_id,
-	'ERROR: ' + cast(or1.analysis_id as VARCHAR) + '-' + oa1.analysis_name + '; ' + cast(COUNT_BIG(DISTINCT stratum_1) AS VARCHAR) + ' concepts in data are not in correct vocabulary (revenue code)' AS ACHILLES_HEEL_warning,
+	CAST(CONCAT('ERROR: ', cast(or1.analysis_id as VARCHAR(10)), '-', oa1.analysis_name, '; ', cast(COUNT_BIG(DISTINCT stratum_1) AS VARCHAR(19)), ' concepts in data are not in correct vocabulary (revenue code)') AS VARCHAR(255)) AS ACHILLES_HEEL_warning,
   17 as rule_id,
   COUNT_BIG(DISTINCT stratum_1) as record_count
 FROM @results_database_schema.ACHILLES_results or1
 INNER JOIN @results_database_schema.ACHILLES_analysis oa1
 	ON or1.analysis_id = oa1.analysis_id
 INNER JOIN @vocab_database_schema.concept c1
-	ON or1.stratum_1 = CAST(c1.concept_id AS VARCHAR)
+	ON or1.stratum_1 = CAST(c1.concept_id AS VARCHAR(19))
 WHERE or1.analysis_id IN (1610)
 	AND or1.stratum_1 IS NOT NULL
 	AND c1.concept_id <> 0 
@@ -743,8 +798,8 @@ INSERT INTO @results_database_schema.ACHILLES_HEEL_results (
 	rule_id,
 	record_count
 	)
-SELECT DISTINCT or1.analysis_id,
-	'ERROR: ' + cast(or1.analysis_id as VARCHAR) + '-' + oa1.analysis_name + '; should not have year of birth in the future, (n=' + cast(sum(or1.count_value) as VARCHAR) + ')' AS ACHILLES_HEEL_warning,
+SELECT or1.analysis_id,
+	CAST(CONCAT('ERROR: ', cast(or1.analysis_id as VARCHAR(10)), '-', oa1.analysis_name, '; should not have year of birth in the future, (n=', cast(sum(or1.count_value) as VARCHAR(19)), ')') AS VARCHAR(255)) AS ACHILLES_HEEL_warning,
   18 as rule_id,
   sum(or1.count_value) as record_count
 FROM @results_database_schema.ACHILLES_results or1
@@ -765,7 +820,7 @@ INSERT INTO @results_database_schema.ACHILLES_HEEL_results (
 	record_count
 	)
 SELECT or1.analysis_id,
-	'ERROR: ' + cast(or1.analysis_id as VARCHAR) + '-' + oa1.analysis_name + '; should not have year of birth < 1800, (n=' + cast(sum(or1.count_value) as VARCHAR) + ')' AS ACHILLES_HEEL_warning,
+	CAST(CONCAT('ERROR: ', cast(or1.analysis_id as VARCHAR(10)), '-', oa1.analysis_name, '; should not have year of birth < 1800, (n=', cast(sum(or1.count_value) as VARCHAR(19)), ')') AS VARCHAR(255)) AS ACHILLES_HEEL_warning,
   19 as rule_id,
   sum(or1.count_value) as record_count
 FROM @results_database_schema.ACHILLES_results or1
@@ -785,7 +840,7 @@ INSERT INTO @results_database_schema.ACHILLES_HEEL_results (
 	record_count
 	)
 SELECT or1.analysis_id,
-	'ERROR: ' + cast(or1.analysis_id as VARCHAR) + '-' + oa1.analysis_name + '; should not have age < 0, (n=' + cast(sum(or1.count_value) as VARCHAR) + ')' AS ACHILLES_HEEL_warning,
+	CAST(CONCAT('ERROR: ', cast(or1.analysis_id as VARCHAR(10)), '-', oa1.analysis_name, '; should not have age < 0, (n=', cast(sum(or1.count_value) as VARCHAR(19)), ')') AS VARCHAR(255)) AS ACHILLES_HEEL_warning,
   20 as rule_id,
   sum(or1.count_value) as record_count
 FROM @results_database_schema.ACHILLES_results or1
@@ -805,7 +860,7 @@ INSERT INTO @results_database_schema.ACHILLES_HEEL_results (
 	record_count
 	)
 SELECT or1.analysis_id,
-	'ERROR: ' + cast(or1.analysis_id as VARCHAR) + '-' + oa1.analysis_name + '; should not have age > 150, (n=' + cast(sum(or1.count_value) as VARCHAR) + ')' AS ACHILLES_HEEL_warning,
+	CAST(CONCAT('ERROR: ', cast(or1.analysis_id as VARCHAR(10)), '-', oa1.analysis_name, '; should not have age > 150, (n=', cast(sum(or1.count_value) as VARCHAR(19)), ')') AS VARCHAR(255)) AS ACHILLES_HEEL_warning,
   21 as rule_id,
   sum(or1.count_value) as record_count
 FROM @results_database_schema.ACHILLES_results or1
@@ -825,7 +880,7 @@ INSERT INTO @results_database_schema.ACHILLES_HEEL_results (
 	
 	)
 SELECT DISTINCT ar1.analysis_id,
-	'WARNING: ' + cast(ar1.analysis_id as VARCHAR) + '-' + aa1.analysis_name + '; theres a 100% change in monthly count of events' AS ACHILLES_HEEL_warning,
+	CAST(CONCAT('WARNING: ', cast(ar1.analysis_id as VARCHAR(10)), '-', aa1.analysis_name, '; theres a 100% change in monthly count of events') AS VARCHAR(255)) AS ACHILLES_HEEL_warning,
   22 as rule_id
   
 FROM @results_database_schema.ACHILLES_analysis aa1
@@ -856,7 +911,7 @@ INSERT INTO @results_database_schema.ACHILLES_HEEL_results (
 	record_count
 	)
 SELECT ar1.analysis_id,
-	'WARNING: ' + cast(ar1.analysis_id as VARCHAR) + '-' + aa1.analysis_name + '; ' + cast(COUNT_BIG(DISTINCT ar1.stratum_1) AS VARCHAR) + ' concepts have a 100% change in monthly count of events' AS ACHILLES_HEEL_warning,
+	CAST(CONCAT('WARNING: ', cast(ar1.analysis_id as VARCHAR(10)), '-', aa1.analysis_name, '; ', cast(COUNT_BIG(DISTINCT ar1.stratum_1) AS VARCHAR(19)), ' concepts have a 100% change in monthly count of events') AS VARCHAR(255)) AS ACHILLES_HEEL_warning,
   23 as rule_id,
   COUNT_BIG(DISTINCT ar1.stratum_1) as record_count
 FROM @results_database_schema.ACHILLES_analysis aa1
@@ -874,8 +929,8 @@ INNER JOIN @results_database_schema.ACHILLES_results ar2
 			1002
 			)
 WHERE (
-		CAST(ar1.stratum_2 AS INT) + 1 = CAST(ar2.stratum_2 AS INT)
-		OR CAST(ar1.stratum_2 AS INT) + 89 = CAST(ar2.stratum_2 AS INT)
+		ROUND(CAST(ar1.stratum_2 AS DECIMAL(18,4)),0) + 1 = ROUND(CAST(ar2.stratum_2 AS DECIMAL(18,4)),0)
+		OR ROUND(CAST(ar1.stratum_2 AS DECIMAL(18,4)),0) + 89 = ROUND(CAST(ar2.stratum_2 AS DECIMAL(18,4)),0)
 		)
 	AND 1.0 * abs(ar2.count_value - ar1.count_value) / ar1.count_value > 1
 	AND ar1.count_value > 10
@@ -889,8 +944,8 @@ INSERT INTO @results_database_schema.ACHILLES_HEEL_results (
 	rule_id,
 	record_count
 	)
-SELECT DISTINCT ord1.analysis_id,
-  'WARNING: ' + cast(ord1.analysis_id as VARCHAR) + '-' + oa1.analysis_name + ' (count = ' + cast(COUNT_BIG(ord1.max_value) as VARCHAR) + '); max value should not be > 180' AS ACHILLES_HEEL_warning,
+SELECT ord1.analysis_id,
+  CAST(CONCAT('WARNING: ', cast(ord1.analysis_id as VARCHAR(10)), '-', oa1.analysis_name, ' (count = ', cast(COUNT_BIG(ord1.max_value) as VARCHAR(19)), '); max value should not be > 180') AS VARCHAR(255)) AS ACHILLES_HEEL_warning,
   24 as rule_id,
   COUNT_BIG(ord1.max_value) as record_count
 FROM @results_database_schema.ACHILLES_results_dist ord1
@@ -907,8 +962,8 @@ INSERT INTO @results_database_schema.ACHILLES_HEEL_results (
 	rule_id,
 	record_count
 	)
-SELECT DISTINCT ord1.analysis_id,
-  'WARNING: ' + cast(ord1.analysis_id as VARCHAR) + '-' + oa1.analysis_name + ' (count = ' + cast(COUNT_BIG(ord1.max_value) as VARCHAR) + '); max value should not be > 10' AS ACHILLES_HEEL_warning,
+SELECT ord1.analysis_id,
+  CAST(CONCAT('WARNING: ', cast(ord1.analysis_id as VARCHAR(10)), '-', oa1.analysis_name, ' (count = ', cast(COUNT_BIG(ord1.max_value) as VARCHAR(19)), '); max value should not be > 10') AS VARCHAR(255)) AS ACHILLES_HEEL_warning,
   25 as rule_id,
   COUNT_BIG(ord1.max_value) as record_count
 FROM @results_database_schema.ACHILLES_results_dist ord1
@@ -925,8 +980,8 @@ INSERT INTO @results_database_schema.ACHILLES_HEEL_results (
 	rule_id,
 	record_count
 	)
-SELECT DISTINCT ord1.analysis_id,
-  'WARNING: ' + cast(ord1.analysis_id as VARCHAR) + '-' + oa1.analysis_name + ' (count = ' + cast(count(ord1.max_value) as VARCHAR) + '); max value should not be > 600' AS ACHILLES_HEEL_warning,
+SELECT ord1.analysis_id,
+  CAST(CONCAT('WARNING: ', cast(ord1.analysis_id as VARCHAR(10)), '-', oa1.analysis_name, ' (count = ', cast(count(ord1.max_value) as VARCHAR(19)), '); max value should not be > 600') AS VARCHAR(255)) AS ACHILLES_HEEL_warning,
   26 as rule_id,
   count(ord1.max_value) as record_count
 FROM @results_database_schema.ACHILLES_results_dist ord1
@@ -950,45 +1005,50 @@ GROUP BY ord1.analysis_id, oa1.analysis_name;
 --compute derived measure first
 insert into @results_database_schema.ACHILLES_results_derived (statistic_value,stratum_1,measure_id)    
 select
-  100.0*(select statistic_value from @results_database_schema.achilles_results_derived where measure_id like 'UnmappedData:ach_401:GlobalRowCnt')/statistic_value as statistic_value,
-  'Condition' as stratum_1,
-  'UnmappedData:byDomain:Percentage' as measure_id
-from @results_database_schema.achilles_results_derived where measure_id ='ach_401:GlobalRowCnt';
+  CAST(100.0*st.val/statistic_value AS FLOAT) as statistic_value,
+  CAST('Condition' AS VARCHAR(255)) as stratum_1, CAST(  'UnmappedData:byDomain:Percentage' AS VARCHAR(255)) as measure_id
+from @results_database_schema.achilles_results_derived
+cross join (select statistic_value as val from @results_database_schema.achilles_results_derived where measure_id like 'UnmappedData:ach_401:GlobalRowCnt') as st
+where measure_id ='ach_401:GlobalRowCnt';
 
 insert into @results_database_schema.ACHILLES_results_derived (statistic_value,stratum_1,measure_id)    
 select
-  100.0*(select statistic_value from @results_database_schema.achilles_results_derived where measure_id = 'UnmappedData:ach_601:GlobalRowCnt')/statistic_value as statistic_value,
-  'Procedure' as stratum_1,
-  'UnmappedData:byDomain:Percentage' as measure_id
-from @results_database_schema.achilles_results_derived where measure_id ='ach_601:GlobalRowCnt';
+  CAST(100.0*st.val/statistic_value AS FLOAT) as statistic_value,
+  CAST('Procedure' AS VARCHAR(255)) as stratum_1, CAST(  'UnmappedData:byDomain:Percentage' AS VARCHAR(255)) as measure_id
+from @results_database_schema.achilles_results_derived
+cross join (select statistic_value as val from @results_database_schema.achilles_results_derived where measure_id = 'UnmappedData:ach_601:GlobalRowCnt') as st
+where measure_id ='ach_601:GlobalRowCnt';
 
 insert into @results_database_schema.ACHILLES_results_derived (statistic_value,stratum_1,measure_id)    
 select
-  100.0*(select statistic_value from @results_database_schema.achilles_results_derived where measure_id = 'UnmappedData:ach_701:GlobalRowCnt')/statistic_value as statistic_value,
-  'DrugExposure' as stratum_1,
-  'UnmappedData:byDomain:Percentage' as measure_id
-from @results_database_schema.achilles_results_derived where measure_id ='ach_701:GlobalRowCnt';
+  CAST(100.0*st.val/statistic_value AS FLOAT) as statistic_value,
+  CAST('DrugExposure' AS VARCHAR(255)) as stratum_1, CAST(  'UnmappedData:byDomain:Percentage' AS VARCHAR(255)) as measure_id
+from @results_database_schema.achilles_results_derived
+cross join (select statistic_value as val from @results_database_schema.achilles_results_derived where measure_id = 'UnmappedData:ach_701:GlobalRowCnt') as st
+where measure_id ='ach_701:GlobalRowCnt';
 
 insert into @results_database_schema.ACHILLES_results_derived (statistic_value,stratum_1,measure_id)    
 select
-  100.0*(select statistic_value from @results_database_schema.achilles_results_derived where measure_id = 'UnmappedData:ach_801:GlobalRowCnt')/statistic_value as statistic_value,
-  'Observation' as stratum_1,
-  'UnmappedData:byDomain:Percentage' as measure_id
-from @results_database_schema.achilles_results_derived where measure_id ='ach_801:GlobalRowCnt';
+  CAST(100.0*st.val/statistic_value AS FLOAT) as statistic_value,
+  CAST('Observation' AS VARCHAR(255)) as stratum_1, CAST(  'UnmappedData:byDomain:Percentage' AS VARCHAR(255)) as measure_id
+from @results_database_schema.achilles_results_derived
+cross join (select statistic_value as val from @results_database_schema.achilles_results_derived where measure_id = 'UnmappedData:ach_801:GlobalRowCnt') as st
+where measure_id ='ach_801:GlobalRowCnt';
 
 insert into @results_database_schema.ACHILLES_results_derived (statistic_value,stratum_1,measure_id)    
 select
-  100.0*(select statistic_value from @results_database_schema.achilles_results_derived where measure_id = 'UnmappedData:ach_1801:GlobalRowCnt')/statistic_value as statistic_value,
-  'Measurement' as stratum_1,
-  'UnmappedData:byDomain:Percentage' as measure_id
-from @results_database_schema.achilles_results_derived where measure_id ='ach_1801:GlobalRowCnt';
+  CAST(100.0*st.val/statistic_value AS FLOAT) as statistic_value,
+  CAST('Measurement' AS VARCHAR(255)) as stratum_1, CAST(  'UnmappedData:byDomain:Percentage' AS VARCHAR(255)) as measure_id
+from @results_database_schema.achilles_results_derived
+cross join (select statistic_value as val from @results_database_schema.achilles_results_derived where measure_id = 'UnmappedData:ach_1801:GlobalRowCnt') as st
+where measure_id ='ach_1801:GlobalRowCnt';
 
 
 --actual rule27
 
   INSERT INTO @results_database_schema.ACHILLES_HEEL_results (ACHILLES_HEEL_warning,rule_id)
   SELECT 
-   'NOTIFICATION:Unmapped data over percentage threshold in:' + cast(d.stratum_1 as varchar) as ACHILLES_HEEL_warning,
+   CAST(CONCAT('NOTIFICATION:Unmapped data over percentage threshold in:', cast(d.stratum_1 as varchar(100))) AS VARCHAR(255)) as ACHILLES_HEEL_warning,
     27 as rule_id
   FROM @results_database_schema.ACHILLES_results_derived d
   where d.measure_id = 'UnmappedData:byDomain:Percentage'
@@ -1005,24 +1065,25 @@ from @results_database_schema.achilles_results_derived where measure_id ='ach_18
 
 with t1 (all_count) as 
   (select sum(count_value) as all_count from @results_database_schema.achilles_results where analysis_id = 1820)
-  --count of all meas rows (I wish this would also be a measure) (1820 is count by month)
 select 
-CAST('percentage' AS VARCHAR(100)) as statistic_type,
-(select count_value from @results_database_schema.achilles_results where analysis_id = 1821)*100.0/all_count as statistic_value,
-CAST('Meas:NoNumValue:Percentage' AS VARCHAR(100)) as measure_id
+	CAST(ct.count_value*CAST(100.0 AS FLOAT)/all_count AS FLOAT) as statistic_value,
+	CAST('Meas:NoNumValue:Percentage' AS VARCHAR(100)) as measure_id
 into #tempResults 
-from t1;
+from t1
+cross join (select CAST(count_value AS FLOAT) as count_value from @results_database_schema.achilles_results where analysis_id = 1821) as ct
+;
 
 
-insert into @results_database_schema.ACHILLES_results_derived (statistic_type, statistic_value, measure_id)    
-  select  statistic_type,statistic_value,measure_id from #tempResults;
+insert into @results_database_schema.ACHILLES_results_derived (statistic_value, measure_id)    
+  select  statistic_value, measure_id from #tempResults;
 
 
 
-INSERT INTO @results_database_schema.ACHILLES_HEEL_results (ACHILLES_HEEL_warning,rule_id)
+INSERT INTO @results_database_schema.ACHILLES_HEEL_results (ACHILLES_HEEL_warning,rule_id,record_count)
 SELECT 
-  'NOTIFICATION: percentage of non-numerical measurement records exceeds general population threshold ' as ACHILLES_HEEL_warning,
-	28 as rule_id
+  CAST('NOTIFICATION: percentage of non-numerical measurement records exceeds general population threshold ' AS VARCHAR(255)) as ACHILLES_HEEL_warning,
+	28 as rule_id,
+	cast(statistic_value as int) as record_count
 FROM #tempResults t
 --WHERE t.analysis_id IN (100730,100430) --umbrella version
 WHERE measure_id='Meas:NoNumValue:Percentage' --t.analysis_id IN (100000)
@@ -1057,7 +1118,7 @@ from tempcnt where pt_cnt > 0;
 --and with clause makes the code more readable
 INSERT INTO @results_database_schema.ACHILLES_HEEL_results (ACHILLES_HEEL_warning,rule_id,record_count)
 SELECT 
- 'WARNING:[PLAUSIBILITY] infant-age diagnosis (195075) at age 50+' as ACHILLES_HEEL_warning,
+ CAST('WARNING:[PLAUSIBILITY] infant-age diagnosis (195075) at age 50+' AS VARCHAR(255)) as ACHILLES_HEEL_warning,
   29 as rule_id,
   record_count
 FROM #tempResults t;
@@ -1092,15 +1153,16 @@ drop table #tempResults;
 --compute a derived reatio
 --TODO if provider count is zero it will generate division by zero (not sure how dirrerent db engins will react)
 insert into @results_database_schema.ACHILLES_results_derived (statistic_value,measure_id)    
-    select  1.0*(select count_value as total_pts from @results_database_schema.achilles_results r where analysis_id =1)/count_value as statistic_value,
-    'Provider:PatientProviderRatio' as measure_id
-    from @results_database_schema.achilles_results where analysis_id = 300
+    select CAST(1.0*ct.total_pts/count_value AS FLOAT) as statistic_value, CAST('Provider:PatientProviderRatio' AS VARCHAR(255)) as measure_id
+    from @results_database_schema.achilles_results
+		cross join (select count_value as total_pts from @results_database_schema.achilles_results r where analysis_id =1) ct
+		where analysis_id = 300
 ;
 
 --actual rule
 INSERT INTO @results_database_schema.ACHILLES_HEEL_results (ACHILLES_HEEL_warning,rule_id)
 SELECT 
- 'NOTIFICATION:[PLAUSIBILITY] database has too few providers defined (given the total patient number)' as ACHILLES_HEEL_warning,
+ CAST('NOTIFICATION:[PLAUSIBILITY] database has too few providers defined (given the total patient number)' AS VARCHAR(255)) as ACHILLES_HEEL_warning,
   31 as rule_id
 FROM @results_database_schema.ACHILLES_results_derived d
 where d.measure_id = 'Provider:PatientProviderRatio'
@@ -1113,11 +1175,11 @@ and d.statistic_value > 10000  --thresholds will be decided in the ongoing DQ-St
 
 INSERT INTO @results_database_schema.ACHILLES_HEEL_results (ACHILLES_HEEL_warning,rule_id)
 SELECT 
- 'NOTIFICATION: Percentage of patients with no visits exceeds threshold' as ACHILLES_HEEL_warning,
+ CAST('NOTIFICATION: Percentage of patients with no visits exceeds threshold' AS VARCHAR(255)) as ACHILLES_HEEL_warning,
   32 as rule_id
 FROM @results_database_schema.ACHILLES_results_derived d
 where d.measure_id = 'ach_2003:Percentage'
-and 100-d.statistic_value > 5  --thresholds will be decided in the ongoing DQ-Study2
+and 100-d.statistic_value > 27  --threshold identified in the DataQuality study
 ;
 
 --rule33 DQ rule (for general population only)
@@ -1126,7 +1188,7 @@ and 100-d.statistic_value > 5  --thresholds will be decided in the ongoing DQ-St
 
 INSERT INTO @results_database_schema.ACHILLES_HEEL_results (ACHILLES_HEEL_warning,rule_id)
 SELECT 
- 'NOTIFICATION: [GeneralPopulationOnly] Not all deciles represented at first observation' as ACHILLES_HEEL_warning,
+ CAST('NOTIFICATION: [GeneralPopulationOnly] Not all deciles represented at first observation' AS VARCHAR(255)) as ACHILLES_HEEL_warning,
   33 as rule_id
 FROM @results_database_schema.ACHILLES_results_derived d
 where d.measure_id = 'AgeAtFirstObsByDecile:DecileCnt' 
@@ -1142,7 +1204,7 @@ and d.statistic_value <9  --we expect deciles 0,1,2,3,4,5,6,7,8
 
 INSERT INTO @results_database_schema.ACHILLES_HEEL_results (ACHILLES_HEEL_warning,rule_id,record_count)
 SELECT 
- 'NOTIFICATION: Count of unmapped source values exceeds threshold in: ' +cast(stratum_1 as varchar) as ACHILLES_HEEL_warning,
+ CAST(CONCAT('NOTIFICATION: Count of unmapped source values exceeds threshold in: ', cast(stratum_1 as varchar(100))) AS VARCHAR(255)) as ACHILLES_HEEL_warning,
   34 as rule_id,
   cast(statistic_value as int) as record_count
 FROM @results_database_schema.ACHILLES_results_derived d
@@ -1156,7 +1218,7 @@ and statistic_value > 1000; --threshold will be decided in DQ study 2
 
 INSERT INTO @results_database_schema.ACHILLES_HEEL_results (ACHILLES_HEEL_warning,rule_id,record_count)
  SELECT
- 'NOTIFICATION: Count of measurement_ids with more than 5 distinct units  exceeds threshold' as ACHILLES_HEEL_warning,
+ CAST('NOTIFICATION: Count of measurement_ids with more than 5 distinct units  exceeds threshold' AS VARCHAR(255)) as ACHILLES_HEEL_warning,
   35 as rule_id,
   cast(meas_concept_id_cnt as int) as record_count
   from (
@@ -1171,5 +1233,180 @@ INSERT INTO @results_database_schema.ACHILLES_HEEL_results (ACHILLES_HEEL_warnin
            where meas_concept_id_cnt >= 10 --threshold two for the rule
        ) d 
 ;       
+
+
+
+--ruleid 36 WARNING: age > 125   (related to an error grade rule 21 that has higher threshold)
+INSERT INTO @results_database_schema.ACHILLES_HEEL_results (
+	analysis_id,
+	ACHILLES_HEEL_warning,
+	rule_id,
+	record_count
+	)
+SELECT or1.analysis_id,
+	CAST(CONCAT('WARNING: ', cast(or1.analysis_id as VARCHAR(10)), '-', oa1.analysis_name, '; should not have age > @ThresholdAgeWarning, (n=', cast(sum(or1.count_value) as VARCHAR(19)), ')') AS VARCHAR(255)) AS ACHILLES_HEEL_warning,
+  36 as rule_id,
+  sum(or1.count_value) as record_count
+FROM @results_database_schema.ACHILLES_results or1
+INNER JOIN @results_database_schema.ACHILLES_analysis oa1
+	ON or1.analysis_id = oa1.analysis_id
+WHERE or1.analysis_id IN (101)
+	AND CAST(or1.stratum_1 AS INT) > @ThresholdAgeWarning
+	AND or1.count_value > 0
+GROUP BY or1.analysis_id,
+  oa1.analysis_name;
+
+--ruleid 37 DQ rule
+
+--derived measure for this rule - ratio of notes over the number of visits
+insert into @results_database_schema.ACHILLES_results_derived (statistic_value,measure_id)    
+SELECT CAST(1.0*c1.all_notes/1.0*c2.all_visits AS FLOAT) as statistic_value, CAST(  'Note:NoteVisitRatio' AS VARCHAR(255)) as measure_id
+FROM (SELECT sum(count_value) as all_notes FROM	@results_database_schema.achilles_results r WHERE analysis_id =2201 ) c1
+CROSS JOIN (SELECT sum(count_value) as all_visits FROM @results_database_schema.achilles_results r WHERE  analysis_id =201 ) c2;
+
+--one co-author of the DataQuality study suggested measuring data density on visit level (in addition to 
+-- patient and dataset level)
+--Assumption is that at least one data event (e.g., diagnisis, note) is generated for each visit
+--this rule is testing that at least some notes exist (considering the number of visits)
+--for datasets with zero notes the derived measure is null and rule does not fire at all
+--possible elaboration of this rule include number of inpatient notes given number of inpatient visits
+--current rule is on overall data density (for notes only) per visit level
+
+INSERT INTO @results_database_schema.ACHILLES_HEEL_results (ACHILLES_HEEL_warning,rule_id,record_count)
+SELECT 
+ CAST('NOTIFICATION: Notes data density is below threshold' AS VARCHAR(255)) as ACHILLES_HEEL_warning,
+  37 as rule_id,
+  cast(statistic_value as int) as record_count
+FROM @results_database_schema.ACHILLES_results_derived d
+where measure_id = 'Note:NoteVisitRatio'
+and statistic_value < 0.01; --threshold will be decided in DataQuality study
+
+
+
+
+--ruleid 38 DQ rule; in a general dataset, it is expected that more than providers with a wide range of specialties 
+--(at least more than just one specialty) is present
+--notification  may indicate that provider table is missing data on specialty 
+--typical dataset has at least 28 specialties present in provider table
+
+INSERT INTO @results_database_schema.ACHILLES_HEEL_results (ACHILLES_HEEL_warning,rule_id,record_count)
+SELECT 
+ CAST('NOTIFICATION: [GeneralPopulationOnly] Count of distinct specialties of providers in the PROVIDER table is below threshold' AS VARCHAR(255)) as ACHILLES_HEEL_warning,
+  38 as rule_id,
+  cast(statistic_value as int) as record_count
+FROM @results_database_schema.ACHILLES_results_derived d
+where measure_id = 'Provider:SpeciatlyCnt'
+and statistic_value <2; --DataQuality data indicate median of 55 specialties (percentile25 is 28; percentile10 is 2)
+
+
+--ruleid 39 DQ rule; Given lifetime record DQ assumption if more than 30k patients is born for every deceased patient
+--the dataset may not be recording complete records for all senior patients in that year
+--derived ratio measure Death:BornDeceasedRatio only exists for years where death data exist
+--to avoid alerting on too early years such as 1925 where births exist but no deaths
+
+INSERT INTO @results_database_schema.ACHILLES_HEEL_results (ACHILLES_HEEL_warning,rule_id,record_count)
+select 
+ CAST('NOTIFICATION: [GeneralPopulationOnly] In some years, number of deaths is too low considering the number of births (lifetime record DQ assumption)' AS VARCHAR(255))
+ as achilles_heel_warning,
+ 39 as rule_id,
+ year_cnt as record_count 
+ from
+ (select count(*) as year_cnt from @results_database_schema.achilles_results_derived 
+ where measure_id =  'Death:BornDeceasedRatio' and statistic_value > 30000) a
+where a.year_cnt> 0; 
+
+
+--ruleid 40  this rule was under umbrella rule 1 and was made into a separate rule
+
+
+INSERT INTO @results_database_schema.ACHILLES_HEEL_results (
+	analysis_id,
+	ACHILLES_HEEL_warning,
+	rule_id,
+	record_count
+	)
+SELECT DISTINCT or1.analysis_id,
+	CAST(CONCAT('ERROR: Death event outside observation period, ', cast(or1.analysis_id as VARCHAR(10)), '-', oa1.analysis_name, '; count (n=', cast(or1.count_value as VARCHAR(19)), ') should not be > 0') AS VARCHAR(255)) AS ACHILLES_HEEL_warning,
+	40 as rule_id,
+	or1.count_value
+FROM @results_database_schema.ACHILLES_results or1
+INNER JOIN @results_database_schema.ACHILLES_analysis oa1
+	ON or1.analysis_id = oa1.analysis_id
+WHERE or1.analysis_id IN (510)
+	AND or1.count_value > 0;
+
+
+--ruleid 41 DQ rule, data density
+--porting a Sentinel rule that checks for certain vital signs data (weight, in this case)
+--multiple concepts_ids may be added to broaden the rule, however standardizing on a single
+--concept would be more optimal
+
+INSERT INTO @results_database_schema.ACHILLES_HEEL_results (ACHILLES_HEEL_warning,rule_id)
+select CAST('NOTIFICATION:No body weight data in MEASUREMENT table (under concept_id 3025315 (LOINC code 29463-7))' AS VARCHAR(255))
+ as achilles_heel_warning,
+ 41 as rule_id
+from
+(select count(*) as row_present  
+ from @results_database_schema.achilles_results 
+ where analysis_id = 1800 and stratum_1 = '3025315'
+) a
+where a.row_present = 0;
+
+
+
+--ruleid 42 DQ rule
+--Percentage of outpatient visits (concept_id 9202) is too low (for general population).
+--This may indicate a dataset with mostly inpatient data (that may be biased and missing some EHR events)
+--Threshold was decided as 10th percentile in empiric comparison of 12 real world datasets in the DQ-Study2
+
+
+
+INSERT INTO @results_database_schema.ACHILLES_HEEL_results (ACHILLES_HEEL_warning,rule_id)
+select CAST('NOTIFICATION: [GeneralPopulationOnly] Percentage of outpatient visits is below threshold' AS VARCHAR(255))
+ as achilles_heel_warning,
+ 42 as rule_id
+from
+ (
+  select 
+    1.0*achilles_results.count_value/c1.count_value as outp_perc
+  from @results_database_schema.achilles_results
+		cross join (select sum(count_value) as count_value from @results_database_schema.achilles_results where analysis_id = 201) c1
+	where analysis_id = 201 and stratum_1='9202'
+  ) d
+where d.outp_perc < @ThresholdOutpatientVisitPerc;
+
+--ruleid 43 DQ rule
+--looks at observation period data, if all patients have exactly one the rule alerts the user
+--This rule is based on majority of real life datasets. 
+--For some datasets (e.g., UK national data with single payor, one observation period is perfectly valid)
+
+
+INSERT INTO @results_database_schema.ACHILLES_HEEL_results (ACHILLES_HEEL_warning,rule_id)
+select CAST('NOTIFICATION: 99+ percent of persons have exactly one observation period' AS VARCHAR(255))
+ as achilles_heel_warning,
+ 43 as rule_id
+from
+ (select 100.0*achilles_results.count_value/ct.total_pts as one_obs_per_perc
+  from @results_database_schema.achilles_results
+	cross join (select count_value as total_pts from @results_database_schema.achilles_results r where analysis_id =1) as ct
+	where analysis_id = 113 and stratum_1 = '1'
+  ) d
+where d.one_obs_per_perc >= 99.0;
+
+
+
+--ruleid 44 DQ rule
+--uses iris measure: patients with at least 1 Meas, 1 Dx and 1 Rx 
+
+
+INSERT INTO @results_database_schema.ACHILLES_HEEL_results (ACHILLES_HEEL_warning,rule_id)
+SELECT 
+ CAST('NOTIFICATION: Percentage of patients with at least 1 Measurement, 1 Dx and 1 Rx is below threshold' AS VARCHAR(255)) as ACHILLES_HEEL_warning,
+  44 as rule_id
+FROM @results_database_schema.ACHILLES_results_derived d
+where d.measure_id = 'ach_2002:Percentage'
+and d.statistic_value < @ThresholdMinimalPtMeasDxRx  --threshold identified in the DataQuality study
+;
+
 
 

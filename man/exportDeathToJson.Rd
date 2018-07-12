@@ -17,6 +17,8 @@ exportDeathToJson(connectionDetails, cdmDatabaseSchema, resultsDatabaseSchema,
 
 \item{outputPath}{A folder location to save the JSON files. Default is current working folder}
 
+\item{cdmVersion}{Define the OMOP CDM version used:  currently support "4" and "5".  Default = "4"}
+
 \item{vocabDatabaseSchema}{string name of database schema that contains OMOP Vocabulary. Default is cdmDatabaseSchema. On SQL Server, this should specifiy both the database and the schema, so for example 'results.dbo'.}
 }
 \value{
@@ -30,8 +32,7 @@ Creates individual files for Death report found in Achilles.Web
 }
 \examples{
 \dontrun{
-  connectionDetails <- createConnectionDetails(dbms="sql server", server="yourserver")
+  connectionDetails <- DatabaseConnector::createConnectionDetails(dbms="sql server", server="yourserver")
   exportDeathToJson(connectionDetails, cdmDatabaseSchema="cdm4_sim", outputPath="your/output/path")
 }
 }
-

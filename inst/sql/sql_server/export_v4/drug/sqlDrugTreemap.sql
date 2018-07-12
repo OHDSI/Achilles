@@ -28,10 +28,10 @@ from (select * from @results_database_schema.ACHILLES_results where analysis_id 
 		from @vocab_database_schema.concept c1
 			inner join @vocab_database_schema.concept_ancestor ca1
 			on c1.concept_id = ca1.descendant_concept_id
-			and c1.vocabulary_id = 8
+			and c1.vocabulary_id in (8,82)
 			inner join @vocab_database_schema.concept c2
 			on ca1.ancestor_concept_id = c2.concept_id
-			and c2.vocabulary_id = 8
+			and c2.vocabulary_id in (8,82)
 			and c2.concept_class = 'Ingredient'
 		) rxnorm
 		left join
@@ -41,7 +41,7 @@ from (select * from @results_database_schema.ACHILLES_results where analysis_id 
 			inner join 
 			@vocab_database_schema.concept_ancestor ca1
 			on c1.concept_id = ca1.descendant_concept_id
-			and c1.vocabulary_id = 8
+			and c1.vocabulary_id in (8,82)
 			and c1.concept_class = 'Ingredient'
 			inner join 
 			@vocab_database_schema.concept c2

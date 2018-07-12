@@ -2,9 +2,9 @@ select   concept_hierarchy.concept_id,
   isNull(concept_hierarchy.soc_concept_name,'NA') + '||' + isNull(concept_hierarchy.hlgt_concept_name,'NA') + '||' + isNull(concept_hierarchy.hlt_concept_name,'NA') + '||' + isNull(concept_hierarchy.pt_concept_name,'NA') + '||' + isNull(concept_hierarchy.snomed_concept_name,'NA') concept_path,	ar1.count_value as num_persons, 
 	round(1.0*ar1.count_value / denom.count_value,5) as percent_persons,
 	round(1.0*ar2.count_value / ar1.count_value,5) as records_per_person
-from (select * from @results_database_schema.ACHILLES_results where analysis_id = 400) ar1
+from (select cast(stratum_1 as int) stratum_1, count_value from @results_database_schema.ACHILLES_results where analysis_id = 400 GROUP BY analysis_id, stratum_1, count_value) ar1
 	inner join
-	(select * from @results_database_schema.ACHILLES_results where analysis_id = 401) ar2
+	(select cast(stratum_1 as int) stratum_1, count_value from @results_database_schema.ACHILLES_results where analysis_id = 401 GROUP BY analysis_id, stratum_1, count_value) ar2
 	on ar1.stratum_1 = ar2.stratum_1
 	inner join
 	(
@@ -85,14 +85,11 @@ from (select * from @results_database_schema.ACHILLES_results where analysis_id 
 			on ca1.ancestor_concept_id = c2.concept_id
 			and c2.vocabulary_id = 'MedDRA'
 			group by c1.concept_id, c1.concept_name
-			) hlgt_to_soc
-		on hlt_to_hlgt.hlgt_concept_id = hlgt_to_soc.hlgt_concept_id
+			) hlgt_to_soc on hlt_to_hlgt.hlgt_concept_id = hlgt_to_soc.hlgt_concept_id
 
 		left join @vocab_database_schema.concept soc
 		 on hlgt_to_soc.soc_concept_id = soc.concept_id
-	) concept_hierarchy
-	on ar1.stratum_1 = CAST(concept_hierarchy.concept_id as VARCHAR)
-	,
-	(select count_value from @results_database_schema.ACHILLES_results where analysis_id = 1) denom
+	) concept_hierarchy on ar1.stratum_1 = concept_hierarchy.concept_id
+	, (select count_value from @results_database_schema.ACHILLES_results where analysis_id = 1) denom
 
 order by ar1.count_value desc

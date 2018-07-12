@@ -2,42 +2,42 @@
 
 testAchillesCode <- function(){
   pw <- ""
-  #sqlServerServer <- "RNDUSRDHIT07.jnj.com"
+  #sqlServerServer <- "myserver"
   #sqlServerResultsSchema <- "scratch"
   #schema <- "cdm4_sim"
   
-  sqlServerServer <- "RNDUSRDHIT09.jnj.com"
+  sqlServerServer <- "myserver"
   
-  sqlServerResultsSchema <- "cdm_truven_ccae_6k.dbo"
-  schema <- "cdm_truven_ccae_6k.dbo"
+  sqlServerResultsSchema <- "my_cdm.dbo"
+  schema <- "my_cdm.dbo"
   cdmVersion <- "4"
   
-  sqlServerResultsSchema <- "cdm_truven_ccae_6k_v5.dbo"
-  schema <- "cdm_truven_ccae_6k_v5.dbo"
+  sqlServerResultsSchema <- "my_cdm_v5.dbo"
+  schema <- "my_cdm_v5.dbo"
   cdmVersion <- "5"
   
   #Test on SQL Server:
   setwd("c:/temp")
-  connectionDetailsSqlServer <- createConnectionDetails(dbms="sql server", server=sqlServerServer)
+  connectionDetailsSqlServer <- DatabaseConnector::createConnectionDetails(dbms="sql server", server=sqlServerServer)
   achillesResultsSqlServer <- achilles(connectionDetailsSqlServer, cdmDatabaseSchema=schema, resultsDatabaseSchema=sqlServerResultsSchema,cdmVersion=cdmVersion)
 
   
   
-  sqlServerResultsSchema <- "cdm_truven_ccae_6k"
-  schema <- "cdm_truven_ccae_6k"
+  sqlServerResultsSchema <- "my_cdm"
+  schema <- "my_cdm"
   cdmVersion <- "4"
   
-  schema <- "cdm_truven_ccae_6k_v5"
+  schema <- "my_cdm_v5"
   cdmVersion <- "5"
   
   #Test on PostgreSQL
   setwd("c:/temp")
-  connectionDetailsPostgreSql <- createConnectionDetails(dbms="postgresql", server="localhost/ohdsi", user="postgres",password=pw)
+  connectionDetailsPostgreSql <- DatabaseConnector::createConnectionDetails(dbms="postgresql", server="localhost/ohdsi", user="postgres",password=pw)
   achillesResultsPostgreSql <- achilles(connectionDetailsPostgreSql, cdmDatabaseSchema=schema, resultsDatabaseSchema="scratch",cdmVersion=cdmVersion)
   
   #Test on Oracle
   setwd("c:/temp")
-  connectionDetailsOracle <- createConnectionDetails(dbms="oracle", server="xe", user="system",password="OHDSI2")
+  connectionDetailsOracle <- DatabaseConnector::createConnectionDetails(dbms="oracle", server="xe", user="system",password="OHDSI2")
   achillesResultsOracle <- achilles(connectionDetailsOracle, cdmDatabaseSchema=schema, oracleTempSchema = "temp", resultsDatabaseSchema="scratch",cdmVersion=cdmVersion)
   
 
@@ -128,19 +128,19 @@ testAchillesCode <- function(){
   
   #Compare Sql Server and Postgres:
   connectionDetailsSqlServer$schema = sqlServerResultsSchema
-  connSqlServer <- connect(connectionDetailsSqlServer)
+  connSqlServer <- DatabaseConnector::connect(connectionDetailsSqlServer)
   
   connectionDetailsPostgreSql$schema = "scratch"
-  connPostgreSql <- connect(connectionDetailsPostgreSql)
+  connPostgreSql <- DatabaseConnector::connect(connectionDetailsPostgreSql)
   
   compareResults(connSqlServer,connPostgreSql)
   
   #Compare Sql Server and Oracle:
   connectionDetailsSqlServer$schema = sqlServerResultsSchema
-  connSqlServer <- connect(connectionDetailsSqlServer)
+  connSqlServer <- DatabaseConnector::connect(connectionDetailsSqlServer)
   
   connectionDetailsOracle$schema = "scratch"
-  connOracle <- connect(connectionDetailsOracle)
+  connOracle <- DatabaseConnector::connect(connectionDetailsOracle)
   
   compareResults(connOracle,connSqlServer)
   #Note: differences will be found for 1411,1412 because of reverse sorting of dates due to different formats
