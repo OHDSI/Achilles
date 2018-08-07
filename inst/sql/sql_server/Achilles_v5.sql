@@ -7511,7 +7511,7 @@ Reports
 -- 1900	concept_0 report
 
 INSERT INTO @results_database_schema.ACHILLES_results (analysis_id, stratum_1, stratum_2, count_value)
-select 1900 as analysis_id, CAST(table_name AS VARCHAR(255)) as stratum_1, source_value as stratum_2, cnt as count_value
+select 1900 as analysis_id, CAST(table_name AS VARCHAR(255)) as stratum_1, CAST(source_value AS VARCHAR(255)) as stratum_2, cnt as count_value
  from (
 select 'measurement' as table_name,measurement_source_value as source_value, COUNT_BIG(*) as cnt from @cdm_database_schema.measurement where measurement_concept_id = 0 group by measurement_source_value 
 union
