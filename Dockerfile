@@ -38,6 +38,7 @@ RUN echo 'options(repos=structure(c(CRAN="http://cran.cnr.berkeley.edu/")))' > /
     /usr/share/doc/littler/examples/install.r docopt && \
     /usr/share/doc/littler/examples/installGithub.r \
       OHDSI/SqlRender \
+      OHDSI/DatabaseConnectorJars \
       OHDSI/DatabaseConnector \
     && rm -rf /tmp/downloaded_packages/ /tmp/*.rds
 
