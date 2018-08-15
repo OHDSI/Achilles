@@ -2,35 +2,21 @@
 % Please edit documentation in R/Achilles.R
 \name{createIndices}
 \alias{createIndices}
-\title{Create indices on Achilles results tables and concept hierarchy}
+\title{Create indicies}
 \usage{
-createIndices(connectionDetails, resultsDatabaseSchema,
-  oracleTempSchema = resultsDatabaseSchema, sqlOnly = FALSE,
-  cdmVersion = "5")
+createIndices(connectionDetails, resultsDatabaseSchema, sqlOnly = FALSE)
 }
 \arguments{
-\item{connectionDetails}{An R object of type ConnectionDetail (details for the function that contains server info, database type, optionally username/password, port)}
+\item{connectionDetails}{An R object of type \code{connectionDetails} created using the function \code{createConnectionDetails} in the \code{DatabaseConnector} package.}
 
-\item{resultsDatabaseSchema}{string name of database schema that holds the results tables for indexing. On SQL Server, this should specifiy both the database and the schema, so for example 'results.dbo'.}
+\item{resultsDatabaseSchema}{Fully qualified name of database schema that we can write final results to. Default is cdmDatabaseSchema. 
+On SQL Server, this should specifiy both the database and the schema, so for example, on SQL Server, 'cdm_results.dbo'.}
 
-\item{oracleTempSchema}{For Oracle only: the name of the database schema where you want all temporary tables to be managed. Requires create/insert permissions to this database.}
-
-\item{sqlOnly}{if TRUE, only the SQL code will be generated}
-
-\item{cdmVersion}{Define the OMOP CDM version used:  currently support only "5".  Default = "5"}
-}
-\value{
-nothing is returned
+\item{sqlOnly}{TRUE = just generate SQL files, don't actually run, FALSE = run Achilles}
 }
 \description{
-\code{createIndices} executes script to create indicies on the Achilles tables.
+Create indicies
 }
 \details{
-\code{createIndices} executes script to create indicies on the Achilles tables.
-}
-\examples{
-\dontrun{
-  connectionDetails <- DatabaseConnector::createConnectionDetails(dbms="sql server", server="myserver")
-  createIndices <- createIndices(connectionDetails, resultsDatabaseSchema="scratch")
-}
+Post-processing, create indices to help performance. Cannot be used with Redshift.
 }
