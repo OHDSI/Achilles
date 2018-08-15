@@ -24,6 +24,7 @@ notifications:
   recipients:
     - cknoll1@its.jnj.com
     - schuemie@ohdsi.org
+    - ta2471@cumc.columbia.edu
   email:
     on_success: change
     on_failure: change

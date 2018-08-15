@@ -24,6 +24,7 @@ IF OBJECT_ID('@resultsDatabaseSchema.concept_hierarchy', 'U') IS NOT NULL
     hlgt_to_soc.hlgt_concept_name as level3_concept_name,
     soc.concept_name    AS level4_concept_name
 into #ch_condition
+
   FROM
     (
       SELECT
