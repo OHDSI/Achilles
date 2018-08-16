@@ -39,7 +39,7 @@ for (dbType in dbTypes)
       # dashboard.json is the last report to be generated:
       expect_true(file.exists(file.path(dbType, "dashboard.json")))
     } else {
-      writeLines(spintf("Skipping %s export test", dbType))
+      writeLines(sprintf("Skipping %s export test", dbType))
     }
   })
 }
