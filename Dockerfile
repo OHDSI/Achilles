@@ -19,6 +19,7 @@ RUN echo deb http://ppa.launchpad.net/marutter/rrutter/ubuntu trusty main >> /et
       r-cran-dbi \
       r-cran-ffbase \
       r-cran-urltools \
+      libxml2-dev \
       littler \
       openjdk-7-jdk \
     && rm -rf /var/lib/apt/lists/* \
@@ -32,14 +33,32 @@ RUN echo "en_US.UTF-8 UTF-8" >> /etc/locale.gen \
 ENV LC_ALL en_US.UTF-8
 ENV LANG en_US.UTF-8
 
+# Install OHDSI/OhdsiRTools 
+RUN R -e "install.packages( \
+ c( \
+  'XML', \
+  'RJSONIO' \
+ ), \ 
+ repos='http://cran.rstudio.com/', \
+) "
+
 # Install Achilles requirements that need to be installed from source
 RUN echo 'options(repos=structure(c(CRAN="http://cran.cnr.berkeley.edu/")))' > /root/.Rprofile && \
     /usr/share/doc/littler/examples/install.r remotes && \
     /usr/share/doc/littler/examples/install.r docopt && \
+    /usr/share/doc/littler/examples/install.r openxlsx && \
+    /usr/share/doc/littler/examples/install.r httr && \
+    /usr/share/doc/littler/examples/install.r rjson && \
+    /usr/share/doc/littler/examples/install.r R.oo && \
+    /usr/share/doc/littler/examples/install.r formatR && \
+    /usr/share/doc/littler/examples/install.r R.utils && \
+    /usr/share/doc/littler/examples/install.r snow && \
+    /usr/share/doc/littler/examples/install.r mailR && \
     /usr/share/doc/littler/examples/installGithub.r \
       OHDSI/SqlRender \
       OHDSI/DatabaseConnectorJars \
       OHDSI/DatabaseConnector \
+      OHDSI/OhdsiRTools \
     && rm -rf /tmp/downloaded_packages/ /tmp/*.rds
 
 # Configure workspace
