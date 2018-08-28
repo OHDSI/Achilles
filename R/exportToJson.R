@@ -72,7 +72,10 @@ showReportTypes <- function() {
 #' @param outputPath		                A folder location to save the JSON files. Default is current working folder
 #' @param reports                       A character vector listing the set of reports to generate. Default is all reports. 
 #' @param vocabDatabaseSchema		        string name of database schema that contains OMOP Vocabulary. Default is cdmDatabaseSchema. On SQL Server, this should specifiy both the database and the schema, so for example 'results.dbo'.
-#' @param compressIntoOneFile           Boolean indicating if the JSON files should be compressed into one zip file
+#' @param compressIntoOneFile           Boolean indicating if the JSON files should be compressed into one zip file. 
+#'                                      Please note that in Windows, the zip application must be stored in the system environment, 
+#'                                      e.g. Sys.setenv("R_ZIPCMD", "some_path_to_zip"). 
+#'                                      Due to recursion, the actual Achilles files and folders will be embedded in any parent directories that the source folder has.
 #' 
 #' See \code{data(allReports)} for a list of all report types
 #' 
@@ -185,7 +188,7 @@ exportToJson <- function (connectionDetails,
   
   if (compressIntoOneFile) {
     zip(zipfile = file.path(outputPath, sprintf("%s.zip", cdmDatabaseSchema)), 
-        files = list.files(outputPath, full.names = TRUE), flags = c("-j"))
+        files = c(outputPath), flags = c("-r"))
   }
   
   delta <- Sys.time() - start
