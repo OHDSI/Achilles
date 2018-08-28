@@ -1,0 +1,43 @@
+rule_id,rule_name,execution_type,destination_table,severity,rule_type,rule_description,threshold,rule_classification,rule_scope,linked_measure
+1,multiple checks for greater than zero,parallel,heel_results,error,DQ,umbrella rule: this rule includes multiple error checks on over 35 analysis_ids,>0,complex,,
+2,multiple checks where minimum value of a measure should not be negative,parallel,heel_results,error,DQ,umbrella rule: this rule includes multiple error checks on over 20 analysis_ids where min value in distribution should not be negative,,complex,,
+3,multiple checks related to death data where maximum value of a measure should not be positive,parallel,heel_results,warning,DQ,death distributions where max should not be positive (using anlyses 511;512;513;514;515),,plausibility,,
+4,invalid concept_id,parallel,heel_results,error,CDM conformance,invalid concept_id,,,,
+5,invalid type concept_id,parallel,heel_results,error,CDM conformance,invalid type concept_id,,,,
+6,data with unmapped concepts,parallel,heel_results,warning,DQ,for multiple analyses,,,,
+7,concept from the wrong vocabulary,parallel,heel_results,error,CDM conformance,concept from the wrong vocabulary,,,,2
+8,concept from the wrong vocabulary; race,parallel,heel_results,error,CDM conformance,concept from the wrong vocabulary; race,,,,4
+9,concept from the wrong vocabulary; ethnicity,parallel,heel_results,error,CDM conformance,concept from the wrong vocabulary; ethnicity,,,,5
+10,concept from the wrong vocabulary; place of service,parallel,heel_results,error,CDM conformance,concept from the wrong vocabulary; place of service,,,,202
+11,incorrect terminology,parallel,heel_results,error,CDM conformance,specialty - 48 specialty,,,,301
+12,Dx is not a SNOMED code,parallel,heel_results,error,CDM conformance,"concept from the wrong vocabulary; Condition Occurrence, Condition Era (SNOMED)",,,,400;1000
+13,Drug is not RxNorm concept,parallel,heel_results,error,CDM conformance,"concept from the wrong vocabulary; Drug Exposure, Drug Era (RxNorm)",,,,700;900
+14,"Procedure is not CPT, ICD9Proc or HCPCS",parallel,heel_results,error,CDM conformance,procedure - 4 CPT4/5 HCPCS/3 ICD9P,,,,600
+17,incorrect terminology,parallel,heel_results,error,CDM conformance,revenue code - 43 revenue code,,,,1610
+18,year of birth is in the future,parallel,heel_results,error,DQ,year of birth should not be in the future ,,plausibility,,3
+19,year of birth is prior 1800,parallel,heel_results,warning,DQ, year of birth < 1800,<1800,plausibility,,3
+20,age below 0,parallel,heel_results,error,DQ,age < 0,<0,plausibility,,101
+21,age too high,parallel,heel_results,error,DQ,age > 150,>150,plausibility,,101
+22,monthly trend,parallel,heel_results,warning,DQ,monthly change > 100%,,fidelity,,
+23,monthly trend,parallel,heel_results,warning,DQ,monthly change > 100% at concept level,,fidelity,,
+24,too high days_supply,parallel,heel_results,warning,DQ,days_supply > 180,,plausibility,,
+25,too high number of refils,parallel,heel_results,warning,DQ,refills > 10,>10,plausibility,,716
+26,implausible quantity for drug,parallel,heel_results,warning,DQ,quantity > 600,>600,plausibility,,717
+27,more than 1 percent of unmapped rows (concept_0 rows),serial,both,warning,DQ,for multiple analyses (4xx;6xx;7xx;8xx;18xx),>1,completeness,,UnmappedData:byDomain:Percentage
+28,percentage of non-numerical measurement records exceeds general population threshold,serial,both,warning,DQ,"typically, measurement data contans a significant proportion of rows with numerical result. This rule looks at rows in MEASUREMENT and alerts the user if a large proportion of rows lack any numerical result",>=80,completeness,GeneralPopulationOnly,Meas:NoNumValue:Percentage
+29,infant diagnosis at senior age of over 50yo,serial,heel_results,error,DQ,mecconium condition 195075; This rule is example of a terminology depended data quality tool,,plausibility,,404
+31,ratio of providers to total patients,serial,both,notification,DQ,This rules fires if data indicate a high number of patients and only a few providers exist. ,,plausibility,,Provider:PatientProviderRatio
+32,Percentage of patients with no visits exceeds threshold,serial,heel_results,notification,DQ,checks if the percentage of patients with no visits exceeds threshold,>5,plausibility,,ach_2003:Percentage
+33,[GeneralPopulationOnly] Not all deciles represented at first observation,serial,heel_results,notification,DQ,"in a general population, a database would observe first visit across all age groups. We at least expect deciles 0 to 8. Rule looks at the count of deciles.",<9,completeness,GeneralPopulationOnly,AgeAtFirstObsByDecile:DecileCnt
+34,Count of unmapped source values in a domain exceeds threshold,serial,heel_results,notification,DQ,"looks at values that are mapped to concept0 and their source values by table, rule 6 is related to this rule but it does not look at the size of the problem (only if unmapped data are present or not present)",,completeness,,UnmappedDataByDomain:SourceValueCnt
+35,Count of measurement_ids with more than 5 distinct units  exceeds threshold,serial,heel_results,notification,DQ,"Idealy, each measurement would use only one unit. For example, kg for weight. This rule notifies the user if database has measurements that have 5 or more units. This rule has technically thresholds. ",>=5;>=10,fidelity,,1807
+36,age too high2,serial,heel_results,warning,DQ,age > 125; same as rule 21 but as warning flavor; same threshold is used by Sentinel DQA,>125,plausibility:temporal,,101
+37,Notes data density,serial,both,notification,DQ,"This rule is measuring data density on visit level (in addition to  patient and dataset level); Assumption is that at least one data event (e.g., diagnosis, note) is generated for each visit;  This rule is testing that at least some notes exist (considering the number of visits); for datasets with zero notes the derived measure is null and rule does not fire at all; current rule is on overall data density (for notes only) per visit level",<0.01,completeness,,Note:NoteVisitRatio
+38,Provider Specialty data density,serial,heel_results,notification,DQ,"in a general dataset, it is expected that more than providers with a wide range of specialties (at least more than just one specialty) is present; notification  may indicate that provider table is missing data on specialty,typical datat has at least 28 specialties present in provider table",<2,completeness,GeneralPopulationOnly,Provider:SpecialtyCnt
+39,Too high Born to Deceased Ratio in some years,serial,heel_results,notification,DQ,"Given lifetime record DQ assumption if more than 30k patients is born for every deceased patient the dataset may not be recording complete records for all senior patients in that year
+",>30000,completeness,GeneralPopulationOnly,Death:BornDeceasedRatio
+40,Death event outside observation period,serial,heel_results,error,DQ,death event should not be outside observation period; this rule was if previous versions subsumed in umbrella rule,,completeness,,510
+41,No weight data in MEASUREMENT table,serial,heel_results,notification,DQ,implementation of similar Sentinel rule for certain vital signs; rule lukes at concept_id 3025315 (LOINC code 29463-7)),,completeness,,1800
+42,Percentage of  outpatient visits is too low,serial,heel_results,notification,DQ,"Rule is looking at percentage of outpatient visits. If this measure is too low (e.g. 5 percent), it may indicate a predominantly inpatient dataset. Threshold was decided on DQ-Study 2. General population only rule.",<0.42,completeness,GeneralPopulationOnly,201
+43,99+ percent of persons have exactly one observation period,serial,heel_results,notification,DQ,Some datasets cannot provide observation period data based on health insurance start and stop dates. Rule notifies a user if 99+% of patients have exactly one observation period. ,>=99.0,completeness,,113
+44,"Percentage of patients with at least 1 Measurement, 1 Dx and 1 Rx is below threshold",serial,heel_results,notification,DQ,This notification may indicate that a significant percentage of patients is missing data for either Measurement or Diagnosis or Medication. Many clinical studies may want to require at least some data in all three domains. Threshold was decided empirically in OHDSI DQ Study ,,completeness,,2002
