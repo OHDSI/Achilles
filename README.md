@@ -29,6 +29,7 @@ Getting Started
   install_github("OHDSI/SqlRender")
   install_github("OHDSI/DatabaseConnector")
   install_github("OHDSI/Achilles")
+  #devtools::install_github("OHDSI/Achilles@*release")  #to install latest release (if master contains a bug for you)
   #install_github("OHDSI/Achilles", args="--no-multiarch")  #to avoid Java 32 vs 64 issues 
   ```
   
