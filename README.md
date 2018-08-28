@@ -17,7 +17,7 @@ Getting Started
 
 1. Make sure you have your data in the OMOP CDM v5.x format (https://github.com/OHDSI/CommonDataModel).
 
-2. Make sure that you have Java installed. If you don't have Java already intalled on your computed (on most computers it already is installed), go to [java.com](http://java.com) to get the latest version.  (If you have trouble building with rJava below, be sure on Windows that your Path variable includes the path to jvm.dll: 
+2. Make sure that you have Java installed. If you don't have Java already installed on your computer (on most computers it already is installed), go to [java.com](http://java.com) to get the latest version.  (If you have trouble building with rJava below, be sure on Windows that your Path variable includes the path to jvm.dll: 
 
 ```Windows Button and R --> type "sysdm.cpl" --> Advanced tab --> Environmental Variables button --> Edit PATH variable, and then add to the end your Java Path (e.g. ';C:/Program Files/Java/jre/bin/server')```
 
@@ -179,13 +179,13 @@ Achilles is licensed under Apache License 2.0
 
 Achilles has some compatibility with Data Quality initiatives of the Data Quality Collaborative (DQC; http://repository.edm-forum.org/dqc or GitHub https://github.com/orgs/DQCollaborative). For example, a harmonized set of data quality terms has been published by Khan at al. in 2016.
 
-What Achilles calls an *analysis* (a pre-computation for a given dataset), the term used by DQC would be *measure*
+What Achilles calls an *analysis* (a pre-computation for a given dataset), the term used by DQC would be *measure*.
 
-Some Heel Rules take advantage of derived measures. A feature of Heel introduced since version 1.4.  A *derived measure* is a result of an SQL query that takes Achilles analyses as input. It is simply a different view of the precomputations that has some advantage to be materialized.  The logic for computing a derived measures can be viewed in (TODOAL) (was in `AchillesHeel_v5.sql` file).
+Some Heel Rules take advantage of derived measures. A feature of Heel introduced since version 1.4.  A *derived measure* is a result of an SQL query that takes Achilles analyses as input. It is simply a different view of the precomputations that has some advantage to be materialized.  The logic for computing a derived measures can be viewed in the Heel SQL files in `/inst/sql/sql_server/heels`, which are described further in the [Developers README file](README-developers.md).
 
 Overview of derived measures can be seen in [CSV file here](inst/csv/heel/heel_results_derived_details.csv).
 
-For possible future flexible setting of Achilles Heel rule thresholds, some Heel rules are split into two phase approach. First, a derived measure is computed and the result is stored in a separate table `ACHILLES_RESULTS_DERIVED`. A Heel rule logic is than made simpler by a simple comparison whether a derived measure is over a threshold. A link between which rules use which pre-computation is available in [CSV file here](inst/csv/heel/heel_rules_all.csv)  (previously was in `inst\csv\achilles_rule.csv`) (see column `linked_measure`).
+For possible future flexible setting of Achilles Heel rule thresholds, some Heel rules are split into two phase approach. First, a derived measure is computed and the result is stored in a separate table `ACHILLES_RESULTS_DERIVED`. A Heel rule logic is than made simpler by a simple comparison whether a derived measure is over a threshold. A link between which rules use which pre-computation is available in [CSV file here](inst/csv/heel/heel_rules_all.csv)  (previously was in `inst/csv/achilles_rule.csv`) (see column `linked_measure`).
 
 
 # Heel Rules
