@@ -1,12 +1,12 @@
 Package: Achilles
 Type: Package
-Title: Creates descriptive statistics summary for an entire OMOP CDM instance
+Title: Creates Descriptive Statistics Summary for an Entire OMOP CDM Instance
 Version: 1.6
 Date: 2018-04-09
 Author: Patrick Ryan, Martijn Schuemie, Vojtech Huser, Chris Knoll, Ajit Londhe
 Maintainer: Patrick Ryan <ryan@ohdsi.org>
 LazyData: true
-Description: creates descriptive statistics summary for an entire OMOP CDM
+Description: Creates descriptive statistics summary for an entire OMOP CDM
     instance. Since Aug 2016 only CDM v5 is actively being extended. Achilles
     Heel component does data quality assesment.
 Depends:
