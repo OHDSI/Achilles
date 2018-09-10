@@ -5,7 +5,6 @@
 \title{The main Achilles analyses (for v5.x)}
 \usage{
 achilles(connectionDetails, cdmDatabaseSchema,
-  oracleTempSchema = cdmDatabaseSchema,
   resultsDatabaseSchema = cdmDatabaseSchema,
   scratchDatabaseSchema = resultsDatabaseSchema,
   vocabDatabaseSchema = cdmDatabaseSchema, sourceName = "", analysisIds,
