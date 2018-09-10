@@ -130,21 +130,27 @@ Achilles is actively being developed for CDM v5.x only.
 
     - To see what errors were found (from within R), run:
         ```r
-        fetchAchillesHeelResults(connectionDetails,resultsDatabaseSchema)
+        fetchAchillesHeelResults(connectionDetails, resultsDatabaseSchema)
         ```
     - To see a particular analysis, run:
         ```r
-        fetchAchillesAnalysisResults(connectionDetails,resultsDatabaseSchema,analysisId = 2)
+        fetchAchillesAnalysisResults(connectionDetails, resultsDatabaseSchema, analysisId = 2)
         ```
     - To join data tables with some lookup (overview files), obtain those using commands below:
     - To get description of analyses, run `getAnalysisDetails()`.
     - To get description of derived measures, run:
         ```r
-        read.csv(system.file("csv","derived_analysis_details",package="Achilles"),as.is=T)
+        read.csv(
+          system.file("csv", "derived_analysis_details", package = "Achilles"), 
+          as.is = TRUE
+        )
         ```
     - Similarly, for overview of rules, run:
         ```r
-        read.csv(system.file("csv","achilles_rule.csv",package="Achilles"),as.is=T)
+        read.csv(
+          system.file("csv", "achilles_rule.csv", package = "Achilles"),
+          as.is = TRUE
+        )
         ```
     - Also see [notes.md](extras/notes.md) for more information (in the extras folder).
 
