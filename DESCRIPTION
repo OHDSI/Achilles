@@ -12,12 +12,12 @@ Description: Creates descriptive statistics summary for an entire OMOP CDM
 Depends:
     SqlRender,
     DatabaseConnector (>= 2.0.0),
-    rjson,
-    OhdsiRTools
+    rjson
 Suggests:
     testthat,
     dplyr,
-    R.utils
+    R.utils,
+    OhdsiRTools
 Remotes:
     OHDSI/OhdsiRTools
 License: Apache License
