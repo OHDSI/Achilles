@@ -18,8 +18,8 @@
 #'                                            fetchAchillesHeelResults(connectionDetails, "scratch")
 #'                                         }
 #' @export
-fetchAchillesHeelResults <- function (connectionDetails, 
-                                      resultsDatabaseSchema) { 
+fetchAchillesHeelResults <- function(connectionDetails, 
+                                     resultsDatabaseSchema) { 
   connection <- DatabaseConnector::connect(connectionDetails = connectionDetails)
   sql <- SqlRender::renderSql(sql = "SELECT * FROM @resultsDatabaseSchema.achilles_heel_results",
                               resultsDatabaseSchema = resultsDatabaseSchema)$sql
@@ -27,7 +27,7 @@ fetchAchillesHeelResults <- function (connectionDetails,
   issues <- DatabaseConnector::querySql(connection = connection, sql = sql)
   DatabaseConnector::disconnect(connection = connection)
   
-  return (issues)
+  issues
 }
 
 #' @title fetchAchillesAnalysisResults
@@ -94,5 +94,6 @@ fetchAchillesAnalysisResults <- function (connectionDetails,
                  analysisResults = analysisResults)
   
   class(result) <- "achillesAnalysisResults"
-  return (result)
+  
+  result
 }
