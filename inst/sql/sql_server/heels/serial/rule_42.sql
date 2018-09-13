@@ -15,7 +15,7 @@ from
     cast(null as int) as analysis_id,
     CAST('NOTIFICATION: [GeneralPopulationOnly] Percentage of outpatient visits is below threshold' AS VARCHAR(255)) as achilles_heel_warning,
     42 as rule_id,
-    null as record_count
+    cast(null as bigint) as record_count
   from
   (
     select 

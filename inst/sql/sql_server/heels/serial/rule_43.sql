@@ -15,7 +15,7 @@ from
     cast(null as int) as analysis_id,
     CAST('NOTIFICATION: 99+ percent of persons have exactly one observation period' AS VARCHAR(255)) as achilles_heel_warning,
     43 as rule_id,
-    null as record_count
+    cast(null as bigint) as record_count
   from
   (
     select

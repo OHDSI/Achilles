@@ -155,7 +155,7 @@ from
     CAST(CONCAT('NOTIFICATION:Unmapped data over percentage threshold in:', 
     cast(d.stratum_1 as varchar(100))) AS VARCHAR(255)) as ACHILLES_HEEL_warning,
     27 as rule_id,
-    null as record_count
+    cast(null as bigint) as record_count
   FROM #serial_rd_@rdNewId d
   where d.measure_id = 'UnmappedData:byDomain:Percentage'
   and d.statistic_value > 0.1  --thresholds will be decided in the ongoing DQ-Study2

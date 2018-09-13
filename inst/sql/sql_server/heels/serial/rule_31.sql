@@ -36,7 +36,7 @@ from
     cast(null as int) as analysis_id,
     CAST('NOTIFICATION:[PLAUSIBILITY] database has too few providers defined (given the total patient number)' AS VARCHAR(255)) as achilles_heel_warning,
     31 as rule_id,
-    null as record_count
+    cast(null as bigint) as record_count
   from #serial_rd_@rdNewId d
   where d.measure_id = 'Provider:PatientProviderRatio'
   and d.statistic_value > 10000  --thresholds will be decided in the ongoing DQ-Study2
