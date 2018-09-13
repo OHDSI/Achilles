@@ -1,7 +1,7 @@
 {DEFAULT @derivedDataSmPtCount = 11} 
 
 select 
-  null as analysis_id,
+  cast(null as int) as analysis_id,
   a.stratum_1,
   a.stratum_4 as stratum_2,
   cast(1.0*a.person_cnt/b.population_size as FLOAT) as statistic_value,

@@ -16,7 +16,7 @@ select 116 as analysis_id,
 	CAST(t1.obs_year AS VARCHAR(255)) as stratum_1,
 	CAST(p1.gender_concept_id AS VARCHAR(255)) as stratum_2,
 	CAST(floor((t1.obs_year - p1.year_of_birth)/10) AS VARCHAR(255)) as stratum_3,
-	null as stratum_4, null as stratum_5,
+	cast(null as varchar(255)) as stratum_4, cast(null as varchar(255)) as stratum_5,
 	COUNT_BIG(distinct p1.PERSON_ID) as count_value
 into @scratchDatabaseSchema@schemaDelim@tempAchillesPrefix_116
 from

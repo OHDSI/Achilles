@@ -26,7 +26,7 @@ FROM
   union all
   
   select 
-    null as analysis_id,
+    cast(null as int) as analysis_id,
     CAST('WARNING:[PLAUSIBILITY] infant-age diagnosis (195075) at age 50+' AS VARCHAR(255)) as ACHILLES_HEEL_warning,
     29 as rule_id,
     null as record_count

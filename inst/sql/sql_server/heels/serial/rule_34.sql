@@ -13,7 +13,7 @@ from
   union all
   
   select
-    null as analysis_id,
+    cast(null as int) as analysis_id,
     CAST(CONCAT('NOTIFICATION: Count of unmapped source values exceeds threshold in: ', cast(stratum_1 as varchar(100))) AS VARCHAR(255)) as ACHILLES_HEEL_warning,
     34 as rule_id,
     cast(statistic_value as int) as record_count

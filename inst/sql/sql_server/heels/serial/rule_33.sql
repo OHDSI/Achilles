@@ -11,7 +11,7 @@ from
   union all
   
   select 
-    null as analysis_id,
+    cast(null as int) as analysis_id,
     CAST('NOTIFICATION: [GeneralPopulationOnly] Not all deciles represented at first observation' AS VARCHAR(255)) as achilles_heel_warning,
     33 as rule_id,
     null as record_count

@@ -11,9 +11,9 @@ from
   union all
   
   select 
-    null as analysis_id,
-    null as stratum_1,
-    null as stratum_2,
+    cast(null as int) as analysis_id,
+    cast(null as varchar(255)) as stratum_1,
+    cast(null as varchar(255)) as stratum_2,
     CAST(1.0*ct.total_pts/count_value AS FLOAT) as statistic_value, 
     CAST('Provider:PatientProviderRatio' AS VARCHAR(255)) as measure_id
   from @resultsDatabaseSchema.achilles_results
@@ -33,7 +33,7 @@ from
   union all
   
   select 
-    null as analysis_id,
+    cast(null as int) as analysis_id,
     CAST('NOTIFICATION:[PLAUSIBILITY] database has too few providers defined (given the total patient number)' AS VARCHAR(255)) as achilles_heel_warning,
     31 as rule_id,
     null as record_count

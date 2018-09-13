@@ -10,7 +10,7 @@ from
   union all
   
   SELECT 
-    null as analysis_id,
+    cast(null as int) as analysis_id,
     CAST('NOTIFICATION: Percentage of patients with at least 1 Measurement, 1 Dx and 1 Rx is below threshold' AS VARCHAR(255)) as ACHILLES_HEEL_warning,
     44 as rule_id,
     null as record_count

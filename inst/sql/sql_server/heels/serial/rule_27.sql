@@ -8,9 +8,9 @@ from
   union all
   
   select
-    null as analysis_id,
+    cast(null as int) as analysis_id,
     CAST('Condition' AS VARCHAR(255)) as stratum_1, 
-    null as stratum_2,
+    cast(null as varchar(255)) as stratum_2,
     CAST(100.0*st.val/statistic_value AS FLOAT) as statistic_value,
     CAST('UnmappedData:byDomain:Percentage' AS VARCHAR(255)) as measure_id
   from #achilles_rd_0
@@ -31,9 +31,9 @@ from
   union all
   
   select
-    null as analysis_id,
+    cast(null as int) as analysis_id,
     CAST('Procedure' AS VARCHAR(255)) as stratum_1,
-    null as stratum_2,
+    cast(null as varchar(255)) as stratum_2,
     CAST(100.0*st.val/statistic_value AS FLOAT) as statistic_value,
      CAST(  'UnmappedData:byDomain:Percentage' AS VARCHAR(255)) as measure_id
   from #rule27_1 A
@@ -55,9 +55,9 @@ from
   union all
   
   select
-    null as analysis_id,
+    cast(null as int) as analysis_id,
     CAST('DrugExposure' AS VARCHAR(255)) as stratum_1,
-    null as stratum_2,
+    cast(null as varchar(255)) as stratum_2,
     CAST(100.0*st.val/statistic_value AS FLOAT) as statistic_value,
     CAST(  'UnmappedData:byDomain:Percentage' AS VARCHAR(255)) as measure_id
   from #rule27_2 A
@@ -79,9 +79,9 @@ from
   union all
   
   select
-    null as analysis_id,
+    cast(null as int) as analysis_id,
     CAST('Observation' AS VARCHAR(255)) as stratum_1, 
-    null as stratum_2,
+    cast(null as varchar(255)) as stratum_2,
     CAST(100.0*st.val/statistic_value AS FLOAT) as statistic_value,
     CAST(  'UnmappedData:byDomain:Percentage' AS VARCHAR(255)) as measure_id
   from #rule27_3 A
@@ -103,9 +103,9 @@ from
   union all
   
   select
-    null as analysis_id,
+    cast(null as int) as analysis_id,
     CAST('Measurement' AS VARCHAR(255)) as stratum_1, 
-    null as stratum_2,
+    cast(null as varchar(255)) as stratum_2,
     CAST(100.0*st.val/statistic_value AS FLOAT) as statistic_value,
     CAST(  'UnmappedData:byDomain:Percentage' AS VARCHAR(255)) as measure_id
   from #rule27_4 A
@@ -151,7 +151,7 @@ from
   union all
   
   SELECT 
-    null as analysis_id,
+    cast(null as int) as analysis_id,
     CAST(CONCAT('NOTIFICATION:Unmapped data over percentage threshold in:', 
     cast(d.stratum_1 as varchar(100))) AS VARCHAR(255)) as ACHILLES_HEEL_warning,
     27 as rule_id,
