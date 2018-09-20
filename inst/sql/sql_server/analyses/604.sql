@@ -6,7 +6,7 @@ select 604 as analysis_id,
 	CAST(YEAR(procedure_date) AS VARCHAR(255)) as stratum_2,
 	CAST(p1.gender_concept_id AS VARCHAR(255)) as stratum_3,
 	CAST(floor((year(procedure_date) - p1.year_of_birth)/10) AS VARCHAR(255)) as stratum_4,
-	null as stratum_5,
+	cast(null as varchar(255)) as stratum_5,
 	COUNT_BIG(distinct p1.PERSON_ID) as count_value
 into @scratchDatabaseSchema@schemaDelim@tempAchillesPrefix_604
 from @cdmDatabaseSchema.PERSON p1

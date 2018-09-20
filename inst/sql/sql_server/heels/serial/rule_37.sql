@@ -10,9 +10,9 @@ from
   union all
   
   SELECT 
-    null as analysis_id,
-    null as stratum_1,
-    null as stratum_2,
+    cast(null as int) as analysis_id,
+    cast(null as varchar(255)) as stratum_1,
+    cast(null as varchar(255)) as stratum_2,
     CAST(1.0*c1.all_notes/1.0*c2.all_visits AS FLOAT) as statistic_value, 
     CAST(  'Note:NoteVisitRatio' AS VARCHAR(255)) as measure_id
   FROM (SELECT sum(count_value) as all_notes FROM	@resultsDatabaseSchema.achilles_results r WHERE analysis_id =2201 ) c1
@@ -38,7 +38,7 @@ from
   union all
   
   select
-    null as analysis_id,
+    cast(null as int) as analysis_id,
     CAST('NOTIFICATION: Notes data density is below threshold' AS VARCHAR(255)) as ACHILLES_HEEL_warning,
     37 as rule_id,
     cast(statistic_value as int) as record_count

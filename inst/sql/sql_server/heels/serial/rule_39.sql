@@ -12,7 +12,7 @@ from
   union all
   
   select
-    null as analysis_id,
+    cast(null as int) as analysis_id,
     CAST('NOTIFICATION: [GeneralPopulationOnly] In some years, number of deaths is too low considering the number of births (lifetime record DQ assumption)' AS VARCHAR(255)) as achilles_heel_warning,
     39 as rule_id,
     year_cnt as record_count 

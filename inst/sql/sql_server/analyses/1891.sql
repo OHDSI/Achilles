@@ -4,9 +4,9 @@
 select 1891 as analysis_id,   
 	CAST(measurement_concept_id as varchar(255)) as stratum_1,
 	CAST(meas_cnt as varchar(255)) as stratum_2,
-	null as stratum_3,
-	null as stratum_4,
-	null as stratum_5,
+	cast(null as varchar(255)) as stratum_3,
+	cast(null as varchar(255)) as stratum_4,
+	cast(null as varchar(255)) as stratum_5,
 	sum(count(person_id)) over (partition by measurement_concept_id order by meas_cnt desc) as count_value
 into @scratchDatabaseSchema@schemaDelim@tempAchillesPrefix_1891
 from 

@@ -11,10 +11,10 @@ from
   union all
   
   select 
-    null as analysis_id,
+    cast(null as int) as analysis_id,
     CAST('NOTIFICATION:No body weight data in MEASUREMENT table (under concept_id 3025315 (LOINC code 29463-7))' AS VARCHAR(255)) as achilles_heel_warning,
     41 as rule_id,
-    null as record_count
+    cast(null as bigint) as record_count
   from
   (
     select count(*) as row_present  

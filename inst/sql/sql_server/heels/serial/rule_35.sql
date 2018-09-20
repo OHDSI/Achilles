@@ -9,7 +9,7 @@ from
   union all
   
   select 
-    null as analysis_id,
+    cast(null as int) as analysis_id,
     achilles_heel_warning,
     rule_id,
     record_count

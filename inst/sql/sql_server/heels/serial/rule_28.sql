@@ -24,9 +24,9 @@ from
   union all
   
   select  
-    null as analysis_id,
-    null as stratum_1,
-    null as stratum_2,
+    cast(null as int) as analysis_id,
+    cast(null as varchar(255)) as stratum_1,
+    cast(null as varchar(255)) as stratum_2,
     statistic_value,
     measure_id
   from #tempResults
@@ -44,7 +44,7 @@ FROM
   union all
   
   select  
-    null as analysis_id,
+    cast(null as int) as analysis_id,
     CAST('NOTIFICATION: percentage of non-numerical measurement records exceeds general population threshold ' AS VARCHAR(255)) as ACHILLES_HEEL_warning,
   	28 as rule_id,
   	cast(statistic_value as int) as record_count

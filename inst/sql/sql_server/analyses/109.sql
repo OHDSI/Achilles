@@ -15,7 +15,7 @@ FROM @cdmDatabaseSchema.observation_period
 SELECT 
   109 AS analysis_id,  
 	CAST(obs_year AS VARCHAR(255)) AS stratum_1,
-	null as stratum_2, null as stratum_3, null as stratum_4, null as stratum_5,
+	cast(null as varchar(255)) as stratum_2, cast(null as varchar(255)) as stratum_3, cast(null as varchar(255)) as stratum_4, cast(null as varchar(255)) as stratum_5,
 	COUNT_BIG(DISTINCT person_id) AS count_value
 into @scratchDatabaseSchema@schemaDelim@tempAchillesPrefix_109
 FROM @cdmDatabaseSchema.observation_period,

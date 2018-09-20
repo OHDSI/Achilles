@@ -22,8 +22,8 @@ select 1818 as analysis_id,
 	CAST(measurement_concept_id AS VARCHAR(255)) as stratum_1,
 	CAST(unit_concept_id AS VARCHAR(255)) as stratum_2,
 	CAST(stratum_3 AS VARCHAR(255)) as stratum_3,
-	null as stratum_4, 
-	null as stratum_5,
+	cast(null as varchar(255)) as stratum_4, 
+	cast(null as varchar(255)) as stratum_5,
 	COUNT_BIG(PERSON_ID) as count_value
 into @scratchDatabaseSchema@schemaDelim@tempAchillesPrefix_1818
 from #rawData_1818

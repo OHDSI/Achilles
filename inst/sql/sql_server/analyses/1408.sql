@@ -3,7 +3,7 @@
 --HINT DISTRIBUTE_ON_KEY(stratum_1)
 select 1408 as analysis_id,  
 	CAST(floor(DATEDIFF(dd, ppp1.payer_plan_period_start_date, ppp1.payer_plan_period_end_date)/30) AS VARCHAR(255)) as stratum_1,
-	null as stratum_2, null as stratum_3, null as stratum_4, null as stratum_5,
+	cast(null as varchar(255)) as stratum_2, cast(null as varchar(255)) as stratum_3, cast(null as varchar(255)) as stratum_4, cast(null as varchar(255)) as stratum_5,
 	COUNT_BIG(distinct p1.person_id) as count_value
 into @scratchDatabaseSchema@schemaDelim@tempAchillesPrefix_1408
 from @cdmDatabaseSchema.PERSON p1
