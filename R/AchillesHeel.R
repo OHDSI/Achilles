@@ -38,6 +38,7 @@
 #' @param resultsDatabaseSchema		         string name of database schema that we can write final results to. Default is cdmDatabaseSchema. On SQL Server, this should specifiy both the database and the schema, 
 #'                                         so for example 'results.dbo'.
 #' @param scratchDatabaseSchema            (OPTIONAL, multi-threaded mode) Name of a fully qualified schema that is accessible to/from the resultsDatabaseSchema, that can store all of the scratch tables. Default is resultsDatabaseSchema.
+#' @param vocabDatabaseSchema		           String name of database schema that contains OMOP Vocabulary. Default is cdmDatabaseSchema. On SQL Server, this should specifiy both the database and the schema, so for example 'results.dbo'.
 #' @param cdmVersion                       Define the OMOP CDM version used:  currently supports v5 and above.  Default = "5". 
 #' @param numThreads                       (OPTIONAL, multi-threaded mode) The number of threads to use to run Achilles in parallel. Default is 1 thread.
 #' @param tempHeelPrefix                   (OPTIONAL, multi-threaded mode) The prefix to use for the "temporary" (but actually permanent) Heel tables. Default is "tmpheel"
@@ -55,6 +56,7 @@
 #'                                cdmDatabaseSchema = "cdm", 
 #'                                resultsDatabaseSchema = "results", 
 #'                                scratchDatabaseSchema = "scratch",
+#'                                vocabDatabaseSchema = "vocab",
 #'                                cdmVersion = "5.3.0",
 #'                                numThreads = 10)
 #' }
@@ -63,6 +65,7 @@ achillesHeel <- function(connectionDetails,
                          cdmDatabaseSchema, 
                          resultsDatabaseSchema = cdmDatabaseSchema,
                          scratchDatabaseSchema = resultsDatabaseSchema,
+                         vocabDatabaseSchema = cdmDatabaseSchema,
                          cdmVersion = "5",
                          numThreads = 1,
                          tempHeelPrefix = "tmpheel",
@@ -78,6 +81,8 @@ achillesHeel <- function(connectionDetails,
   if (missing(cdmVersion)) {
     cdmVersion <- .getCdmVersion(connectionDetails, cdmDatabaseSchema)
   }
+  
+  cdmVersion <- as.character(cdmVersion)
   
   # Check CDM version is valid ---------------------------------------------------------------------------------------------------
   
@@ -145,6 +150,7 @@ achillesHeel <- function(connectionDetails,
                 cdmDatabaseSchema = cdmDatabaseSchema,
                 resultsDatabaseSchema = resultsDatabaseSchema,
                 scratchDatabaseSchema = scratchDatabaseSchema,
+                vocabDatabaseSchema = vocabDatabaseSchema,
                 schemaDelim = schemaDelim,
                 tempHeelPrefix = tempHeelPrefix,
                 numThreads = numThreads,
@@ -360,6 +366,7 @@ achillesHeel <- function(connectionDetails,
                         cdmDatabaseSchema,
                         resultsDatabaseSchema,
                         scratchDatabaseSchema,
+                        vocabDatabaseSchema,
                         schemaDelim,
                         tempHeelPrefix, 
                         numThreads,
@@ -375,6 +382,7 @@ achillesHeel <- function(connectionDetails,
                                            cdmDatabaseSchema = cdmDatabaseSchema,
                                            resultsDatabaseSchema = resultsDatabaseSchema,
                                            scratchDatabaseSchema = scratchDatabaseSchema,
+                                           vocabDatabaseSchema = vocabDatabaseSchema,
                                            schemaDelim = schemaDelim,
                                            tempHeelPrefix = tempHeelPrefix,
                                            heelName = gsub(pattern = ".sql", replacement = "", x = basename(heelFile)))

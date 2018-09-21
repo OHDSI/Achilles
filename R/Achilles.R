@@ -105,6 +105,8 @@ achilles <- function (connectionDetails,
     cdmVersion <- .getCdmVersion(connectionDetails, cdmDatabaseSchema)
   }
   
+  cdmVersion <- as.character(cdmVersion)
+  
   # Check CDM version is valid ---------------------------------------------------------------------------------------------------
   
   if (compareVersion(a = as.character(cdmVersion), b = "5") < 0) {

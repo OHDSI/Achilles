@@ -5,11 +5,11 @@
     rxnorm.rxnorm_ingredient_concept_id as concept_id,
     rxnorm.rxnorm_ingredient_concept_name as concept_name,
     'Drug Era' AS treemap,
-    null as concept_hierarchy_type,
+    cast(null as varchar(20)) as concept_hierarchy_type,
     atc5_to_atc3.atc5_concept_name as level1_concept_name,
     atc3_to_atc1.atc3_concept_name as level2_concept_name,
     atc1.concept_name as level3_concept_name,
-    null as level4_concept_name
+    cast(null as varchar(255)) as level4_concept_name
 into @scratchDatabaseSchema@schemaDelim@tempAchillesPrefix_ch_drug_era
   FROM
     (

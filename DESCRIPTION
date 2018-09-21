@@ -20,4 +20,4 @@ Suggests:
     R.utils
 License: Apache License
 Roxygen: list(wrap = FALSE)
-RoxygenNote: 6.0.1
+RoxygenNote: 6.1.0

@@ -5,7 +5,7 @@
 \title{exportToJson}
 \usage{
 exportToJson(connectionDetails, cdmDatabaseSchema, resultsDatabaseSchema,
-  outputPath = getwd(), reports = allReports,
+  outputPath = getwd(), reports = getAllReports(),
   vocabDatabaseSchema = cdmDatabaseSchema, compressIntoOneFile = FALSE)
 }
 \arguments{
@@ -21,7 +21,10 @@ exportToJson(connectionDetails, cdmDatabaseSchema, resultsDatabaseSchema,
 
 \item{vocabDatabaseSchema}{string name of database schema that contains OMOP Vocabulary. Default is cdmDatabaseSchema. On SQL Server, this should specifiy both the database and the schema, so for example 'results.dbo'.}
 
-\item{compressIntoOneFile}{Boolean indicating if the JSON files should be compressed into one zip file
+\item{compressIntoOneFile}{Boolean indicating if the JSON files should be compressed into one zip file. 
+                                     Please note that in Windows, the zip application must be stored in the system environment, 
+                                     e.g. Sys.setenv("R_ZIPCMD", "some_path_to_zip"). 
+                                     Due to recursion, the actual Achilles files and folders will be embedded in any parent directories that the source folder has.
 
 See \code{data(allReports)} for a list of all report types}
 }

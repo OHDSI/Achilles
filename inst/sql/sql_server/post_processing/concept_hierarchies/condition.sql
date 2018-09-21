@@ -5,7 +5,7 @@
     snomed.concept_id,
     snomed.concept_name AS concept_name,
     'Condition' AS treemap,
-    null as concept_hierarchy_type,
+    cast(null as varchar(20)) as concept_hierarchy_type,
     pt_to_hlt.pt_concept_name as level1_concept_name,
     hlt_to_hlgt.hlt_concept_name as level2_concept_name,
     hlgt_to_soc.hlgt_concept_name as level3_concept_name,

@@ -5,11 +5,11 @@
     m.concept_id,
     m.concept_name,
     'Measurement' AS treemap,
-    null as concept_hierarchy_type,
+    cast(null as varchar(20)) as concept_hierarchy_type,
     max(c1.concept_name) AS level1_concept_name,
     max(c2.concept_name) AS level2_concept_name,
     max(c3.concept_name) AS level3_concept_name,
-    null as level4_concept_name
+    cast(null as varchar(255)) as level4_concept_name
 into @scratchDatabaseSchema@schemaDelim@tempAchillesPrefix_ch_measurement
   FROM
     (
