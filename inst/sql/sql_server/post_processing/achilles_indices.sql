@@ -39,10 +39,15 @@ CREATE CLUSTERED COLUMNSTORE INDEX ClusteredIndex_Achilles_results
   ON @resultsDatabaseSchema.ACHILLES_results;
 }
 
+
+DROP INDEX IF EXISTS idx_ar_aid on @resultsDatabaseSchema.ACHILLES_results (analysis_id);
 CREATE INDEX idx_ar_aid
   ON @resultsDatabaseSchema.ACHILLES_results (analysis_id);
+  
+DROP INDEX IF EXISTS idx_ar_s1 on @resultsDatabaseSchema.ACHILLES_results (stratum_1);
 CREATE INDEX idx_ar_s1
   ON @resultsDatabaseSchema.ACHILLES_results (stratum_1);
+  
 CREATE INDEX idx_ar_s2
   ON @resultsDatabaseSchema.ACHILLES_results (stratum_2);
 CREATE INDEX idx_ar_aid_s1

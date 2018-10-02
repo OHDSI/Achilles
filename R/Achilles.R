@@ -105,6 +105,8 @@ achilles <- function (connectionDetails,
     cdmVersion <- .getCdmVersion(connectionDetails, cdmDatabaseSchema)
   }
   
+  cdmVersion <- as.character(cdmVersion)
+  
   # Check CDM version is valid ---------------------------------------------------------------------------------------------------
   
   if (compareVersion(a = as.character(cdmVersion), b = "5") < 0) {
@@ -839,9 +841,6 @@ dropAllScratchTables <- function(connectionDetails,
   
   connection <- DatabaseConnector::connect(connectionDetails = connectionDetails)
   
-  scratchTables <- lapply(DatabaseConnector::getTableNames(connection = connection, 
-                                                    databaseSchema = scratchDatabaseSchema), function(t) tolower(t))
-  
   if ("achilles" %in% tableTypes) {
   
     # Drop Achilles Scratch Tables ------------------------------------------------------
@@ -856,13 +855,11 @@ dropAllScratchTables <- function(connectionDetails,
       sprintf("%s_dist_%d", tempAchillesPrefix, id)
     })
     
-    dropTables <- c(Reduce(intersect, list(scratchTables, resultsTables)), 
-                    Reduce(intersect, list(scratchTables, resultsDistTables)))
-    
-    dropSqls <- lapply(dropTables, function(scratchTable) {
-      SqlRender::renderSql("drop table @scratchDatabaseSchema.@scratchTable;", 
-                           scratchDatabaseSchema = scratchDatabaseSchema,
-                           scratchTable = scratchTable)$sql
+    dropSqls <- lapply(c(resultsTables, resultsDistTables), function(scratchTable) {
+      sql <- SqlRender::renderSql("IF OBJECT_ID('@scratchDatabaseSchema.@scratchTable', 'U') IS NOT NULL DROP TABLE @scratchDatabaseSchema.@scratchTable;", 
+                                  scratchDatabaseSchema = scratchDatabaseSchema,
+                                  scratchTable = scratchTable)$sql
+      sql <- SqlRender::translateSql(sql = sql, targetDialect = connectionDetails$dbms)$sql
     })
     
     cluster <- OhdsiRTools::makeCluster(numberOfThreads = numThreads, singleThreadToMain = TRUE)
@@ -890,13 +887,12 @@ dropAllScratchTables <- function(connectionDetails,
     parallelHeelTables <- lapply(parallelFiles, function(t) tolower(paste(tempHeelPrefix,
                                                                           trimws(tools::file_path_sans_ext(basename(t))),
                                                                     sep = "_")))
-    
-    dropTables <- Reduce(intersect, list(scratchTables, parallelHeelTables))
   
-    dropSqls <- lapply(dropTables, function(scratchTable) {
-      SqlRender::renderSql("drop table @scratchDatabaseSchema.@scratchTable;", 
+    dropSqls <- lapply(parallelHeelTables, function(scratchTable) {
+      sql <- SqlRender::renderSql("IF OBJECT_ID('@scratchDatabaseSchema.@scratchTable', 'U') IS NOT NULL DROP TABLE @scratchDatabaseSchema.@scratchTable;", 
                            scratchDatabaseSchema = scratchDatabaseSchema,
                            scratchTable = scratchTable)$sql
+      sql <- SqlRender::translateSql(sql = sql, targetDialect = connectionDetails$dbms)$sql
     })
     
     cluster <- OhdsiRTools::makeCluster(numberOfThreads = numThreads, singleThreadToMain = TRUE)
@@ -924,12 +920,12 @@ dropAllScratchTables <- function(connectionDetails,
     conceptHierarchyTables <- lapply(hierarchySqlFiles, function(t) tolower(paste(tempAchillesPrefix, "ch",
                                                                           trimws(tools::file_path_sans_ext(basename(t))),
                                                                           sep = "_")))
-    dropTables <- Reduce(intersect, list(scratchTables, conceptHierarchyTables))
     
-    dropSqls <- lapply(dropTables, function(scratchTable) {
-      SqlRender::renderSql("drop table @scratchDatabaseSchema.@scratchTable;", 
+    dropSqls <- lapply(conceptHierarchyTables, function(scratchTable) {
+      sql <- SqlRender::renderSql("IF OBJECT_ID('@scratchDatabaseSchema.@scratchTable', 'U') IS NOT NULL DROP TABLE @scratchDatabaseSchema.@scratchTable;", 
                            scratchDatabaseSchema = scratchDatabaseSchema,
                            scratchTable = scratchTable)$sql
+      sql <- SqlRender::translateSql(sql = sql, targetDialect = connectionDetails$dbms)$sql
     })
     
     cluster <- OhdsiRTools::makeCluster(numberOfThreads = numThreads, singleThreadToMain = TRUE)

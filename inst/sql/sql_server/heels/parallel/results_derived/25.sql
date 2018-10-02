@@ -17,7 +17,7 @@ from
 (
   --100000+analysis_id, 
   select
-    NULL as analysis_id,
+    cast(null as int) as analysis_id,
     stratum_2 as stratum_1,
     cast(null as varchar(255)) as stratum_2,
     count_value,

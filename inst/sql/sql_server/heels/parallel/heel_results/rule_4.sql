@@ -16,7 +16,7 @@ from
   FROM @resultsDatabaseSchema.ACHILLES_results or1
   INNER JOIN @resultsDatabaseSchema.ACHILLES_analysis oa1
   	ON or1.analysis_id = oa1.analysis_id
-  LEFT JOIN @cdmDatabaseSchema.concept c1
+  LEFT JOIN @vocabDatabaseSchema.concept c1
   	ON or1.stratum_1 = CAST(c1.concept_id AS VARCHAR(19))
   WHERE or1.analysis_id IN (
   		2,
