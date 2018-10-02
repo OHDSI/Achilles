@@ -9,7 +9,7 @@ select
 	cast(null as varchar(255)) as stratum_3, 
 	cast(null as varchar(255)) as stratum_4, 
 	cast(null as varchar(255)) as stratum_5,
-	count_big(*) AS total_count
+	count_big(*) AS count_value
 into @scratchDatabaseSchema@schemaDelim@tempAchillesPrefix_1822
 from @cdmDatabaseSchema.measurement
 group by measurement_concept_id, value_as_concept_id;
