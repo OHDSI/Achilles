@@ -12,7 +12,7 @@ from
   union all
   
   select
-    null as analysis_id,
+    cast(null as int) as analysis_id,
     CAST('NOTIFICATION: [GeneralPopulationOnly] Count of distinct specialties of providers in the PROVIDER table is below threshold' AS VARCHAR(255)) as ACHILLES_HEEL_warning,
     38 as rule_id,
     cast(statistic_value as int) as record_count

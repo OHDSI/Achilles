@@ -5,7 +5,7 @@ select
 	analysis_id,
 	ACHILLES_HEEL_warning,
 	rule_id,
-	null as record_count
+	cast(null as bigint) as record_count
 	into @scratchDatabaseSchema@schemaDelim@tempHeelPrefix_@heelName
 from
 (

@@ -1,7 +1,7 @@
 select 
-  null as analysis_id,
-  null as stratum_1,
-  null as stratum_2,
+  cast(null as int) as analysis_id,
+  cast(null as varchar(255)) as stratum_1,
+  cast(null as varchar(255)) as stratum_2,
   count(*) as statistic_value, 
   cast('Death:DeathCause:ConceptCnt' as varchar(255)) as measure_id 
 into @scratchDatabaseSchema@schemaDelim@tempHeelPrefix_@heelName

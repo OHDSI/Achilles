@@ -1482,7 +1482,7 @@ generateObservationPeriodReport <- function(conn, dbms, cdmDatabaseSchema, resul
   # a.	Visualization:  scatterplot
   # b.	X-axis:  length of observation period
   # c.	Y-axis:  % of population observed
-  # d.	Note:  will look like a Kaplan-Meier âsurvivalâ plot, but information is the same as shown in âlength of observationâ barchart, just plotted as cumulative 
+  # d.	Note:  will look like a Kaplan-Meier survival plot, but information is the same as shown in a length of observation barchart, just plotted as cumulative 
   
   renderedSql <- SqlRender::loadRenderTranslateSql(sqlFilename = "export/observationperiod/cumulativeduration.sql",
                                         packageName = "Achilles",

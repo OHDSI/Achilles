@@ -6,9 +6,11 @@
 \usage{
 achillesHeel(connectionDetails, cdmDatabaseSchema,
   resultsDatabaseSchema = cdmDatabaseSchema,
-  scratchDatabaseSchema = resultsDatabaseSchema, cdmVersion = "5",
-  numThreads = 1, tempHeelPrefix = "tmpheel", dropScratchTables = FALSE,
-  ThresholdAgeWarning = 125, ThresholdOutpatientVisitPerc = 0.43,
+  scratchDatabaseSchema = resultsDatabaseSchema,
+  vocabDatabaseSchema = cdmDatabaseSchema, cdmVersion = "5",
+  numThreads = 1, tempHeelPrefix = "tmpheel",
+  dropScratchTables = FALSE, ThresholdAgeWarning = 125,
+  ThresholdOutpatientVisitPerc = 0.43,
   ThresholdMinimalPtMeasDxRx = 20.5, outputFolder = "output",
   sqlOnly = FALSE)
 }
@@ -21,6 +23,8 @@ achillesHeel(connectionDetails, cdmDatabaseSchema,
 so for example 'results.dbo'.}
 
 \item{scratchDatabaseSchema}{(OPTIONAL, multi-threaded mode) Name of a fully qualified schema that is accessible to/from the resultsDatabaseSchema, that can store all of the scratch tables. Default is resultsDatabaseSchema.}
+
+\item{vocabDatabaseSchema}{String name of database schema that contains OMOP Vocabulary. Default is cdmDatabaseSchema. On SQL Server, this should specifiy both the database and the schema, so for example 'results.dbo'.}
 
 \item{cdmVersion}{Define the OMOP CDM version used:  currently supports v5 and above.  Default = "5".}
 
@@ -56,6 +60,7 @@ nothing is returned
                                cdmDatabaseSchema = "cdm", 
                                resultsDatabaseSchema = "results", 
                                scratchDatabaseSchema = "scratch",
+                               vocabDatabaseSchema = "vocab",
                                cdmVersion = "5.3.0",
                                numThreads = 10)
 }

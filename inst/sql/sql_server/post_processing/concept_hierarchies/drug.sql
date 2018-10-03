@@ -5,7 +5,7 @@
     rxnorm.concept_id,
     rxnorm.concept_name AS concept_name,
     'Drug' AS treemap,
-    null as concept_hierarchy_type,    
+    cast(null as varchar(20)) as concept_hierarchy_type,    
     rxnorm.rxnorm_ingredient_concept_name as level1_concept_name,
     atc5_to_atc3.atc5_concept_name as level2_concept_name,
     atc3_to_atc1.atc3_concept_name as level3_concept_name,

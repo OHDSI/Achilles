@@ -2,7 +2,7 @@
 
 --HINT DISTRIBUTE_ON_KEY(count_value)
 select 511 as analysis_id,
-	null as stratum_1, null as stratum_2, null as stratum_3, null as stratum_4, null as stratum_5,
+	cast(null as varchar(255)) as stratum_1, cast(null as varchar(255)) as stratum_2, cast(null as varchar(255)) as stratum_3, cast(null as varchar(255)) as stratum_4, cast(null as varchar(255)) as stratum_5,
 	COUNT_BIG(count_value) as count_value,
 	min(count_value) as min_value,
 	max(count_value) as max_value,
