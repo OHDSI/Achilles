@@ -12,4 +12,4 @@ select
 	count_big(*) AS count_value
 into @scratchDatabaseSchema@schemaDelim@tempAchillesPrefix_1823
 from @cdmDatabaseSchema.measurement
-group by measurement_concept_id, operator_concept_id
+group by measurement_concept_id, operator_concept_id;
