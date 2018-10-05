@@ -10,7 +10,7 @@
     max(proc_hierarchy.os2_concept_name) AS level2_concept_name,
     max(proc_hierarchy.os1_concept_name) AS level3_concept_name,
     cast(null as varchar(255)) as level4_concept_name
-into @scratchDatabaseSchema@schemaDelim@tempAchillesPrefix_ch_procedure
+into @scratchDatabaseSchema@schemaDelim@tempAchillesPrefix_ch_proc
   FROM
     (
       SELECT

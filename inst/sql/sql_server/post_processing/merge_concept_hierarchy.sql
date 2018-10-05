@@ -58,7 +58,7 @@ from
   cast(level2_concept_name as VARCHAR(255)) as level2_concept_name,
   cast(level3_concept_name as VARCHAR(255)) as level3_concept_name,
   cast(level4_concept_name as VARCHAR(255)) as level4_concept_name
-  from @scratchDatabaseSchema@schemaDelim@tempAchillesPrefix_ch_measurement
+  from @scratchDatabaseSchema@schemaDelim@tempAchillesPrefix_ch_meas
   
   union all
   
@@ -71,7 +71,7 @@ from
   cast(level2_concept_name as VARCHAR(255)) as level2_concept_name,
   cast(level3_concept_name as VARCHAR(255)) as level3_concept_name,
   cast(level4_concept_name as VARCHAR(255)) as level4_concept_name
-  from @scratchDatabaseSchema@schemaDelim@tempAchillesPrefix_ch_observation
+  from @scratchDatabaseSchema@schemaDelim@tempAchillesPrefix_ch_obs
   
   union all 
   
@@ -84,13 +84,13 @@ from
   cast(level2_concept_name as VARCHAR(255)) as level2_concept_name,
   cast(level3_concept_name as VARCHAR(255)) as level3_concept_name,
   cast(level4_concept_name as VARCHAR(255)) as level4_concept_name
-  from @scratchDatabaseSchema@schemaDelim@tempAchillesPrefix_ch_procedure
+  from @scratchDatabaseSchema@schemaDelim@tempAchillesPrefix_ch_proc
 ) Q
 ;
 
 drop table @scratchDatabaseSchema@schemaDelim@tempAchillesPrefix_ch_condition;
 drop table @scratchDatabaseSchema@schemaDelim@tempAchillesPrefix_ch_drug;
 drop table @scratchDatabaseSchema@schemaDelim@tempAchillesPrefix_ch_drug_era;
-drop table @scratchDatabaseSchema@schemaDelim@tempAchillesPrefix_ch_measurement;
-drop table @scratchDatabaseSchema@schemaDelim@tempAchillesPrefix_ch_observation;
-drop table @scratchDatabaseSchema@schemaDelim@tempAchillesPrefix_ch_procedure;
+drop table @scratchDatabaseSchema@schemaDelim@tempAchillesPrefix_ch_meas;
+drop table @scratchDatabaseSchema@schemaDelim@tempAchillesPrefix_ch_obs;
+drop table @scratchDatabaseSchema@schemaDelim@tempAchillesPrefix_ch_proc;
