@@ -6,7 +6,7 @@
 \usage{
 validateSchema(connectionDetails, cdmDatabaseSchema,
   resultsDatabaseSchema = cdmDatabaseSchema, cdmVersion, runCostAnalysis,
-  sqlOnly = FALSE)
+  outputFolder, sqlOnly = FALSE)
 }
 \arguments{
 \item{connectionDetails}{An R object of type \code{connectionDetails} created using the function \code{createConnectionDetails} in the \code{DatabaseConnector} package.}
@@ -19,6 +19,8 @@ On SQL Server, this should specifiy both the database and the schema, so for exa
 \item{cdmVersion}{Define the OMOP CDM version used:  currently supports v5 and above. Use major release number or minor number only (e.g. 5, 5.3)}
 
 \item{runCostAnalysis}{Boolean to determine if cost analysis should be run. Note: only works on CDM v5 and v5.1.0+ style cost tables.}
+
+\item{outputFolder}{Path to store logs and SQL files}
 
 \item{sqlOnly}{TRUE = just generate SQL files, don't actually run, FALSE = run Achilles}
 }

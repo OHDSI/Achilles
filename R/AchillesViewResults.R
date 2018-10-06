@@ -1,3 +1,66 @@
+
+#' Launch the Achilles Heel Shiny app
+#' 
+#' @param connectionDetails                An R object of type \code{connectionDetails} created using the function \code{createConnectionDetails} in the \code{DatabaseConnector} package.
+#' @param resultsDatabaseSchema		         Fully qualified name of database schema that we can fetch final results from.
+#'                                         On SQL Server, this should specifiy both the database and the schema, so for example, on SQL Server, 'cdm_results.dbo'.
+#' @param outputFolder                     Path to store logs and SQL files
+#' 
+#' @details 
+#' Launches a Shiny app that allows the user to explore the Achilles Heel results
+#' 
+#' @export
+launchHeelResultsViewer <- function(connectionDetails,
+                                    resultsDatabaseSchema,
+                                    outputFolder) {
+  
+  
+  if (!requireNamespace("shinydashboard", quietly = TRUE)) {
+    stop(
+      "You must install shinydashboard first.",
+      " You may install it using devtools with the following code:",
+      "\n    install.packages('shinydashboard')",
+      "\n\nAlternately, you might want to install ALL suggested packages using:",
+      "\n    devtools::install_github('OHDSI/Achilles', dependencies = TRUE)",
+      call. = FALSE
+    )
+  }
+  
+  if (!requireNamespace("shiny", quietly = TRUE)) {
+    stop(
+      "You must install shiny first.",
+      " You may install it using devtools with the following code:",
+      "\n    install.packages('shiny')",
+      "\n\nAlternately, you might want to install ALL suggested packages using:",
+      "\n    devtools::install_github('OHDSI/Achilles', dependencies = TRUE)",
+      call. = FALSE
+    )
+  }
+  
+  if (!requireNamespace("DT", quietly = TRUE)) {
+    stop(
+      "You must install DT first.",
+      " You may install it using devtools with the following code:",
+      "\n    install.packages('DT')",
+      "\n\nAlternately, you might want to install ALL suggested packages using:",
+      "\n    devtools::install_github('OHDSI/Achilles', dependencies = TRUE)",
+      call. = FALSE
+    )
+  }
+  
+  issues <- fetchAchillesHeelResults(connectionDetails = connectionDetails, 
+                                     resultsDatabaseSchema = resultsDatabaseSchema)
+  
+  Sys.setenv(outputFolder = file.path(getwd(), outputFolder))
+  
+  saveRDS(object = issues, file = file.path(outputFolder, "heelResults.rds"))
+  
+  appDir <- system.file("shinyApps", package = "Achilles")
+  shiny::runApp(appDir, display.mode = "normal", launch.browser = TRUE)
+}
+
+
+
 #' @title fetchAchillesHeelResults
 #'
 #' @description
@@ -27,7 +90,7 @@ fetchAchillesHeelResults <- function (connectionDetails,
   issues <- DatabaseConnector::querySql(connection = connection, sql = sql)
   DatabaseConnector::disconnect(connection = connection)
   
-  return (issues)
+  issues
 }
 
 #' @title fetchAchillesAnalysisResults

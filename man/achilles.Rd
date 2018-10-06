@@ -5,7 +5,6 @@
 \title{The main Achilles analyses (for v5.x)}
 \usage{
 achilles(connectionDetails, cdmDatabaseSchema,
-  oracleTempSchema = cdmDatabaseSchema,
   resultsDatabaseSchema = cdmDatabaseSchema,
   scratchDatabaseSchema = resultsDatabaseSchema,
   vocabDatabaseSchema = cdmDatabaseSchema, sourceName = "",
@@ -14,8 +13,7 @@ achilles(connectionDetails, cdmDatabaseSchema,
   runCostAnalysis = FALSE, conceptHierarchy = TRUE,
   createIndices = TRUE, numThreads = 1,
   tempAchillesPrefix = "tmpach", dropScratchTables = TRUE,
-  sqlOnly = FALSE, outputFolder = "output",
-  logMultiThreadPerformance = FALSE)
+  sqlOnly = FALSE, outputFolder = "output")
 }
 \arguments{
 \item{connectionDetails}{An R object of type \code{connectionDetails} created using the function \code{createConnectionDetails} in the \code{DatabaseConnector} package.}
@@ -63,9 +61,7 @@ You could run this once for 1 Vocab version, and then copy the table to all CDMs
 
 \item{sqlOnly}{Boolean to determine if Achilles should be fully executed. TRUE = just generate SQL files, don't actually run, FALSE = run Achilles}
 
-\item{outputFolder}{(OPTIONAL, SQL-only mode) Path to store SQL files}
-
-\item{logMultiThreadPerformance}{(OPTIONAL, multi-threaded mode) Should an RDS file of execution times for every analysis query be created in the outputFolder?}
+\item{outputFolder}{Path to store logs and SQL files}
 }
 \value{
 An object of type \code{achillesResults} containing details for connecting to the database containing the results
