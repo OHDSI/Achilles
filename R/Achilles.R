@@ -470,9 +470,10 @@ achilles <- function (connectionDetails,
     if (numThreads == 1) {
       for (mainSql in mainSqls) {
         start <- Sys.time()
-        ParallelLogger::logInfo(sprintf("Main Analysis %d: START", mainSql$analysisId))
+        ParallelLogger::logInfo(sprintf("Main Analysis #%d (%s): START", mainSql$analysisId, 
+                                        analysisDetails$ANALYSIS_NAME[analysisDetails$ANALYSIS_ID == mainSql$analysisId]))
         DatabaseConnector::executeSql(connection = connection, sql = mainSql$sql)
-        ParallelLogger::logInfo(sprintf("Main Analysis %d: COMPLETE (%f)", mainSql$analysisId, Sys.time() - start))
+        ParallelLogger::logInfo(sprintf("Main Analysis #%d: COMPLETE (%f secs)", mainSql$analysisId, Sys.time() - start))
       }
     } else {
       cluster <- OhdsiRTools::makeCluster(numberOfThreads = numThreads, singleThreadToMain = TRUE)
@@ -480,11 +481,12 @@ achilles <- function (connectionDetails,
                                          x = mainSqls, 
                                          function(mainSql) {
                                            start <- Sys.time()
-                                           ParallelLogger::logInfo(sprintf("Main Analysis %d: START", mainSql$analysisId))
+                                           ParallelLogger::logInfo(sprintf("Main Analysis #%d (%s): START", mainSql$analysisId, 
+                                                                           analysisDetails$ANALYSIS_NAME[analysisDetails$ANALYSIS_ID == mainSql$analysisId]))
                                            connection <- DatabaseConnector::connect(connectionDetails = connectionDetails)
                                            DatabaseConnector::executeSql(connection = connection, sql = mainSql$sql)
                                            DatabaseConnector::disconnect(connection = connection)
-                                           ParallelLogger::logInfo(sprintf("Main Analysis %d: COMPLETE (%f)", mainSql$analysisId, Sys.time() - start))
+                                           ParallelLogger::logInfo(sprintf("Main Analysis #%d: COMPLETE (%f secs)", mainSql$analysisId, Sys.time() - start))
                                          })
       
       OhdsiRTools::stopCluster(cluster = cluster)

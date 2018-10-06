@@ -116,46 +116,30 @@ fetchAchillesHeelResults <- function (connectionDetails,
 fetchAchillesAnalysisResults <- function (connectionDetails, 
                                           resultsDatabaseSchema, 
                                           analysisId) {
+  
+  analysisDetails <- getAnalysisDetails()
   connection <- DatabaseConnector::connect(connectionDetails = connectionDetails)
   
-  sql <- "SELECT * FROM @resultsDatabaseSchema.ACHILLES_analysis WHERE analysis_id = @analysisId"
-  sql <- SqlRender::renderSql(sql = sql, 
-                              resultsDatabaseSchema = resultsDatabaseSchema,
-                              analysisId = analysisId)$sql
-  analysisDetails <- DatabaseConnector::querySql(connection = connection, sql = sql)
-  
-  sql <- "SELECT * FROM @resultsDatabaseSchema.ACHILLES_results WHERE analysis_id = @analysisId"
-  sql <- SqlRender::renderSql(sql = sql,
-                              resultsDatabaseSchema = resultsDatabaseSchema,
-                              analysisId = analysisId)$sql
-  analysisResults <- DatabaseConnector::querySql(connection = connection, sql = sql)
-  
-  if (nrow(analysisResults) == 0){
-    sql <- "SELECT * FROM @resultsDatabaseSchema.ACHILLES_results_dist WHERE analysis_id = @analysisId"
+  if (analysisDetails$DISTRIBUTION[analysisDetails$ANALYSIS_ID == analysisId] == 0) {
+    sql <- "select * from @resultsDatabaseSchema.achilles_results where analysis_id = @analysisId"
+    sql <- SqlRender::renderSql(sql = sql,
+                                resultsDatabaseSchema = resultsDatabaseSchema,
+                                analysisId = analysisId)$sql
+    analysisResults <- DatabaseConnector::querySql(connection = connection, sql = sql)
+  } else {
+    sql <- "select * from @resultsDatabaseSchema.achilles_results_dist where analysis_id = @analysisId"
     sql <- SqlRender::renderSql(sql = sql,
                                 resultsDatabaseSchema = resultsDatabaseSchema,
                                 analysisId = analysisId)$sql
     analysisResults <- DatabaseConnector::querySql(connection = connection, sql = sql)
   }
   
-  colnames(analysisDetails) <- toupper(colnames(analysisDetails))
-  colnames(analysisResults) <- toupper(colnames(analysisResults))
-  
-  for (i in 1:5) {
-    stratumName <- analysisDetails[, paste("STRATUM", i, "NAME", sep="_")]
-    if (is.na(stratumName)){
-      analysisResults[,paste("STRATUM", i, sep = "_")] <- NULL
-    } else {
-      colnames(analysisResults)[colnames(analysisResults) == paste("STRATUM", i, sep = "_")] <- toupper(stratumName)
-    }
-  }
-  
   DatabaseConnector::disconnect(connection = connection)
   
   result <- list(analysisId = analysisId,
-                 analysisName = analysisDetails$ANALYSIS_NAME,
+                 analysisName = analysisDetails$ANALYSIS_NAME[analysisDetails$ANALYSIS_ID == analysisId],
                  analysisResults = analysisResults)
   
   class(result) <- "achillesAnalysisResults"
-  return (result)
+  result
 }
