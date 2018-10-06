@@ -4,11 +4,14 @@
 \alias{launchHeelResultsViewer}
 \title{Launch the Achilles Heel Shiny app}
 \usage{
-launchHeelResultsViewer(connectionDetails, resultsDatabaseSchema,
-  outputFolder)
+launchHeelResultsViewer(connectionDetails, cdmDatabaseSchema,
+  resultsDatabaseSchema, outputFolder)
 }
 \arguments{
 \item{connectionDetails}{An R object of type \code{connectionDetails} created using the function \code{createConnectionDetails} in the \code{DatabaseConnector} package.}
+
+\item{cdmDatabaseSchema}{Fully qualified name of database schema that contains OMOP CDM schema.
+On SQL Server, this should specifiy both the database and the schema, so for example, on SQL Server, 'cdm_instance.dbo'.}
 
 \item{resultsDatabaseSchema}{Fully qualified name of database schema that we can fetch final results from.
 On SQL Server, this should specifiy both the database and the schema, so for example, on SQL Server, 'cdm_results.dbo'.}

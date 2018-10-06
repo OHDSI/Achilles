@@ -141,18 +141,7 @@ achilles <- function (connectionDetails,
   # Get source name if none provided --------------------------------------------------
   
   if (missing(sourceName) & !sqlOnly) {
-    sql <- SqlRender::renderSql(sql = "select top 1 cdm_source_name 
-                                from @cdmDatabaseSchema.cdm_source",
-                                cdmDatabaseSchema = cdmDatabaseSchema)$sql
-    connection <- DatabaseConnector::connect(connectionDetails = connectionDetails)
-    sourceName <- tryCatch({
-      DatabaseConnector::querySql(connection = connection, sql = sql)
-    }, error = function (e) {
-      ""
-    }, finally = {
-      DatabaseConnector::disconnect(connection = connection)
-      rm(connection)
-    })
+    .getSourceName(connectionDetails, cdmDatabaseSchema)
   }
   
   # Obtain analyses to run --------------------------------------------------------------------------------------------------------
@@ -1140,4 +1129,22 @@ dropAllScratchTables <- function(connectionDetails,
                                          fieldNames = paste(resultsTable$schema$FIELD_NAME, collapse = ", "),
                                          smallCellCount = smallCellCount)
   
+}
+
+.getSourceName <- function(connectionDetails,
+                           cdmDatabaseSchema) {
+  sql <- SqlRender::renderSql(sql = "select cdm_source_name from @cdmDatabaseSchema.cdm_source",
+                              cdmDatabaseSchema = cdmDatabaseSchema)$sql
+  sql <- SqlRender::translateSql(sql = sql, targetDialect = connectionDetails$dbms)$sql
+  connection <- DatabaseConnector::connect(connectionDetails = connectionDetails)
+  sourceName <- tryCatch({
+    s <- DatabaseConnector::querySql(connection = connection, sql = sql)
+    s[1,]
+  }, error = function (e) {
+    ""
+  }, finally = {
+    DatabaseConnector::disconnect(connection = connection)
+    rm(connection)
+  })
+  sourceName
 }

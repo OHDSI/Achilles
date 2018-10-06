@@ -20,9 +20,10 @@ Description: Creates descriptive statistics summary for an entire OMOP CDM
 Depends:
     SqlRender,
     DatabaseConnector (>= 2.0.0),
-    rjson,
-    ParallelLogger,
-    dplyr
+    ParallelLogger
+Imports:
+    dplyr,
+    rjson
 Suggests:
     testthat,
     R.utils,
@@ -30,7 +31,10 @@ Suggests:
     DT,
     shinydashboard,
     magrittr,
-    tidyr
+    tidyr,
+    knitr, 
+    rmarkdown
+VignetteBuilder: knitr
 Remotes:
     OhdsiRTools
 License: Apache License

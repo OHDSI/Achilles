@@ -2,6 +2,9 @@
 #' Launch the Achilles Heel Shiny app
 #' 
 #' @param connectionDetails                An R object of type \code{connectionDetails} created using the function \code{createConnectionDetails} in the \code{DatabaseConnector} package.
+#' @param cdmDatabaseSchema    	           Fully qualified name of database schema that contains OMOP CDM schema.
+#'                                         On SQL Server, this should specifiy both the database and the schema, so for example, on SQL Server, 'cdm_instance.dbo'.
+
 #' @param resultsDatabaseSchema		         Fully qualified name of database schema that we can fetch final results from.
 #'                                         On SQL Server, this should specifiy both the database and the schema, so for example, on SQL Server, 'cdm_results.dbo'.
 #' @param outputFolder                     Path to store logs and SQL files
@@ -11,47 +14,32 @@
 #' 
 #' @export
 launchHeelResultsViewer <- function(connectionDetails,
+                                    cdmDatabaseSchema,
                                     resultsDatabaseSchema,
                                     outputFolder) {
+  dependencies <- c("shiny",
+                    "DT",
+                    "shinydashboard",
+                    "magrittr",
+                    "tidyr")
   
-  
-  if (!requireNamespace("shinydashboard", quietly = TRUE)) {
-    stop(
-      "You must install shinydashboard first.",
-      " You may install it using devtools with the following code:",
-      "\n    install.packages('shinydashboard')",
-      "\n\nAlternately, you might want to install ALL suggested packages using:",
-      "\n    devtools::install_github('OHDSI/Achilles', dependencies = TRUE)",
-      call. = FALSE
-    )
+  for (d in dependencies) {
+    if (!requireNamespace(d, quietly = TRUE)) {
+      message <- sprintf(
+        "You must install %1s first. You may install it using devtools with the following code: 
+        \n    install.packages('%2s')
+        \n\nAlternately, you might want to install ALL suggested packages using:
+        \n    devtools::install_github('OHDSI/Achilles', dependencies = TRUE)", d, d)
+      stop(message, call. = FALSE)
+    }
   }
-  
-  if (!requireNamespace("shiny", quietly = TRUE)) {
-    stop(
-      "You must install shiny first.",
-      " You may install it using devtools with the following code:",
-      "\n    install.packages('shiny')",
-      "\n\nAlternately, you might want to install ALL suggested packages using:",
-      "\n    devtools::install_github('OHDSI/Achilles', dependencies = TRUE)",
-      call. = FALSE
-    )
-  }
-  
-  if (!requireNamespace("DT", quietly = TRUE)) {
-    stop(
-      "You must install DT first.",
-      " You may install it using devtools with the following code:",
-      "\n    install.packages('DT')",
-      "\n\nAlternately, you might want to install ALL suggested packages using:",
-      "\n    devtools::install_github('OHDSI/Achilles', dependencies = TRUE)",
-      call. = FALSE
-    )
-  }
+
   
   issues <- fetchAchillesHeelResults(connectionDetails = connectionDetails, 
                                      resultsDatabaseSchema = resultsDatabaseSchema)
   
   Sys.setenv(outputFolder = file.path(getwd(), outputFolder))
+  Sys.setenv(sourceName = .getSourceName(connectionDetails, cdmDatabaseSchema))
   
   saveRDS(object = issues, file = file.path(outputFolder, "heelResults.rds"))
   
