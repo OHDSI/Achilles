@@ -82,6 +82,7 @@ An object of type \code{achillesResults} containing details for connecting to th
                                             sourceName="Some Source", 
                                             cdmVersion = "5.3", 
                                             runCostAnalysis = TRUE, 
-                                            numThreads = 10)
+                                            numThreads = 10,
+                                            outputFolder = "output")
                                         }
 }

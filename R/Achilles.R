@@ -22,6 +22,7 @@
 # @author Vojtech Huser
 # @author Chris Knoll
 # @author Ajit Londhe
+# @author Taha Abdul-Basser
 
 
 #' The main Achilles analyses (for v5.x)
@@ -70,7 +71,8 @@
 #'                                             sourceName="Some Source", 
 #'                                             cdmVersion = "5.3", 
 #'                                             runCostAnalysis = TRUE, 
-#'                                             numThreads = 10)
+#'                                             numThreads = 10,
+#'                                             outputFolder = "output")
 #'                                         }
 #' @export
 achilles <- function (connectionDetails, 
@@ -195,7 +197,7 @@ achilles <- function (connectionDetails,
     numThreads <- 1
     scratchDatabaseSchema <- "#"
     schemaDelim <- "s_"
-    
+    ParallelLogger::logInfo("Beginning single-threaded execution")
     # first invocation of the connection, to persist throughout to maintain temp tables
     connection <- DatabaseConnector::connect(connectionDetails = connectionDetails) 
   } else if (!requireNamespace("OhdsiRTools", quietly = TRUE)) {
@@ -208,7 +210,9 @@ achilles <- function (connectionDetails,
       "\n\nAlternately, you might want to install ALL suggested packages using:",
       "\n    devtools::install_github('OHDSI/Achilles', dependencies = TRUE)",
       call. = FALSE
-    )
+    ) 
+  } else {
+    ParallelLogger::logInfo("Beginning multi-threaded execution")
   }
   
   # Create analysis table -------------------------------------------------------------
@@ -902,9 +906,14 @@ validateSchema <- function(connectionDetails,
 #' 
 #' @export
 getAnalysisDetails <- function() {
-  pathToCsv <- system.file("csv", "achilles", "achilles_analysis_details.csv", package = "Achilles")
-  analysisDetails <- read.csv(file = pathToCsv, header = TRUE, stringsAsFactors = FALSE)
-  analysisDetails
+  read.csv( 
+    system.file(
+      "csv", 
+      "achilles", 
+      "achilles_analysis_details.csv", 
+      package = "Achilles"),
+    stringsAsFactors = FALSE
+  )
 }
 
 #' Drop all possible scratch tables
@@ -1042,18 +1051,20 @@ dropAllScratchTables <- function(connectionDetails,
   ParallelLogger::unregisterLogger("dropAllScratchTables")
 }
 
-.getCdmVersion <- function(connectionDetails, cdmDatabaseSchema) {
-  sql <- SqlRender::renderSql(sql = "select top 1 cdm_version 
-                              from @cdmDatabaseSchema.cdm_source",
+.getCdmVersion <- function(connectionDetails, 
+                           cdmDatabaseSchema) {
+  sql <- SqlRender::renderSql(sql = "select cdm_version from @cdmDatabaseSchema.cdm_source",
                               cdmDatabaseSchema = cdmDatabaseSchema)$sql
+  sql <- SqlRender::translateSql(sql = sql, targetDialect = connectionDetails$dbms)$sql
   connection <- DatabaseConnector::connect(connectionDetails = connectionDetails)
   cdmVersion <- tryCatch({
-    DatabaseConnector::querySql(connection = connection, sql = sql)
+    c <- tolower((DatabaseConnector::querySql(connection = connection, sql = sql))[1,])
+    gsub(pattern = "v", replacement = "", x = c)
   }, error = function (e) {
     ""
   }, finally = {
     DatabaseConnector::disconnect(connection = connection)
-    connection <- NULL
+    rm(connection)
   })
   
   cdmVersion

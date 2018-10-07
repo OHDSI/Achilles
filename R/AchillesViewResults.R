@@ -1,3 +1,29 @@
+# @file AchillesViewResults
+#
+# Copyright 2018 Observational Health Data Sciences and Informatics
+#
+# This file is part of Achilles
+# 
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+# 
+#     https://www.apache.org/licenses/LICENSE-2.0
+# 
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+# @author Observational Health Data Sciences and Informatics
+# @author Martijn Schuemie
+# @author Patrick Ryan
+# @author Vojtech Huser
+# @author Chris Knoll
+# @author Ajit Londhe
+# @author Taha Abdul-Basser
+
 
 #' Launch the Achilles Heel Shiny app
 #' 
@@ -34,7 +60,6 @@ launchHeelResultsViewer <- function(connectionDetails,
     }
   }
 
-  
   issues <- fetchAchillesHeelResults(connectionDetails = connectionDetails, 
                                      resultsDatabaseSchema = resultsDatabaseSchema)
   
@@ -43,10 +68,9 @@ launchHeelResultsViewer <- function(connectionDetails,
   
   saveRDS(object = issues, file = file.path(outputFolder, "heelResults.rds"))
   
-  appDir <- system.file("shinyApps", package = "Achilles")
+  appDir <- system.file("shinyApps", "heelResults", package = "Achilles")
   shiny::runApp(appDir, display.mode = "normal", launch.browser = TRUE)
 }
-
 
 
 #' @title fetchAchillesHeelResults
@@ -72,9 +96,9 @@ launchHeelResultsViewer <- function(connectionDetails,
 fetchAchillesHeelResults <- function (connectionDetails, 
                                       resultsDatabaseSchema) { 
   connection <- DatabaseConnector::connect(connectionDetails = connectionDetails)
-  sql <- SqlRender::renderSql(sql = "SELECT * FROM @resultsDatabaseSchema.achilles_heel_results",
+  sql <- SqlRender::renderSql(sql = "select * from @resultsDatabaseSchema.achilles_heel_results",
                               resultsDatabaseSchema = resultsDatabaseSchema)$sql
-  
+  sql <- SqlRender::translateSql(sql = sql, targetDialect = connectionDetails$dbms)$sql  
   issues <- DatabaseConnector::querySql(connection = connection, sql = sql)
   DatabaseConnector::disconnect(connection = connection)
   
@@ -113,12 +137,14 @@ fetchAchillesAnalysisResults <- function (connectionDetails,
     sql <- SqlRender::renderSql(sql = sql,
                                 resultsDatabaseSchema = resultsDatabaseSchema,
                                 analysisId = analysisId)$sql
+    sql <- SqlRender::translateSql(sql = sql, targetDialect = connectionDetails$dbms)$sql
     analysisResults <- DatabaseConnector::querySql(connection = connection, sql = sql)
   } else {
     sql <- "select * from @resultsDatabaseSchema.achilles_results_dist where analysis_id = @analysisId"
     sql <- SqlRender::renderSql(sql = sql,
                                 resultsDatabaseSchema = resultsDatabaseSchema,
                                 analysisId = analysisId)$sql
+    sql <- SqlRender::translateSql(sql = sql, targetDialect = connectionDetails$dbms)$sql
     analysisResults <- DatabaseConnector::querySql(connection = connection, sql = sql)
   }
   

@@ -19,11 +19,11 @@ Description: Creates descriptive statistics summary for an entire OMOP CDM
     Heel component does data quality assesment.
 Depends:
     SqlRender,
-    DatabaseConnector (>= 2.0.0),
-    ParallelLogger
+    DatabaseConnector (>= 2.0.0)
 Imports:
     dplyr,
-    rjson
+    rjson,
+    ParallelLogger
 Suggests:
     testthat,
     R.utils,
@@ -36,7 +36,7 @@ Suggests:
     rmarkdown
 VignetteBuilder: knitr
 Remotes:
-    OhdsiRTools
+    OHDSI/OhdsiRTools
 License: Apache License
 Roxygen: list(wrap = FALSE)
 RoxygenNote: 6.1.0

@@ -61,6 +61,7 @@ The full Heel SQL code
                                scratchDatabaseSchema = "scratch",
                                vocabDatabaseSchema = "vocab",
                                cdmVersion = "5.3.0",
-                               numThreads = 10)
+                               numThreads = 10,
+                               outputFolder = "output")
 }
 }

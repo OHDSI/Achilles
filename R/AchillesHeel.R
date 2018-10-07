@@ -22,6 +22,7 @@
 # @author Vojtech Huser
 # @author Chris Knoll
 # @author Ajit Londhe
+# @author Taha Abdul-Basser
 
 
 
@@ -58,7 +59,8 @@
 #'                                scratchDatabaseSchema = "scratch",
 #'                                vocabDatabaseSchema = "vocab",
 #'                                cdmVersion = "5.3.0",
-#'                                numThreads = 10)
+#'                                numThreads = 10,
+#'                                outputFolder = "output")
 #' }
 #' @export
 achillesHeel <- function(connectionDetails, 
@@ -116,6 +118,7 @@ achillesHeel <- function(connectionDetails,
     numThreads <- 1
     scratchDatabaseSchema <- "#"
     schemaDelim <- "s_"
+    ParallelLogger::logInfo("Beginning single-threaded execution")
     # first invocation of the connection, to persist throughout to maintain temp tables
     connection <- DatabaseConnector::connect(connectionDetails = connectionDetails) 
   } else if (!requireNamespace("OhdsiRTools", quietly = TRUE)) {
@@ -129,6 +132,8 @@ achillesHeel <- function(connectionDetails,
       "\n    devtools::install_github('OHDSI/Achilles', dependencies = TRUE)",
       call. = FALSE
     )
+  } else {
+    ParallelLogger::logInfo("Beginning multi-threaded execution")
   }
   
   if (!sqlOnly) {

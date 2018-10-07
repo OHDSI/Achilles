@@ -2,7 +2,7 @@
 
 export(achilles)
 export(achillesHeel)
-export(addDatasource)
+export(addDataSource)
 export(createConceptHierarchy)
 export(createIndices)
 export(dropAllScratchTables)
