@@ -216,6 +216,12 @@ achilles <- function (connectionDetails,
     ParallelLogger::logInfo("Beginning multi-threaded execution")
   }
   
+  # Check if createTable is FALSE and no analysisIds specified -----------------------------------------------------
+  
+  if (!createTable & missing(analysisIds)) {
+    createTable <- TRUE
+  }
+  
   ## Remove existing results if createTable is FALSE ----------------------------------------------------------------
   
   if (!createTable) {

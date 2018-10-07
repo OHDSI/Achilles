@@ -62,6 +62,10 @@ File and console logging is enabled across most Achilles functions. The status o
 ParallelLogger::launchLogViewer(logFileName = "output/log_achilles.txt")
 ```
 
+```{r echo = FALSE}
+knitr::include_graphics(path = "../inst/doc/logging_screenshot.png")
+```
+
 ## Preparation for running Achilles
 
 In order to run the package, you will need to determine if you'd like the Achilles tables and staging tables to be stored in schemas that are separate from your CDM's schema (recommended), or within the same schema as the CDM. 
@@ -115,7 +119,7 @@ By default, the **achilles** function runs all analyses detailed in the `getAnal
 
 ## Cost Analyses
 
-By default, the **achilles** function does not run analyses on the COST table(s), as they can be very time-consuming, and are not critical to most OHDSI studies. However, you can choose to run these analyses by setting `runCostAnalysis` to `TRUE`.
+By default, the **achilles** function does not run analyses on the COST table(s), as they can be very time-consuming, and are not critical to most OHDSI studies. However, you can choose to run these analyses by setting `runCostAnalysis` to `TRUE`. The cost analyses are conditional on the CDM version. If using CDM v5.0, then the older cost tables are queried. If using any version after 5.0, the unified cost table is queried.
 
 ## Small Cell Count
 
@@ -248,6 +252,8 @@ achillesHeel(connectionDetails = connectionDetails,
 
 # Post-Processing
 
+This section describes the usage of standalone functions for post-processing that can be invoked if you did not use them in the **achilles** function call.
+
 ## Creating the Concept Hierarchy: Single-Threaded Mode
 
 *This table is only necessary if using Atlas Data Sources to consume Achilles results*
@@ -289,7 +295,7 @@ createConceptHierarchy(connectionDetails = connectionDetails,
 
 ## Creating Indices
 
-*Not necessary for Amazon Redshift or IBM Netezza*
+*Not supported by Amazon Redshift or IBM Netezza; function will skip this step if using those platforms*
 
 To improve query performance of the Achilles results tables, run the **createIndices** function.
 
@@ -309,7 +315,7 @@ createIndices(connectionDetails = connectionDetails,
 
 If the **achilles** or **achillesHeel** execution has errors, or if you did not enable this step in the call to these functions, use the `dropAllScratchTables` function.
 
-The `tableTypes` parameter can be used to specify which batch of tables to drop ("achilles", "heel", "concept_hierarchy"). Setting this to `NULL` will drop them all.
+The `tableTypes` parameter can be used to specify which batch of staging tables to drop ("achilles", "heel", "concept_hierarchy"). The default value is to drop them all.
 
 ```{r tidy = FALSE, eval = FALSE}
 connectionDetails <- createConnectionDetails(dbms = "postgresql", 
@@ -325,7 +331,15 @@ dropAllScratchTables(connectionDetails = connectionDetails,
 
 To view the Heel results, you can use the fetchAchillesHeelResults() function or the launchHeelResultsViewer() function. The former produces an R data frame that you can then export to various formats. The latter launches a Shiny application that renders the results in an easy to consume HTML file that can be viewed in your internet browser.
 
+Heel Results are warnings split into 3 categories: 
+
+* **ERROR**: Something is probably not right with the way you transformed your native dataset into the CDM dataset. Review the error message and the associated Achilles analysis Id and Heel rule Id to investigate further. Use the **getAnalysisDetails** function to identify the Achilles analysis, and use the **fetchAchillesAnalysisResults** function to view the exact results of that analysis.
+* **WARNING**: Something *may* be an issue with the domain or concept associated with the Achilles analysis Id or Heel rule Id. However, not all datasets are the same; Achilles Heel tries to compare yours to a gold-standard dataset, so it is very likely you will encounter some WARNINGs. Feel free to ignore these WARNINGs if it is an acceptable deviation from the gold-standard, but it is good practice to document these deviations for other researchers' knowledge.
+* **NOTIFICATION**: These messages simply tell you how your dataset's content compares to practical thresholds on things like age, concept counts, death events, and visit types. These thresholds are not necessarily gold-standard, just values that are thought to be reasonable expected minimums or maximums. Feel free to ignore these NOTIFICATIONs if the expected values do not make sense with your particular dataset.
+
 ## Fetch a data frame with the Heel Results
+
+Once **achillesHeel** is run, you can fetch the results into a data frame for further consumption into whichever format you like using the **fetchAchillesHeelResults** function.
 
 ```{r tidy = FALSE, eval = FALSE}
 connectionDetails <- createConnectionDetails(dbms = "postgresql", 
@@ -339,7 +353,7 @@ fetchAchillesHeelResults(connectionDetails = connectionDetails,
 
 ## View the Heel Results in HTML
 
-The Heel Results Shiny Application can be useful in interacting with the Heel Results.
+The Heel Results Shiny Application can be useful in interacting with the Heel Results. The Heel warnings are color-coded based on severity ("ERROR", "WARNING", "NOTIFICATION"), and are searchable.
 
 ```{r echo = FALSE}
 knitr::include_graphics(path = "../inst/doc/shinyHeel_screenshot.png")
