@@ -140,7 +140,7 @@ achilles <- function (connectionDetails,
                    sqlOnly = sqlOnly)
   }
   
-  # Get source name if none provided --------------------------------------------------
+  # Get source name if none provided ----------------------------------------------------------------------------------------------
   
   if (missing(sourceName) & !sqlOnly) {
     .getSourceName(connectionDetails, cdmDatabaseSchema)
@@ -157,7 +157,7 @@ achilles <- function (connectionDetails,
     analysisDetails <- analysisDetails[analysisDetails$COST == 0, ]
   }
   
-  # Check if cohort table is present -------------------------------------------------------------------------------------
+  # Check if cohort table is present ---------------------------------------------------------------------------------------------
   
   connection <- DatabaseConnector::connect(connectionDetails = connectionDetails)
   
@@ -198,6 +198,7 @@ achilles <- function (connectionDetails,
     scratchDatabaseSchema <- "#"
     schemaDelim <- "s_"
     ParallelLogger::logInfo("Beginning single-threaded execution")
+    
     # first invocation of the connection, to persist throughout to maintain temp tables
     connection <- DatabaseConnector::connect(connectionDetails = connectionDetails) 
   } else if (!requireNamespace("OhdsiRTools", quietly = TRUE)) {
@@ -213,6 +214,13 @@ achilles <- function (connectionDetails,
     ) 
   } else {
     ParallelLogger::logInfo("Beginning multi-threaded execution")
+  }
+  
+  ## Remove existing results if createTable is FALSE ----------------------------------------------------------------
+  
+  if (!createTable) {
+    .deleteExistingResults(connectionDetails = connectionDetails, 
+                           analysisDetails = analysisDetails)  
   }
   
   # Create analysis table -------------------------------------------------------------
@@ -463,10 +471,14 @@ achilles <- function (connectionDetails,
     if (numThreads == 1) {
       for (mainSql in mainSqls) {
         start <- Sys.time()
-        ParallelLogger::logInfo(sprintf("Main Analysis #%d (%s): START", mainSql$analysisId, 
+        ParallelLogger::logInfo(sprintf("Analysis %d (%s) -- START", mainSql$analysisId, 
                                         analysisDetails$ANALYSIS_NAME[analysisDetails$ANALYSIS_ID == mainSql$analysisId]))
-        DatabaseConnector::executeSql(connection = connection, sql = mainSql$sql)
-        ParallelLogger::logInfo(sprintf("Main Analysis #%d: COMPLETE (%f secs)", mainSql$analysisId, Sys.time() - start))
+        tryCatch({
+          DatabaseConnector::executeSql(connection = connection, sql = mainSql$sql)
+          ParallelLogger::logInfo(sprintf("Analysis %d -- COMPLETE (%f secs)", mainSql$analysisId, Sys.time() - start))  
+        }, error = function(e) {
+          ParallelLogger::logError(sprintf("Analysis %d -- ERROR %s", mainSql$analysisId, e))
+        })
       }
     } else {
       cluster <- OhdsiRTools::makeCluster(numberOfThreads = numThreads, singleThreadToMain = TRUE)
@@ -474,12 +486,17 @@ achilles <- function (connectionDetails,
                                          x = mainSqls, 
                                          function(mainSql) {
                                            start <- Sys.time()
-                                           ParallelLogger::logInfo(sprintf("Main Analysis #%d (%s): START", mainSql$analysisId, 
-                                                                           analysisDetails$ANALYSIS_NAME[analysisDetails$ANALYSIS_ID == mainSql$analysisId]))
                                            connection <- DatabaseConnector::connect(connectionDetails = connectionDetails)
-                                           DatabaseConnector::executeSql(connection = connection, sql = mainSql$sql)
-                                           DatabaseConnector::disconnect(connection = connection)
-                                           ParallelLogger::logInfo(sprintf("Main Analysis #%d: COMPLETE (%f secs)", mainSql$analysisId, Sys.time() - start))
+                                           ParallelLogger::logInfo(sprintf("Main Analysis %d (%s) -- START", mainSql$analysisId, 
+                                                                           analysisDetails$ANALYSIS_NAME[analysisDetails$ANALYSIS_ID == mainSql$analysisId]))
+                                           tryCatch({
+                                             DatabaseConnector::executeSql(connection = connection, sql = mainSql$sql)
+                                             ParallelLogger::logInfo(sprintf("Main Analysis %d -- COMPLETE (%f secs)", mainSql$analysisId, Sys.time() - start))  
+                                           }, error = function(e) {
+                                             ParallelLogger::logError(sprintf("Analysis %d -- ERROR %s", mainSql$analysisId, e))
+                                           }, finally = function(f) {
+                                             DatabaseConnector::disconnect(connection = connection)
+                                           })
                                          })
       
       OhdsiRTools::stopCluster(cluster = cluster)
@@ -975,8 +992,13 @@ dropAllScratchTables <- function(connectionDetails,
                                        x = dropSqls, 
                                        function(sql) {
                                          connection <- DatabaseConnector::connect(connectionDetails = connectionDetails)
-                                         DatabaseConnector::executeSql(connection = connection, sql = sql)
-                                         DatabaseConnector::disconnect(connection = connection)
+                                         tryCatch({
+                                           DatabaseConnector::executeSql(connection = connection, sql = sql)  
+                                         }, error = function(e) {
+                                           ParallelLogger::logError(sprintf("Drop Achilles Scratch Table -- ERROR (%s)", e))  
+                                         }, finally = function(f) {
+                                           DatabaseConnector::disconnect(connection = connection)
+                                         })
                                        })
     
     OhdsiRTools::stopCluster(cluster = cluster)
@@ -1008,8 +1030,13 @@ dropAllScratchTables <- function(connectionDetails,
                                        x = dropSqls, 
                                        function(sql) {
                                          connection <- DatabaseConnector::connect(connectionDetails = connectionDetails)
-                                         DatabaseConnector::executeSql(connection = connection, sql = sql)
-                                         DatabaseConnector::disconnect(connection = connection)
+                                         tryCatch({
+                                           DatabaseConnector::executeSql(connection = connection, sql = sql)  
+                                         }, error = function(e) {
+                                           ParallelLogger::logError(sprintf("Drop Heel Scratch Table -- ERROR (%s)", e))  
+                                         }, finally = function(f) {
+                                           DatabaseConnector::disconnect(connection = connection)
+                                         })
                                        })
     
     OhdsiRTools::stopCluster(cluster = cluster)
@@ -1041,8 +1068,13 @@ dropAllScratchTables <- function(connectionDetails,
                                        x = dropSqls, 
                                        function(sql) {
                                          connection <- DatabaseConnector::connect(connectionDetails = connectionDetails)
-                                         DatabaseConnector::executeSql(connection = connection, sql = sql)
-                                         DatabaseConnector::disconnect(connection = connection)
+                                         tryCatch({
+                                           DatabaseConnector::executeSql(connection = connection, sql = sql)  
+                                         }, error = function(e) {
+                                           ParallelLogger::logError(sprintf("Drop Concept Hierarchy Scratch Table -- ERROR (%s)", e))  
+                                         }, finally = function(f) {
+                                           DatabaseConnector::disconnect(connection = connection)
+                                         })
                                        })
     
     OhdsiRTools::stopCluster(cluster = cluster)
@@ -1158,4 +1190,32 @@ dropAllScratchTables <- function(connectionDetails,
     rm(connection)
   })
   sourceName
+}
+
+.deleteExistingResults <- function(connectionDetails,
+                                   analysisDetails) {
+  
+  
+  resultIds <- analysisDetails$ANALYSIS_ID[analysisDetails$DISTRIBUTION == 0]
+  distIds <- analysisDetails$ANALYSIS_ID[analysisDetails$DISTRIBUTION == 1]
+  
+  if (length(resultIds) > 0) {
+    sql <- SqlRender::renderSql(sql = "delete from @resultsDatabaseSchema.achilles_results where analysis_id in (@analysisIds);",
+                                resultsDatabaseSchema = resultsDatabaseSchema,
+                                analysisIds = paste(resultIds, collapse = ","))$sql  
+    sql <- SqlRender::translateSql(sql = sql, targetDialect = connectionDetails$dbms)$sql
+    connection <- DatabaseConnector::connect(connectionDetails = connectionDetails)
+    DatabaseConnector::executeSql(connection = connection, sql = sql)
+    DatabaseConnector::disconnect(connection = connection)
+  }
+  
+  if (length(distIds) > 0) {
+    sql <- SqlRender::renderSql(sql = "delete from @resultsDatabaseSchema.achilles_results_dist where analysis_id in (@analysisIds);",
+                                resultsDatabaseSchema = resultsDatabaseSchema,
+                                analysisIds = paste(distIds, collapse = ","))$sql
+    sql <- SqlRender::translateSql(sql = sql, targetDialect = connectionDetails$dbms)$sql
+    connection <- DatabaseConnector::connect(connectionDetails = connectionDetails)
+    DatabaseConnector::executeSql(connection = connection, sql = sql)
+    DatabaseConnector::disconnect(connection = connection)
+  }
 }
