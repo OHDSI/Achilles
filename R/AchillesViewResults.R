@@ -33,6 +33,13 @@
 
 #' @param resultsDatabaseSchema		         Fully qualified name of database schema that we can fetch final results from.
 #'                                         On SQL Server, this should specifiy both the database and the schema, so for example, on SQL Server, 'cdm_results.dbo'.
+#' @param scratchDatabaseSchema            Fully qualified name of the database schema that will store all of the intermediate scratch tables, so for example, on SQL Server, 'cdm_scratch.dbo'. 
+#'                                         Must be accessible to/from the cdmDatabaseSchema and the resultsDatabaseSchema. Default is resultsDatabaseSchema. 
+#'                                         Making this "#" will run Achilles in single-threaded mode and use temporary tables instead of permanent tables.
+#' @param vocabDatabaseSchema		           String name of database schema that contains OMOP Vocabulary. Default is cdmDatabaseSchema. On SQL Server, this should specifiy both the database and the schema, so for example 'results.dbo'.
+#' @param tempAchillesPrefix               (OPTIONAL, multi-threaded mode) The prefix to use for the scratch Achilles analyses tables. Default is "tmpach"
+#' @param tempHeelPrefix                   (OPTIONAL, multi-threaded mode) The prefix to use for the "temporary" (but actually permanent) Heel tables. Default is "tmpheel"
+#' @param numThreads                       (OPTIONAL, multi-threaded mode) The number of threads to use to run Achilles in parallel. Default is 1 thread.
 #' @param outputFolder                     Path to store logs and SQL files
 #' 
 #' @details 
@@ -42,6 +49,11 @@
 launchHeelResultsViewer <- function(connectionDetails,
                                     cdmDatabaseSchema,
                                     resultsDatabaseSchema,
+                                    scratchDatabaseSchema = resultsDatabaseSchema,
+                                    vocabDatabaseSchema = cdmDatabaseSchema,
+                                    tempAchillesPrefix = "tmpach",
+                                    tempHeelPrefix = "tmpheel",
+                                    numThreads = 1,
                                     outputFolder) {
   dependencies <- c("shiny",
                     "DT",
@@ -59,12 +71,27 @@ launchHeelResultsViewer <- function(connectionDetails,
       stop(message, call. = FALSE)
     }
   }
+  
+  schemaDelim <- "."
+  
+  if (numThreads == 1 || scratchDatabaseSchema == "#") {
+    numThreads <- 1
+    scratchDatabaseSchema <- "#"
+    schemaDelim <- "s_"
+  } 
 
   issues <- fetchAchillesHeelResults(connectionDetails = connectionDetails, 
                                      resultsDatabaseSchema = resultsDatabaseSchema)
   
-  Sys.setenv(outputFolder = file.path(getwd(), outputFolder))
-  Sys.setenv(sourceName = .getSourceName(connectionDetails, cdmDatabaseSchema))
+  Sys.setenv(outputFolder = file.path(getwd(), outputFolder),
+             sourceName = .getSourceName(connectionDetails, cdmDatabaseSchema),
+             dbms = connectionDetails$dbms,
+             cdmDatabaseSchema = cdmDatabaseSchema,
+             resultsDatabaseSchema = resultsDatabaseSchema,
+             scratchDatabaseSchema = scratchDatabaseSchema,
+             schemaDelim = schemaDelim,
+             tempAchillesPrefix = tempAchillesPrefix,
+             tempHeelPrefix = tempHeelPrefix)
   
   saveRDS(object = issues, file = file.path(outputFolder, "heelResults.rds"))
   
