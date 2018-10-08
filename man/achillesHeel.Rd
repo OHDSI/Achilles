@@ -11,7 +11,8 @@ achillesHeel(connectionDetails, cdmDatabaseSchema,
   numThreads = 1, tempHeelPrefix = "tmpheel",
   dropScratchTables = FALSE, ThresholdAgeWarning = 125,
   ThresholdOutpatientVisitPerc = 0.43,
-  ThresholdMinimalPtMeasDxRx = 20.5, outputFolder, sqlOnly = FALSE)
+  ThresholdMinimalPtMeasDxRx = 20.5, outputFolder, sqlOnly = FALSE,
+  verboseMode = TRUE)
 }
 \arguments{
 \item{connectionDetails}{An R object of type \code{connectionDetails} created using the function \code{createConnectionDetails} in the \code{DatabaseConnector} package.}
@@ -42,6 +43,8 @@ so for example 'results.dbo'.}
 \item{outputFolder}{Path to store logs and SQL files}
 
 \item{sqlOnly}{Boolean to determine if Heel should be fully executed. TRUE = just generate SQL files, don't actually run, FALSE = run Achilles Heel}
+
+\item{verboseMode}{Boolean to determine if the console will show all execution steps. Default = TRUE}
 }
 \value{
 The full Heel SQL code

@@ -13,7 +13,7 @@ achilles(connectionDetails, cdmDatabaseSchema,
   runCostAnalysis = FALSE, conceptHierarchy = TRUE,
   createIndices = TRUE, numThreads = 1,
   tempAchillesPrefix = "tmpach", dropScratchTables = TRUE,
-  sqlOnly = FALSE, outputFolder = "output")
+  sqlOnly = FALSE, outputFolder = "output", verboseMode = TRUE)
 }
 \arguments{
 \item{connectionDetails}{An R object of type \code{connectionDetails} created using the function \code{createConnectionDetails} in the \code{DatabaseConnector} package.}
@@ -62,6 +62,8 @@ You could run this once for 1 Vocab version, and then copy the table to all CDMs
 \item{sqlOnly}{Boolean to determine if Achilles should be fully executed. TRUE = just generate SQL files, don't actually run, FALSE = run Achilles}
 
 \item{outputFolder}{Path to store logs and SQL files}
+
+\item{verboseMode}{Boolean to determine if the console will show all execution steps. Default = TRUE}
 }
 \value{
 An object of type \code{achillesResults} containing details for connecting to the database containing the results

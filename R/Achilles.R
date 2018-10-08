@@ -60,6 +60,7 @@
 #' @param dropScratchTables                (OPTIONAL, multi-threaded mode) TRUE = drop the scratch tables (may take time depending on dbms), FALSE = leave them in place for later removal.
 #' @param sqlOnly                          Boolean to determine if Achilles should be fully executed. TRUE = just generate SQL files, don't actually run, FALSE = run Achilles
 #' @param outputFolder                     Path to store logs and SQL files
+#' @param verboseMode                      Boolean to determine if the console will show all execution steps. Default = TRUE
 #' 
 #' @return                                 An object of type \code{achillesResults} containing details for connecting to the database containing the results 
 #' @examples                               \dontrun{
@@ -94,9 +95,28 @@ achilles <- function (connectionDetails,
                       tempAchillesPrefix = "tmpach",
                       dropScratchTables = TRUE,
                       sqlOnly = FALSE,
-                      outputFolder = "output") {
+                      outputFolder = "output",
+                      verboseMode = TRUE) {
   
   achillesSql <- c()
+  
+  # Log execution -----------------------------------------------------------------------------------------------------------------
+  ParallelLogger::clearLoggers()
+  unlink(file.path(outputFolder, "log_achilles.txt"))
+  
+  if (verboseMode) {
+    appenders <- list(ParallelLogger::createConsoleAppender(),
+                      ParallelLogger::createFileAppender(layout = ParallelLogger::layoutParallel, 
+                                                         fileName = file.path(outputFolder, "log_achilles.txt")))    
+  } else {
+    appenders <- list(ParallelLogger::createFileAppender(layout = ParallelLogger::layoutParallel, 
+                                                         fileName = file.path(outputFolder, "log_achilles.txt")))
+  }
+  
+  logger <- ParallelLogger::createLogger(name = "achilles",
+                                         threshold = "INFO",
+                                         appenders = appenders)
+  ParallelLogger::registerLogger(logger) 
   
   # Try to get CDM Version if not provided ----------------------------------------------------------------------------------------
   
@@ -118,15 +138,6 @@ achilles <- function (connectionDetails,
   if (!dir.exists(outputFolder)) {
     dir.create(path = outputFolder, recursive = TRUE)
   }
-  
-  # Log execution --------------------------------------------------------------------------------------------------------------------
-  
-  unlink(file.path(outputFolder, "log_achilles.txt"))
-  logger <- ParallelLogger::createLogger(name = "achilles",
-                                               threshold = "INFO",
-                                               appenders = list(ParallelLogger::createFileAppender(layout = ParallelLogger::layoutParallel, 
-                                                                                                   fileName = file.path(outputFolder, "log_achilles.txt"))))
-  ParallelLogger::registerLogger(logger) 
   
   # (optional) Validate CDM schema --------------------------------------------------------------------------------------------------
   
@@ -197,6 +208,7 @@ achilles <- function (connectionDetails,
     numThreads <- 1
     scratchDatabaseSchema <- "#"
     schemaDelim <- "s_"
+    
     ParallelLogger::logInfo("Beginning single-threaded execution")
     
     # first invocation of the connection, to persist throughout to maintain temp tables
@@ -586,7 +598,8 @@ achilles <- function (connectionDetails,
                                            numThreads = numThreads,
                                            tempAchillesPrefix = tempAchillesPrefix,
                                            sqlOnly = sqlOnly,
-                                           outputFolder = outputFolder)
+                                           outputFolder = outputFolder,
+                                           verboseMode = verboseMode)
   }
   achillesSql <- c(achillesSql, hierarchySql)
 
@@ -599,7 +612,8 @@ achilles <- function (connectionDetails,
     indicesSql <- createIndices(connectionDetails = connectionDetails,
                                 resultsDatabaseSchema = resultsDatabaseSchema,
                                 outputFolder = outputFolder,
-                                sqlOnly = sqlOnly)    
+                                sqlOnly = sqlOnly,
+                                verboseMode = verboseMode)    
   }
   achillesSql <- c(achillesSql, indicesSql)
   
@@ -616,7 +630,8 @@ achilles <- function (connectionDetails,
                                 numThreads = numThreads,
                                 tempHeelPrefix = "tmpheel",
                                 dropScratchTables = dropScratchTables,
-                                outputFolder = outputFolder)
+                                outputFolder = outputFolder,
+                                verboseMode = verboseMode)
     heelSql <- heelResults$heelSql
   }
   
@@ -664,6 +679,7 @@ achilles <- function (connectionDetails,
 #' @param numThreads                       (OPTIONAL, multi-threaded mode) The number of threads to use to run Achilles in parallel. Default is 1 thread.
 #' @param tempAchillesPrefix               (OPTIONAL, multi-threaded mode) The prefix to use for the scratch Achilles analyses tables. Default is "tmpach"
 #' @param sqlOnly                          TRUE = just generate SQL files, don't actually run, FALSE = run Achilles
+#' @param verboseMode                      Boolean to determine if the console will show all execution steps. Default = TRUE 
 #' 
 #' @export
 createConceptHierarchy <- function(connectionDetails, 
@@ -673,15 +689,24 @@ createConceptHierarchy <- function(connectionDetails,
                                    outputFolder,
                                    numThreads = 1,
                                    tempAchillesPrefix = "tmpach",
-                                   sqlOnly = FALSE) {
+                                   sqlOnly = FALSE,
+                                   verboseMode = TRUE) {
   
   # Log execution --------------------------------------------------------------------------------------------------------------------
   
   unlink(file.path(outputFolder, "log_conceptHierarchy.txt"))
+  if (verboseMode) {
+    appenders <- list(ParallelLogger::createConsoleAppender(),
+                      ParallelLogger::createFileAppender(layout = ParallelLogger::layoutParallel, 
+                                                         fileName = file.path(outputFolder, "log_conceptHierarchy.txt")))    
+  } else {
+    appenders <- list(ParallelLogger::createFileAppender(layout = ParallelLogger::layoutParallel, 
+                                                         fileName = file.path(outputFolder, "log_conceptHierarchy.txt")))
+  }
+  
   logger <- ParallelLogger::createLogger(name = "conceptHierarchy",
                                          threshold = "INFO",
-                                         appenders = list(ParallelLogger::createFileAppender(layout = ParallelLogger::layoutParallel, 
-                                                                                             fileName = file.path(outputFolder, "log_conceptHierarchy.txt"))))
+                                         appenders = appenders)
   ParallelLogger::registerLogger(logger) 
   
   schemaDelim <- "."
@@ -775,20 +800,29 @@ createConceptHierarchy <- function(connectionDetails,
 #'                                         On SQL Server, this should specifiy both the database and the schema, so for example, on SQL Server, 'cdm_results.dbo'.
 #' @param outputFolder                     Path to store logs and SQL files
 #' @param sqlOnly                          TRUE = just generate SQL files, don't actually run, FALSE = run Achilles
+#' @param verboseMode                      Boolean to determine if the console will show all execution steps. Default = TRUE  
 #' 
 #' @export
 createIndices <- function(connectionDetails,
                           resultsDatabaseSchema,
                           outputFolder,
-                          sqlOnly = FALSE) {
+                          sqlOnly = FALSE,
+                          verboseMode = TRUE) {
   
   # Log execution --------------------------------------------------------------------------------------------------------------------
   
   unlink(file.path(outputFolder, "log_createIndices.txt"))
+  if (verboseMode) {
+    appenders <- list(ParallelLogger::createConsoleAppender(),
+                      ParallelLogger::createFileAppender(layout = ParallelLogger::layoutParallel, 
+                                                         fileName = file.path(outputFolder, "log_createIndices.txt")))    
+  } else {
+    appenders <- list(ParallelLogger::createFileAppender(layout = ParallelLogger::layoutParallel, 
+                                                         fileName = file.path(outputFolder, "log_createIndices.txt")))
+  }
   logger <- ParallelLogger::createLogger(name = "createIndices",
                                          threshold = "INFO",
-                                         appenders = list(ParallelLogger::createFileAppender(layout = ParallelLogger::layoutParallel, 
-                                                                                             fileName = file.path(outputFolder, "log_createIndices.txt"))))
+                                         appenders = appenders)
   ParallelLogger::registerLogger(logger) 
   
   dropIndicesSql <- c()
@@ -869,6 +903,7 @@ createIndices <- function(connectionDetails,
 #' @param runCostAnalysis                  Boolean to determine if cost analysis should be run. Note: only works on CDM v5 and v5.1.0+ style cost tables.
 #' @param outputFolder                     Path to store logs and SQL files
 #' @param sqlOnly                          TRUE = just generate SQL files, don't actually run, FALSE = run Achilles
+#' @param verboseMode                      Boolean to determine if the console will show all execution steps. Default = TRUE  
 #' 
 #' @export
 validateSchema <- function(connectionDetails,
@@ -877,15 +912,23 @@ validateSchema <- function(connectionDetails,
                            cdmVersion,
                            runCostAnalysis,
                            outputFolder,
-                           sqlOnly = FALSE) {
+                           sqlOnly = FALSE,
+                           verboseMode = TRUE) {
   
   # Log execution --------------------------------------------------------------------------------------------------------------------
   
   unlink(file.path(outputFolder, "log_validateSchema.txt"))
+  if (verboseMode) {
+    appenders <- list(ParallelLogger::createConsoleAppender(),
+                      ParallelLogger::createFileAppender(layout = ParallelLogger::layoutParallel, 
+                                                         fileName = file.path(outputFolder, "log_validateSchema.txt")))    
+  } else {
+    appenders <- list(ParallelLogger::createFileAppender(layout = ParallelLogger::layoutParallel, 
+                                                         fileName = file.path(outputFolder, "log_validateSchema.txt")))
+  }
   logger <- ParallelLogger::createLogger(name = "validateSchema",
                                          threshold = "INFO",
-                                         appenders = list(ParallelLogger::createFileAppender(layout = ParallelLogger::layoutParallel, 
-                                                                                             fileName = file.path(outputFolder, "log_validateSchema.txt"))))
+                                         appenders = appenders)
   ParallelLogger::registerLogger(logger) 
   
   majorVersions <- lapply(c("5", "5.1", "5.2", "5.3"), function(majorVersion) {
@@ -951,6 +994,7 @@ getAnalysisDetails <- function() {
 #' @param numThreads                       The number of threads to use to run this function. Default is 1 thread.
 #' @param tableTypes                       The types of Achilles scratch tables to drop: achilles or heel or concept_hierarchy or all 3
 #' @param outputFolder                     Path to store logs and SQL files
+#' @param verboseMode                      Boolean to determine if the console will show all execution steps. Default = TRUE  
 #' 
 #' @export
 dropAllScratchTables <- function(connectionDetails, 
@@ -959,15 +1003,23 @@ dropAllScratchTables <- function(connectionDetails,
                                  tempHeelPrefix = "tmpheel", 
                                  numThreads = 1,
                                  tableTypes = c("achilles", "heel", "concept_hierarchy"),
-                                 outputFolder) {
+                                 outputFolder,
+                                 verboseMode = TRUE) {
   
   # Log execution --------------------------------------------------------------------------------------------------------------------
   
   unlink(file.path(outputFolder, "log_dropScratchTables.txt"))
+  if (verboseMode) {
+    appenders <- list(ParallelLogger::createConsoleAppender(),
+                      ParallelLogger::createFileAppender(layout = ParallelLogger::layoutParallel, 
+                                                         fileName = file.path(outputFolder, "log_dropScratchTables.txt")))    
+  } else {
+    appenders <- list(ParallelLogger::createFileAppender(layout = ParallelLogger::layoutParallel, 
+                                                         fileName = file.path(outputFolder, "log_dropScratchTables.txt")))
+  }
   logger <- ParallelLogger::createLogger(name = "dropAllScratchTables",
                                          threshold = "INFO",
-                                         appenders = list(ParallelLogger::createFileAppender(layout = ParallelLogger::layoutParallel, 
-                                                                                             fileName = file.path(outputFolder, "log_dropScratchTables.txt"))))
+                                         appenders = appenders)
   ParallelLogger::registerLogger(logger) 
   
   connection <- DatabaseConnector::connect(connectionDetails = connectionDetails)

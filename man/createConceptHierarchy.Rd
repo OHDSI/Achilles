@@ -6,7 +6,8 @@
 \usage{
 createConceptHierarchy(connectionDetails, resultsDatabaseSchema,
   scratchDatabaseSchema, vocabDatabaseSchema, outputFolder,
-  numThreads = 1, tempAchillesPrefix = "tmpach", sqlOnly = FALSE)
+  numThreads = 1, tempAchillesPrefix = "tmpach", sqlOnly = FALSE,
+  verboseMode = TRUE)
 }
 \arguments{
 \item{connectionDetails}{An R object of type \code{connectionDetails} created using the function \code{createConnectionDetails} in the \code{DatabaseConnector} package.}
@@ -27,6 +28,8 @@ Making this "#" will run Achilles in single-threaded mode and use temporary tabl
 \item{tempAchillesPrefix}{(OPTIONAL, multi-threaded mode) The prefix to use for the scratch Achilles analyses tables. Default is "tmpach"}
 
 \item{sqlOnly}{TRUE = just generate SQL files, don't actually run, FALSE = run Achilles}
+
+\item{verboseMode}{Boolean to determine if the console will show all execution steps. Default = TRUE}
 }
 \description{
 Create the concept hierarchy

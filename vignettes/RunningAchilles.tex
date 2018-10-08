@@ -143,7 +143,7 @@ then be consumed graphically using
 \href{https://github.com/OHDSI/Atlas}{Atlas Data Sources}.
 
 It is a best practice for all OHDSI sites to run Achilles on their CDM
-datasets to ensure researchers can examine study feasibility and
+datasets to ensure researchers can evaluate study feasibility and
 contextualize study results.
 
 \section{General Approach}\label{general-approach}
@@ -214,6 +214,13 @@ interactively.
 \end{Shaded}
 
 \includegraphics{../inst/doc/logging_screenshot.png}
+
+\subsection{Verbose Mode}\label{verbose-mode}
+
+The \texttt{verboseMode} parameter can be set to FALSE if you'd like
+less details about the function execution to appear in the console.
+Either way, all details are written to the log files. By default, this
+is set to TRUE.
 
 \subsection{Preparation for running
 Achilles}\label{preparation-for-running-achilles}
@@ -333,7 +340,7 @@ separately}
 \emph{This parameter is only necessary if running in multi-threaded
 mode}
 
-The \texttt{dropScratchTables} parameter, if set to \texttt{TRUE} will
+The \texttt{dropScratchTables} parameter, if set to \texttt{TRUE}, will
 drop all staging tables created during the execution of
 \textbf{achilles} in multi-threaded mode.
 
@@ -345,7 +352,7 @@ separately}
 \emph{This table is only necessary if using Atlas Data Sources to
 consume Achilles results}
 
-The \texttt{conceptHierarchy} parameter, if set to \texttt{TRUE} will
+The \texttt{conceptHierarchy} parameter, if set to \texttt{TRUE}, will
 result in the concpet\_hierarchy table to be created in the results
 schema.
 
@@ -354,11 +361,17 @@ schema.
 \emph{See the Post-Processing section to read about how to run this step
 separately}
 
+The \texttt{createIndices} parameter, if set to \texttt{TRUE}, will
+result in indices on the Achilles results tables to be created in order
+to improve query performance.
+
 \subsection{Return Value}\label{return-value}
 
 When running \textbf{achilles}, the return value, if you assign a
 variable to the function call, is a list object in which metadata about
-the execution and all of the SQL scripts executed are attributes.
+the execution and all of the SQL scripts executed are attributes. You
+can also run the function call without assigning a variable to it, so
+that no values are printed or returned.
 
 \section{Running Achilles: Single-Threaded
 Mode}\label{running-achilles-single-threaded-mode}
@@ -598,7 +611,7 @@ The default value is to drop them all.
 \end{Highlighting}
 \end{Shaded}
 
-\section{Examining the Results}\label{examining-the-results}
+\section{Examining the Heel Results}\label{examining-the-heel-results}
 
 To view the Heel results, you can use the fetchAchillesHeelResults()
 function or the launchHeelResultsViewer() function. The former produces
@@ -617,14 +630,16 @@ Heel Results are warnings split into 3 categories:
   investigate further. Use the \textbf{getAnalysisDetails} function to
   identify the Achilles analysis, and use the
   \textbf{fetchAchillesAnalysisResults} function to view the exact
-  results of that analysis.
+  results of that analysis. Additionally, the
+  \textbf{launchHeelResultsViewer} function launches a Shiny Application
+  that can directly provide you with the associated SQL scripts.
 \item
   \textbf{WARNING}: Something \emph{may} be an issue with the domain or
   concept associated with the Achilles analysis Id or Heel rule Id.
   However, not all datasets are the same; Achilles Heel tries to compare
   yours to a gold-standard dataset, so it is very likely you will
-  encounter some WARNINGs. Feel free to ignore these WARNINGs if it is
-  an acceptable deviation from the gold-standard, but it is good
+  encounter some WARNINGs. Feel free to ignore these WARNINGs if they
+  are acceptable deviations from the gold-standard, but it is good
   practice to document these deviations for other researchers'
   knowledge.
 \item
@@ -656,14 +671,23 @@ frame for further consumption into whichever format you like using the
 \end{Highlighting}
 \end{Shaded}
 
-\subsection{View the Heel Results in
-HTML}\label{view-the-heel-results-in-html}
+\subsection{View Heel Results in Interactive Shiny
+Application}\label{view-heel-results-in-interactive-shiny-application}
 
 The Heel Results Shiny Application can be useful in interacting with the
 Heel Results. The Heel warnings are color-coded based on severity
-(``ERROR'', ``WARNING'', ``SEVERE''), and are searchable.
+(``ERROR'', ``WARNING'', ``NOTIFICATION''), and are searchable. You can
+also click on a row to see the associated Analysis and Heel SQL scripts
+to try to debug the root cause. Results can be downloaded to CSV using
+the ``Download Heel Results'' button.
 
 \includegraphics{../inst/doc/shinyHeel_screenshot.png}
+
+When calling \textbf{launchHeelResultsViewer}, use the same parameters
+you used to execute \textbf{achilles} and \textbf{achillesHeel}. The
+Shiny app will use the parameters to render and translate the associated
+SQL scripts so that you can copy and run them separately to debug
+issues.
 
 \begin{Shaded}
 \begin{Highlighting}[]
@@ -674,18 +698,23 @@ Heel Results. The Heel warnings are color-coded based on severity
 \KeywordTok{launchHeelResultsViewer}\NormalTok{(}\DataTypeTok{connectionDetails =}\NormalTok{ connectionDetails, }
                         \DataTypeTok{cdmDatabaseSchema =} \StringTok{"cdm"}\NormalTok{, }
                         \DataTypeTok{resultsDatabaseSchema =} \StringTok{"results"}\NormalTok{, }
-                        \DataTypeTok{outputFolder =} \StringTok{"output"}\NormalTok{)}
+                        \DataTypeTok{scratchDatabaseSchema =} \StringTok{"scratch"}\NormalTok{,}
+                        \DataTypeTok{outputFolder =} \StringTok{"output"}\NormalTok{, }
+                        \DataTypeTok{numThreads =} \DecValTok{5}\NormalTok{)}
 \end{Highlighting}
 \end{Shaded}
 
 \subsection{Using AchillesWeb}\label{using-achillesweb}
 
 AchillesWeb is a lightweight web application that can be used to consume
-the Achilles results graphically. It is no longer updated, as
-development priorities have shifted towards Atlas Data Sources, but
-AchillesWeb can still be utilized. To connect Achilles results to
-AchillesWeb, the Achilles results need to be exported to JSON files and
-the AchillesWeb JSON file needs to point to those JSON files.
+the Achilles and Heel results graphically. It is no longer actively
+updated, as development priorities have shifted towards Atlas Data
+Sources, but AchillesWeb can still be utilized. To connect Achilles
+results to AchillesWeb, the Achilles results need to be exported to JSON
+files and the AchillesWeb JSON file needs to point to those JSON files.
+
+Please refer to \href{https://github.com/OHDSI/AchillesWeb}{AchillesWeb}
+for more information.
 
 \subsubsection{Exporting to JSON}\label{exporting-to-json}
 
@@ -737,6 +766,9 @@ files.
 If the Achilles results tables and the concept\_hierarchy table are
 present in the results schema, you can point Atlas to this schema to
 have the results appear graphically in Atlas Data Sources.
+
+Please refer to \href{https://github.com/OHDSI/Atlas}{Atlas Data
+Sources} for more information.
 
 \section{Acknowledgments}\label{acknowledgments}
 

@@ -49,6 +49,7 @@
 #' @param ThresholdMinimalPtMeasDxRx       The minimum percentage of patients with at least 1 Measurement, 1 Dx, and 1 Rx
 #' @param sqlOnly                          Boolean to determine if Heel should be fully executed. TRUE = just generate SQL files, don't actually run, FALSE = run Achilles Heel
 #' @param outputFolder                     Path to store logs and SQL files
+#' @param verboseMode                      Boolean to determine if the console will show all execution steps. Default = TRUE  
 #' 
 #' @return The full Heel SQL code
 #' @examples \dontrun{
@@ -76,7 +77,8 @@ achillesHeel <- function(connectionDetails,
                          ThresholdOutpatientVisitPerc = 0.43,
                          ThresholdMinimalPtMeasDxRx = 20.5,
                          outputFolder,
-                         sqlOnly = FALSE) {
+                         sqlOnly = FALSE,
+                         verboseMode = TRUE) {
   
   # Try to get CDM Version if not provided ----------------------------------------------------------------------------------------
   
@@ -104,10 +106,17 @@ achillesHeel <- function(connectionDetails,
   # Log execution --------------------------------------------------------------------------------------------------------------------
   
   unlink(file.path(outputFolder, "log_achillesHeel.txt"))
+  if (verboseMode) {
+    appenders <- list(ParallelLogger::createConsoleAppender(),
+                      ParallelLogger::createFileAppender(layout = ParallelLogger::layoutParallel, 
+                                                         fileName = file.path(outputFolder, "log_achillesHeel.txt")))    
+  } else {
+    appenders <- list(ParallelLogger::createFileAppender(layout = ParallelLogger::layoutParallel, 
+                                                         fileName = file.path(outputFolder, "log_achillesHeel.txt")))
+  }
   logger <- ParallelLogger::createLogger(name = "achillesHeel",
                                          threshold = "INFO",
-                                         appenders = list(ParallelLogger::createFileAppender(layout = ParallelLogger::layoutParallel, 
-                                                                                             fileName = file.path(outputFolder, "log_achillesHeel.txt"))))
+                                         appenders = appenders)
   ParallelLogger::registerLogger(logger) 
   
   # Initialize thread and scratchDatabaseSchema settings ----------------------------------------------------------------
@@ -151,7 +160,8 @@ achillesHeel <- function(connectionDetails,
                          tempAchillesPrefix = tempAchillesPrefix, 
                          numThreads = numThreads,
                          tableTypes = c("heel"),
-                         outputFolder = outputFolder)
+                         outputFolder = outputFolder,
+                         verboseMode = verboseMode)
     
     ParallelLogger::logInfo(sprintf("Temporary Heel tables removed from schema %s", scratchDatabaseSchema))
   }
@@ -365,7 +375,8 @@ achillesHeel <- function(connectionDetails,
                          scratchDatabaseSchema = scratchDatabaseSchema, 
                          tempAchillesPrefix = tempAchillesPrefix, 
                          numThreads = numThreads,
-                         tableTypes = c("heel"))
+                         tableTypes = c("heel"),
+                         verboseMode = verboseMode)
     
     ParallelLogger::logInfo(sprintf("Temporary Heel tables removed from schema %s", scratchDatabaseSchema))
   }

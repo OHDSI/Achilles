@@ -28,7 +28,7 @@ knitr::opts_chunk$set(
 
 In this vignette we cover how to run the Achilles package on your Common Data Model (CDM) database in order to characterize the dataset and run data quality (DQ) checks. The characterizations and DQ results can help you learn more about your dataset's features and limitations, and can then be consumed graphically using [AchillesWeb](https://github.com/OHDSI/AchillesWeb) or [Atlas Data Sources](https://github.com/OHDSI/Atlas). 
 
-It is a best practice for all OHDSI sites to run Achilles on their CDM datasets to ensure researchers can examine study feasibility and contextualize study results.
+It is a best practice for all OHDSI sites to run Achilles on their CDM datasets to ensure researchers can evaluate study feasibility and contextualize study results.
 
 # General Approach
 
@@ -66,6 +66,10 @@ ParallelLogger::launchLogViewer(logFileName = "output/log_achilles.txt")
 knitr::include_graphics(path = "../inst/doc/logging_screenshot.png")
 ```
 
+## Verbose Mode
+
+The `verboseMode` parameter can be set to FALSE if you'd like less details about the function execution to appear in the console. Either way, all details are written to the log files. By default, this is set to TRUE.
+
 ## Preparation for running Achilles
 
 In order to run the package, you will need to determine if you'd like the Achilles tables and staging tables to be stored in schemas that are separate from your CDM's schema (recommended), or within the same schema as the CDM. 
@@ -101,6 +105,7 @@ validateSchema(connectionDetails = connectionDetails,
 
 The following sub-sections describe the optional parameters in **achilles** that can be configured, regardless of whether you run the function in single- or multi-threaded mode.
 
+
 ## Staging Table Prefix
 
 To keep the staging tables organized, the **achilles** function will use a table prefix of "tmpach" by default, but you can choose a different one using the `tempAchillesPrefix` parameter. This is useful for database platforms like Oracle, which limit the length of table names.
@@ -131,7 +136,7 @@ To avoid patient identifiability, you can establish the minimum cell size that s
 
 *This parameter is only necessary if running in multi-threaded mode*
 
-The `dropScratchTables` parameter, if set to `TRUE` will drop all staging tables created during the execution of **achilles** in multi-threaded mode.
+The `dropScratchTables` parameter, if set to `TRUE`, will drop all staging tables created during the execution of **achilles** in multi-threaded mode.
 
 ## Concept Hierarchy
 
@@ -139,15 +144,17 @@ The `dropScratchTables` parameter, if set to `TRUE` will drop all staging tables
 
 *This table is only necessary if using Atlas Data Sources to consume Achilles results*
 
-The `conceptHierarchy` parameter, if set to `TRUE` will result in the concpet_hierarchy table to be created in the results schema. 
+The `conceptHierarchy` parameter, if set to `TRUE`, will result in the concpet_hierarchy table to be created in the results schema. 
 
 ## Create Indices
 
 *See the Post-Processing section to read about how to run this step separately*
 
+The `createIndices` parameter, if set to `TRUE`, will result in indices on the Achilles results tables to be created in order to improve query performance.
+
 ## Return Value
 
-When running **achilles**, the return value, if you assign a variable to the function call, is a list object in which metadata about the execution and all of the SQL scripts executed are attributes. 
+When running **achilles**, the return value, if you assign a variable to the function call, is a list object in which metadata about the execution and all of the SQL scripts executed are attributes. You can also run the function call without assigning a variable to it, so that no values are printed or returned.
 
 # Running Achilles: Single-Threaded Mode
 
@@ -327,14 +334,14 @@ dropAllScratchTables(connectionDetails = connectionDetails,
                      scratchDatabaseSchema = "scratch", numThreads = 5)
 ```
 
-# Examining the Results
+# Examining the Heel Results
 
 To view the Heel results, you can use the fetchAchillesHeelResults() function or the launchHeelResultsViewer() function. The former produces an R data frame that you can then export to various formats. The latter launches a Shiny application that renders the results in an easy to consume HTML file that can be viewed in your internet browser.
 
 Heel Results are warnings split into 3 categories: 
 
-* **ERROR**: Something is probably not right with the way you transformed your native dataset into the CDM dataset. Review the error message and the associated Achilles analysis Id and Heel rule Id to investigate further. Use the **getAnalysisDetails** function to identify the Achilles analysis, and use the **fetchAchillesAnalysisResults** function to view the exact results of that analysis.
-* **WARNING**: Something *may* be an issue with the domain or concept associated with the Achilles analysis Id or Heel rule Id. However, not all datasets are the same; Achilles Heel tries to compare yours to a gold-standard dataset, so it is very likely you will encounter some WARNINGs. Feel free to ignore these WARNINGs if it is an acceptable deviation from the gold-standard, but it is good practice to document these deviations for other researchers' knowledge.
+* **ERROR**: Something is probably not right with the way you transformed your native dataset into the CDM dataset. Review the error message and the associated Achilles analysis Id and Heel rule Id to investigate further. Use the **getAnalysisDetails** function to identify the Achilles analysis, and use the **fetchAchillesAnalysisResults** function to view the exact results of that analysis. Additionally, the **launchHeelResultsViewer** function launches a Shiny Application that can directly provide you with the associated SQL scripts.
+* **WARNING**: Something *may* be an issue with the domain or concept associated with the Achilles analysis Id or Heel rule Id. However, not all datasets are the same; Achilles Heel tries to compare yours to a gold-standard dataset, so it is very likely you will encounter some WARNINGs. Feel free to ignore these WARNINGs if they are acceptable deviations from the gold-standard, but it is good practice to document these deviations for other researchers' knowledge.
 * **NOTIFICATION**: These messages simply tell you how your dataset's content compares to practical thresholds on things like age, concept counts, death events, and visit types. These thresholds are not necessarily gold-standard, just values that are thought to be reasonable expected minimums or maximums. Feel free to ignore these NOTIFICATIONs if the expected values do not make sense with your particular dataset.
 
 ## Fetch a data frame with the Heel Results
@@ -351,13 +358,15 @@ fetchAchillesHeelResults(connectionDetails = connectionDetails,
                          resultsDatabaseSchema = "results")
 ```
 
-## View the Heel Results in HTML
+## View Heel Results in Interactive Shiny Application
 
-The Heel Results Shiny Application can be useful in interacting with the Heel Results. The Heel warnings are color-coded based on severity ("ERROR", "WARNING", "NOTIFICATION"), and are searchable.
+The Heel Results Shiny Application can be useful in interacting with the Heel Results. The Heel warnings are color-coded based on severity ("ERROR", "WARNING", "NOTIFICATION"), and are searchable. You can also click on a row to see the associated Analysis and Heel SQL scripts to try to debug the root cause. Results can be downloaded to CSV using the "Download Heel Results" button.
 
 ```{r echo = FALSE}
 knitr::include_graphics(path = "../inst/doc/shinyHeel_screenshot.png")
 ```
+
+When calling **launchHeelResultsViewer**, use the same parameters you used to execute **achilles** and **achillesHeel**. The Shiny app will use the parameters to render and translate the associated SQL scripts so that you can copy and run them separately to debug issues.
 
 ```{r tidy = FALSE, eval = FALSE}
 connectionDetails <- DatabaseConnector::createConnectionDetails(dbms = "postgresql", 
@@ -367,12 +376,16 @@ connectionDetails <- DatabaseConnector::createConnectionDetails(dbms = "postgres
 launchHeelResultsViewer(connectionDetails = connectionDetails, 
                         cdmDatabaseSchema = "cdm", 
                         resultsDatabaseSchema = "results", 
-                        outputFolder = "output")
+                        scratchDatabaseSchema = "scratch",
+                        outputFolder = "output", 
+                        numThreads = 5)
 ```
 
 ## Using AchillesWeb
 
-AchillesWeb is a lightweight web application that can be used to consume the Achilles results graphically. It is no longer updated, as development priorities have shifted towards Atlas Data Sources, but AchillesWeb can still be utilized. To connect Achilles results to AchillesWeb, the Achilles results need to be exported to JSON files and the AchillesWeb JSON file needs to point to those JSON files.
+AchillesWeb is a lightweight web application that can be used to consume the Achilles and Heel results graphically. It is no longer actively updated, as development priorities have shifted towards Atlas Data Sources, but AchillesWeb can still be utilized. To connect Achilles results to AchillesWeb, the Achilles results need to be exported to JSON files and the AchillesWeb JSON file needs to point to those JSON files.
+
+Please refer to [AchillesWeb](https://github.com/OHDSI/AchillesWeb) for more information.
 
 ### Exporting to JSON
 
@@ -407,6 +420,7 @@ addDataSource(jsonFolderPath = "output",
 
 If the Achilles results tables and the concept_hierarchy table are present in the results schema, you can point Atlas to this schema to have the results appear graphically in Atlas Data Sources.
 
+Please refer to [Atlas Data Sources](https://github.com/OHDSI/Atlas) for more information.
 
 
 # Acknowledgments
