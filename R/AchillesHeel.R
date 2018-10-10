@@ -8,7 +8,7 @@
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
 # 
-#     http://www.apache.org/licenses/LICENSE-2.0
+#     https://www.apache.org/licenses/LICENSE-2.0
 # 
 # Unless required by applicable law or agreed to in writing, software
 # distributed under the License is distributed on an "AS IS" BASIS,
@@ -104,27 +104,37 @@ achillesHeel <- function(connectionDetails,
   schemaDelim <- "."
   
   if (numThreads == 1 || scratchDatabaseSchema == "#") {
+    message("Beginning single-threaded operations")
+    
     numThreads <- 1
     scratchDatabaseSchema <- "#"
     schemaDelim <- "s_"
     # first invocation of the connection, to persist throughout to maintain temp tables
     connection <- DatabaseConnector::connect(connectionDetails = connectionDetails) 
+  } else if (!requireNamespace("OhdsiRTools", quietly = TRUE)) {
+      stop(
+        "Multi-threading support requires package 'OhdsiRTools'.",
+        " Consider running single-threaded by setting",
+        " `numThreads = 1` and `scratchDatabaseSchema = '#'`.",
+        " You may install it using devtools with the following code:",
+        "\n    devtools::install_github('OHDSI/OhdsiRTools')",
+        "\n\nAlternately, you might want to install ALL suggested packages using:",
+        "\n    devtools::install_github('OHDSI/Achilles', dependencies = TRUE)",
+        call. = FALSE
+      )
   } else {
-    if (!.is_installed("OhdsiRTools")) {
-      writeLines("Installing OhdsiRTools for multi-threading support")
-      devtools::install_github("OHDSI/OhdsiRTools")
-    }
+    message("Beginning multi-threaded operations")
   }
   
   if (!sqlOnly) {
-    writeLines("Executing Achilles Heel. This could take a while")  
+    message("Executing Achilles Heel. This could take a while")  
   }
   
   # Clean up existing scratch tables -----------------------------------------------
   
-  if (numThreads > 1 & !sqlOnly) {
+  if (numThreads > 1 && !sqlOnly) {
     # Drop the scratch tables
-    writeLines(sprintf("Dropping scratch Heel tables from schema %s", scratchDatabaseSchema))
+    message(sprintf("Dropping scratch Heel tables from schema %s", scratchDatabaseSchema))
     
     dropAllScratchTables(connectionDetails = connectionDetails, 
                          scratchDatabaseSchema = scratchDatabaseSchema, 
@@ -132,7 +142,7 @@ achillesHeel <- function(connectionDetails,
                          numThreads = numThreads,
                          tableTypes = c("heel"))
     
-    writeLines(sprintf("Temporary Heel tables removed from schema %s", scratchDatabaseSchema))
+    message(sprintf("Temporary Heel tables removed from schema %s", scratchDatabaseSchema))
   }
   
   # Generate parallel Heels ---------------------------------------------------------------------------------------------------------
@@ -338,7 +348,7 @@ achillesHeel <- function(connectionDetails,
   
   if (numThreads > 1 & !sqlOnly) {
     # Drop the scratch tables
-    writeLines(sprintf("Dropping scratch Heel tables from schema %s", scratchDatabaseSchema))
+    message(sprintf("Dropping scratch Heel tables from schema %s", scratchDatabaseSchema))
     
     dropAllScratchTables(connectionDetails = connectionDetails, 
                          scratchDatabaseSchema = scratchDatabaseSchema, 
@@ -346,19 +356,19 @@ achillesHeel <- function(connectionDetails,
                          numThreads = numThreads,
                          tableTypes = c("heel"))
     
-    writeLines(sprintf("Temporary Heel tables removed from schema %s", scratchDatabaseSchema))
+    message(sprintf("Temporary Heel tables removed from schema %s", scratchDatabaseSchema))
   }
   
   heelSql <- paste(heelSql, collapse = "\n\n")
   
   if (sqlOnly) {
     SqlRender::writeSql(sql = heelSql, targetFile = file.path(outputFolder, "achillesHeel.sql"))
-    writeLines(sprintf("All Achilles SQL scripts can be found in folder: %s", file.path(outputFolder, "achillesHeel.sql")))
+    message(sprintf("All Achilles SQL scripts can be found in folder: %s", file.path(outputFolder, "achillesHeel.sql")))
   } else {
-    writeLines(sprintf("Done. Achilles Heel results can now be found in %s", resultsDatabaseSchema))
+    message(sprintf("Done. Achilles Heel results can now be found in %s", resultsDatabaseSchema))
   }
   
-  return (heelSql)
+  heelSql
 }
 
 .getHeelSql <- function(heelFile, 
@@ -387,5 +397,5 @@ achillesHeel <- function(connectionDetails,
                                            tempHeelPrefix = tempHeelPrefix,
                                            heelName = gsub(pattern = ".sql", replacement = "", x = basename(heelFile)))
   
-  return (sql)
+  sql
 }

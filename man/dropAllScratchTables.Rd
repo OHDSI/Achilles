@@ -6,8 +6,7 @@
 \usage{
 dropAllScratchTables(connectionDetails, scratchDatabaseSchema,
   tempAchillesPrefix = "tmpach", tempHeelPrefix = "tmpheel",
-  numThreads = 1, tableTypes = c("achilles", "heel",
-  "concept_hierarchy"))
+  numThreads = 1, tableTypes = c("achilles", "heel", "concept_hierarchy"))
 }
 \arguments{
 \item{connectionDetails}{An R object of type \code{connectionDetails} created using the function \code{createConnectionDetails} in the \code{DatabaseConnector} package.}

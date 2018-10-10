@@ -8,7 +8,7 @@
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
 # 
-#     http://www.apache.org/licenses/LICENSE-2.0
+#     https://www.apache.org/licenses/LICENSE-2.0
 # 
 # Unless required by applicable law or agreed to in writing, software
 # distributed under the License is distributed on an "AS IS" BASIS,
@@ -74,28 +74,28 @@
 #'                                             numThreads = 10)
 #'                                         }
 #' @export
-achilles <- function (connectionDetails, 
-                      cdmDatabaseSchema,
-                      oracleTempSchema = cdmDatabaseSchema,
-                      resultsDatabaseSchema = cdmDatabaseSchema, 
-                      scratchDatabaseSchema = resultsDatabaseSchema,
-                      vocabDatabaseSchema = cdmDatabaseSchema,
-                      sourceName = "", 
-                      analysisIds, 
-                      createTable = TRUE,
-                      smallCellCount = 5, 
-                      cdmVersion = "5", 
-                      runHeel = TRUE,
-                      validateSchema = FALSE,
-                      runCostAnalysis = FALSE,
-                      conceptHierarchy = TRUE,
-                      createIndices = TRUE,
-                      numThreads = 1,
-                      tempAchillesPrefix = "tmpach",
-                      dropScratchTables = TRUE,
-                      sqlOnly = FALSE,
-                      outputFolder = "output",
-                      logMultiThreadPerformance = FALSE) {
+achilles <- function(connectionDetails, 
+                     cdmDatabaseSchema,
+                     # oracleTempSchema = cdmDatabaseSchema, # Unused arg
+                     resultsDatabaseSchema = cdmDatabaseSchema, 
+                     scratchDatabaseSchema = resultsDatabaseSchema,
+                     vocabDatabaseSchema = cdmDatabaseSchema,
+                     sourceName = "", 
+                     analysisIds, 
+                     createTable = TRUE,
+                     smallCellCount = 5, 
+                     cdmVersion = "5", 
+                     runHeel = TRUE,
+                     validateSchema = FALSE,
+                     runCostAnalysis = FALSE,
+                     conceptHierarchy = TRUE,
+                     createIndices = TRUE,
+                     numThreads = 1,
+                     tempAchillesPrefix = "tmpach",
+                     dropScratchTables = TRUE,
+                     sqlOnly = FALSE,
+                     outputFolder = "output",
+                     logMultiThreadPerformance = FALSE) {
   
   achillesSql <- c()
   
@@ -190,17 +190,27 @@ achilles <- function (connectionDetails,
   schemaDelim <- "."
   
   if (numThreads == 1 || scratchDatabaseSchema == "#") {
+    message("Beginning single-threaded operations")
+    
     numThreads <- 1
     scratchDatabaseSchema <- "#"
     schemaDelim <- "s_"
     
     # first invocation of the connection, to persist throughout to maintain temp tables
     connection <- DatabaseConnector::connect(connectionDetails = connectionDetails) 
+  } else if (!requireNamespace("OhdsiRTools", quietly = TRUE)) {
+      stop(
+        "Multi-threading support requires package 'OhdsiRTools'.",
+        " Consider running single-threaded by setting",
+        " `numThreads = 1` and `scratchDatabaseSchema = '#'`.",
+        " You may install it using devtools with the following code:",
+        "\n    devtools::install_github('OHDSI/OhdsiRTools')",
+        "\n\nAlternately, you might want to install ALL suggested packages using:",
+        "\n    devtools::install_github('OHDSI/Achilles', dependencies = TRUE)",
+        call. = FALSE
+      )
   } else {
-    if (!.is_installed("OhdsiRTools")) {
-      writeLines("Installing OhdsiRTools for multi-threading support")
-      devtools::install_github("OHDSI/OhdsiRTools")
-    }
+    message("Beginning multi-threaded operations")
   }
   
   # Create analysis table -------------------------------------------------------------
@@ -413,7 +423,7 @@ achilles <- function (connectionDetails,
   
   if (numThreads > 1 & !sqlOnly) {
     # Drop the scratch tables
-    writeLines(sprintf("Dropping scratch Achilles tables from schema %s", scratchDatabaseSchema))
+    message(sprintf("Dropping scratch Achilles tables from schema %s", scratchDatabaseSchema))
     
     dropAllScratchTables(connectionDetails = connectionDetails, 
                          scratchDatabaseSchema = scratchDatabaseSchema, 
@@ -421,7 +431,7 @@ achilles <- function (connectionDetails,
                          numThreads = numThreads,
                          tableTypes = c("achilles", "concept_hierarchy"))
     
-    writeLines(sprintf("Temporary Achilles tables removed from schema %s", scratchDatabaseSchema))
+    message(sprintf("Temporary Achilles tables removed from schema %s", scratchDatabaseSchema))
   }
   
   # Generate Main Analyses ----------------------------------------------------------------------------------------------------------------
@@ -450,7 +460,7 @@ achilles <- function (connectionDetails,
   achillesSql <- c(achillesSql, lapply(mainSqls, function(s) s$sql))
     
   if (!sqlOnly) {
-    writeLines("Executing multiple queries. This could take a while")
+    message("Executing multiple queries. This could take a while")
     
     if (numThreads == 1) {
       for (mainSql in mainSqls) {
@@ -503,7 +513,7 @@ achilles <- function (connectionDetails,
 
   if (!sqlOnly) {
     
-    writeLines("Merging scratch Achilles tables")
+    message("Merging scratch Achilles tables")
     
     if (numThreads == 1) {
       for (sql in mergeSqls) {
@@ -523,7 +533,7 @@ achilles <- function (connectionDetails,
   }
   
   if (!sqlOnly) {
-    writeLines(sprintf("Done. Achilles results can now be found in schema %s", resultsDatabaseSchema))
+    message(sprintf("Done. Achilles results can now be found in schema %s", resultsDatabaseSchema))
   }
   
   # Clean up scratch tables -----------------------------------------------
@@ -533,7 +543,7 @@ achilles <- function (connectionDetails,
     DatabaseConnector::disconnect(connection = connection)
   } else if (dropScratchTables & !sqlOnly) {
     # Drop the scratch tables
-    writeLines(sprintf("Dropping scratch Achilles tables from schema %s", scratchDatabaseSchema))
+    message(sprintf("Dropping scratch Achilles tables from schema %s", scratchDatabaseSchema))
    
     dropAllScratchTables(connectionDetails = connectionDetails, 
                          scratchDatabaseSchema = scratchDatabaseSchema, 
@@ -541,7 +551,7 @@ achilles <- function (connectionDetails,
                          numThreads = numThreads,
                          tableTypes = c("achilles"))
     
-    writeLines(sprintf("Temporary Achilles tables removed from schema %s", scratchDatabaseSchema))
+    message(sprintf("Temporary Achilles tables removed from schema %s", scratchDatabaseSchema))
   }
   
   # Create concept hierarchy table -----------------------------------------------------------------
@@ -605,10 +615,10 @@ achilles <- function (connectionDetails,
   
   if (sqlOnly) {
     SqlRender::writeSql(sql = paste(achillesSql, collapse = "\n\n"), targetFile = file.path(outputFolder, "achilles.sql"))
-    writeLines(sprintf("All Achilles SQL scripts can be found in folder: %s", file.path(outputFolder, "achilles.sql")))
+    message(sprintf("All Achilles SQL scripts can be found in folder: %s", file.path(outputFolder, "achilles.sql")))
   }
   
-  return (achillesResults)
+  achillesResults
 }
 
 #' Create the concept hierarchy
@@ -678,7 +688,7 @@ createConceptHierarchy <- function(connectionDetails,
 
   
   if (!sqlOnly) {
-    writeLines("Executing Concept Hierarchy creation. This could take a while")
+    message("Executing Concept Hierarchy creation. This could take a while")
   
     if (numThreads == 1) {
       connection <- DatabaseConnector::connect(connectionDetails = connectionDetails)
@@ -709,10 +719,10 @@ createConceptHierarchy <- function(connectionDetails,
                          numThreads = numThreads,
                          tableTypes = c("concept_hierarchy"))
     
-    writeLines(sprintf("Done. Concept Hierarchy table can now be found in %s", resultsDatabaseSchema))  
+    message(sprintf("Done. Concept Hierarchy table can now be found in %s", resultsDatabaseSchema))  
   }
 
-  return (c(hierarchySqls, mergeSql))
+  c(hierarchySqls, mergeSql)
 }
 
 
@@ -746,7 +756,7 @@ createIndices <- function(connectionDetails,
     DatabaseConnector::disconnect(connection = connection)
   }
   
-  return (indicesSql)
+  indicesSql
 }
 
 
@@ -797,11 +807,11 @@ validateSchema <- function(connectionDetails,
   } else {
     connection <- DatabaseConnector::connect(connectionDetails = connectionDetails)
     tables <- DatabaseConnector::querySql(connection = connection, sql = sql)
-    writeLines("CDM Schema is valid")
+    message("CDM Schema is valid")
     DatabaseConnector::disconnect(connection = connection)
   }
   
-  return (sql)
+  sql
 }
 
 #' Get all analysis details
@@ -814,9 +824,14 @@ validateSchema <- function(connectionDetails,
 #' 
 #' @export
 getAnalysisDetails <- function() {
-  pathToCsv <- system.file("csv", "achilles", "achilles_analysis_details.csv", package = "Achilles")
-  analysisDetails <- read.csv(file = pathToCsv, header = TRUE, stringsAsFactors = FALSE)
-  return (analysisDetails)
+  read.csv( # Recommend saving as an rda file in ./data/
+    system.file(
+      "csv", 
+      "achilles", 
+      "achilles_analysis_details.csv", 
+      package = "Achilles"),
+    stringsAsFactors = FALSE
+    )
 }
 
 #' Drop all possible scratch tables
@@ -947,15 +962,14 @@ dropAllScratchTables <- function(connectionDetails,
                               cdmDatabaseSchema = cdmDatabaseSchema)$sql
   connection <- DatabaseConnector::connect(connectionDetails = connectionDetails)
   cdmVersion <- tryCatch({
-    c <- DatabaseConnector::querySql(connection = connection, sql = sql)
-  }, error = function (e) {
-    c <- ""
+    DatabaseConnector::querySql(connection = connection, sql = sql)
+  }, error = function(e) {
+    ""
   }, finally = {
     DatabaseConnector::disconnect(connection = connection)
-    connection <- NULL
   })
   
-  return (c)
+  cdmVersion
 }
 
 .getAnalysisSql <- function(analysisId, 
@@ -1043,9 +1057,3 @@ dropAllScratchTables <- function(connectionDetails,
   
   saveRDS(object = newDf, file = logFile)
 }
-
-.is_installed <- function(pkg, version = 0) {
-  installed_version <- tryCatch(utils::packageVersion(pkg), error = function(e) NA)
-  !is.na(installed_version) && installed_version >= version
-}
-  

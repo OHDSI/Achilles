@@ -1,23 +1,25 @@
 Package: Achilles
 Type: Package
-Title: Creates descriptive statistics summary for an entire OMOP CDM instance
-Version: 1.6.1
-Date: 2018-10-02
+Title: Creates Descriptive Statistics Summary for an Entire OMOP CDM Instance
+Version: 1.6.2
+Date: 2018-10-04
 Author: Patrick Ryan, Martijn Schuemie, Vojtech Huser, Chris Knoll, Ajit Londhe
 Maintainer: Patrick Ryan <ryan@ohdsi.org>
 LazyData: true
-Description: creates descriptive statistics summary for an entire OMOP CDM
+Description: Creates descriptive statistics summary for an entire OMOP CDM
     instance. Since Aug 2016 only CDM v5 is actively being extended. Achilles
     Heel component does data quality assesment.
 Depends:
     SqlRender,
     DatabaseConnector (>= 2.0.0),
-    rjson,
-    OhdsiRTools
+    rjson
 Suggests:
     testthat,
     dplyr,
-    R.utils
+    R.utils,
+    OhdsiRTools
+Remotes:
+    OHDSI/OhdsiRTools
 License: Apache License
 Roxygen: list(wrap = FALSE)
 RoxygenNote: 6.1.0
