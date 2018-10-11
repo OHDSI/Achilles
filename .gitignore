@@ -1,2 +1,4 @@
-man/Achilles.Rd
 .Rproj.user
+.Rhistory
+.RData
+output/
