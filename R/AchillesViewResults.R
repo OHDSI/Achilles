@@ -1,3 +1,105 @@
+# @file AchillesViewResults
+#
+# Copyright 2018 Observational Health Data Sciences and Informatics
+#
+# This file is part of Achilles
+# 
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+# 
+#     https://www.apache.org/licenses/LICENSE-2.0
+# 
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+# @author Observational Health Data Sciences and Informatics
+# @author Martijn Schuemie
+# @author Patrick Ryan
+# @author Vojtech Huser
+# @author Chris Knoll
+# @author Ajit Londhe
+# @author Taha Abdul-Basser
+
+
+#' Launch the Achilles Heel Shiny app
+#' 
+#' @param connectionDetails                An R object of type \code{connectionDetails} created using the function \code{createConnectionDetails} in the \code{DatabaseConnector} package.
+#' @param cdmDatabaseSchema    	           Fully qualified name of database schema that contains OMOP CDM schema.
+#'                                         On SQL Server, this should specifiy both the database and the schema, so for example, on SQL Server, 'cdm_instance.dbo'.
+
+#' @param resultsDatabaseSchema		         Fully qualified name of database schema that we can fetch final results from.
+#'                                         On SQL Server, this should specifiy both the database and the schema, so for example, on SQL Server, 'cdm_results.dbo'.
+#' @param scratchDatabaseSchema            Fully qualified name of the database schema that will store all of the intermediate scratch tables, so for example, on SQL Server, 'cdm_scratch.dbo'. 
+#'                                         Must be accessible to/from the cdmDatabaseSchema and the resultsDatabaseSchema. Default is resultsDatabaseSchema. 
+#'                                         Making this "#" will run Achilles in single-threaded mode and use temporary tables instead of permanent tables.
+#' @param vocabDatabaseSchema		           String name of database schema that contains OMOP Vocabulary. Default is cdmDatabaseSchema. On SQL Server, this should specifiy both the database and the schema, so for example 'results.dbo'.
+#' @param tempAchillesPrefix               (OPTIONAL, multi-threaded mode) The prefix to use for the scratch Achilles analyses tables. Default is "tmpach"
+#' @param tempHeelPrefix                   (OPTIONAL, multi-threaded mode) The prefix to use for the "temporary" (but actually permanent) Heel tables. Default is "tmpheel"
+#' @param numThreads                       (OPTIONAL, multi-threaded mode) The number of threads to use to run Achilles in parallel. Default is 1 thread.
+#' @param outputFolder                     Path to store logs and SQL files
+#' 
+#' @details 
+#' Launches a Shiny app that allows the user to explore the Achilles Heel results
+#' 
+#' @export
+launchHeelResultsViewer <- function(connectionDetails,
+                                    cdmDatabaseSchema,
+                                    resultsDatabaseSchema,
+                                    scratchDatabaseSchema = resultsDatabaseSchema,
+                                    vocabDatabaseSchema = cdmDatabaseSchema,
+                                    tempAchillesPrefix = "tmpach",
+                                    tempHeelPrefix = "tmpheel",
+                                    numThreads = 1,
+                                    outputFolder) {
+  dependencies <- c("shiny",
+                    "DT",
+                    "shinydashboard",
+                    "magrittr",
+                    "tidyr")
+  
+  for (d in dependencies) {
+    if (!requireNamespace(d, quietly = TRUE)) {
+      message <- sprintf(
+        "You must install %1s first. You may install it using devtools with the following code: 
+        \n    install.packages('%2s')
+        \n\nAlternately, you might want to install ALL suggested packages using:
+        \n    devtools::install_github('OHDSI/Achilles', dependencies = TRUE)", d, d)
+      stop(message, call. = FALSE)
+    }
+  }
+  
+  schemaDelim <- "."
+  
+  if (numThreads == 1 || scratchDatabaseSchema == "#") {
+    numThreads <- 1
+    scratchDatabaseSchema <- "#"
+    schemaDelim <- "s_"
+  } 
+
+  issues <- fetchAchillesHeelResults(connectionDetails = connectionDetails, 
+                                     resultsDatabaseSchema = resultsDatabaseSchema)
+  
+  Sys.setenv(outputFolder = file.path(getwd(), outputFolder),
+             sourceName = .getSourceName(connectionDetails, cdmDatabaseSchema),
+             dbms = connectionDetails$dbms,
+             cdmDatabaseSchema = cdmDatabaseSchema,
+             resultsDatabaseSchema = resultsDatabaseSchema,
+             scratchDatabaseSchema = scratchDatabaseSchema,
+             schemaDelim = schemaDelim,
+             tempAchillesPrefix = tempAchillesPrefix,
+             tempHeelPrefix = tempHeelPrefix)
+  
+  saveRDS(object = issues, file = file.path(outputFolder, "heelResults.rds"))
+  
+  appDir <- system.file("shinyApps", "heelResults", package = "Achilles")
+  shiny::runApp(appDir, display.mode = "normal", launch.browser = TRUE)
+}
+
+
 #' @title fetchAchillesHeelResults
 #'
 #' @description
@@ -21,9 +123,9 @@
 fetchAchillesHeelResults <- function(connectionDetails, 
                                      resultsDatabaseSchema) { 
   connection <- DatabaseConnector::connect(connectionDetails = connectionDetails)
-  sql <- SqlRender::renderSql(sql = "SELECT * FROM @resultsDatabaseSchema.achilles_heel_results",
+  sql <- SqlRender::renderSql(sql = "select * from @resultsDatabaseSchema.achilles_heel_results",
                               resultsDatabaseSchema = resultsDatabaseSchema)$sql
-  
+  sql <- SqlRender::translateSql(sql = sql, targetDialect = connectionDetails$dbms)$sql  
   issues <- DatabaseConnector::querySql(connection = connection, sql = sql)
   DatabaseConnector::disconnect(connection = connection)
   
@@ -53,47 +155,32 @@ fetchAchillesHeelResults <- function(connectionDetails,
 fetchAchillesAnalysisResults <- function (connectionDetails, 
                                           resultsDatabaseSchema, 
                                           analysisId) {
+  
+  analysisDetails <- getAnalysisDetails()
   connection <- DatabaseConnector::connect(connectionDetails = connectionDetails)
   
-  sql <- "SELECT * FROM @resultsDatabaseSchema.ACHILLES_analysis WHERE analysis_id = @analysisId"
-  sql <- SqlRender::renderSql(sql = sql, 
-                              resultsDatabaseSchema = resultsDatabaseSchema,
-                              analysisId = analysisId)$sql
-  analysisDetails <- DatabaseConnector::querySql(connection = connection, sql = sql)
-  
-  sql <- "SELECT * FROM @resultsDatabaseSchema.ACHILLES_results WHERE analysis_id = @analysisId"
-  sql <- SqlRender::renderSql(sql = sql,
-                              resultsDatabaseSchema = resultsDatabaseSchema,
-                              analysisId = analysisId)$sql
-  analysisResults <- DatabaseConnector::querySql(connection = connection, sql = sql)
-  
-  if (nrow(analysisResults) == 0){
-    sql <- "SELECT * FROM @resultsDatabaseSchema.ACHILLES_results_dist WHERE analysis_id = @analysisId"
+  if (analysisDetails$DISTRIBUTION[analysisDetails$ANALYSIS_ID == analysisId] == 0) {
+    sql <- "select * from @resultsDatabaseSchema.achilles_results where analysis_id = @analysisId"
     sql <- SqlRender::renderSql(sql = sql,
                                 resultsDatabaseSchema = resultsDatabaseSchema,
                                 analysisId = analysisId)$sql
+    sql <- SqlRender::translateSql(sql = sql, targetDialect = connectionDetails$dbms)$sql
     analysisResults <- DatabaseConnector::querySql(connection = connection, sql = sql)
-  }
-  
-  colnames(analysisDetails) <- toupper(colnames(analysisDetails))
-  colnames(analysisResults) <- toupper(colnames(analysisResults))
-  
-  for (i in 1:5) {
-    stratumName <- analysisDetails[, paste("STRATUM", i, "NAME", sep="_")]
-    if (is.na(stratumName)){
-      analysisResults[,paste("STRATUM", i, sep = "_")] <- NULL
-    } else {
-      colnames(analysisResults)[colnames(analysisResults) == paste("STRATUM", i, sep = "_")] <- toupper(stratumName)
-    }
+  } else {
+    sql <- "select * from @resultsDatabaseSchema.achilles_results_dist where analysis_id = @analysisId"
+    sql <- SqlRender::renderSql(sql = sql,
+                                resultsDatabaseSchema = resultsDatabaseSchema,
+                                analysisId = analysisId)$sql
+    sql <- SqlRender::translateSql(sql = sql, targetDialect = connectionDetails$dbms)$sql
+    analysisResults <- DatabaseConnector::querySql(connection = connection, sql = sql)
   }
   
   DatabaseConnector::disconnect(connection = connection)
   
   result <- list(analysisId = analysisId,
-                 analysisName = analysisDetails$ANALYSIS_NAME,
+                 analysisName = analysisDetails$ANALYSIS_NAME[analysisDetails$ANALYSIS_ID == analysisId],
                  analysisResults = analysisResults)
   
   class(result) <- "achillesAnalysisResults"
-  
   result
 }

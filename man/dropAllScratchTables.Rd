@@ -6,7 +6,8 @@
 \usage{
 dropAllScratchTables(connectionDetails, scratchDatabaseSchema,
   tempAchillesPrefix = "tmpach", tempHeelPrefix = "tmpheel",
-  numThreads = 1, tableTypes = c("achilles", "heel", "concept_hierarchy"))
+  numThreads = 1, tableTypes = c("achilles", "heel",
+  "concept_hierarchy"), outputFolder, verboseMode = TRUE)
 }
 \arguments{
 \item{connectionDetails}{An R object of type \code{connectionDetails} created using the function \code{createConnectionDetails} in the \code{DatabaseConnector} package.}
@@ -20,6 +21,10 @@ dropAllScratchTables(connectionDetails, scratchDatabaseSchema,
 \item{numThreads}{The number of threads to use to run this function. Default is 1 thread.}
 
 \item{tableTypes}{The types of Achilles scratch tables to drop: achilles or heel or concept_hierarchy or all 3}
+
+\item{outputFolder}{Path to store logs and SQL files}
+
+\item{verboseMode}{Boolean to determine if the console will show all execution steps. Default = TRUE}
 }
 \description{
 Drop all possible scratch tables
