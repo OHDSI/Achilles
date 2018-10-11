@@ -11,8 +11,8 @@ achillesHeel(connectionDetails, cdmDatabaseSchema,
   numThreads = 1, tempHeelPrefix = "tmpheel",
   dropScratchTables = FALSE, ThresholdAgeWarning = 125,
   ThresholdOutpatientVisitPerc = 0.43,
-  ThresholdMinimalPtMeasDxRx = 20.5, outputFolder = "output",
-  sqlOnly = FALSE)
+  ThresholdMinimalPtMeasDxRx = 20.5, outputFolder, sqlOnly = FALSE,
+  verboseMode = TRUE)
 }
 \arguments{
 \item{connectionDetails}{An R object of type \code{connectionDetails} created using the function \code{createConnectionDetails} in the \code{DatabaseConnector} package.}
@@ -40,12 +40,14 @@ so for example 'results.dbo'.}
 
 \item{ThresholdMinimalPtMeasDxRx}{The minimum percentage of patients with at least 1 Measurement, 1 Dx, and 1 Rx}
 
-\item{outputFolder}{(OPTIONAL, sql only mode) Path to store SQL files}
+\item{outputFolder}{Path to store logs and SQL files}
 
 \item{sqlOnly}{Boolean to determine if Heel should be fully executed. TRUE = just generate SQL files, don't actually run, FALSE = run Achilles Heel}
+
+\item{verboseMode}{Boolean to determine if the console will show all execution steps. Default = TRUE}
 }
 \value{
-nothing is returned
+The full Heel SQL code
 }
 \description{
 \code{achillesHeel} executes data quality rules (or checks) on pre-computed analyses (or measures).
@@ -62,6 +64,7 @@ nothing is returned
                                scratchDatabaseSchema = "scratch",
                                vocabDatabaseSchema = "vocab",
                                cdmVersion = "5.3.0",
-                               numThreads = 10)
+                               numThreads = 10,
+                               outputFolder = "output")
 }
 }

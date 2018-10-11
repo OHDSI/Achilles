@@ -17,17 +17,19 @@
 # limitations under the License.
 #
 # @author Observational Health Data Sciences and Informatics
+# @author Martijn Schuemie
+# @author Patrick Ryan
+# @author Vojtech Huser
 # @author Chris Knoll
-# @author Frank DeFalco
 # @author Ajit Londhe
+# @author Taha Abdul-Basser
 
 
 # When adding a new report, append it to inst/csv/export/all_reports.csv
 
 getAllReports <- function() {
-  allReports <- read.csv(file = system.file("csv", "export", "all_reports.csv", package = "Achilles"), 
-                         stringsAsFactors = FALSE, header = TRUE)$REPORT
-  allReports
+  read.csv(file = system.file("csv", "export", "all_reports.csv", package = "Achilles"), 
+                       stringsAsFactors = FALSE, header = TRUE)$REPORT
 }
 
 initOutputPath <- function (outputPath){
@@ -77,7 +79,7 @@ showReportTypes <- function() {
 #'                                      e.g. Sys.setenv("R_ZIPCMD", "some_path_to_zip"). 
 #'                                      Due to recursion, the actual Achilles files and folders will be embedded in any parent directories that the source folder has.
 #' 
-#' See \code{data(allReports)} for a list of all report types
+#' See \code{showReportTypes} for a list of all report types
 #' 
 #' @return none 
 #' @examples \dontrun{

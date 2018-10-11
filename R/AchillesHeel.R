@@ -22,6 +22,7 @@
 # @author Vojtech Huser
 # @author Chris Knoll
 # @author Ajit Londhe
+# @author Taha Abdul-Basser
 
 
 
@@ -47,9 +48,10 @@
 #' @param ThresholdOutpatientVisitPerc     The maximum percentage of outpatient visits among all visits
 #' @param ThresholdMinimalPtMeasDxRx       The minimum percentage of patients with at least 1 Measurement, 1 Dx, and 1 Rx
 #' @param sqlOnly                          Boolean to determine if Heel should be fully executed. TRUE = just generate SQL files, don't actually run, FALSE = run Achilles Heel
-#' @param outputFolder                     (OPTIONAL, sql only mode) Path to store SQL files
+#' @param outputFolder                     Path to store logs and SQL files
+#' @param verboseMode                      Boolean to determine if the console will show all execution steps. Default = TRUE  
 #' 
-#' @return nothing is returned
+#' @return The full Heel SQL code
 #' @examples \dontrun{
 #'   connectionDetails <- createConnectionDetails(dbms="sql server", server="some_server")
 #'   achillesHeel <- achillesHeel(connectionDetails = connectionDetails, 
@@ -58,7 +60,8 @@
 #'                                scratchDatabaseSchema = "scratch",
 #'                                vocabDatabaseSchema = "vocab",
 #'                                cdmVersion = "5.3.0",
-#'                                numThreads = 10)
+#'                                numThreads = 10,
+#'                                outputFolder = "output")
 #' }
 #' @export
 achillesHeel <- function(connectionDetails, 
@@ -73,8 +76,9 @@ achillesHeel <- function(connectionDetails,
                          ThresholdAgeWarning = 125,
                          ThresholdOutpatientVisitPerc = 0.43,
                          ThresholdMinimalPtMeasDxRx = 20.5,
-                         outputFolder = "output",
-                         sqlOnly = FALSE) {
+                         outputFolder,
+                         sqlOnly = FALSE,
+                         verboseMode = TRUE) {
   
   # Try to get CDM Version if not provided ----------------------------------------------------------------------------------------
   
@@ -93,11 +97,27 @@ achillesHeel <- function(connectionDetails,
   
   # Establish folder paths --------------------------------------------------------------------------------------------------------
   
-  if (sqlOnly & !dir.exists(outputFolder)) {
+  if (!dir.exists(outputFolder)) {
     dir.create(path = outputFolder, recursive = TRUE)
   }
   
   heelSql <- c()
+  
+  # Log execution --------------------------------------------------------------------------------------------------------------------
+  
+  unlink(file.path(outputFolder, "log_achillesHeel.txt"))
+  if (verboseMode) {
+    appenders <- list(ParallelLogger::createConsoleAppender(),
+                      ParallelLogger::createFileAppender(layout = ParallelLogger::layoutParallel, 
+                                                         fileName = file.path(outputFolder, "log_achillesHeel.txt")))    
+  } else {
+    appenders <- list(ParallelLogger::createFileAppender(layout = ParallelLogger::layoutParallel, 
+                                                         fileName = file.path(outputFolder, "log_achillesHeel.txt")))
+  }
+  logger <- ParallelLogger::createLogger(name = "achillesHeel",
+                                         threshold = "INFO",
+                                         appenders = appenders)
+  ParallelLogger::registerLogger(logger) 
   
   # Initialize thread and scratchDatabaseSchema settings ----------------------------------------------------------------
   
@@ -109,40 +129,43 @@ achillesHeel <- function(connectionDetails,
     numThreads <- 1
     scratchDatabaseSchema <- "#"
     schemaDelim <- "s_"
+    ParallelLogger::logInfo("Beginning single-threaded execution")
     # first invocation of the connection, to persist throughout to maintain temp tables
     connection <- DatabaseConnector::connect(connectionDetails = connectionDetails) 
   } else if (!requireNamespace("OhdsiRTools", quietly = TRUE)) {
-      stop(
-        "Multi-threading support requires package 'OhdsiRTools'.",
-        " Consider running single-threaded by setting",
-        " `numThreads = 1` and `scratchDatabaseSchema = '#'`.",
-        " You may install it using devtools with the following code:",
-        "\n    devtools::install_github('OHDSI/OhdsiRTools')",
-        "\n\nAlternately, you might want to install ALL suggested packages using:",
-        "\n    devtools::install_github('OHDSI/Achilles', dependencies = TRUE)",
-        call. = FALSE
-      )
+    stop(
+      "Multi-threading support requires package 'OhdsiRTools'.",
+      " Consider running single-threaded by setting",
+      " `numThreads = 1` and `scratchDatabaseSchema = '#'`.",
+      " You may install it using devtools with the following code:",
+      "\n    devtools::install_github('OHDSI/OhdsiRTools')",
+      "\n\nAlternately, you might want to install ALL suggested packages using:",
+      "\n    devtools::install_github('OHDSI/Achilles', dependencies = TRUE)",
+      call. = FALSE
+    )
   } else {
-    message("Beginning multi-threaded operations")
+    ParallelLogger::logInfo("Beginning multi-threaded execution")
   }
   
   if (!sqlOnly) {
-    message("Executing Achilles Heel. This could take a while")  
+    ParallelLogger::logInfo("Executing Achilles Heel. This could take a while")  
   }
   
   # Clean up existing scratch tables -----------------------------------------------
   
   if (numThreads > 1 && !sqlOnly) {
     # Drop the scratch tables
-    message(sprintf("Dropping scratch Heel tables from schema %s", scratchDatabaseSchema))
-    
+    ParallelLogger::logInfo(sprintf("Dropping scratch Heel tables from schema %s", scratchDatabaseSchema))
+
     dropAllScratchTables(connectionDetails = connectionDetails, 
                          scratchDatabaseSchema = scratchDatabaseSchema, 
                          tempAchillesPrefix = tempAchillesPrefix, 
                          numThreads = numThreads,
-                         tableTypes = c("heel"))
+                         tableTypes = c("heel"),
+                         outputFolder = outputFolder,
+                         verboseMode = verboseMode)
     
-    message(sprintf("Temporary Heel tables removed from schema %s", scratchDatabaseSchema))
+    ParallelLogger::logInfo(sprintf("Temporary Heel tables removed from schema %s", scratchDatabaseSchema))
   }
   
   # Generate parallel Heels ---------------------------------------------------------------------------------------------------------
@@ -348,27 +371,37 @@ achillesHeel <- function(connectionDetails,
   
   if (numThreads > 1 & !sqlOnly) {
     # Drop the scratch tables
-    message(sprintf("Dropping scratch Heel tables from schema %s", scratchDatabaseSchema))
-    
+    ParallelLogger::logInfo(sprintf("Dropping scratch Heel tables from schema %s", scratchDatabaseSchema))
+
     dropAllScratchTables(connectionDetails = connectionDetails, 
                          scratchDatabaseSchema = scratchDatabaseSchema, 
                          tempAchillesPrefix = tempAchillesPrefix, 
                          numThreads = numThreads,
-                         tableTypes = c("heel"))
+                         tableTypes = c("heel"),
+                         verboseMode = verboseMode)
     
-    message(sprintf("Temporary Heel tables removed from schema %s", scratchDatabaseSchema))
+    ParallelLogger::logInfo(sprintf("Temporary Heel tables removed from schema %s", scratchDatabaseSchema))
   }
   
   heelSql <- paste(heelSql, collapse = "\n\n")
   
   if (sqlOnly) {
     SqlRender::writeSql(sql = heelSql, targetFile = file.path(outputFolder, "achillesHeel.sql"))
-    message(sprintf("All Achilles SQL scripts can be found in folder: %s", file.path(outputFolder, "achillesHeel.sql")))
+    ParallelLogger::logInfo(sprintf("All Achilles SQL scripts can be found in folder: %s", file.path(outputFolder, "achillesHeel.sql")))
   } else {
-    message(sprintf("Done. Achilles Heel results can now be found in %s", resultsDatabaseSchema))
+    ParallelLogger::logInfo(sprintf("Done. Achilles Heel results can now be found in %s", resultsDatabaseSchema))
   }
   
-  heelSql
+  ParallelLogger::unregisterLogger("achillesHeel")
+  
+  heelResults <- list(resultsConnectionDetails = connectionDetails,
+                      resultsTable = "achilles_heel_results",
+                      heelSql = paste(heelSql, collapse = "\n\n"),
+                      call = match.call())
+  
+  class(heelResults) <- "heelResults"
+  
+  invisible(heelResults)
 }
 
 .getHeelSql <- function(heelFile, 
@@ -382,7 +415,7 @@ achillesHeel <- function(connectionDetails,
                         numThreads,
                         outputFolder) {
   
-  sql <- SqlRender::loadRenderTranslateSql(sqlFilename = gsub(pattern = 
+    SqlRender::loadRenderTranslateSql(sqlFilename = gsub(pattern = 
                                                                 file.path(system.file(package = "Achilles"), 
                                                                           "sql/sql_server/"), 
                                                               replacement = "", x = heelFile),
@@ -397,5 +430,4 @@ achillesHeel <- function(connectionDetails,
                                            tempHeelPrefix = tempHeelPrefix,
                                            heelName = gsub(pattern = ".sql", replacement = "", x = basename(heelFile)))
   
-  sql
 }

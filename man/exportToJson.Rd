@@ -26,7 +26,7 @@ exportToJson(connectionDetails, cdmDatabaseSchema, resultsDatabaseSchema,
                                      e.g. Sys.setenv("R_ZIPCMD", "some_path_to_zip"). 
                                      Due to recursion, the actual Achilles files and folders will be embedded in any parent directories that the source folder has.
 
-See \code{data(allReports)} for a list of all report types}
+See \code{showReportTypes} for a list of all report types}
 }
 \value{
 none
