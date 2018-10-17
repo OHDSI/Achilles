@@ -6,6 +6,8 @@ Achilles
  
 **A**utomated **C**haracterization of **H**ealth **I**nformation at **L**arge-scale **L**ongitudinal **E**vidence **S**ystems (ACHILLES)---descriptive statistics and data quality checks on an OMOP CDM v5 databases
 
+* Vignette: [Running Achilles on Your CDM](https://raw.githubusercontent.com/OHDSI/Achilles/master/inst/vignettes/RunningAchilles.pdf)
+
 Achilles consists of several parts: 
 
 1. Precomputations (for database characterization) 
