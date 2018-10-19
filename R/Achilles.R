@@ -1023,6 +1023,17 @@ dropAllScratchTables <- function(connectionDetails,
                                          appenders = appenders)
   ParallelLogger::registerLogger(logger) 
   
+  
+  # Initialize thread and scratchDatabaseSchema settings ------------------------------------ ---------------------------
+  
+  schemaDelim <- "."
+  
+  if (numThreads == 1 || scratchDatabaseSchema == "#") {
+    numThreads <- 1
+    scratchDatabaseSchema <- "#"
+    schemaDelim <- "s_"
+  }  
+  
   connection <- DatabaseConnector::connect(connectionDetails = connectionDetails)
   
   if ("achilles" %in% tableTypes) {
@@ -1040,8 +1051,9 @@ dropAllScratchTables <- function(connectionDetails,
     })
     
     dropSqls <- lapply(c(resultsTables, resultsDistTables), function(scratchTable) {
-      sql <- SqlRender::renderSql("IF OBJECT_ID('@scratchDatabaseSchema.@scratchTable', 'U') IS NOT NULL DROP TABLE @scratchDatabaseSchema.@scratchTable;", 
+      sql <- SqlRender::renderSql("IF OBJECT_ID('@scratchDatabaseSchema@schemaDelim@scratchTable', 'U') IS NOT NULL DROP TABLE @scratchDatabaseSchema@schemaDelim@scratchTable;", 
                                   scratchDatabaseSchema = scratchDatabaseSchema,
+                                  schemaDelim = schemaDelim,
                                   scratchTable = scratchTable)$sql
       sql <- SqlRender::translateSql(sql = sql, targetDialect = connectionDetails$dbms)$sql
     })
@@ -1078,8 +1090,9 @@ dropAllScratchTables <- function(connectionDetails,
                                                                     sep = "_")))
   
     dropSqls <- lapply(parallelHeelTables, function(scratchTable) {
-      sql <- SqlRender::renderSql("IF OBJECT_ID('@scratchDatabaseSchema.@scratchTable', 'U') IS NOT NULL DROP TABLE @scratchDatabaseSchema.@scratchTable;", 
+      sql <- SqlRender::renderSql("IF OBJECT_ID('@scratchDatabaseSchema@schemaDelim@scratchTable', 'U') IS NOT NULL DROP TABLE @scratchDatabaseSchema@schemaDelim@scratchTable;", 
                            scratchDatabaseSchema = scratchDatabaseSchema,
+                           schemaDelim = schemaDelim,
                            scratchTable = scratchTable)$sql
       sql <- SqlRender::translateSql(sql = sql, targetDialect = connectionDetails$dbms)$sql
     })
@@ -1104,20 +1117,12 @@ dropAllScratchTables <- function(connectionDetails,
   if ("concept_hierarchy" %in% tableTypes) {
     # Drop Concept Hierarchy Tables ------------------------------------------------------
     
-    hierarchySqlFiles <- list.files(path = file.path(system.file(package = "Achilles"), 
-                                                     "sql", "sql_server", "post_processing", "concept_hierarchies"), 
-                                    recursive = TRUE, 
-                                    full.names = FALSE, 
-                                    all.files = FALSE,
-                                    pattern = "\\.sql$")
-    
-    conceptHierarchyTables <- lapply(hierarchySqlFiles, function(t) tolower(paste(tempAchillesPrefix, "ch",
-                                                                          trimws(tools::file_path_sans_ext(basename(t))),
-                                                                          sep = "_")))
+    conceptHierarchyTables <- c("condition", "drug", "drug_era", "meas", "obs", "proc")
     
     dropSqls <- lapply(conceptHierarchyTables, function(scratchTable) {
-      sql <- SqlRender::renderSql("IF OBJECT_ID('@scratchDatabaseSchema.@scratchTable', 'U') IS NOT NULL DROP TABLE @scratchDatabaseSchema.@scratchTable;", 
+      sql <- SqlRender::renderSql("IF OBJECT_ID('@scratchDatabaseSchema@schemaDelim@scratchTable', 'U') IS NOT NULL DROP TABLE @scratchDatabaseSchema@schemaDelim@scratchTable;", 
                            scratchDatabaseSchema = scratchDatabaseSchema,
+                           schemaDelim = schemaDelim,
                            scratchTable = scratchTable)$sql
       sql <- SqlRender::translateSql(sql = sql, targetDialect = connectionDetails$dbms)$sql
     })

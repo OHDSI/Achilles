@@ -10,7 +10,7 @@
     max(c2.concept_name) AS level2_concept_name,
     max(c3.concept_name) AS level3_concept_name,
     cast(null as varchar(255)) as level4_concept_name
-into @scratchDatabaseSchema@schemaDelim@tempAchillesPrefix_ch_obs
+into @scratchDatabaseSchema@schemaDelim@tempAchillesPrefix_obs
   FROM
     (
       SELECT
