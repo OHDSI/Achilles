@@ -710,6 +710,8 @@ createConceptHierarchy <- function(connectionDetails,
                                          appenders = appenders)
   ParallelLogger::registerLogger(logger) 
   
+  # Initialize thread and scratchDatabaseSchema settings ----------------------------------------------------------------
+  
   schemaDelim <- "."
   
   if (numThreads == 1 || scratchDatabaseSchema == "#") {
@@ -1024,7 +1026,7 @@ dropAllScratchTables <- function(connectionDetails,
   ParallelLogger::registerLogger(logger) 
   
   
-  # Initialize thread and scratchDatabaseSchema settings ------------------------------------ ---------------------------
+  # Initialize thread and scratchDatabaseSchema settings ----------------------------------------------------------------
   
   schemaDelim <- "."
   
