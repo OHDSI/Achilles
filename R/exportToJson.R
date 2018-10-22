@@ -1,6 +1,6 @@
 # @file exportToJson
 #
-# Copyright 2014 Observational Health Data Sciences and Informatics
+# Copyright 2018 Observational Health Data Sciences and Informatics
 #
 # This file is part of Achilles
 # 
@@ -8,7 +8,7 @@
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
 # 
-#     http://www.apache.org/licenses/LICENSE-2.0
+#     https://www.apache.org/licenses/LICENSE-2.0
 # 
 # Unless required by applicable law or agreed to in writing, software
 # distributed under the License is distributed on an "AS IS" BASIS,
@@ -17,27 +17,20 @@
 # limitations under the License.
 #
 # @author Observational Health Data Sciences and Informatics
+# @author Martijn Schuemie
+# @author Patrick Ryan
+# @author Vojtech Huser
 # @author Chris Knoll
-# @author Frank DeFalco
+# @author Ajit Londhe
+# @author Taha Abdul-Basser
 
 
-# Run this definition of allReports when adding a new report
-# allReports <- c("CONDITION",
-#                "CONDITION_ERA",
-#                "DASHBOARD",
-#                "DATA_DENSITY",
-#                "DEATH",
-#                "DRUG",
-#                "DRUG_ERA",
-#                "HEEL",
-#                "OBSERVATION",
-#                "OBSERVATION_PERIOD",
-#                "PERSON",
-#                "PROCEDURE",
-#                "VISIT",
-#                "MEASUREMENT",
-#                "META")
-# save(allReports,file="data/allReports.rda")
+# When adding a new report, append it to inst/csv/export/all_reports.csv
+
+getAllReports <- function() {
+  read.csv(file = system.file("csv", "export", "all_reports.csv", package = "Achilles"), 
+                       stringsAsFactors = FALSE, header = TRUE)$REPORT
+}
 
 initOutputPath <- function (outputPath){
   # create output path if it doesn't already exist, warn if it does
@@ -62,9 +55,8 @@ initOutputPath <- function (outputPath){
 #'   showReportTypes()
 #' }
 #' @export
-showReportTypes <- function()
-{
-  utils::View(allReports)
+showReportTypes <- function() {
+  utils::View(getAllReports())
 }
 
 #' @title exportToJson
@@ -76,14 +68,18 @@ showReportTypes <- function()
 #' Creates individual files for each report found in Achilles.Web
 #' 
 #' 
-#' @param connectionDetails  An R object of type ConnectionDetail (details for the function that contains server info, database type, optionally username/password, port)
-#' @param cdmDatabaseSchema      Name of the database schema that contains the OMOP CDM.
-#' @param resultsDatabaseSchema  		Name of the database schema that contains the Achilles analysis files. Default is cdmDatabaseSchema
-#' @param outputPath		A folder location to save the JSON files. Default is current working folder
-#' @param reports       A character vector listing the set of reports to generate. Default is all reports. 
-#' @param cdmVersion     Define the OMOP CDM version used:  currently support "4" and "5".  Default = "4"
-#' @param vocabDatabaseSchema		string name of database schema that contains OMOP Vocabulary. Default is cdmDatabaseSchema. On SQL Server, this should specifiy both the database and the schema, so for example 'results.dbo'.
-#' See \code{data(allReports)} for a list of all report types
+#' @param connectionDetails             An R object of type ConnectionDetail (details for the function that contains server info, database type, optionally username/password, port)
+#' @param cdmDatabaseSchema             Name of the database schema that contains the OMOP CDM.
+#' @param resultsDatabaseSchema     		Name of the database schema that contains the Achilles analysis files. Default is cdmDatabaseSchema
+#' @param outputPath		                A folder location to save the JSON files. Default is current working folder
+#' @param reports                       A character vector listing the set of reports to generate. Default is all reports. 
+#' @param vocabDatabaseSchema		        string name of database schema that contains OMOP Vocabulary. Default is cdmDatabaseSchema. On SQL Server, this should specifiy both the database and the schema, so for example 'results.dbo'.
+#' @param compressIntoOneFile           Boolean indicating if the JSON files should be compressed into one zip file. 
+#'                                      Please note that in Windows, the zip application must be stored in the system environment, 
+#'                                      e.g. Sys.setenv("R_ZIPCMD", "some_path_to_zip"). 
+#'                                      Due to recursion, the actual Achilles files and folders will be embedded in any parent directories that the source folder has.
+#' 
+#' See \code{showReportTypes} for a list of all report types
 #' 
 #' @return none 
 #' @examples \dontrun{
@@ -91,8 +87,14 @@ showReportTypes <- function()
 #'   exportToJson(connectionDetails, cdmDatabaseSchema="cdm4_sim", outputPath="your/output/path")
 #' }
 #' @export
-exportToJson <- function (connectionDetails, cdmDatabaseSchema, resultsDatabaseSchema, outputPath = getwd(), reports = allReports, cdmVersion = "4", vocabDatabaseSchema = cdmDatabaseSchema)
-{
+exportToJson <- function (connectionDetails, 
+                          cdmDatabaseSchema, 
+                          resultsDatabaseSchema, 
+                          outputPath = getwd(), 
+                          reports = getAllReports(), 
+                          vocabDatabaseSchema = cdmDatabaseSchema,
+                          compressIntoOneFile = FALSE) {
+  
   start <- Sys.time()
   if (missing(resultsDatabaseSchema))
     resultsDatabaseSchema <- cdmDatabaseSchema
@@ -107,75 +109,75 @@ exportToJson <- function (connectionDetails, cdmDatabaseSchema, resultsDatabaseS
   
   if ("CONDITION" %in% reports)
   {
-    generateConditionTreemap(conn, connectionDetails$dbms, cdmDatabaseSchema, resultsDatabaseSchema, outputPath, cdmVersion, vocabDatabaseSchema)  
-    generateConditionReports(conn, connectionDetails$dbms, cdmDatabaseSchema, resultsDatabaseSchema, outputPath, cdmVersion, vocabDatabaseSchema)
+    generateConditionTreemap(conn, connectionDetails$dbms, cdmDatabaseSchema, resultsDatabaseSchema, outputPath, vocabDatabaseSchema)  
+    generateConditionReports(conn, connectionDetails$dbms, cdmDatabaseSchema, resultsDatabaseSchema, outputPath, vocabDatabaseSchema)
   }
   
   if ("CONDITION_ERA" %in% reports)
   {
-    generateConditionEraTreemap(conn, connectionDetails$dbms, cdmDatabaseSchema, resultsDatabaseSchema, outputPath, cdmVersion, vocabDatabaseSchema)
-    generateConditionEraReports(conn, connectionDetails$dbms, cdmDatabaseSchema, resultsDatabaseSchema, outputPath, cdmVersion, vocabDatabaseSchema)
+    generateConditionEraTreemap(conn, connectionDetails$dbms, cdmDatabaseSchema, resultsDatabaseSchema, outputPath, vocabDatabaseSchema)
+    generateConditionEraReports(conn, connectionDetails$dbms, cdmDatabaseSchema, resultsDatabaseSchema, outputPath, vocabDatabaseSchema)
   }
   
   if ("DATA_DENSITY" %in% reports)
-    generateDataDensityReport(conn, connectionDetails$dbms, cdmDatabaseSchema, resultsDatabaseSchema, outputPath, cdmVersion, vocabDatabaseSchema)
+    generateDataDensityReport(conn, connectionDetails$dbms, cdmDatabaseSchema, resultsDatabaseSchema, outputPath, vocabDatabaseSchema)
   
   if ("DEATH" %in% reports)
   {
-    generateDeathReports(conn, connectionDetails$dbms, cdmDatabaseSchema, resultsDatabaseSchema, outputPath, cdmVersion, vocabDatabaseSchema)
+    generateDeathReports(conn, connectionDetails$dbms, cdmDatabaseSchema, resultsDatabaseSchema, outputPath, vocabDatabaseSchema)
   }
   
   if ("DRUG_ERA" %in% reports)
   {
-    generateDrugEraTreemap(conn,connectionDetails$dbms, cdmDatabaseSchema, resultsDatabaseSchema, outputPath, cdmVersion, vocabDatabaseSchema)
-    generateDrugEraReports(conn,connectionDetails$dbms, cdmDatabaseSchema, resultsDatabaseSchema, outputPath, cdmVersion, vocabDatabaseSchema)
+    generateDrugEraTreemap(conn,connectionDetails$dbms, cdmDatabaseSchema, resultsDatabaseSchema, outputPath, vocabDatabaseSchema)
+    generateDrugEraReports(conn,connectionDetails$dbms, cdmDatabaseSchema, resultsDatabaseSchema, outputPath, vocabDatabaseSchema)
   }
   
   if ("DRUG" %in% reports)
   {
-    generateDrugTreemap(conn, connectionDetails$dbms, cdmDatabaseSchema, resultsDatabaseSchema, outputPath, cdmVersion, vocabDatabaseSchema)  
-    generateDrugReports(conn, connectionDetails$dbms, cdmDatabaseSchema, resultsDatabaseSchema, outputPath, cdmVersion, vocabDatabaseSchema)
+    generateDrugTreemap(conn, connectionDetails$dbms, cdmDatabaseSchema, resultsDatabaseSchema, outputPath, vocabDatabaseSchema)  
+    generateDrugReports(conn, connectionDetails$dbms, cdmDatabaseSchema, resultsDatabaseSchema, outputPath, vocabDatabaseSchema)
   }
   
   if ("HEEL" %in% reports)
   {
-    generateAchillesHeelReport(conn, connectionDetails$dbms, cdmDatabaseSchema, resultsDatabaseSchema, outputPath, cdmVersion, vocabDatabaseSchema)
+    generateAchillesHeelReport(conn, connectionDetails$dbms, cdmDatabaseSchema, resultsDatabaseSchema, outputPath, vocabDatabaseSchema)
   }
   
-  if (("META" %in% reports) & (cdmVersion != "4"))
+  if (("META" %in% reports))
   {
-    generateDomainMetaReport(conn, connectionDetails$dbms, cdmDatabaseSchema, resultsDatabaseSchema, outputPath, cdmVersion, vocabDatabaseSchema)
+    generateDomainMetaReport(conn, connectionDetails$dbms, cdmDatabaseSchema, resultsDatabaseSchema, outputPath, vocabDatabaseSchema)
   }
   
-  if ( ("MEASUREMENT" %in% reports) & (cdmVersion != "4"))
+  if ( ("MEASUREMENT" %in% reports))
   {
-    generateMeasurementTreemap(conn, connectionDetails$dbms, cdmDatabaseSchema, resultsDatabaseSchema, outputPath, cdmVersion, vocabDatabaseSchema)
-    generateMeasurementReports(conn, connectionDetails$dbms, cdmDatabaseSchema, resultsDatabaseSchema, outputPath, cdmVersion, vocabDatabaseSchema)
+    generateMeasurementTreemap(conn, connectionDetails$dbms, cdmDatabaseSchema, resultsDatabaseSchema, outputPath, vocabDatabaseSchema)
+    generateMeasurementReports(conn, connectionDetails$dbms, cdmDatabaseSchema, resultsDatabaseSchema, outputPath, vocabDatabaseSchema)
   }
   
   
   if ("OBSERVATION" %in% reports)
   {  
-    generateObservationTreemap(conn, connectionDetails$dbms, cdmDatabaseSchema, resultsDatabaseSchema, outputPath, cdmVersion, vocabDatabaseSchema)
-    generateObservationReports(conn, connectionDetails$dbms, cdmDatabaseSchema, resultsDatabaseSchema, outputPath, cdmVersion, vocabDatabaseSchema)
+    generateObservationTreemap(conn, connectionDetails$dbms, cdmDatabaseSchema, resultsDatabaseSchema, outputPath, vocabDatabaseSchema)
+    generateObservationReports(conn, connectionDetails$dbms, cdmDatabaseSchema, resultsDatabaseSchema, outputPath, vocabDatabaseSchema)
   }
   
   if ("OBSERVATION_PERIOD" %in% reports)  
-    generateObservationPeriodReport(conn, connectionDetails$dbms, cdmDatabaseSchema, resultsDatabaseSchema, outputPath, cdmVersion, vocabDatabaseSchema)
+    generateObservationPeriodReport(conn, connectionDetails$dbms, cdmDatabaseSchema, resultsDatabaseSchema, outputPath, vocabDatabaseSchema)
   
   if ("PERSON" %in% reports)    
-    generatePersonReport(conn, connectionDetails$dbms, cdmDatabaseSchema, resultsDatabaseSchema, outputPath, cdmVersion, vocabDatabaseSchema)
+    generatePersonReport(conn, connectionDetails$dbms, cdmDatabaseSchema, resultsDatabaseSchema, outputPath, vocabDatabaseSchema)
   
   if ("PROCEDURE" %in% reports)
   {
-    generateProcedureTreemap(conn, connectionDetails$dbms, cdmDatabaseSchema, resultsDatabaseSchema, outputPath, cdmVersion, vocabDatabaseSchema)
-    generateProcedureReports(conn, connectionDetails$dbms, cdmDatabaseSchema, resultsDatabaseSchema, outputPath, cdmVersion, vocabDatabaseSchema)
+    generateProcedureTreemap(conn, connectionDetails$dbms, cdmDatabaseSchema, resultsDatabaseSchema, outputPath, vocabDatabaseSchema)
+    generateProcedureReports(conn, connectionDetails$dbms, cdmDatabaseSchema, resultsDatabaseSchema, outputPath, vocabDatabaseSchema)
   }
   
   if ("VISIT" %in% reports)
   {  
-    generateVisitTreemap(conn, connectionDetails$dbms, cdmDatabaseSchema, resultsDatabaseSchema, outputPath, cdmVersion, vocabDatabaseSchema)
-    generateVisitReports(conn, connectionDetails$dbms, cdmDatabaseSchema, resultsDatabaseSchema, outputPath, cdmVersion, vocabDatabaseSchema)
+    generateVisitTreemap(conn, connectionDetails$dbms, cdmDatabaseSchema, resultsDatabaseSchema, outputPath, vocabDatabaseSchema)
+    generateVisitReports(conn, connectionDetails$dbms, cdmDatabaseSchema, resultsDatabaseSchema, outputPath, vocabDatabaseSchema)
   }
   
   # dashboard is always last
@@ -185,6 +187,11 @@ exportToJson <- function (connectionDetails, cdmDatabaseSchema, resultsDatabaseS
   }
   
   DatabaseConnector::disconnect(conn)
+  
+  if (compressIntoOneFile) {
+    zip(zipfile = file.path(outputPath, sprintf("%s.zip", cdmDatabaseSchema)), 
+        files = c(outputPath), flags = c("-r"))
+  }
   
   delta <- Sys.time() - start
   writeLines(paste("Export took", signif(delta,3), attr(delta,"units")))
@@ -204,7 +211,6 @@ exportToJson <- function (connectionDetails, cdmDatabaseSchema, resultsDatabaseS
 #' @param cdmDatabaseSchema      Name of the database schema that contains the vocabulary files
 #' @param resultsDatabaseSchema  		Name of the database schema that contains the Achilles analysis files. Default is cdmDatabaseSchema
 #' @param outputPath		A folder location to save the JSON files. Default is current working folder
-#' @param cdmVersion     Define the OMOP CDM version used:  currently support "4" and "5".  Default = "4"
 #' @param vocabDatabaseSchema		string name of database schema that contains OMOP Vocabulary. Default is cdmDatabaseSchema. On SQL Server, this should specifiy both the database and the schema, so for example 'results.dbo'.
 #' 
 #' @return none 
@@ -213,9 +219,9 @@ exportToJson <- function (connectionDetails, cdmDatabaseSchema, resultsDatabaseS
 #'   exportConditionToJson(connectionDetails, cdmDatabaseSchema="cdm4_sim", outputPath="your/output/path")
 #' }
 #' @export
-exportConditionToJson <- function (connectionDetails, cdmDatabaseSchema, resultsDatabaseSchema, outputPath = getwd(), cdmVersion="4", vocabDatabaseSchema = cdmDatabaseSchema)
+exportConditionToJson <- function (connectionDetails, cdmDatabaseSchema, resultsDatabaseSchema, outputPath = getwd(), vocabDatabaseSchema = cdmDatabaseSchema)
 {
-  exportToJson(connectionDetails, cdmDatabaseSchema, resultsDatabaseSchema, outputPath, reports = c("CONDITION"), cdmVersion, vocabDatabaseSchema)  
+  exportToJson(connectionDetails, cdmDatabaseSchema, resultsDatabaseSchema, outputPath, reports = c("CONDITION"), vocabDatabaseSchema)  
 }
 
 #' @title exportConditionEraToJson
@@ -231,7 +237,6 @@ exportConditionToJson <- function (connectionDetails, cdmDatabaseSchema, results
 #' @param cdmDatabaseSchema      Name of the database schema that contains the vocabulary files
 #' @param resultsDatabaseSchema  		Name of the database schema that contains the Achilles analysis files. Default is cdmDatabaseSchema
 #' @param outputPath		A folder location to save the JSON files. Default is current working folder
-#' @param cdmVersion     Define the OMOP CDM version used:  currently support "4" and "5".  Default = "4"
 #' @param vocabDatabaseSchema		string name of database schema that contains OMOP Vocabulary. Default is cdmDatabaseSchema. On SQL Server, this should specifiy both the database and the schema, so for example 'results.dbo'.
 #' 
 #' @return none 
@@ -240,9 +245,9 @@ exportConditionToJson <- function (connectionDetails, cdmDatabaseSchema, results
 #'   exportConditionEraToJson(connectionDetails, cdmDatabaseSchema="cdm4_sim", outputPath="your/output/path")
 #' }
 #' @export
-exportConditionEraToJson <- function (connectionDetails, cdmDatabaseSchema, resultsDatabaseSchema, outputPath = getwd(), cdmVersion="4", vocabDatabaseSchema = cdmDatabaseSchema)
+exportConditionEraToJson <- function (connectionDetails, cdmDatabaseSchema, resultsDatabaseSchema, outputPath = getwd(), vocabDatabaseSchema = cdmDatabaseSchema)
 {
-  exportToJson(connectionDetails, cdmDatabaseSchema, resultsDatabaseSchema, outputPath, reports = c("CONDITION_ERA"), cdmVersion, vocabDatabaseSchema)  
+  exportToJson(connectionDetails, cdmDatabaseSchema, resultsDatabaseSchema, outputPath, reports = c("CONDITION_ERA"), vocabDatabaseSchema)  
 }
 
 #' @title exportDashboardToJson
@@ -259,7 +264,7 @@ exportConditionEraToJson <- function (connectionDetails, cdmDatabaseSchema, resu
 #' @param cdmDatabaseSchema      Name of the database schema that contains the vocabulary files
 #' @param resultsDatabaseSchema  		Name of the database schema that contains the Achilles analysis files. Default is cdmDatabaseSchema
 #' @param outputPath		A folder location to save the JSON files. Default is current working folder
-#' @param cdmVersion     Define the OMOP CDM version used:  currently support "4" and "5".  Default = "4"
+#'
 #' @param vocabDatabaseSchema		string name of database schema that contains OMOP Vocabulary. Default is cdmDatabaseSchema. On SQL Server, this should specifiy both the database and the schema, so for example 'results.dbo'.
 #' 
 #' @return none 
@@ -268,9 +273,9 @@ exportConditionEraToJson <- function (connectionDetails, cdmDatabaseSchema, resu
 #'   exportDashboardToJson(connectionDetails, cdmDatabaseSchema="cdm4_sim", outputPath="your/output/path")
 #' }
 #' @export
-exportDashboardToJson <- function (connectionDetails, cdmDatabaseSchema, resultsDatabaseSchema, outputPath = getwd(), cdmVersion="4", vocabDatabaseSchema = cdmDatabaseSchema)
+exportDashboardToJson <- function (connectionDetails, cdmDatabaseSchema, resultsDatabaseSchema, outputPath = getwd(), vocabDatabaseSchema = cdmDatabaseSchema)
 {
-  exportToJson(connectionDetails, cdmDatabaseSchema, resultsDatabaseSchema, outputPath, reports = c("DASHBOARD"), cdmVersion, vocabDatabaseSchema)  
+  exportToJson(connectionDetails, cdmDatabaseSchema, resultsDatabaseSchema, outputPath, reports = c("DASHBOARD"), vocabDatabaseSchema)  
 }
 
 #' @title exportDataDensityToJson
@@ -286,7 +291,7 @@ exportDashboardToJson <- function (connectionDetails, cdmDatabaseSchema, results
 #' @param cdmDatabaseSchema      Name of the database schema that contains the vocabulary files
 #' @param resultsDatabaseSchema  		Name of the database schema that contains the Achilles analysis files. Default is cdmDatabaseSchema
 #' @param outputPath		A folder location to save the JSON files. Default is current working folder
-#' @param cdmVersion     Define the OMOP CDM version used:  currently support "4" and "5".  Default = "4"
+#'
 #' @param vocabDatabaseSchema		string name of database schema that contains OMOP Vocabulary. Default is cdmDatabaseSchema. On SQL Server, this should specifiy both the database and the schema, so for example 'results.dbo'.
 #' 
 #' @return none 
@@ -295,9 +300,9 @@ exportDashboardToJson <- function (connectionDetails, cdmDatabaseSchema, results
 #'   exportDataDensityToJson(connectionDetails, cdmDatabaseSchema="cdm4_sim", outputPath="your/output/path")
 #' }
 #' @export
-exportDataDensityToJson <- function (connectionDetails, cdmDatabaseSchema, resultsDatabaseSchema, outputPath = getwd(), cdmVersion="4", vocabDatabaseSchema = cdmDatabaseSchema)
+exportDataDensityToJson <- function (connectionDetails, cdmDatabaseSchema, resultsDatabaseSchema, outputPath = getwd(), vocabDatabaseSchema = cdmDatabaseSchema)
 {
-  exportToJson(connectionDetails, cdmDatabaseSchema, resultsDatabaseSchema, outputPath, reports = c("DATA_DENSITY"), cdmVersion, vocabDatabaseSchema)  
+  exportToJson(connectionDetails, cdmDatabaseSchema, resultsDatabaseSchema, outputPath, reports = c("DATA_DENSITY"), vocabDatabaseSchema)  
 }
 
 #' @title exportDeathToJson
@@ -313,7 +318,7 @@ exportDataDensityToJson <- function (connectionDetails, cdmDatabaseSchema, resul
 #' @param cdmDatabaseSchema      Name of the database schema that contains the vocabulary files
 #' @param resultsDatabaseSchema  		Name of the database schema that contains the Achilles analysis files. Default is cdmDatabaseSchema
 #' @param outputPath		A folder location to save the JSON files. Default is current working folder
-#' @param cdmVersion     Define the OMOP CDM version used:  currently support "4" and "5".  Default = "4"
+#'
 #' @param vocabDatabaseSchema		string name of database schema that contains OMOP Vocabulary. Default is cdmDatabaseSchema. On SQL Server, this should specifiy both the database and the schema, so for example 'results.dbo'.
 #' 
 #' @return none 
@@ -322,9 +327,9 @@ exportDataDensityToJson <- function (connectionDetails, cdmDatabaseSchema, resul
 #'   exportDeathToJson(connectionDetails, cdmDatabaseSchema="cdm4_sim", outputPath="your/output/path")
 #' }
 #' @export
-exportDeathToJson <- function (connectionDetails, cdmDatabaseSchema, resultsDatabaseSchema, outputPath = getwd(), cdmVersion="4", vocabDatabaseSchema = cdmDatabaseSchema)
+exportDeathToJson <- function (connectionDetails, cdmDatabaseSchema, resultsDatabaseSchema, outputPath = getwd(), vocabDatabaseSchema = cdmDatabaseSchema)
 {
-  exportToJson(connectionDetails, cdmDatabaseSchema, resultsDatabaseSchema, outputPath, reports = c("DEATH"), cdmVersion, vocabDatabaseSchema)  
+  exportToJson(connectionDetails, cdmDatabaseSchema, resultsDatabaseSchema, outputPath, reports = c("DEATH"), vocabDatabaseSchema)  
 }
 
 #' @title exportDrugToJson
@@ -340,7 +345,7 @@ exportDeathToJson <- function (connectionDetails, cdmDatabaseSchema, resultsData
 #' @param cdmDatabaseSchema      Name of the database schema that contains the vocabulary files
 #' @param resultsDatabaseSchema  		Name of the database schema that contains the Achilles analysis files. Default is cdmDatabaseSchema
 #' @param outputPath		A folder location to save the JSON files. Default is current working folder
-#' @param cdmVersion     Define the OMOP CDM version used:  currently support "4" and "5".  Default = "4"
+#'
 #' @param vocabDatabaseSchema		string name of database schema that contains OMOP Vocabulary. Default is cdmDatabaseSchema. On SQL Server, this should specifiy both the database and the schema, so for example 'results.dbo'.
 #' 
 #' @return none 
@@ -349,9 +354,9 @@ exportDeathToJson <- function (connectionDetails, cdmDatabaseSchema, resultsData
 #'   exportDrugToJson(connectionDetails, cdmDatabaseSchema="cdm4_sim", outputPath="your/output/path")
 #' }
 #' @export
-exportDrugToJson <- function (connectionDetails, cdmDatabaseSchema, resultsDatabaseSchema, outputPath = getwd(), cdmVersion="4", vocabDatabaseSchema = cdmDatabaseSchema)
+exportDrugToJson <- function (connectionDetails, cdmDatabaseSchema, resultsDatabaseSchema, outputPath = getwd(), vocabDatabaseSchema = cdmDatabaseSchema)
 {
-  exportToJson(connectionDetails, cdmDatabaseSchema, resultsDatabaseSchema, outputPath, reports = c("DRUG"), cdmVersion, vocabDatabaseSchema)  
+  exportToJson(connectionDetails, cdmDatabaseSchema, resultsDatabaseSchema, outputPath, reports = c("DRUG"), vocabDatabaseSchema)  
 }
 
 #' @title exportDrugEraToJson
@@ -367,7 +372,7 @@ exportDrugToJson <- function (connectionDetails, cdmDatabaseSchema, resultsDatab
 #' @param cdmDatabaseSchema      Name of the database schema that contains the vocabulary files
 #' @param resultsDatabaseSchema  		Name of the database schema that contains the Achilles analysis files. Default is cdmDatabaseSchema
 #' @param outputPath		A folder location to save the JSON files. Default is current working folder
-#' @param cdmVersion     Define the OMOP CDM version used:  currently support "4" and "5".  Default = "4"
+#'
 #' @param vocabDatabaseSchema		string name of database schema that contains OMOP Vocabulary. Default is cdmDatabaseSchema. On SQL Server, this should specifiy both the database and the schema, so for example 'results.dbo'.
 #' 
 #' @return none 
@@ -376,9 +381,9 @@ exportDrugToJson <- function (connectionDetails, cdmDatabaseSchema, resultsDatab
 #'   exportDrugEraToJson(connectionDetails, cdmDatabaseSchema="cdm4_sim", outputPath="your/output/path")
 #' }
 #' @export
-exportDrugEraToJson <- function (connectionDetails, cdmDatabaseSchema, resultsDatabaseSchema, outputPath = getwd(), cdmVersion="4", vocabDatabaseSchema = cdmDatabaseSchema)
+exportDrugEraToJson <- function (connectionDetails, cdmDatabaseSchema, resultsDatabaseSchema, outputPath = getwd(), vocabDatabaseSchema = cdmDatabaseSchema)
 {
-  exportToJson(connectionDetails, cdmDatabaseSchema, resultsDatabaseSchema, outputPath, reports = c("DRUG_ERA"), cdmVersion, vocabDatabaseSchema)  
+  exportToJson(connectionDetails, cdmDatabaseSchema, resultsDatabaseSchema, outputPath, reports = c("DRUG_ERA"), vocabDatabaseSchema)  
 }
 
 #' @title exportHeelToJson
@@ -394,7 +399,7 @@ exportDrugEraToJson <- function (connectionDetails, cdmDatabaseSchema, resultsDa
 #' @param cdmDatabaseSchema      Name of the database schema that contains the vocabulary files
 #' @param resultsDatabaseSchema  		Name of the database schema that contains the Achilles analysis files. Default is cdmDatabaseSchema
 #' @param outputPath		A folder location to save the JSON files. Default is current working folder
-#' @param cdmVersion     Define the OMOP CDM version used:  currently support "4" and "5".  Default = "4"
+#'
 #' @param vocabDatabaseSchema		string name of database schema that contains OMOP Vocabulary. Default is cdmDatabaseSchema. On SQL Server, this should specifiy both the database and the schema, so for example 'results.dbo'.
 #' 
 #' @return none 
@@ -403,9 +408,9 @@ exportDrugEraToJson <- function (connectionDetails, cdmDatabaseSchema, resultsDa
 #'   exportHeelToJson(connectionDetails, cdmDatabaseSchema="cdm4_sim", outputPath="your/output/path")
 #' }
 #' @export
-exportHeelToJson <- function (connectionDetails, cdmDatabaseSchema, resultsDatabaseSchema, outputPath = getwd(), cdmVersion="4", vocabDatabaseSchema = cdmDatabaseSchema)
+exportHeelToJson <- function (connectionDetails, cdmDatabaseSchema, resultsDatabaseSchema, outputPath = getwd(), vocabDatabaseSchema = cdmDatabaseSchema)
 {
-  exportToJson(connectionDetails, cdmDatabaseSchema, resultsDatabaseSchema, outputPath, reports = c("HEEL"), cdmVersion, vocabDatabaseSchema)  
+  exportToJson(connectionDetails, cdmDatabaseSchema, resultsDatabaseSchema, outputPath, reports = c("HEEL"), vocabDatabaseSchema)  
 }
 
 #' @title exportMetaToJson
@@ -421,7 +426,7 @@ exportHeelToJson <- function (connectionDetails, cdmDatabaseSchema, resultsDatab
 #' @param cdmDatabaseSchema      Name of the database schema that contains the vocabulary files
 #' @param resultsDatabaseSchema  		Name of the database schema that contains the Achilles analysis files. Default is cdmDatabaseSchema
 #' @param outputPath		A folder location to save the JSON files. Default is current working folder
-#' @param cdmVersion     Define the OMOP CDM version used:  currently support "4" and "5".  Default = "4"
+#'
 #' @param vocabDatabaseSchema		string name of database schema that contains OMOP Vocabulary. Default is cdmDatabaseSchema. On SQL Server, this should specifiy both the database and the schema, so for example 'results.dbo'.
 #' 
 #' @return none 
@@ -430,9 +435,9 @@ exportHeelToJson <- function (connectionDetails, cdmDatabaseSchema, resultsDatab
 #'   exportMetaToJson(connectionDetails, cdmDatabaseSchema="cdm4_sim", outputPath="your/output/path")
 #' }
 #' @export
-exportMetaToJson <- function (connectionDetails, cdmDatabaseSchema, resultsDatabaseSchema, outputPath = getwd(), cdmVersion="4", vocabDatabaseSchema = cdmDatabaseSchema)
+exportMetaToJson <- function (connectionDetails, cdmDatabaseSchema, resultsDatabaseSchema, outputPath = getwd(), vocabDatabaseSchema = cdmDatabaseSchema)
 {
-  exportToJson(connectionDetails, cdmDatabaseSchema, resultsDatabaseSchema, outputPath, reports = c("META"), cdmVersion, vocabDatabaseSchema)  
+  exportToJson(connectionDetails, cdmDatabaseSchema, resultsDatabaseSchema, outputPath, reports = c("META"), vocabDatabaseSchema)  
 }
 
 #' @title exportMeasurementToJson
@@ -448,7 +453,7 @@ exportMetaToJson <- function (connectionDetails, cdmDatabaseSchema, resultsDatab
 #' @param cdmDatabaseSchema      Name of the database schema that contains the vocabulary files
 #' @param resultsDatabaseSchema  		Name of the database schema that contains the Achilles analysis files. Default is cdmDatabaseSchema
 #' @param outputPath		A folder location to save the JSON files. Default is current working folder
-#' @param cdmVersion     Define the OMOP CDM version used:  currently support "4" and "5".  Default = "4"
+#'
 #' @param vocabDatabaseSchema		string name of database schema that contains OMOP Vocabulary. Default is cdmDatabaseSchema. On SQL Server, this should specifiy both the database and the schema, so for example 'results.dbo'.
 #' 
 #' @return none 
@@ -457,9 +462,9 @@ exportMetaToJson <- function (connectionDetails, cdmDatabaseSchema, resultsDatab
 #'   exportMeasurementToJson(connectionDetails, cdmDatabaseSchema="cdm4_sim", outputPath="your/output/path")
 #' }
 #' @export
-exportMeasurementToJson <- function (connectionDetails, cdmDatabaseSchema, resultsDatabaseSchema, outputPath = getwd(), cdmVersion="4", vocabDatabaseSchema = cdmDatabaseSchema)
+exportMeasurementToJson <- function (connectionDetails, cdmDatabaseSchema, resultsDatabaseSchema, outputPath = getwd(), vocabDatabaseSchema = cdmDatabaseSchema)
 {
-  exportToJson(connectionDetails, cdmDatabaseSchema, resultsDatabaseSchema, outputPath, reports = c("MEASUREMENT"), cdmVersion, vocabDatabaseSchema)  
+  exportToJson(connectionDetails, cdmDatabaseSchema, resultsDatabaseSchema, outputPath, reports = c("MEASUREMENT"), vocabDatabaseSchema)  
 }
 
 #' @title exportObservationToJson
@@ -475,7 +480,7 @@ exportMeasurementToJson <- function (connectionDetails, cdmDatabaseSchema, resul
 #' @param cdmDatabaseSchema      Name of the database schema that contains the vocabulary files
 #' @param resultsDatabaseSchema  		Name of the database schema that contains the Achilles analysis files. Default is cdmDatabaseSchema
 #' @param outputPath		A folder location to save the JSON files. Default is current working folder
-#' @param cdmVersion     Define the OMOP CDM version used:  currently support "4" and "5".  Default = "4"
+#'
 #' @param vocabDatabaseSchema		string name of database schema that contains OMOP Vocabulary. Default is cdmDatabaseSchema. On SQL Server, this should specifiy both the database and the schema, so for example 'results.dbo'.
 #' 
 #' @return none 
@@ -484,9 +489,9 @@ exportMeasurementToJson <- function (connectionDetails, cdmDatabaseSchema, resul
 #'   exportObservationToJson(connectionDetails, cdmDatabaseSchema="cdm4_sim", outputPath="your/output/path")
 #' }
 #' @export
-exportObservationToJson <- function (connectionDetails, cdmDatabaseSchema, resultsDatabaseSchema, outputPath = getwd(), cdmVersion="4", vocabDatabaseSchema = cdmDatabaseSchema)
+exportObservationToJson <- function (connectionDetails, cdmDatabaseSchema, resultsDatabaseSchema, outputPath = getwd(), vocabDatabaseSchema = cdmDatabaseSchema)
 {
-  exportToJson(connectionDetails, cdmDatabaseSchema, resultsDatabaseSchema, outputPath, reports = c("OBSERVATION"), cdmVersion, vocabDatabaseSchema)  
+  exportToJson(connectionDetails, cdmDatabaseSchema, resultsDatabaseSchema, outputPath, reports = c("OBSERVATION"), vocabDatabaseSchema)  
 }
 
 #' @title exportObservationPeriodToJson
@@ -502,7 +507,7 @@ exportObservationToJson <- function (connectionDetails, cdmDatabaseSchema, resul
 #' @param cdmDatabaseSchema      Name of the database schema that contains the vocabulary files
 #' @param resultsDatabaseSchema  		Name of the database schema that contains the Achilles analysis files. Default is cdmDatabaseSchema
 #' @param outputPath		A folder location to save the JSON files. Default is current working folder
-#' @param cdmVersion     Define the OMOP CDM version used:  currently support "4" and "5".  Default = "4"
+#'
 #' @param vocabDatabaseSchema		string name of database schema that contains OMOP Vocabulary. Default is cdmDatabaseSchema. On SQL Server, this should specifiy both the database and the schema, so for example 'results.dbo'.
 #' 
 #' @return none 
@@ -511,9 +516,9 @@ exportObservationToJson <- function (connectionDetails, cdmDatabaseSchema, resul
 #'   exportObservationPeriodToJson(connectionDetails, cdmDatabaseSchema="cdm4_sim", outputPath="your/output/path")
 #' }
 #' @export
-exportObservationPeriodToJson <- function (connectionDetails, cdmDatabaseSchema, resultsDatabaseSchema, outputPath = getwd(), cdmVersion="4", vocabDatabaseSchema = cdmDatabaseSchema)
+exportObservationPeriodToJson <- function (connectionDetails, cdmDatabaseSchema, resultsDatabaseSchema, outputPath = getwd(), vocabDatabaseSchema = cdmDatabaseSchema)
 {
-  exportToJson(connectionDetails, cdmDatabaseSchema, resultsDatabaseSchema, outputPath, reports = c("OBSERVATION_PERIOD"), cdmVersion, vocabDatabaseSchema)  
+  exportToJson(connectionDetails, cdmDatabaseSchema, resultsDatabaseSchema, outputPath, reports = c("OBSERVATION_PERIOD"), vocabDatabaseSchema)  
 }
 
 #' @title exportPersonToJson
@@ -529,7 +534,7 @@ exportObservationPeriodToJson <- function (connectionDetails, cdmDatabaseSchema,
 #' @param cdmDatabaseSchema    	Name of the database schema that contains the vocabulary files
 #' @param resultsDatabaseSchema			Name of the database schema that contains the Achilles analysis files. Default is cdmDatabaseSchema
 #' @param outputPath		A folder location to save the JSON files. Default is current working folder
-#' @param cdmVersion     Define the OMOP CDM version used:  currently support "4" and "5".  Default = "4"
+#'
 #' @param vocabDatabaseSchema		string name of database schema that contains OMOP Vocabulary. Default is cdmDatabaseSchema. On SQL Server, this should specifiy both the database and the schema, so for example 'results.dbo'.
 #' 
 #' @return none 
@@ -538,9 +543,9 @@ exportObservationPeriodToJson <- function (connectionDetails, cdmDatabaseSchema,
 #'   exportPersonToJson(connectionDetails, cdmDatabaseSchema="cdm4_sim", outputPath="your/output/path")
 #' }
 #' @export
-exportPersonToJson <- function (connectionDetails, cdmDatabaseSchema, resultsDatabaseSchema, outputPath = getwd(), cdmVersion="4", vocabDatabaseSchema = cdmDatabaseSchema)
+exportPersonToJson <- function (connectionDetails, cdmDatabaseSchema, resultsDatabaseSchema, outputPath = getwd(), vocabDatabaseSchema = cdmDatabaseSchema)
 {
-  exportToJson(connectionDetails, cdmDatabaseSchema, resultsDatabaseSchema, outputPath, reports = c("PERSON"), cdmVersion, vocabDatabaseSchema)  
+  exportToJson(connectionDetails, cdmDatabaseSchema, resultsDatabaseSchema, outputPath, reports = c("PERSON"), vocabDatabaseSchema)  
 }
 
 #' @title exportProcedureToJson
@@ -556,7 +561,7 @@ exportPersonToJson <- function (connectionDetails, cdmDatabaseSchema, resultsDat
 #' @param cdmDatabaseSchema      Name of the database schema that contains the vocabulary files
 #' @param resultsDatabaseSchema  		Name of the database schema that contains the Achilles analysis files. Default is cdmDatabaseSchema
 #' @param outputPath		A folder location to save the JSON files. Default is current working folder
-#' @param cdmVersion     Define the OMOP CDM version used:  currently support "4" and "5".  Default = "4"
+#'
 #' @param vocabDatabaseSchema		string name of database schema that contains OMOP Vocabulary. Default is cdmDatabaseSchema. On SQL Server, this should specifiy both the database and the schema, so for example 'results.dbo'.
 #' 
 #' @return none 
@@ -565,9 +570,9 @@ exportPersonToJson <- function (connectionDetails, cdmDatabaseSchema, resultsDat
 #'   exportProcedureToJson(connectionDetails, cdmDatabaseSchema="cdm4_sim", outputPath="your/output/path")
 #' }
 #' @export
-exportProcedureToJson <- function (connectionDetails, cdmDatabaseSchema, resultsDatabaseSchema, outputPath = getwd(), cdmVersion="4", vocabDatabaseSchema = cdmDatabaseSchema)
+exportProcedureToJson <- function (connectionDetails, cdmDatabaseSchema, resultsDatabaseSchema, outputPath = getwd(), vocabDatabaseSchema = cdmDatabaseSchema)
 {
-  exportToJson(connectionDetails, cdmDatabaseSchema, resultsDatabaseSchema, outputPath, reports = c("PROCEDURE"), cdmVersion, vocabDatabaseSchema)  
+  exportToJson(connectionDetails, cdmDatabaseSchema, resultsDatabaseSchema, outputPath, reports = c("PROCEDURE"), vocabDatabaseSchema)  
 }
 
 #' @title exportVisitToJson
@@ -583,7 +588,6 @@ exportProcedureToJson <- function (connectionDetails, cdmDatabaseSchema, results
 #' @param cdmDatabaseSchema      Name of the database schema that contains the vocabulary files
 #' @param resultsDatabaseSchema  		Name of the database schema that contains the Achilles analysis files. Default is cdmDatabaseSchema
 #' @param outputPath		A folder location to save the JSON files. Default is current working folder
-#' @param cdmVersion     Define the OMOP CDM version used:  currently support "4" and "5".  Default = "4"
 #' @param vocabDatabaseSchema		string name of database schema that contains OMOP Vocabulary. Default is cdmDatabaseSchema. On SQL Server, this should specifiy both the database and the schema, so for example 'results.dbo'.
 #' 
 #' @return none 
@@ -592,29 +596,19 @@ exportProcedureToJson <- function (connectionDetails, cdmDatabaseSchema, results
 #'   exportVisitToJson(connectionDetails, cdmDatabaseSchema="cdm4_sim", outputPath="your/output/path")
 #' }
 #' @export
-exportVisitToJson <- function (connectionDetails, cdmDatabaseSchema, resultsDatabaseSchema, outputPath = getwd(), cdmVersion="4", vocabDatabaseSchema = cdmDatabaseSchema)
+exportVisitToJson <- function (connectionDetails, cdmDatabaseSchema, resultsDatabaseSchema, outputPath = getwd(), vocabDatabaseSchema = cdmDatabaseSchema)
 {
-  exportToJson(connectionDetails, cdmDatabaseSchema, resultsDatabaseSchema, outputPath, reports = c("VISIT"), cdmVersion, vocabDatabaseSchema)  
+  exportToJson(connectionDetails, cdmDatabaseSchema, resultsDatabaseSchema, outputPath, reports = c("VISIT"), vocabDatabaseSchema)  
 }
 
-addCdmVersionPath <- function(sqlFilename,cdmVersion){
-  if (cdmVersion == "4") {
-    sqlFolder <- "export_v4"
-  } else if (cdmVersion == "5") {
-    sqlFolder <- "export_v5"
-  } else {
-    stop("Error: Invalid CDM Version number, use 4 or 5")
-  }
-  paste(sqlFolder,sqlFilename,sep="")
-}
-
-generateAchillesHeelReport <- function(conn, dbms, cdmDatabaseSchema, resultsDatabaseSchema, outputPath, cdmVersion = "4", vocabDatabaseSchema = cdmDatabaseSchema) {
+generateAchillesHeelReport <- function(conn, dbms, cdmDatabaseSchema, resultsDatabaseSchema, outputPath, vocabDatabaseSchema = cdmDatabaseSchema) {
   writeLines("Generating achilles heel report")
   output <- {}
   
-  queryAchillesHeel <- SqlRender::loadRenderTranslateSql(sqlFilename = addCdmVersionPath("/achillesheel/sqlAchillesHeel.sql",cdmVersion),
+  queryAchillesHeel <- SqlRender::loadRenderTranslateSql(sqlFilename = "export/achillesheel/sqlAchillesHeel.sql",
                                               packageName = "Achilles",
                                               dbms = dbms,
+                                              warnOnMissingParameters = FALSE,
                                               cdm_database_schema = cdmDatabaseSchema,
                                               results_database_schema = resultsDatabaseSchema,
                                               vocab_database_schema = vocabDatabaseSchema
@@ -625,13 +619,14 @@ generateAchillesHeelReport <- function(conn, dbms, cdmDatabaseSchema, resultsDat
   write(jsonOutput, file=paste(outputPath, "/achillesheel.json", sep=""))  
 }
 
-generateDomainMetaReport <- function(conn, dbms, cdmDatabaseSchema, resultsDatabaseSchema, outputPath, cdmVersion = "4", vocabDatabaseSchema = cdmDatabaseSchema) {
+generateDomainMetaReport <- function(conn, dbms, cdmDatabaseSchema, resultsDatabaseSchema, outputPath, vocabDatabaseSchema = cdmDatabaseSchema) {
   writeLines("Generating domain meta report")
   output <- {}
   
-  queryDomainMeta <- SqlRender::loadRenderTranslateSql(sqlFilename = addCdmVersionPath("/domainmeta/sqlDomainMeta.sql",cdmVersion),
+  queryDomainMeta <- SqlRender::loadRenderTranslateSql(sqlFilename = "export/domainmeta/sqlDomainMeta.sql",
                                             packageName = "Achilles",
                                             dbms = dbms,
+                                            warnOnMissingParameters = FALSE,
                                             cdm_database_schema = cdmDatabaseSchema
   )  
   
@@ -647,14 +642,15 @@ generateDomainMetaReport <- function(conn, dbms, cdmDatabaseSchema, resultsDatab
   }
 }
 
-generateDrugEraTreemap <- function(conn, dbms,cdmDatabaseSchema, resultsDatabaseSchema, outputPath, cdmVersion = "4", vocabDatabaseSchema = cdmDatabaseSchema) {
+generateDrugEraTreemap <- function(conn, dbms,cdmDatabaseSchema, resultsDatabaseSchema, outputPath, vocabDatabaseSchema = cdmDatabaseSchema) {
   writeLines("Generating drug era treemap")
   progressBar <- utils::txtProgressBar(max=1,style=3)
   progress = 0
   
-queryDrugEraTreemap <- SqlRender::loadRenderTranslateSql(sqlFilename = addCdmVersionPath("/drugera/sqlDrugEraTreemap.sql",cdmVersion),
+queryDrugEraTreemap <- SqlRender::loadRenderTranslateSql(sqlFilename = "export/drugera/sqlDrugEraTreemap.sql",
                                                 packageName = "Achilles",
                                                 dbms = dbms,
+                                                warnOnMissingParameters = FALSE,
                                                 cdm_database_schema = cdmDatabaseSchema,
                                                 results_database_schema = resultsDatabaseSchema,
                                                 vocab_database_schema = vocabDatabaseSchema
@@ -669,14 +665,15 @@ queryDrugEraTreemap <- SqlRender::loadRenderTranslateSql(sqlFilename = addCdmVer
   close(progressBar)  
 }
 
-generateDrugTreemap <- function(conn, dbms,cdmDatabaseSchema, resultsDatabaseSchema, outputPath, cdmVersion = "4", vocabDatabaseSchema = cdmDatabaseSchema) {
+generateDrugTreemap <- function(conn, dbms,cdmDatabaseSchema, resultsDatabaseSchema, outputPath, vocabDatabaseSchema = cdmDatabaseSchema) {
   writeLines("Generating drug treemap")
   progressBar <- utils::txtProgressBar(max=1,style=3)
   progress = 0
   
-  queryDrugTreemap <- SqlRender::loadRenderTranslateSql(sqlFilename = addCdmVersionPath("/drug/sqlDrugTreemap.sql",cdmVersion),
+  queryDrugTreemap <- SqlRender::loadRenderTranslateSql(sqlFilename = "export/drug/sqlDrugTreemap.sql",
                                              packageName = "Achilles",
                                              dbms = dbms,
+                                             warnOnMissingParameters = FALSE,
                                              cdm_database_schema = cdmDatabaseSchema,
                                              results_database_schema = resultsDatabaseSchema,
                                              vocab_database_schema = vocabDatabaseSchema
@@ -691,14 +688,15 @@ generateDrugTreemap <- function(conn, dbms,cdmDatabaseSchema, resultsDatabaseSch
   close(progressBar)  
 }
 
-generateConditionTreemap <- function(conn, dbms, cdmDatabaseSchema, resultsDatabaseSchema, outputPath, cdmVersion = "4", vocabDatabaseSchema = cdmDatabaseSchema) {
+generateConditionTreemap <- function(conn, dbms, cdmDatabaseSchema, resultsDatabaseSchema, outputPath, vocabDatabaseSchema = cdmDatabaseSchema) {
   writeLines("Generating condition treemap")
   progressBar <- utils::txtProgressBar(max=1,style=3)
   progress = 0
   
-  queryConditionTreemap <- SqlRender::loadRenderTranslateSql(sqlFilename = addCdmVersionPath("/condition/sqlConditionTreemap.sql",cdmVersion),
+  queryConditionTreemap <- SqlRender::loadRenderTranslateSql(sqlFilename = "export/condition/sqlConditionTreemap.sql",
                                                    packageName = "Achilles",
                                                    dbms = dbms,
+                                                   warnOnMissingParameters = FALSE,
                                                    cdm_database_schema = cdmDatabaseSchema,
                                                    results_database_schema = resultsDatabaseSchema,
                                                    vocab_database_schema = vocabDatabaseSchema
@@ -713,14 +711,15 @@ generateConditionTreemap <- function(conn, dbms, cdmDatabaseSchema, resultsDatab
   close(progressBar)
 }
 
-generateConditionEraTreemap <- function(conn, dbms, cdmDatabaseSchema, resultsDatabaseSchema, outputPath, cdmVersion = "4", vocabDatabaseSchema = cdmDatabaseSchema) {
+generateConditionEraTreemap <- function(conn, dbms, cdmDatabaseSchema, resultsDatabaseSchema, outputPath, vocabDatabaseSchema = cdmDatabaseSchema) {
   writeLines("Generating condition era treemap")
   progressBar <- utils::txtProgressBar(max=1,style=3)
   progress = 0
   
-  queryConditionEraTreemap <- SqlRender::loadRenderTranslateSql(sqlFilename = addCdmVersionPath("/conditionera/sqlConditionEraTreemap.sql",cdmVersion),
+  queryConditionEraTreemap <- SqlRender::loadRenderTranslateSql(sqlFilename = "export/conditionera/sqlConditionEraTreemap.sql",
                                                      packageName = "Achilles",
                                                      dbms = dbms,
+                                                     warnOnMissingParameters = FALSE,
                                                      cdm_database_schema = cdmDatabaseSchema,
                                                      results_database_schema = resultsDatabaseSchema,
                                                      vocab_database_schema = vocabDatabaseSchema
@@ -735,7 +734,7 @@ generateConditionEraTreemap <- function(conn, dbms, cdmDatabaseSchema, resultsDa
   close(progressBar)
 }
 
-generateConditionReports <- function(conn, dbms, cdmDatabaseSchema, resultsDatabaseSchema, outputPath, cdmVersion = "4", vocabDatabaseSchema = cdmDatabaseSchema) {
+generateConditionReports <- function(conn, dbms, cdmDatabaseSchema, resultsDatabaseSchema, outputPath, vocabDatabaseSchema = cdmDatabaseSchema) {
   writeLines("Generating condition reports")
   
   treemapFile <- file.path(outputPath,"condition_treemap.json")
@@ -760,33 +759,37 @@ generateConditionReports <- function(conn, dbms, cdmDatabaseSchema, resultsDatab
   progressBar <- utils::txtProgressBar(style=3)
   progress = 0
   
-  queryPrevalenceByGenderAgeYear <- SqlRender::loadRenderTranslateSql(sqlFilename = addCdmVersionPath("/condition/sqlPrevalenceByGenderAgeYear.sql",cdmVersion),
+  queryPrevalenceByGenderAgeYear <- SqlRender::loadRenderTranslateSql(sqlFilename = "export/condition/sqlPrevalenceByGenderAgeYear.sql",
                                                            packageName = "Achilles",
                                                            dbms = dbms,
+                                                           warnOnMissingParameters = FALSE,
                                                            cdm_database_schema = cdmDatabaseSchema,
                                                            results_database_schema = resultsDatabaseSchema,
                                                            vocab_database_schema = vocabDatabaseSchema
   )
   
-  queryPrevalenceByMonth <- SqlRender::loadRenderTranslateSql(sqlFilename = addCdmVersionPath("/condition/sqlPrevalenceByMonth.sql",cdmVersion),
+  queryPrevalenceByMonth <- SqlRender::loadRenderTranslateSql(sqlFilename = "export/condition/sqlPrevalenceByMonth.sql",
                                                    packageName = "Achilles",
                                                    dbms = dbms,
+                                                   warnOnMissingParameters = FALSE,
                                                    cdm_database_schema = cdmDatabaseSchema,
                                                    results_database_schema = resultsDatabaseSchema,
                                                    vocab_database_schema = vocabDatabaseSchema
   )
   
-  queryConditionsByType <- SqlRender::loadRenderTranslateSql(sqlFilename = addCdmVersionPath("/condition/sqlConditionsByType.sql",cdmVersion),
+  queryConditionsByType <- SqlRender::loadRenderTranslateSql(sqlFilename = "export/condition/sqlConditionsByType.sql",
                                                   packageName = "Achilles",
                                                   dbms = dbms,
+                                                  warnOnMissingParameters = FALSE,
                                                   cdm_database_schema = cdmDatabaseSchema,
                                                   results_database_schema = resultsDatabaseSchema,
                                                   vocab_database_schema = vocabDatabaseSchema
   )
   
-  queryAgeAtFirstDiagnosis <- SqlRender::loadRenderTranslateSql(sqlFilename = addCdmVersionPath("/condition/sqlAgeAtFirstDiagnosis.sql",cdmVersion),
+  queryAgeAtFirstDiagnosis <- SqlRender::loadRenderTranslateSql(sqlFilename = "export/condition/sqlAgeAtFirstDiagnosis.sql",
                                                      packageName = "Achilles",
                                                      dbms = dbms,
+                                                     warnOnMissingParameters = FALSE,
                                                      cdm_database_schema = cdmDatabaseSchema,
                                                      results_database_schema = resultsDatabaseSchema,
                                                      vocab_database_schema = vocabDatabaseSchema
@@ -821,7 +824,7 @@ generateConditionReports <- function(conn, dbms, cdmDatabaseSchema, resultsDatab
   close(progressBar)
 }
 
-generateConditionEraReports <- function(conn, dbms, cdmDatabaseSchema, resultsDatabaseSchema, outputPath, cdmVersion = "4", vocabDatabaseSchema = cdmDatabaseSchema) {
+generateConditionEraReports <- function(conn, dbms, cdmDatabaseSchema, resultsDatabaseSchema, outputPath, vocabDatabaseSchema = cdmDatabaseSchema) {
   writeLines("Generating condition era reports")
   
   treemapFile <- file.path(outputPath,"conditionera_treemap.json")
@@ -845,33 +848,37 @@ generateConditionEraReports <- function(conn, dbms, cdmDatabaseSchema, resultsDa
   progressBar <- utils::txtProgressBar(style=3)
   progress = 0
   
-  queryPrevalenceByGenderAgeYear <- SqlRender::loadRenderTranslateSql(sqlFilename = addCdmVersionPath("/conditionera/sqlPrevalenceByGenderAgeYear.sql",cdmVersion),
+  queryPrevalenceByGenderAgeYear <- SqlRender::loadRenderTranslateSql(sqlFilename = "export/conditionera/sqlPrevalenceByGenderAgeYear.sql",
                                                            packageName = "Achilles",
                                                            dbms = dbms,
+                                                           warnOnMissingParameters = FALSE,
                                                            cdm_database_schema = cdmDatabaseSchema,
                                                            results_database_schema = resultsDatabaseSchema,
                                                            vocab_database_schema = vocabDatabaseSchema
   )
   
-  queryPrevalenceByMonth <- SqlRender::loadRenderTranslateSql(sqlFilename = addCdmVersionPath("/conditionera/sqlPrevalenceByMonth.sql",cdmVersion),
+  queryPrevalenceByMonth <- SqlRender::loadRenderTranslateSql(sqlFilename = "export/conditionera/sqlPrevalenceByMonth.sql",
                                                    packageName = "Achilles",
                                                    dbms = dbms,
+                                                   warnOnMissingParameters = FALSE,
                                                    cdm_database_schema = cdmDatabaseSchema,
                                                    results_database_schema = resultsDatabaseSchema,
                                                    vocab_database_schema = vocabDatabaseSchema
   )
   
-  queryAgeAtFirstDiagnosis <- SqlRender::loadRenderTranslateSql(sqlFilename = addCdmVersionPath("/conditionera/sqlAgeAtFirstDiagnosis.sql",cdmVersion),
+  queryAgeAtFirstDiagnosis <- SqlRender::loadRenderTranslateSql(sqlFilename = "export/conditionera/sqlAgeAtFirstDiagnosis.sql",
                                                      packageName = "Achilles",
                                                      dbms = dbms,
+                                                     warnOnMissingParameters = FALSE,
                                                      cdm_database_schema = cdmDatabaseSchema,
                                                      results_database_schema = resultsDatabaseSchema,
                                                      vocab_database_schema = vocabDatabaseSchema
   )
   
-  queryLengthOfEra <- SqlRender::loadRenderTranslateSql(sqlFilename = addCdmVersionPath("/conditionera/sqlLengthOfEra.sql",cdmVersion),
+  queryLengthOfEra <- SqlRender::loadRenderTranslateSql(sqlFilename = "export/conditionera/sqlLengthOfEra.sql",
                                              packageName = "Achilles",
                                              dbms = dbms,
+                                             warnOnMissingParameters = FALSE,
                                              cdm_database_schema = cdmDatabaseSchema,
                                              results_database_schema = resultsDatabaseSchema,
                                              vocab_database_schema = vocabDatabaseSchema
@@ -906,7 +913,7 @@ generateConditionEraReports <- function(conn, dbms, cdmDatabaseSchema, resultsDa
   close(progressBar)
 }
 
-generateDrugEraReports <- function(conn, dbms, cdmDatabaseSchema, resultsDatabaseSchema, outputPath, cdmVersion = "4", vocabDatabaseSchema = cdmDatabaseSchema) {
+generateDrugEraReports <- function(conn, dbms, cdmDatabaseSchema, resultsDatabaseSchema, outputPath, vocabDatabaseSchema = cdmDatabaseSchema) {
   writeLines("Generating drug era reports")
   
   
@@ -931,33 +938,37 @@ generateDrugEraReports <- function(conn, dbms, cdmDatabaseSchema, resultsDatabas
   progressBar <- utils::txtProgressBar(style=3)
   progress = 0
   
-  queryAgeAtFirstExposure <- SqlRender::loadRenderTranslateSql(sqlFilename = addCdmVersionPath("/drugera/sqlAgeAtFirstExposure.sql",cdmVersion),
+  queryAgeAtFirstExposure <- SqlRender::loadRenderTranslateSql(sqlFilename = "export/drugera/sqlAgeAtFirstExposure.sql",
                                                     packageName = "Achilles",
                                                     dbms = dbms,
+                                                    warnOnMissingParameters = FALSE,
                                                     cdm_database_schema = cdmDatabaseSchema,
                                                     results_database_schema = resultsDatabaseSchema,
                                                     vocab_database_schema = vocabDatabaseSchema
   )
   
-  queryPrevalenceByGenderAgeYear <- SqlRender::loadRenderTranslateSql(sqlFilename = addCdmVersionPath("/drugera/sqlPrevalenceByGenderAgeYear.sql",cdmVersion),
+  queryPrevalenceByGenderAgeYear <- SqlRender::loadRenderTranslateSql(sqlFilename = "export/drugera/sqlPrevalenceByGenderAgeYear.sql",
                                                            packageName = "Achilles",
                                                            dbms = dbms,
+                                                           warnOnMissingParameters = FALSE,
                                                            cdm_database_schema = cdmDatabaseSchema,
                                                            results_database_schema = resultsDatabaseSchema,
                                                            vocab_database_schema = vocabDatabaseSchema
   )
   
-  queryPrevalenceByMonth <- SqlRender::loadRenderTranslateSql(sqlFilename = addCdmVersionPath("/drugera/sqlPrevalenceByMonth.sql",cdmVersion),
+  queryPrevalenceByMonth <- SqlRender::loadRenderTranslateSql(sqlFilename = "export/drugera/sqlPrevalenceByMonth.sql",
                                                    packageName = "Achilles",
                                                    dbms = dbms,
+                                                   warnOnMissingParameters = FALSE,
                                                    cdm_database_schema = cdmDatabaseSchema,
                                                    results_database_schema = resultsDatabaseSchema,
                                                    vocab_database_schema = vocabDatabaseSchema
   )
   
-  queryLengthOfEra <- SqlRender::loadRenderTranslateSql(sqlFilename = addCdmVersionPath("/drugera/sqlLengthOfEra.sql",cdmVersion),
+  queryLengthOfEra <- SqlRender::loadRenderTranslateSql(sqlFilename = "export/drugera/sqlLengthOfEra.sql",
                                              packageName = "Achilles",
                                              dbms = dbms,
+                                             warnOnMissingParameters = FALSE,
                                              cdm_database_schema = cdmDatabaseSchema,
                                              results_database_schema = resultsDatabaseSchema,
                                              vocab_database_schema = vocabDatabaseSchema
@@ -992,7 +1003,7 @@ generateDrugEraReports <- function(conn, dbms, cdmDatabaseSchema, resultsDatabas
   close(progressBar)
 }
 
-generateDrugReports <- function(conn, dbms, cdmDatabaseSchema, resultsDatabaseSchema, outputPath, cdmVersion = "4", vocabDatabaseSchema = cdmDatabaseSchema) {
+generateDrugReports <- function(conn, dbms, cdmDatabaseSchema, resultsDatabaseSchema, outputPath, vocabDatabaseSchema = cdmDatabaseSchema) {
   writeLines("Generating drug reports")
   
   treemapFile <- file.path(outputPath,"drug_treemap.json")
@@ -1015,65 +1026,73 @@ generateDrugReports <- function(conn, dbms, cdmDatabaseSchema, resultsDatabaseSc
   progressBar <- utils::txtProgressBar(style=3)
   progress = 0
   
-  queryAgeAtFirstExposure <- SqlRender::loadRenderTranslateSql(sqlFilename = addCdmVersionPath("/drug/sqlAgeAtFirstExposure.sql",cdmVersion),
+  queryAgeAtFirstExposure <- SqlRender::loadRenderTranslateSql(sqlFilename = "export/drug/sqlAgeAtFirstExposure.sql",
                                                     packageName = "Achilles",
                                                     dbms = dbms,
+                                                    warnOnMissingParameters = FALSE,
                                                     cdm_database_schema = cdmDatabaseSchema,
                                                     results_database_schema = resultsDatabaseSchema,
                                                     vocab_database_schema = vocabDatabaseSchema
   )
   
-  queryDaysSupplyDistribution <- SqlRender::loadRenderTranslateSql(sqlFilename = addCdmVersionPath("/drug/sqlDaysSupplyDistribution.sql",cdmVersion),
+  queryDaysSupplyDistribution <- SqlRender::loadRenderTranslateSql(sqlFilename = "export/drug/sqlDaysSupplyDistribution.sql",
                                                         packageName = "Achilles",
                                                         dbms = dbms,
+                                                        warnOnMissingParameters = FALSE,
                                                         cdm_database_schema = cdmDatabaseSchema,
                                                         results_database_schema = resultsDatabaseSchema,
                                                         vocab_database_schema = vocabDatabaseSchema
   )
   
-  queryDrugsByType <- SqlRender::loadRenderTranslateSql(sqlFilename = addCdmVersionPath("/drug/sqlDrugsByType.sql",cdmVersion),
+  queryDrugsByType <- SqlRender::loadRenderTranslateSql(sqlFilename = "export/drug/sqlDrugsByType.sql",
                                              packageName = "Achilles",
                                              dbms = dbms,
+                                             warnOnMissingParameters = FALSE,
                                              cdm_database_schema = cdmDatabaseSchema,
                                              results_database_schema = resultsDatabaseSchema,
                                              vocab_database_schema = vocabDatabaseSchema
   )
   
-  queryPrevalenceByGenderAgeYear <- SqlRender::loadRenderTranslateSql(sqlFilename = addCdmVersionPath("/drug/sqlPrevalenceByGenderAgeYear.sql",cdmVersion),
+  queryPrevalenceByGenderAgeYear <- SqlRender::loadRenderTranslateSql(sqlFilename = "export/drug/sqlPrevalenceByGenderAgeYear.sql",
                                                            packageName = "Achilles",
                                                            dbms = dbms,
+                                                           warnOnMissingParameters = FALSE,
                                                            cdm_database_schema = cdmDatabaseSchema,
                                                            results_database_schema = resultsDatabaseSchema,
                                                            vocab_database_schema = vocabDatabaseSchema
   )
   
-  queryPrevalenceByMonth <- SqlRender::loadRenderTranslateSql(sqlFilename = addCdmVersionPath("/drug/sqlPrevalenceByMonth.sql",cdmVersion),
+  queryPrevalenceByMonth <- SqlRender::loadRenderTranslateSql(sqlFilename = "export/drug/sqlPrevalenceByMonth.sql",
                                                    packageName = "Achilles",
                                                    dbms = dbms,
+                                                   warnOnMissingParameters = FALSE,
                                                    cdm_database_schema = cdmDatabaseSchema,
                                                    results_database_schema = resultsDatabaseSchema,
                                                    vocab_database_schema = vocabDatabaseSchema
   )
   
-  queryDrugFrequencyDistribution <- SqlRender::loadRenderTranslateSql(sqlFilename = addCdmVersionPath("/drug/sqlFrequencyDistribution.sql",cdmVersion), 
+  queryDrugFrequencyDistribution <- SqlRender::loadRenderTranslateSql(sqlFilename = "export/drug/sqlFrequencyDistribution.sql", 
                                                            packageName = "Achilles",
                                                            dbms = dbms,
+                                                           warnOnMissingParameters = FALSE,
                                                            cdm_database_schema = cdmDatabaseSchema,
                                                            results_database_schema = resultsDatabaseSchema,
                                                            vocab_database_schema = vocabDatabaseSchema
   )
   
-  queryQuantityDistribution <- SqlRender::loadRenderTranslateSql(sqlFilename = addCdmVersionPath("/drug/sqlQuantityDistribution.sql",cdmVersion),
+  queryQuantityDistribution <- SqlRender::loadRenderTranslateSql(sqlFilename = "export/drug/sqlQuantityDistribution.sql",
                                                       packageName = "Achilles",
                                                       dbms = dbms,
+                                                      warnOnMissingParameters = FALSE,
                                                       cdm_database_schema = cdmDatabaseSchema,
                                                       results_database_schema = resultsDatabaseSchema,
                                                       vocab_database_schema = vocabDatabaseSchema
   )
   
-  queryRefillsDistribution <- SqlRender::loadRenderTranslateSql(sqlFilename = addCdmVersionPath("/drug/sqlRefillsDistribution.sql",cdmVersion),
+  queryRefillsDistribution <- SqlRender::loadRenderTranslateSql(sqlFilename = "export/drug/sqlRefillsDistribution.sql",
                                                      packageName = "Achilles",
                                                      dbms = dbms,
+                                                     warnOnMissingParameters = FALSE,
                                                      cdm_database_schema = cdmDatabaseSchema,
                                                      results_database_schema = resultsDatabaseSchema,
                                                      vocab_database_schema = vocabDatabaseSchema
@@ -1116,14 +1135,15 @@ generateDrugReports <- function(conn, dbms, cdmDatabaseSchema, resultsDatabaseSc
   close(progressBar)
 }
 
-generateProcedureTreemap <- function(conn, dbms, cdmDatabaseSchema, resultsDatabaseSchema, outputPath, cdmVersion = "4", vocabDatabaseSchema = cdmDatabaseSchema) {
+generateProcedureTreemap <- function(conn, dbms, cdmDatabaseSchema, resultsDatabaseSchema, outputPath, vocabDatabaseSchema = cdmDatabaseSchema) {
   writeLines("Generating procedure treemap")
   progressBar <- utils::txtProgressBar(max=1,style=3)
   progress = 0
   
-  queryProcedureTreemap <- SqlRender::loadRenderTranslateSql(sqlFilename = addCdmVersionPath("/procedure/sqlProcedureTreemap.sql",cdmVersion),
+  queryProcedureTreemap <- SqlRender::loadRenderTranslateSql(sqlFilename = "export/procedure/sqlProcedureTreemap.sql",
                                                   packageName = "Achilles",
                                                   dbms = dbms,
+                                                  warnOnMissingParameters = FALSE,
                                                   cdm_database_schema = cdmDatabaseSchema,
                                                   results_database_schema = resultsDatabaseSchema,
                                                   vocab_database_schema = vocabDatabaseSchema
@@ -1138,7 +1158,7 @@ generateProcedureTreemap <- function(conn, dbms, cdmDatabaseSchema, resultsDatab
   close(progressBar)
 }
 
-generateProcedureReports <- function(conn, dbms, cdmDatabaseSchema, resultsDatabaseSchema, outputPath, cdmVersion = "4", vocabDatabaseSchema = cdmDatabaseSchema) {
+generateProcedureReports <- function(conn, dbms, cdmDatabaseSchema, resultsDatabaseSchema, outputPath, vocabDatabaseSchema = cdmDatabaseSchema) {
   writeLines("Generating procedure reports")
   
   treemapFile <- file.path(outputPath,"procedure_treemap.json")
@@ -1162,41 +1182,46 @@ generateProcedureReports <- function(conn, dbms, cdmDatabaseSchema, resultsDatab
   progressBar <- utils::txtProgressBar(style=3)
   progress = 0
   
-  queryPrevalenceByGenderAgeYear <- SqlRender::loadRenderTranslateSql(sqlFilename = addCdmVersionPath("/procedure/sqlPrevalenceByGenderAgeYear.sql",cdmVersion),
+  queryPrevalenceByGenderAgeYear <- SqlRender::loadRenderTranslateSql(sqlFilename = "export/procedure/sqlPrevalenceByGenderAgeYear.sql",
                                                            packageName = "Achilles",
                                                            dbms = dbms,
+                                                           warnOnMissingParameters = FALSE,
                                                            cdm_database_schema = cdmDatabaseSchema,
                                                            results_database_schema = resultsDatabaseSchema,
                                                            vocab_database_schema = vocabDatabaseSchema
   )
   
-  queryPrevalenceByMonth <- SqlRender::loadRenderTranslateSql(sqlFilename = addCdmVersionPath("/procedure/sqlPrevalenceByMonth.sql",cdmVersion),
+  queryPrevalenceByMonth <- SqlRender::loadRenderTranslateSql(sqlFilename = "export/procedure/sqlPrevalenceByMonth.sql",
                                                    packageName = "Achilles",
                                                    dbms = dbms,
+                                                   warnOnMissingParameters = FALSE,
                                                    cdm_database_schema = cdmDatabaseSchema,
                                                    results_database_schema = resultsDatabaseSchema,
                                                    vocab_database_schema = vocabDatabaseSchema
   )
   
-  queryProcedureFrequencyDistribution <- SqlRender::loadRenderTranslateSql(sqlFilename = addCdmVersionPath("/procedure/sqlFrequencyDistribution.sql",cdmVersion), 
+  queryProcedureFrequencyDistribution <- SqlRender::loadRenderTranslateSql(sqlFilename = "export/procedure/sqlFrequencyDistribution.sql", 
                                                            packageName = "Achilles",
                                                            dbms = dbms,
+                                                           warnOnMissingParameters = FALSE,
                                                            cdm_database_schema = cdmDatabaseSchema,
                                                            results_database_schema = resultsDatabaseSchema,
                                                            vocab_database_schema = vocabDatabaseSchema
   )
   
-  queryProceduresByType <- SqlRender::loadRenderTranslateSql(sqlFilename = addCdmVersionPath("/procedure/sqlProceduresByType.sql",cdmVersion),
+  queryProceduresByType <- SqlRender::loadRenderTranslateSql(sqlFilename = "export/procedure/sqlProceduresByType.sql",
                                                   packageName = "Achilles",
                                                   dbms = dbms,
+                                                  warnOnMissingParameters = FALSE,
                                                   cdm_database_schema = cdmDatabaseSchema,
                                                   results_database_schema = resultsDatabaseSchema,
                                                   vocab_database_schema = vocabDatabaseSchema
   )
   
-  queryAgeAtFirstOccurrence <- SqlRender::loadRenderTranslateSql(sqlFilename = addCdmVersionPath("/procedure/sqlAgeAtFirstOccurrence.sql",cdmVersion),
+  queryAgeAtFirstOccurrence <- SqlRender::loadRenderTranslateSql(sqlFilename = "export/procedure/sqlAgeAtFirstOccurrence.sql",
                                                       packageName = "Achilles",
                                                       dbms = dbms,
+                                                      warnOnMissingParameters = FALSE,
                                                       cdm_database_schema = cdmDatabaseSchema,
                                                       results_database_schema = resultsDatabaseSchema,
                                                       vocab_database_schema = vocabDatabaseSchema
@@ -1232,7 +1257,7 @@ generateProcedureReports <- function(conn, dbms, cdmDatabaseSchema, resultsDatab
   close(progressBar)
 }
 
-generatePersonReport <- function(conn, dbms, cdmDatabaseSchema, resultsDatabaseSchema, outputPath, cdmVersion = "4", vocabDatabaseSchema = cdmDatabaseSchema)
+generatePersonReport <- function(conn, dbms, cdmDatabaseSchema, resultsDatabaseSchema, outputPath, vocabDatabaseSchema = cdmDatabaseSchema)
 {
   writeLines("Generating person reports")
   progressBar <- utils::txtProgressBar(max=7,style=3)
@@ -1244,9 +1269,10 @@ generatePersonReport <- function(conn, dbms, cdmDatabaseSchema, resultsDatabaseS
   # b.	Row #1:  CDM source name
   # c.	Row #2:  # of persons
   
-  renderedSql <- SqlRender::loadRenderTranslateSql(sqlFilename = addCdmVersionPath("/person/population.sql",cdmVersion),
+  renderedSql <- SqlRender::loadRenderTranslateSql(sqlFilename = "export/person/population.sql",
                                         packageName = "Achilles",
                                         dbms = dbms,
+                                        warnOnMissingParameters = FALSE,
                                         cdm_database_schema = cdmDatabaseSchema,
                                         results_database_schema = resultsDatabaseSchema,
                                         vocab_database_schema = vocabDatabaseSchema
@@ -1263,9 +1289,10 @@ generatePersonReport <- function(conn, dbms, cdmDatabaseSchema, resultsDatabaseS
   # b.	Category:  Gender
   # c.	Value:  % of persons  
   
-  renderedSql <- SqlRender::loadRenderTranslateSql(sqlFilename = addCdmVersionPath("/person/gender.sql",cdmVersion),
+  renderedSql <- SqlRender::loadRenderTranslateSql(sqlFilename = "export/person/gender.sql",
                                         packageName = "Achilles",
                                         dbms = dbms,
+                                        warnOnMissingParameters = FALSE,
                                         cdm_database_schema = cdmDatabaseSchema,
                                         results_database_schema = resultsDatabaseSchema,
                                         vocab_database_schema = vocabDatabaseSchema
@@ -1281,9 +1308,10 @@ generatePersonReport <- function(conn, dbms, cdmDatabaseSchema, resultsDatabaseS
   # b.	Category: Race
   # c.	Value: % of persons
   
-  renderedSql <- SqlRender::loadRenderTranslateSql(sqlFilename = addCdmVersionPath("/person/race.sql",cdmVersion),
+  renderedSql <- SqlRender::loadRenderTranslateSql(sqlFilename = "export/person/race.sql",
                                         packageName = "Achilles",
                                         dbms = dbms,
+                                        warnOnMissingParameters = FALSE,
                                         cdm_database_schema = cdmDatabaseSchema,
                                         results_database_schema = resultsDatabaseSchema,
                                         vocab_database_schema = vocabDatabaseSchema
@@ -1299,9 +1327,10 @@ generatePersonReport <- function(conn, dbms, cdmDatabaseSchema, resultsDatabaseS
   # b.	Category: Ethnicity
   # c.	Value: % of persons
   
-  renderedSql <- SqlRender::loadRenderTranslateSql(sqlFilename = addCdmVersionPath("/person/ethnicity.sql",cdmVersion),
+  renderedSql <- SqlRender::loadRenderTranslateSql(sqlFilename = "export/person/ethnicity.sql",
                                         packageName = "Achilles",
                                         dbms = dbms,
+                                        warnOnMissingParameters = FALSE,
                                         cdm_database_schema = cdmDatabaseSchema,
                                         results_database_schema = resultsDatabaseSchema,
                                         vocab_database_schema = vocabDatabaseSchema
@@ -1318,9 +1347,10 @@ generatePersonReport <- function(conn, dbms, cdmDatabaseSchema, resultsDatabaseS
   # c.	Value:  # of persons
   birthYearHist <- {}
   
-  renderedSql <- SqlRender::loadRenderTranslateSql(sqlFilename = addCdmVersionPath("/person/yearofbirth_stats.sql",cdmVersion),
+  renderedSql <- SqlRender::loadRenderTranslateSql(sqlFilename = "export/person/yearofbirth_stats.sql",
                                         packageName = "Achilles",
                                         dbms = dbms,
+                                        warnOnMissingParameters = FALSE,
                                         cdm_database_schema = cdmDatabaseSchema,
                                         results_database_schema = resultsDatabaseSchema,
                                         vocab_database_schema = vocabDatabaseSchema
@@ -1334,9 +1364,10 @@ generatePersonReport <- function(conn, dbms, cdmDatabaseSchema, resultsDatabaseS
   birthYearHist$INTERVAL_SIZE = birthYearStats$INTERVAL_SIZE
   birthYearHist$INTERVALS = (birthYearStats$MAX_VALUE - birthYearStats$MIN_VALUE) / birthYearStats$INTERVAL_SIZE
   
-  renderedSql <- SqlRender::loadRenderTranslateSql(sqlFilename = addCdmVersionPath("/person/yearofbirth_data.sql",cdmVersion),
+  renderedSql <- SqlRender::loadRenderTranslateSql(sqlFilename = "export/person/yearofbirth_data.sql",
                                         packageName = "Achilles",
                                         dbms = dbms,
+                                        warnOnMissingParameters = FALSE,
                                         cdm_database_schema = cdmDatabaseSchema,
                                         results_database_schema = resultsDatabaseSchema,
                                         vocab_database_schema = vocabDatabaseSchema
@@ -1358,7 +1389,7 @@ generatePersonReport <- function(conn, dbms, cdmDatabaseSchema, resultsDatabaseS
   close(progressBar)
 }
 
-generateObservationPeriodReport <- function(conn, dbms, cdmDatabaseSchema, resultsDatabaseSchema, outputPath, cdmVersion = "4", vocabDatabaseSchema = cdmDatabaseSchema)
+generateObservationPeriodReport <- function(conn, dbms, cdmDatabaseSchema, resultsDatabaseSchema, outputPath, vocabDatabaseSchema = cdmDatabaseSchema)
 {
   writeLines("Generating observation period reports")
   progressBar <- utils::txtProgressBar(max=11,style=3)
@@ -1378,9 +1409,10 @@ generateObservationPeriodReport <- function(conn, dbms, cdmDatabaseSchema, resul
   ageAtFirstObservationHist$INTERVAL_SIZE = 1
   ageAtFirstObservationHist$INTERVALS = 100
   
-  renderedSql <- SqlRender::loadRenderTranslateSql(sqlFilename = addCdmVersionPath("/observationperiod/ageatfirst.sql",cdmVersion),
+  renderedSql <- SqlRender::loadRenderTranslateSql(sqlFilename = "export/observationperiod/ageatfirst.sql",
                                         packageName = "Achilles",
                                         dbms = dbms,
+                                        warnOnMissingParameters = FALSE,
                                         cdm_database_schema = cdmDatabaseSchema,
                                         results_database_schema = resultsDatabaseSchema,
                                         vocab_database_schema = vocabDatabaseSchema
@@ -1396,9 +1428,10 @@ generateObservationPeriodReport <- function(conn, dbms, cdmDatabaseSchema, resul
   # b.	Category:  Gender
   # c.	Values:  Min/25%/Median/95%/Max  - age at time of first observation
   
-  renderedSql <- SqlRender::loadRenderTranslateSql(sqlFilename = addCdmVersionPath("/observationperiod/agebygender.sql",cdmVersion),
+  renderedSql <- SqlRender::loadRenderTranslateSql(sqlFilename = "export/observationperiod/agebygender.sql",
                                         packageName = "Achilles",
                                         dbms = dbms,
+                                        warnOnMissingParameters = FALSE,
                                         cdm_database_schema = cdmDatabaseSchema,
                                         results_database_schema = resultsDatabaseSchema,
                                         vocab_database_schema = vocabDatabaseSchema
@@ -1415,9 +1448,10 @@ generateObservationPeriodReport <- function(conn, dbms, cdmDatabaseSchema, resul
   
   observationLengthHist <- {}
   
-  renderedSql <- SqlRender::loadRenderTranslateSql(sqlFilename = addCdmVersionPath("/observationperiod/observationlength_stats.sql",cdmVersion),
+  renderedSql <- SqlRender::loadRenderTranslateSql(sqlFilename = "export/observationperiod/observationlength_stats.sql",
                                         packageName = "Achilles",
                                         dbms = dbms,
+                                        warnOnMissingParameters = FALSE,
                                         cdm_database_schema = cdmDatabaseSchema,
                                         results_database_schema = resultsDatabaseSchema,
                                         vocab_database_schema = vocabDatabaseSchema
@@ -1431,9 +1465,10 @@ generateObservationPeriodReport <- function(conn, dbms, cdmDatabaseSchema, resul
   observationLengthHist$INTERVAL_SIZE = observationLengthStats$INTERVAL_SIZE
   observationLengthHist$INTERVALS = (observationLengthStats$MAX_VALUE - observationLengthStats$MIN_VALUE) / observationLengthStats$INTERVAL_SIZE
   
-  renderedSql <- SqlRender::loadRenderTranslateSql(sqlFilename = addCdmVersionPath("/observationperiod/observationlength_data.sql",cdmVersion),
+  renderedSql <- SqlRender::loadRenderTranslateSql(sqlFilename = "export/observationperiod/observationlength_data.sql",
                                         packageName = "Achilles",
                                         dbms = dbms,
+                                        warnOnMissingParameters = FALSE,
                                         cdm_database_schema = cdmDatabaseSchema,
                                         results_database_schema = resultsDatabaseSchema,
                                         vocab_database_schema = vocabDatabaseSchema
@@ -1449,11 +1484,12 @@ generateObservationPeriodReport <- function(conn, dbms, cdmDatabaseSchema, resul
   # a.	Visualization:  scatterplot
   # b.	X-axis:  length of observation period
   # c.	Y-axis:  % of population observed
-  # d.	Note:  will look like a Kaplan-Meier âsurvivalâ plot, but information is the same as shown in âlength of observationâ barchart, just plotted as cumulative 
+  # d.	Note:  will look like a Kaplan-Meier survival plot, but information is the same as shown in a length of observation barchart, just plotted as cumulative 
   
-  renderedSql <- SqlRender::loadRenderTranslateSql(sqlFilename = addCdmVersionPath("/observationperiod/cumulativeduration.sql",cdmVersion),
+  renderedSql <- SqlRender::loadRenderTranslateSql(sqlFilename = "export/observationperiod/cumulativeduration.sql",
                                         packageName = "Achilles",
                                         dbms = dbms,
+                                        warnOnMissingParameters = FALSE,
                                         cdm_database_schema = cdmDatabaseSchema,
                                         results_database_schema = resultsDatabaseSchema,
                                         vocab_database_schema = vocabDatabaseSchema
@@ -1469,9 +1505,10 @@ generateObservationPeriodReport <- function(conn, dbms, cdmDatabaseSchema, resul
   # b.	Category: Gender
   # c.	Values: Min/25%/Median/95%/Max  length of observation period
   
-  renderedSql <- SqlRender::loadRenderTranslateSql(sqlFilename = addCdmVersionPath("/observationperiod/observationlengthbygender.sql",cdmVersion),
+  renderedSql <- SqlRender::loadRenderTranslateSql(sqlFilename = "export/observationperiod/observationlengthbygender.sql",
                                         packageName = "Achilles",
                                         dbms = dbms,
+                                        warnOnMissingParameters = FALSE,
                                         cdm_database_schema = cdmDatabaseSchema,
                                         results_database_schema = resultsDatabaseSchema,
                                         vocab_database_schema = vocabDatabaseSchema
@@ -1486,9 +1523,10 @@ generateObservationPeriodReport <- function(conn, dbms, cdmDatabaseSchema, resul
   # b.	Category: Age decile
   # c.	Values: Min/25%/Median/95%/Max  length of observation period
   
-  renderedSql <- SqlRender::loadRenderTranslateSql(sqlFilename = addCdmVersionPath("/observationperiod/observationlengthbyage.sql",cdmVersion),
+  renderedSql <- SqlRender::loadRenderTranslateSql(sqlFilename = "export/observationperiod/observationlengthbyage.sql",
                                         packageName = "Achilles",
                                         dbms = dbms,
+                                        warnOnMissingParameters = FALSE,
                                         cdm_database_schema = cdmDatabaseSchema,
                                         results_database_schema = resultsDatabaseSchema,
                                         vocab_database_schema = vocabDatabaseSchema
@@ -1504,9 +1542,10 @@ generateObservationPeriodReport <- function(conn, dbms, cdmDatabaseSchema, resul
   # c.	Values:  # of persons with continuous coverage
   
   observedByYearHist <- {}
-  renderedSql <- SqlRender::loadRenderTranslateSql(sqlFilename = addCdmVersionPath("/observationperiod/observedbyyear_stats.sql",cdmVersion),
+  renderedSql <- SqlRender::loadRenderTranslateSql(sqlFilename = "export/observationperiod/observedbyyear_stats.sql",
                                         packageName = "Achilles",
                                         dbms = dbms,
+                                        warnOnMissingParameters = FALSE,
                                         cdm_database_schema = cdmDatabaseSchema,
                                         results_database_schema = resultsDatabaseSchema,
                                         vocab_database_schema = vocabDatabaseSchema
@@ -1519,9 +1558,10 @@ generateObservationPeriodReport <- function(conn, dbms, cdmDatabaseSchema, resul
   observedByYearHist$INTERVAL_SIZE = observedByYearStats$INTERVAL_SIZE
   observedByYearHist$INTERVALS = (observedByYearStats$MAX_VALUE - observedByYearStats$MIN_VALUE) / observedByYearStats$INTERVAL_SIZE
   
-  renderedSql <- SqlRender::loadRenderTranslateSql(sqlFilename = addCdmVersionPath("/observationperiod/observedbyyear_data.sql",cdmVersion),
+  renderedSql <- SqlRender::loadRenderTranslateSql(sqlFilename = "export/observationperiod/observedbyyear_data.sql",
                                         packageName = "Achilles",
                                         dbms = dbms,
+                                        warnOnMissingParameters = FALSE,
                                         cdm_database_schema = cdmDatabaseSchema,
                                         results_database_schema = resultsDatabaseSchema,
                                         vocab_database_schema = vocabDatabaseSchema
@@ -1541,9 +1581,10 @@ generateObservationPeriodReport <- function(conn, dbms, cdmDatabaseSchema, resul
   
   observedByMonth <- {}
   
-  renderedSql <- SqlRender::loadRenderTranslateSql(sqlFilename = addCdmVersionPath("/observationperiod/observedbymonth.sql",cdmVersion),
+  renderedSql <- SqlRender::loadRenderTranslateSql(sqlFilename = "export/observationperiod/observedbymonth.sql",
                                         packageName = "Achilles",
                                         dbms = dbms,
+                                        warnOnMissingParameters = FALSE,
                                         cdm_database_schema = cdmDatabaseSchema,
                                         results_database_schema = resultsDatabaseSchema,
                                         vocab_database_schema = vocabDatabaseSchema
@@ -1559,9 +1600,10 @@ generateObservationPeriodReport <- function(conn, dbms, cdmDatabaseSchema, resul
   # b.	Category:  Number of observation periods
   # c.	Values:  # of persons 
   
-  renderedSql <- SqlRender::loadRenderTranslateSql(sqlFilename = addCdmVersionPath("/observationperiod/periodsperperson.sql",cdmVersion),
+  renderedSql <- SqlRender::loadRenderTranslateSql(sqlFilename = "export/observationperiod/periodsperperson.sql",
                                         packageName = "Achilles",
                                         dbms = dbms,
+                                        warnOnMissingParameters = FALSE,
                                         cdm_database_schema = cdmDatabaseSchema,
                                         results_database_schema = resultsDatabaseSchema,
                                         vocab_database_schema = vocabDatabaseSchema
@@ -1612,7 +1654,7 @@ generateDashboardReport <- function(outputPath)
   close(progressBar)
 }
 
-generateDataDensityReport <- function(conn, dbms,cdmDatabaseSchema, resultsDatabaseSchema, outputPath, cdmVersion = "4", vocabDatabaseSchema = cdmDatabaseSchema)
+generateDataDensityReport <- function(conn, dbms,cdmDatabaseSchema, resultsDatabaseSchema, outputPath, vocabDatabaseSchema = cdmDatabaseSchema)
 {
   writeLines("Generating data density reports")
   progressBar <- utils::txtProgressBar(max=3,style=3)
@@ -1625,9 +1667,10 @@ generateDataDensityReport <- function(conn, dbms,cdmDatabaseSchema, resultsDatab
   #   c.	y-axis:  records
   #   d.	series:  person, visit, condition, drug, procedure, observation
   
-  renderedSql <- SqlRender::loadRenderTranslateSql(sqlFilename = addCdmVersionPath("/datadensity/totalrecords.sql",cdmVersion),
+  renderedSql <- SqlRender::loadRenderTranslateSql(sqlFilename = "export/datadensity/totalrecords.sql",
                                         packageName = "Achilles",
                                         dbms = dbms,
+                                        warnOnMissingParameters = FALSE,
                                         cdm_database_schema = cdmDatabaseSchema,
                                         results_database_schema = resultsDatabaseSchema,
                                         vocab_database_schema = vocabDatabaseSchema
@@ -1644,9 +1687,10 @@ generateDataDensityReport <- function(conn, dbms,cdmDatabaseSchema, resultsDatab
   #   c.	y-axis:  records/person
   #   d.	series:  person, visit, condition, drug, procedure, observation
   
-  renderedSql <- SqlRender::loadRenderTranslateSql(sqlFilename = addCdmVersionPath("/datadensity/recordsperperson.sql",cdmVersion),
+  renderedSql <- SqlRender::loadRenderTranslateSql(sqlFilename = "export/datadensity/recordsperperson.sql",
                                         packageName = "Achilles",
                                         dbms = dbms,
+                                        warnOnMissingParameters = FALSE,
                                         cdm_database_schema = cdmDatabaseSchema,
                                         results_database_schema = resultsDatabaseSchema,
                                         vocab_database_schema = vocabDatabaseSchema
@@ -1662,9 +1706,10 @@ generateDataDensityReport <- function(conn, dbms,cdmDatabaseSchema, resultsDatab
   #   b.	Category: Condition/Drug/Procedure/Observation
   #   c.	Values: Min/25%/Median/95%/Max  number of distinct concepts per person
   
-  renderedSql <- SqlRender::loadRenderTranslateSql(sqlFilename = addCdmVersionPath("/datadensity/conceptsperperson.sql",cdmVersion),
+  renderedSql <- SqlRender::loadRenderTranslateSql(sqlFilename = "export/datadensity/conceptsperperson.sql",
                                         packageName = "Achilles",
                                         dbms = dbms,
+                                        warnOnMissingParameters = FALSE,
                                         cdm_database_schema = cdmDatabaseSchema,
                                         results_database_schema = resultsDatabaseSchema,
                                         vocab_database_schema = vocabDatabaseSchema
@@ -1682,14 +1727,15 @@ generateDataDensityReport <- function(conn, dbms,cdmDatabaseSchema, resultsDatab
   
 }
 
-generateMeasurementTreemap <- function(conn, dbms, cdmDatabaseSchema, resultsDatabaseSchema, outputPath, cdmVersion = "4", vocabDatabaseSchema = cdmDatabaseSchema) {
+generateMeasurementTreemap <- function(conn, dbms, cdmDatabaseSchema, resultsDatabaseSchema, outputPath, vocabDatabaseSchema = cdmDatabaseSchema) {
   writeLines("Generating measurement treemap")
   progressBar <- utils::txtProgressBar(max=1,style=3)
   progress = 0
   
-  queryMeasurementTreemap <- SqlRender::loadRenderTranslateSql(sqlFilename = addCdmVersionPath("/measurement/sqlMeasurementTreemap.sql",cdmVersion),
+  queryMeasurementTreemap <- SqlRender::loadRenderTranslateSql(sqlFilename = "export/measurement/sqlMeasurementTreemap.sql",
                                                     packageName = "Achilles",
                                                     dbms = dbms,
+                                                    warnOnMissingParameters = FALSE,
                                                     cdm_database_schema = cdmDatabaseSchema,
                                                     results_database_schema = resultsDatabaseSchema,
                                                     vocab_database_schema = vocabDatabaseSchema
@@ -1705,7 +1751,7 @@ generateMeasurementTreemap <- function(conn, dbms, cdmDatabaseSchema, resultsDat
   
 }
 
-generateMeasurementReports <- function(conn, dbms, cdmDatabaseSchema, resultsDatabaseSchema, outputPath, cdmVersion = "4", vocabDatabaseSchema = cdmDatabaseSchema)
+generateMeasurementReports <- function(conn, dbms, cdmDatabaseSchema, resultsDatabaseSchema, outputPath, vocabDatabaseSchema = cdmDatabaseSchema)
 {
   writeLines("Generating Measurement reports")
   
@@ -1730,81 +1776,91 @@ generateMeasurementReports <- function(conn, dbms, cdmDatabaseSchema, resultsDat
   progressBar <- utils::txtProgressBar(style=3)
   progress = 0
   
-  queryPrevalenceByGenderAgeYear <- SqlRender::loadRenderTranslateSql(sqlFilename = addCdmVersionPath("/measurement/sqlPrevalenceByGenderAgeYear.sql",cdmVersion),
+  queryPrevalenceByGenderAgeYear <- SqlRender::loadRenderTranslateSql(sqlFilename = "export/measurement/sqlPrevalenceByGenderAgeYear.sql",
                                                            packageName = "Achilles",
                                                            dbms = dbms,
+                                                           warnOnMissingParameters = FALSE,
                                                            cdm_database_schema = cdmDatabaseSchema,
                                                            results_database_schema = resultsDatabaseSchema,
                                                            vocab_database_schema = vocabDatabaseSchema
   )
   
-  queryPrevalenceByMonth <- SqlRender::loadRenderTranslateSql(sqlFilename = addCdmVersionPath("/measurement/sqlPrevalenceByMonth.sql",cdmVersion),
+  queryPrevalenceByMonth <- SqlRender::loadRenderTranslateSql(sqlFilename = "export/measurement/sqlPrevalenceByMonth.sql",
                                                    packageName = "Achilles",
                                                    dbms = dbms,
+                                                   warnOnMissingParameters = FALSE,
                                                    cdm_database_schema = cdmDatabaseSchema,
                                                    results_database_schema = resultsDatabaseSchema,
                                                    vocab_database_schema = vocabDatabaseSchema
   )
   
-  queryFrequencyDistribution <- SqlRender::loadRenderTranslateSql(sqlFilename = addCdmVersionPath("/measurement/sqlFrequencyDistribution.sql",cdmVersion), 
+  queryFrequencyDistribution <- SqlRender::loadRenderTranslateSql(sqlFilename = "export/measurement/sqlFrequencyDistribution.sql", 
                                                        packageName = "Achilles",
                                                        dbms = dbms,
+                                                       warnOnMissingParameters = FALSE,
                                                        cdm_database_schema = cdmDatabaseSchema,
                                                        results_database_schema = resultsDatabaseSchema,
                                                        vocab_database_schema = vocabDatabaseSchema
   )
   
-  queryMeasurementsByType <- SqlRender::loadRenderTranslateSql(sqlFilename = addCdmVersionPath("/measurement/sqlMeasurementsByType.sql",cdmVersion),
+  queryMeasurementsByType <- SqlRender::loadRenderTranslateSql(sqlFilename = "export/measurement/sqlMeasurementsByType.sql",
                                                     packageName = "Achilles",
                                                     dbms = dbms,
+                                                    warnOnMissingParameters = FALSE,
                                                     cdm_database_schema = cdmDatabaseSchema,
                                                     results_database_schema = resultsDatabaseSchema,
                                                     vocab_database_schema = vocabDatabaseSchema
   )
   
-  queryAgeAtFirstOccurrence <- SqlRender::loadRenderTranslateSql(sqlFilename = addCdmVersionPath("/measurement/sqlAgeAtFirstOccurrence.sql",cdmVersion),
+  queryAgeAtFirstOccurrence <- SqlRender::loadRenderTranslateSql(sqlFilename = "export/measurement/sqlAgeAtFirstOccurrence.sql",
                                                       packageName = "Achilles",
                                                       dbms = dbms,
+                                                      warnOnMissingParameters = FALSE,
                                                       cdm_database_schema = cdmDatabaseSchema,
                                                       results_database_schema = resultsDatabaseSchema,
                                                       vocab_database_schema = vocabDatabaseSchema
   )
   
-  queryRecordsByUnit <- SqlRender::loadRenderTranslateSql(sqlFilename = addCdmVersionPath("/measurement/sqlRecordsByUnit.sql",cdmVersion),
+  queryRecordsByUnit <- SqlRender::loadRenderTranslateSql(sqlFilename = "export/measurement/sqlRecordsByUnit.sql",
                                                packageName = "Achilles",
                                                dbms = dbms,
+                                               warnOnMissingParameters = FALSE,
                                                cdm_database_schema = cdmDatabaseSchema,
                                                results_database_schema = resultsDatabaseSchema,
                                                vocab_database_schema = vocabDatabaseSchema
   )
   
-  queryMeasurementValueDistribution <- SqlRender::loadRenderTranslateSql(sqlFilename = addCdmVersionPath("/measurement/sqlMeasurementValueDistribution.sql",cdmVersion),
+  queryMeasurementValueDistribution <- SqlRender::loadRenderTranslateSql(sqlFilename = "export/measurement/sqlMeasurementValueDistribution.sql",
                                                               packageName = "Achilles",
                                                               dbms = dbms,
+                                                              warnOnMissingParameters = FALSE,
                                                               cdm_database_schema = cdmDatabaseSchema,
                                                               results_database_schema = resultsDatabaseSchema,
                                                               vocab_database_schema = vocabDatabaseSchema
   )
   
-  queryLowerLimitDistribution <- SqlRender::loadRenderTranslateSql(sqlFilename = addCdmVersionPath("/measurement/sqlLowerLimitDistribution.sql",cdmVersion),
+  queryLowerLimitDistribution <- SqlRender::loadRenderTranslateSql(sqlFilename = "export/measurement/sqlLowerLimitDistribution.sql",
                                                         packageName = "Achilles",
                                                         dbms = dbms,
+                                                        warnOnMissingParameters = FALSE,
                                                         cdm_database_schema = cdmDatabaseSchema,
                                                         results_database_schema = resultsDatabaseSchema,
                                                         vocab_database_schema = vocabDatabaseSchema
   )
   
-  queryUpperLimitDistribution <- SqlRender::loadRenderTranslateSql(sqlFilename = addCdmVersionPath("/measurement/sqlUpperLimitDistribution.sql",cdmVersion),
+  queryUpperLimitDistribution <- SqlRender::loadRenderTranslateSql(sqlFilename = "export/measurement/sqlUpperLimitDistribution.sql",
                                                         packageName = "Achilles",
                                                         dbms = dbms,
+                                                        warnOnMissingParameters = FALSE,
                                                         cdm_database_schema = cdmDatabaseSchema,
                                                         results_database_schema = resultsDatabaseSchema,
                                                         vocab_database_schema = vocabDatabaseSchema
   )
   
-  queryValuesRelativeToNorm <- SqlRender::loadRenderTranslateSql(sqlFilename = addCdmVersionPath("/measurement/sqlValuesRelativeToNorm.sql",cdmVersion),
+  queryValuesRelativeToNorm <- SqlRender::loadRenderTranslateSql(sqlFilename = "export/measurement/sqlValuesRelativeToNorm.sql",
                                                       packageName = "Achilles",
                                                       dbms = dbms,
+                                                      warnOnMissingParameters = FALSE,
                                                       cdm_database_schema = cdmDatabaseSchema,
                                                       results_database_schema = resultsDatabaseSchema,
                                                       vocab_database_schema = vocabDatabaseSchema
@@ -1853,14 +1909,15 @@ generateMeasurementReports <- function(conn, dbms, cdmDatabaseSchema, resultsDat
   
 }
 
-generateObservationTreemap <- function(conn, dbms, cdmDatabaseSchema, resultsDatabaseSchema, outputPath, cdmVersion = "4", vocabDatabaseSchema = cdmDatabaseSchema) {
+generateObservationTreemap <- function(conn, dbms, cdmDatabaseSchema, resultsDatabaseSchema, outputPath, vocabDatabaseSchema = cdmDatabaseSchema) {
   writeLines("Generating observation treemap")
   progressBar <- utils::txtProgressBar(max=1,style=3)
   progress = 0
   
-  queryObservationTreemap <- SqlRender::loadRenderTranslateSql(sqlFilename = addCdmVersionPath("/observation/sqlObservationTreemap.sql",cdmVersion),
+  queryObservationTreemap <- SqlRender::loadRenderTranslateSql(sqlFilename = "export/observation/sqlObservationTreemap.sql",
                                                     packageName = "Achilles",
                                                     dbms = dbms,
+                                                    warnOnMissingParameters = FALSE,
                                                     cdm_database_schema = cdmDatabaseSchema,
                                                     results_database_schema = resultsDatabaseSchema,
                                                     vocab_database_schema = vocabDatabaseSchema
@@ -1876,7 +1933,7 @@ generateObservationTreemap <- function(conn, dbms, cdmDatabaseSchema, resultsDat
   
 }
 
-generateObservationReports <- function(conn, dbms, cdmDatabaseSchema, resultsDatabaseSchema, outputPath, cdmVersion = "4", vocabDatabaseSchema = cdmDatabaseSchema)
+generateObservationReports <- function(conn, dbms, cdmDatabaseSchema, resultsDatabaseSchema, outputPath, vocabDatabaseSchema = cdmDatabaseSchema)
 {
   writeLines("Generating Observation reports")
   
@@ -1901,102 +1958,58 @@ generateObservationReports <- function(conn, dbms, cdmDatabaseSchema, resultsDat
   progressBar <- utils::txtProgressBar(style=3)
   progress = 0
   
-  queryPrevalenceByGenderAgeYear <- SqlRender::loadRenderTranslateSql(sqlFilename = addCdmVersionPath("/observation/sqlPrevalenceByGenderAgeYear.sql",cdmVersion),
+  queryPrevalenceByGenderAgeYear <- SqlRender::loadRenderTranslateSql(sqlFilename = "export/observation/sqlPrevalenceByGenderAgeYear.sql",
                                                            packageName = "Achilles",
                                                            dbms = dbms,
+                                                           warnOnMissingParameters = FALSE,
                                                            cdm_database_schema = cdmDatabaseSchema,
                                                            results_database_schema = resultsDatabaseSchema,
                                                            vocab_database_schema = vocabDatabaseSchema
   )
   
-  queryPrevalenceByMonth <- SqlRender::loadRenderTranslateSql(sqlFilename = addCdmVersionPath("/observation/sqlPrevalenceByMonth.sql",cdmVersion),
+  queryPrevalenceByMonth <- SqlRender::loadRenderTranslateSql(sqlFilename = "export/observation/sqlPrevalenceByMonth.sql",
                                                    packageName = "Achilles",
                                                    dbms = dbms,
+                                                   warnOnMissingParameters = FALSE,
                                                    cdm_database_schema = cdmDatabaseSchema,
                                                    results_database_schema = resultsDatabaseSchema,
                                                    vocab_database_schema = vocabDatabaseSchema
   )
   
-  queryObsFrequencyDistribution <- SqlRender::loadRenderTranslateSql(sqlFilename = addCdmVersionPath("/observation/sqlFrequencyDistribution.sql",cdmVersion), 
+  queryObsFrequencyDistribution <- SqlRender::loadRenderTranslateSql(sqlFilename = "export/observation/sqlFrequencyDistribution.sql", 
                                                           packageName = "Achilles",
                                                           dbms = dbms,
+                                                          warnOnMissingParameters = FALSE,
                                                           cdm_database_schema = cdmDatabaseSchema,
                                                           results_database_schema = resultsDatabaseSchema,
                                                           vocab_database_schema = vocabDatabaseSchema
   )
   
-  queryObservationsByType <- SqlRender::loadRenderTranslateSql(sqlFilename = addCdmVersionPath("/observation/sqlObservationsByType.sql",cdmVersion),
+  queryObservationsByType <- SqlRender::loadRenderTranslateSql(sqlFilename = "export/observation/sqlObservationsByType.sql",
                                                     packageName = "Achilles",
                                                     dbms = dbms,
+                                                    warnOnMissingParameters = FALSE,
                                                     cdm_database_schema = cdmDatabaseSchema,
                                                     results_database_schema = resultsDatabaseSchema,
                                                     vocab_database_schema = vocabDatabaseSchema
   )
   
-  queryAgeAtFirstOccurrence <- SqlRender::loadRenderTranslateSql(sqlFilename = addCdmVersionPath("/observation/sqlAgeAtFirstOccurrence.sql",cdmVersion),
+  queryAgeAtFirstOccurrence <- SqlRender::loadRenderTranslateSql(sqlFilename = "export/observation/sqlAgeAtFirstOccurrence.sql",
                                                       packageName = "Achilles",
                                                       dbms = dbms,
+                                                      warnOnMissingParameters = FALSE,
                                                       cdm_database_schema = cdmDatabaseSchema,
                                                       results_database_schema = resultsDatabaseSchema,
                                                       vocab_database_schema = vocabDatabaseSchema
   )
   
-  if (cdmVersion == "4")
-  {
   
-    queryRecordsByUnit <- SqlRender::loadRenderTranslateSql(sqlFilename = addCdmVersionPath("/observation/sqlRecordsByUnit.sql",cdmVersion),
-                                                 packageName = "Achilles",
-                                                 dbms = dbms,
-                                                 cdm_database_schema = cdmDatabaseSchema,
-                                                 results_database_schema = resultsDatabaseSchema,
-                                                 vocab_database_schema = vocabDatabaseSchema
-    )
-    
-    queryObservationValueDistribution <- SqlRender::loadRenderTranslateSql(sqlFilename = addCdmVersionPath("/observation/sqlObservationValueDistribution.sql",cdmVersion),
-                                                                packageName = "Achilles",
-                                                                dbms = dbms,
-                                                                cdm_database_schema = cdmDatabaseSchema,
-                                                                results_database_schema = resultsDatabaseSchema,
-                                                                vocab_database_schema = vocabDatabaseSchema
-    )
-    
-    queryLowerLimitDistribution <- SqlRender::loadRenderTranslateSql(sqlFilename = addCdmVersionPath("/observation/sqlLowerLimitDistribution.sql",cdmVersion),
-                                                          packageName = "Achilles",
-                                                          dbms = dbms,
-                                                          cdm_database_schema = cdmDatabaseSchema,
-                                                          results_database_schema = resultsDatabaseSchema,
-                                                          vocab_database_schema = vocabDatabaseSchema
-    )
-    
-    queryUpperLimitDistribution <- SqlRender::loadRenderTranslateSql(sqlFilename = addCdmVersionPath("/observation/sqlUpperLimitDistribution.sql",cdmVersion),
-                                                          packageName = "Achilles",
-                                                          dbms = dbms,
-                                                          cdm_database_schema = cdmDatabaseSchema,
-                                                          results_database_schema = resultsDatabaseSchema,
-                                                          vocab_database_schema = vocabDatabaseSchema
-    )
-    
-    queryValuesRelativeToNorm <- SqlRender::loadRenderTranslateSql(sqlFilename = addCdmVersionPath("/observation/sqlValuesRelativeToNorm.sql",cdmVersion),
-                                                        packageName = "Achilles",
-                                                        dbms = dbms,
-                                                        cdm_database_schema = cdmDatabaseSchema,
-                                                        results_database_schema = resultsDatabaseSchema,
-                                                        vocab_database_schema = vocabDatabaseSchema
-    )
-  }  
   dataPrevalenceByGenderAgeYear <- DatabaseConnector::querySql(conn,queryPrevalenceByGenderAgeYear) 
   dataPrevalenceByMonth <- DatabaseConnector::querySql(conn,queryPrevalenceByMonth)  
   dataObservationsByType <- DatabaseConnector::querySql(conn,queryObservationsByType)    
   dataAgeAtFirstOccurrence <- DatabaseConnector::querySql(conn,queryAgeAtFirstOccurrence)
   dataObsFrequencyDistribution <- DatabaseConnector::querySql(conn,queryObsFrequencyDistribution)
-  if (cdmVersion == "4")
-  {
-    dataRecordsByUnit <- DatabaseConnector::querySql(conn,queryRecordsByUnit)
-    dataObservationValueDistribution <- DatabaseConnector::querySql(conn,queryObservationValueDistribution)
-    dataLowerLimitDistribution <- DatabaseConnector::querySql(conn,queryLowerLimitDistribution)
-    dataUpperLimitDistribution <- DatabaseConnector::querySql(conn,queryUpperLimitDistribution)
-    dataValuesRelativeToNorm <- DatabaseConnector::querySql(conn,queryValuesRelativeToNorm)
-  }
+
   
   buildObservationReport <- function(concept_id) {
     report <- {}
@@ -2006,14 +2019,6 @@ generateObservationReports <- function(conn, dbms, cdmDatabaseSchema, resultsDat
     report$OBSERVATIONS_BY_TYPE <- dataObservationsByType[dataObservationsByType$OBSERVATION_CONCEPT_ID == concept_id,c(4,5)]
     report$AGE_AT_FIRST_OCCURRENCE <- dataAgeAtFirstOccurrence[dataAgeAtFirstOccurrence$CONCEPT_ID == concept_id,c(2,3,4,5,6,7,8,9)]
     
-    if (cdmVersion == "4")
-    {
-      report$RECORDS_BY_UNIT <- dataRecordsByUnit[dataRecordsByUnit$OBSERVATION_CONCEPT_ID == concept_id,c(4,5)]
-      report$OBSERVATION_VALUE_DISTRIBUTION <- dataObservationValueDistribution[dataObservationValueDistribution$CONCEPT_ID == concept_id,c(2,3,4,5,6,7,8,9)]
-      report$LOWER_LIMIT_DISTRIBUTION <- dataLowerLimitDistribution[dataLowerLimitDistribution$CONCEPT_ID == concept_id,c(2,3,4,5,6,7,8,9)]
-      report$UPPER_LIMIT_DISTRIBUTION <- dataUpperLimitDistribution[dataUpperLimitDistribution$CONCEPT_ID == concept_id,c(2,3,4,5,6,7,8,9)]
-      report$VALUES_RELATIVE_TO_NORM <- dataValuesRelativeToNorm[dataValuesRelativeToNorm$OBSERVATION_CONCEPT_ID == concept_id,c(4,5)]
-    }
 
     filename <- paste(outputPath, "/observations/observation_" , concept_id , ".json", sep='')  
     
@@ -2033,14 +2038,15 @@ generateObservationReports <- function(conn, dbms, cdmDatabaseSchema, resultsDat
   
 }
 
-generateVisitTreemap <- function(conn, dbms, cdmDatabaseSchema, resultsDatabaseSchema, outputPath, cdmVersion = "4", vocabDatabaseSchema = cdmDatabaseSchema){
+generateVisitTreemap <- function(conn, dbms, cdmDatabaseSchema, resultsDatabaseSchema, outputPath, vocabDatabaseSchema = cdmDatabaseSchema){
   writeLines("Generating visit_occurrence treemap")
   progressBar <- utils::txtProgressBar(max=1,style=3)
   progress = 0
   
-  queryVisitTreemap <- SqlRender::loadRenderTranslateSql(sqlFilename = addCdmVersionPath("/visit/sqlVisitTreemap.sql",cdmVersion),
+  queryVisitTreemap <- SqlRender::loadRenderTranslateSql(sqlFilename = "export/visit/sqlVisitTreemap.sql",
                                               packageName = "Achilles",
                                               dbms = dbms,
+                                              warnOnMissingParameters = FALSE,
                                               cdm_database_schema = cdmDatabaseSchema,
                                               results_database_schema = resultsDatabaseSchema,
                                               vocab_database_schema = vocabDatabaseSchema
@@ -2055,7 +2061,7 @@ generateVisitTreemap <- function(conn, dbms, cdmDatabaseSchema, resultsDatabaseS
   close(progressBar)  
 }
 
-generateVisitReports <- function(conn, dbms, cdmDatabaseSchema, resultsDatabaseSchema, outputPath, cdmVersion = "4", vocabDatabaseSchema = cdmDatabaseSchema){
+generateVisitReports <- function(conn, dbms, cdmDatabaseSchema, resultsDatabaseSchema, outputPath, vocabDatabaseSchema = cdmDatabaseSchema){
   writeLines("Generating visit reports")
   
   treemapFile <- file.path(outputPath,"visit_treemap.json")
@@ -2079,33 +2085,37 @@ generateVisitReports <- function(conn, dbms, cdmDatabaseSchema, resultsDatabaseS
   progressBar <- utils::txtProgressBar(style=3)
   progress = 0
   
-  queryPrevalenceByGenderAgeYear <- SqlRender::loadRenderTranslateSql(sqlFilename = addCdmVersionPath("/visit/sqlPrevalenceByGenderAgeYear.sql",cdmVersion),
+  queryPrevalenceByGenderAgeYear <- SqlRender::loadRenderTranslateSql(sqlFilename = "export/visit/sqlPrevalenceByGenderAgeYear.sql",
                                                            packageName = "Achilles",
                                                            dbms = dbms,
+                                                           warnOnMissingParameters = FALSE,
                                                            cdm_database_schema = cdmDatabaseSchema,
                                                            results_database_schema = resultsDatabaseSchema,
                                                            vocab_database_schema = vocabDatabaseSchema
   )
   
-  queryPrevalenceByMonth <- SqlRender::loadRenderTranslateSql(sqlFilename = addCdmVersionPath("/visit/sqlPrevalenceByMonth.sql",cdmVersion),
+  queryPrevalenceByMonth <- SqlRender::loadRenderTranslateSql(sqlFilename = "export/visit/sqlPrevalenceByMonth.sql",
                                                    packageName = "Achilles",
                                                    dbms = dbms,
+                                                   warnOnMissingParameters = FALSE,
                                                    cdm_database_schema = cdmDatabaseSchema,
                                                    results_database_schema = resultsDatabaseSchema,
                                                    vocab_database_schema = vocabDatabaseSchema
   )
   
-  queryVisitDurationByType <- SqlRender::loadRenderTranslateSql(sqlFilename = addCdmVersionPath("/visit/sqlVisitDurationByType.sql",cdmVersion),
+  queryVisitDurationByType <- SqlRender::loadRenderTranslateSql(sqlFilename = "export/visit/sqlVisitDurationByType.sql",
                                                      packageName = "Achilles",
                                                      dbms = dbms,
+                                                     warnOnMissingParameters = FALSE,
                                                      cdm_database_schema = cdmDatabaseSchema,
                                                      results_database_schema = resultsDatabaseSchema,
                                                      vocab_database_schema = vocabDatabaseSchema
   )
   
-  queryAgeAtFirstOccurrence <- SqlRender::loadRenderTranslateSql(sqlFilename = addCdmVersionPath("/visit/sqlAgeAtFirstOccurrence.sql",cdmVersion),
+  queryAgeAtFirstOccurrence <- SqlRender::loadRenderTranslateSql(sqlFilename = "export/visit/sqlAgeAtFirstOccurrence.sql",
                                                       packageName = "Achilles",
                                                       dbms = dbms,
+                                                      warnOnMissingParameters = FALSE,
                                                       cdm_database_schema = cdmDatabaseSchema,
                                                       results_database_schema = resultsDatabaseSchema,
                                                       vocab_database_schema = vocabDatabaseSchema
@@ -2139,7 +2149,7 @@ generateVisitReports <- function(conn, dbms, cdmDatabaseSchema, resultsDatabaseS
   close(progressBar)  
 }
 
-generateDeathReports <- function(conn, dbms, cdmDatabaseSchema, resultsDatabaseSchema, outputPath, cdmVersion = "4", vocabDatabaseSchema = cdmDatabaseSchema){
+generateDeathReports <- function(conn, dbms, cdmDatabaseSchema, resultsDatabaseSchema, outputPath, vocabDatabaseSchema = cdmDatabaseSchema){
   writeLines("Generating death reports")
   progressBar <- utils::txtProgressBar(max=4,style=3)
   progress = 0
@@ -2152,9 +2162,10 @@ generateDeathReports <- function(conn, dbms, cdmDatabaseSchema, resultsDatabaseS
   #   d.	y-axis:  condition prevalence (% persons)
   #   e.	series:  male,  female
   
-  renderedSql <- SqlRender::loadRenderTranslateSql(sqlFilename = addCdmVersionPath("/death/sqlPrevalenceByGenderAgeYear.sql",cdmVersion),
+  renderedSql <- SqlRender::loadRenderTranslateSql(sqlFilename = "export/death/sqlPrevalenceByGenderAgeYear.sql",
                                         packageName = "Achilles",
                                         dbms = dbms,
+                                        warnOnMissingParameters = FALSE,
                                         cdm_database_schema = cdmDatabaseSchema,
                                         results_database_schema = resultsDatabaseSchema,
                                         vocab_database_schema = vocabDatabaseSchema
@@ -2171,9 +2182,10 @@ generateDeathReports <- function(conn, dbms, cdmDatabaseSchema, resultsDatabaseS
   # c.	y-axis:  % of persons
   # d.	Comment:  plot to show seasonality
   
-  renderedSql <- SqlRender::loadRenderTranslateSql(sqlFilename = addCdmVersionPath("/death/sqlPrevalenceByMonth.sql",cdmVersion),
+  renderedSql <- SqlRender::loadRenderTranslateSql(sqlFilename = "export/death/sqlPrevalenceByMonth.sql",
                                         packageName = "Achilles",
                                         dbms = dbms,
+                                        warnOnMissingParameters = FALSE,
                                         cdm_database_schema = cdmDatabaseSchema,
                                         results_database_schema = resultsDatabaseSchema,
                                         vocab_database_schema = vocabDatabaseSchema
@@ -2189,9 +2201,10 @@ generateDeathReports <- function(conn, dbms, cdmDatabaseSchema, resultsDatabaseS
   # b.	Category: death type
   # c.	value:  % of records
   
-  renderedSql <- SqlRender::loadRenderTranslateSql(sqlFilename = addCdmVersionPath("/death/sqlDeathByType.sql",cdmVersion),
+  renderedSql <- SqlRender::loadRenderTranslateSql(sqlFilename = "export/death/sqlDeathByType.sql",
                                         packageName = "Achilles",
                                         dbms = dbms,
+                                        warnOnMissingParameters = FALSE,
                                         cdm_database_schema = cdmDatabaseSchema,
                                         results_database_schema = resultsDatabaseSchema,
                                         vocab_database_schema = vocabDatabaseSchema
@@ -2207,9 +2220,10 @@ generateDeathReports <- function(conn, dbms, cdmDatabaseSchema, resultsDatabaseS
   # b.	Category: gender
   # c.	Values: Min/25%/Median/95%/Max  as age at death
   
-  renderedSql <- SqlRender::loadRenderTranslateSql(sqlFilename = addCdmVersionPath("/death/sqlAgeAtDeath.sql",cdmVersion),
+  renderedSql <- SqlRender::loadRenderTranslateSql(sqlFilename = "export/death/sqlAgeAtDeath.sql",
                                         packageName = "Achilles",
                                         dbms = dbms,
+                                        warnOnMissingParameters = FALSE,
                                         cdm_database_schema = cdmDatabaseSchema,
                                         results_database_schema = resultsDatabaseSchema,
                                         vocab_database_schema = vocabDatabaseSchema

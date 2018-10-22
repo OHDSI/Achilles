@@ -1,7 +1,2 @@
+man/Achilles.Rd
 .Rproj.user
-.Rhistory
-.RData
-env_vars
-docker-compose.yml
-errorReport.txt
-output/
