@@ -120,8 +120,8 @@ launchHeelResultsViewer <- function(connectionDetails,
 #'                                            fetchAchillesHeelResults(connectionDetails, "scratch")
 #'                                         }
 #' @export
-fetchAchillesHeelResults <- function (connectionDetails, 
-                                      resultsDatabaseSchema) { 
+fetchAchillesHeelResults <- function(connectionDetails, 
+                                     resultsDatabaseSchema) { 
   connection <- DatabaseConnector::connect(connectionDetails = connectionDetails)
   sql <- SqlRender::renderSql(sql = "select * from @resultsDatabaseSchema.achilles_heel_results",
                               resultsDatabaseSchema = resultsDatabaseSchema)$sql

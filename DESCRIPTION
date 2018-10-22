@@ -12,7 +12,7 @@ Authors@R: c(
     person("Taha", "Abdul-Basser", role = c("aut")),
     person("Observational Health Data Science and Informatics", role = c("cph"))
   )
-Maintainer: Ajit Londhe <alondhe2@its.jnj.com>
+Maintainer: Patrick Ryan <ryan@ohdsi.org>
 LazyData: true
 Description: Creates descriptive statistics summary for an entire OMOP CDM
     instance. Since Aug 2016 only CDM v5 is actively being extended. Achilles

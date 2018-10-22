@@ -124,6 +124,8 @@ achillesHeel <- function(connectionDetails,
   schemaDelim <- "."
   
   if (numThreads == 1 || scratchDatabaseSchema == "#") {
+    message("Beginning single-threaded operations")
+    
     numThreads <- 1
     scratchDatabaseSchema <- "#"
     schemaDelim <- "s_"
@@ -151,10 +153,10 @@ achillesHeel <- function(connectionDetails,
   
   # Clean up existing scratch tables -----------------------------------------------
   
-  if (numThreads > 1 & !sqlOnly) {
+  if (numThreads > 1 && !sqlOnly) {
     # Drop the scratch tables
     ParallelLogger::logInfo(sprintf("Dropping scratch Heel tables from schema %s", scratchDatabaseSchema))
-    
+
     dropAllScratchTables(connectionDetails = connectionDetails, 
                          scratchDatabaseSchema = scratchDatabaseSchema, 
                          tempAchillesPrefix = tempAchillesPrefix, 
@@ -370,7 +372,7 @@ achillesHeel <- function(connectionDetails,
   if (numThreads > 1 & !sqlOnly) {
     # Drop the scratch tables
     ParallelLogger::logInfo(sprintf("Dropping scratch Heel tables from schema %s", scratchDatabaseSchema))
-    
+
     dropAllScratchTables(connectionDetails = connectionDetails, 
                          scratchDatabaseSchema = scratchDatabaseSchema, 
                          tempAchillesPrefix = tempAchillesPrefix, 
