@@ -7,5 +7,5 @@ select 910 as analysis_id,
 into @scratchDatabaseSchema@schemaDelim@tempAchillesPrefix_910
 from
 	@cdmDatabaseSchema.drug_era de1
-where de1.drug_era_end_date < de1.drug_era_start_date
+where de1.drug_era_end_datetime < de1.drug_era_start_datetime
 ;

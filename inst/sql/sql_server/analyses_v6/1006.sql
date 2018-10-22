@@ -8,7 +8,7 @@ INTO #rawData_1006
 from @cdmDatabaseSchema.PERSON p1
 inner join
 (
-  select person_id, condition_concept_id, min(year(condition_era_start_date)) as condition_start_year
+  select person_id, condition_concept_id, min(year(condition_era_start_datetime)) as condition_start_year
   from @cdmDatabaseSchema.condition_era
   group by person_id, condition_concept_id
 ) ce on p1.person_id = ce.person_id

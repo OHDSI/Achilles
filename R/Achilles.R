@@ -1176,7 +1176,7 @@ dropAllScratchTables <- function(connectionDetails,
                             numThreads,
                             outputFolder) {
   
-  sqlFileName <- file.path("analyses", paste(analysisId, "sql", sep = "."))
+  sqlFileName <- file.path("analyses_v5", paste(analysisId, "sql", sep = "."))
   
   if (cdmVersion >= 6) {
     sqlFileName <- file.path("analyses_v6", paste(analysisId, "sql", sep = "."))

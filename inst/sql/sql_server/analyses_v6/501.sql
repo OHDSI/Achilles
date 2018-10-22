@@ -1,4 +1,4 @@
--- 501	Number of records of death, by cause_concept_id
+-- 501	Number of records of death, by cause of death (condition_concept_id)
 
 --HINT DISTRIBUTE_ON_KEY(stratum_1)
 select 501 as analysis_id, 
@@ -14,6 +14,8 @@ join @cdmDatabaseSchema.person P on O.person_id = P.person_id
   and P.death_datetime = O.observation_datetime
 left join @cdmDatabaseSchema.condition_occurrence C on C.person_id = O.person_id
   and P.death_datetime = C.condition_start_datetime
+left join @cdmDatabaseSchema.concept CN on C.condition_type_concept_id = CN.concept_id
+  and CN.concept_class = 'Death Type'
 where O.observation_concept_id = 4306655 -- death concept id
 group by C.condition_concept_id
 ;

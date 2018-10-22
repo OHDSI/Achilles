@@ -9,7 +9,7 @@ from
 	@cdmDatabaseSchema.condition_era ce1
 	left join @cdmDatabaseSchema.observation_period op1
 	on op1.person_id = ce1.person_id
-	and ce1.condition_era_start_date >= op1.observation_period_start_date
-	and ce1.condition_era_start_date <= op1.observation_period_end_date
+	and ce1.condition_era_start_datetime >= op1.observation_period_start_date
+	and ce1.condition_era_start_datetime <= op1.observation_period_end_date
 where op1.person_id is null
 ;

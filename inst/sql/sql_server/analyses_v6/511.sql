@@ -26,7 +26,7 @@ from
   join @cdmDatabaseSchema.person P on O.person_id = P.person_id
   join
 	(
-		select person_id, max(condition_start_date) as max_date
+		select person_id, max(condition_start_datetime) as max_date
 		from @cdmDatabaseSchema.condition_occurrence
 		group by person_id
 	) t0 on O.person_id = t0.person_id

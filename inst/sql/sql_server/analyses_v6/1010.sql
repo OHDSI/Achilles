@@ -7,5 +7,5 @@ select 1010 as analysis_id,
 into @scratchDatabaseSchema@schemaDelim@tempAchillesPrefix_1010
 from
 	@cdmDatabaseSchema.condition_era ce1
-where ce1.condition_era_end_date < ce1.condition_era_start_date
+where ce1.condition_era_end_datetime < ce1.condition_era_start_datetime
 ;

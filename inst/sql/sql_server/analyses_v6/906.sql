@@ -8,7 +8,7 @@ INTO #rawData_906
 from @cdmDatabaseSchema.PERSON p1
 inner join
 (
-	select person_id, drug_concept_id, min(year(drug_era_start_date)) as drug_start_year
+	select person_id, drug_concept_id, min(year(drug_era_start_datetime)) as drug_start_year
 	from @cdmDatabaseSchema.drug_era
 	group by person_id, drug_concept_id
 ) de on p1.person_id =de.person_id

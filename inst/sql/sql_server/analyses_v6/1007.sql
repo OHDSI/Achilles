@@ -4,7 +4,7 @@
 with rawData(stratum1_id, count_value) as
 (
   select condition_concept_id as stratum1_id,
-    datediff(dd,condition_era_start_date, condition_era_end_date) as count_value
+    datediff(dd,condition_era_start_datetime, condition_era_end_datetime) as count_value
   from  @cdmDatabaseSchema.condition_era ce1
 ),
 overallStats (stratum1_id, avg_value, stdev_value, min_value, max_value, total) as
