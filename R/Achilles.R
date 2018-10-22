@@ -122,9 +122,9 @@ achilles <- function (connectionDetails,
   
   if (missing(cdmVersion)) {
     cdmVersion <- .getCdmVersion(connectionDetails, cdmDatabaseSchema)
+  } else {
+    cdmVersion <- as.numeric(cdmVersion)
   }
-  
-  cdmVersion <- as.character(cdmVersion)
   
   # Check CDM version is valid ---------------------------------------------------------------------------------------------------
   
@@ -1146,15 +1146,15 @@ dropAllScratchTables <- function(connectionDetails,
 
 .getCdmVersion <- function(connectionDetails, 
                            cdmDatabaseSchema) {
-  sql <- SqlRender::renderSql(sql = "select cdm_version from @cdmDatabaseSchema.cdm_source",
+  sql <- SqlRender::renderSql(sql = "select top 1 cdm_version from @cdmDatabaseSchema.cdm_source;",
                               cdmDatabaseSchema = cdmDatabaseSchema)$sql
   sql <- SqlRender::translateSql(sql = sql, targetDialect = connectionDetails$dbms)$sql
   connection <- DatabaseConnector::connect(connectionDetails = connectionDetails)
   cdmVersion <- tryCatch({
     c <- tolower((DatabaseConnector::querySql(connection = connection, sql = sql))[1,])
-    gsub(pattern = "v", replacement = "", x = c)
+    as.numeric(gsub(pattern = "v", replacement = "", x = c))
   }, error = function (e) {
-    ""
+    -1
   }, finally = {
     DatabaseConnector::disconnect(connection = connection)
     rm(connection)
@@ -1176,7 +1176,13 @@ dropAllScratchTables <- function(connectionDetails,
                             numThreads,
                             outputFolder) {
   
-  SqlRender::loadRenderTranslateSql(sqlFilename = file.path("analyses", paste(analysisId, "sql", sep = ".")),
+  sqlFileName <- file.path("analyses", paste(analysisId, "sql", sep = "."))
+  
+  if (cdmVersion >= 6) {
+    sqlFileName <- file.path("analyses_v6", paste(analysisId, "sql", sep = "."))
+  }
+  
+  SqlRender::loadRenderTranslateSql(sqlFilename = sqlFileName,
                                          packageName = "Achilles",
                                          dbms = connectionDetails$dbms,
                                          warnOnMissingParameters = FALSE,
