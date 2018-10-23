@@ -60,6 +60,8 @@ RUN echo 'options(repos=structure(c(CRAN="http://cran.cnr.berkeley.edu/")))' > /
       OHDSI/DatabaseConnector \
       OHDSI/OhdsiRTools \
     && rm -rf /tmp/downloaded_packages/ /tmp/*.rds
+RUN R -e "install.packages(c('devtools','dplyr'))"
+RUN R -e "devtools::install_github('ohdsi/ParallelLogger')"
 
 # Configure workspace
 WORKDIR /opt/app
