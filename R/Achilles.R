@@ -51,7 +51,7 @@
 #' @param runHeel                          Boolean to determine if Achilles Heel data quality reporting will be produced based on the summary statistics.  Default = TRUE
 #' @param validateSchema                   Boolean to determine if CDM Schema Validation should be run. Default = FALSE
 #' @param runCostAnalysis                  Boolean to determine if cost analysis should be run. Note: only works on v5.1+ style cost tables.
-#' @param conceptHierarchy                 Boolean to determine if the concept_hierarchy result table should be created, for use by Atlas treemaps. 
+#' @param conceptHierarchy                 Boolean to determine if the concept_hierarchy result table should be created, for use by Atlas treemaps. Default is FALSE
 #'                                         Please note: this table creation only requires the Vocabulary, not the CDM itself. 
 #'                                         You could run this once for 1 Vocab version, and then copy the table to all CDMs using that Vocab.
 #' @param createIndices                    Boolean to determine if indices should be created on the resulting Achilles and concept_hierarchy table. Default= TRUE
@@ -89,7 +89,7 @@ achilles <- function (connectionDetails,
                       runHeel = TRUE,
                       validateSchema = FALSE,
                       runCostAnalysis = FALSE,
-                      conceptHierarchy = TRUE,
+                      conceptHierarchy = FALSE,
                       createIndices = TRUE,
                       numThreads = 1,
                       tempAchillesPrefix = "tmpach",

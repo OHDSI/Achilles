@@ -10,7 +10,7 @@ achilles(connectionDetails, cdmDatabaseSchema,
   vocabDatabaseSchema = cdmDatabaseSchema, sourceName = "",
   analysisIds, createTable = TRUE, smallCellCount = 5,
   cdmVersion = "5", runHeel = TRUE, validateSchema = FALSE,
-  runCostAnalysis = FALSE, conceptHierarchy = TRUE,
+  runCostAnalysis = FALSE, conceptHierarchy = FALSE,
   createIndices = TRUE, numThreads = 1,
   tempAchillesPrefix = "tmpach", dropScratchTables = TRUE,
   sqlOnly = FALSE, outputFolder = "output", verboseMode = TRUE)
@@ -47,7 +47,7 @@ If not specified, all analyses will be executed. Use \code{\link{getAnalysisDeta
 
 \item{runCostAnalysis}{Boolean to determine if cost analysis should be run. Note: only works on v5.1+ style cost tables.}
 
-\item{conceptHierarchy}{Boolean to determine if the concept_hierarchy result table should be created, for use by Atlas treemaps. 
+\item{conceptHierarchy}{Boolean to determine if the concept_hierarchy result table should be created, for use by Atlas treemaps. Default is FALSE
 Please note: this table creation only requires the Vocabulary, not the CDM itself. 
 You could run this once for 1 Vocab version, and then copy the table to all CDMs using that Vocab.}
 
