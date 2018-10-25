@@ -376,8 +376,10 @@ achillesHeel <- function(connectionDetails,
     dropAllScratchTables(connectionDetails = connectionDetails, 
                          scratchDatabaseSchema = scratchDatabaseSchema, 
                          tempAchillesPrefix = tempAchillesPrefix, 
+                         tempHeelPrefix = tempHeelPrefix,
                          numThreads = numThreads,
-                         tableTypes = c("heel"),
+                         tableTypes = c("heel"), 
+                         outputFolder = outputFolder, 
                          verboseMode = verboseMode)
     
     ParallelLogger::logInfo(sprintf("Temporary Heel tables removed from schema %s", scratchDatabaseSchema))
