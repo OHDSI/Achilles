@@ -836,7 +836,9 @@ createIndices <- function(connectionDetails,
   }
   
   if (connectionDetails$dbms == "pdw") {
-    indicesSql <- c(indicesSql, "create clustered columnstore index ClusteredIndex_Achilles_results on @resultsDatabaseSchema.achilles_results;")
+    indicesSql <- c(indicesSql, 
+                    SqlRender::renderSql("create clustered columnstore index ClusteredIndex_Achilles_results on @resultsDatabaseSchema.achilles_results;",
+                                         resultsDatabaseSchema = resultsDatabaseSchema)$sql)
   }
   
   indices <- read.csv(file = system.file("csv", "post_processing", "indices.csv", package = "Achilles"), 
@@ -1122,9 +1124,10 @@ dropAllScratchTables <- function(connectionDetails,
     conceptHierarchyTables <- c("condition", "drug", "drug_era", "meas", "obs", "proc")
     
     dropSqls <- lapply(conceptHierarchyTables, function(scratchTable) {
-      sql <- SqlRender::renderSql("IF OBJECT_ID('@scratchDatabaseSchema@schemaDelim@scratchTable', 'U') IS NOT NULL DROP TABLE @scratchDatabaseSchema@schemaDelim@scratchTable;", 
+      sql <- SqlRender::renderSql("IF OBJECT_ID('@scratchDatabaseSchema@schemaDelim@tempAchillesPrefix@scratchTable', 'U') IS NOT NULL DROP TABLE @scratchDatabaseSchema@schemaDelim@tempAchillesPrefix@scratchTable;", 
                            scratchDatabaseSchema = scratchDatabaseSchema,
                            schemaDelim = schemaDelim,
+                           tempAchillesPrefix = tempAchillesPrefix,
                            scratchTable = scratchTable)$sql
       sql <- SqlRender::translateSql(sql = sql, targetDialect = connectionDetails$dbms)$sql
     })
