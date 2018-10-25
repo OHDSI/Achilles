@@ -36,7 +36,7 @@ Achilles is actively being developed for CDM v5.x only.
     if (!require("devtools")) install.packages("devtools")
     
     # To install the master branch
-    devtools:: install_github("OHDSI/Achilles")
+    devtools::install_github("OHDSI/Achilles")
     
     # To install latest release (if master branch contains a bug for you)
     # devtools::install_github("OHDSI/Achilles@*release")  
