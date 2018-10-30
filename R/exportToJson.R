@@ -194,7 +194,7 @@ exportToJson <- function (connectionDetails,
   }
   
   delta <- Sys.time() - start
-  writeLines(paste("Export took", signif(delta,3), attr(delta,"units")))
+  writeLines(paste("Export took", signif(delta,3), attr(delta, "units")))
   writeLines(paste("JSON files can now be found in",outputPath))
 }
 
