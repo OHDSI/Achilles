@@ -197,3 +197,7 @@ Follow the conventions of existing Heel Results queries:  `select <fields> into 
 
 * The `@hrOldId` parameter refers to the serial file ID of the previous achilles_heel_results analysis. The achillesHeel function will assign this based on the rule_id.
 
+
+# Heel 
+
+Additional knowledge base (provided as CSV files) can be used by logic that is implemented by comparing knowledge base to achilles_results data. Such knowledge base is not loaded into database since it can be done in memory and is computationaly trivial. (takes < 3 seconds to compute)
