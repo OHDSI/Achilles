@@ -10,13 +10,12 @@ select
 from
 (
   SELECT DISTINCT ord1.analysis_id,
-    CAST(CONCAT('WARNING: ', cast(ord1.analysis_id as VARCHAR(10)), '-', oa1.analysis_name, ' (count = ', cast(COUNT_BIG(ord1.max_value) as VARCHAR(19)), '); max value should not be > 10') AS VARCHAR(255)) AS ACHILLES_HEEL_warning,
+    CAST(CONCAT('WARNING: ', cast(ord1.analysis_id as VARCHAR(10)), '-', oa1.analysis_name, ' (count = ', cast(ord1.record_count as VARCHAR(19)), '); max value should not be > 10') AS VARCHAR(255)) AS ACHILLES_HEEL_warning,
     25 as rule_id,
-    COUNT_BIG(ord1.max_value) as record_count
-  FROM @resultsDatabaseSchema.ACHILLES_results_dist ord1
-  INNER JOIN @resultsDatabaseSchema.ACHILLES_analysis oa1
-  	ON ord1.analysis_id = oa1.analysis_id
-  WHERE ord1.analysis_id IN (716)
-  	AND ord1.max_value > 10
-  GROUP BY ord1.analysis_id, oa1.analysis_name
+    ord1.record_count
+  FROM @resultsDatabaseSchema.ACHILLES_analysis oa1
+  INNER JOIN ( SELECT analysis_id, COUNT_BIG(max_value) AS record_count FROM @resultsDatabaseSchema.ACHILLES_results_dist
+    WHERE analysis_id IN (716)
+  	AND max_value > 10
+    GROUP BY analysis_id) ord1 ON ord1.analysis_id = oa1.analysis_id
 ) A;

@@ -15,7 +15,7 @@ into @scratchDatabaseSchema@schemaDelim@tempAchillesPrefix_proc
     (
       SELECT
         c1.concept_id,
-        v1.vocabulary_name + ' ' + c1.concept_code + ': ' + c1.concept_name AS proc_concept_name
+        CONCAT(v1.vocabulary_name, ' ', c1.concept_code, ': ', c1.concept_name) AS proc_concept_name
       FROM @vocabDatabaseSchema.concept c1
         INNER JOIN @vocabDatabaseSchema.vocabulary v1
           ON c1.vocabulary_id = v1.vocabulary_id
