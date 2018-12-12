@@ -515,7 +515,7 @@ achilles <- function (connectionDetails,
                                              ParallelLogger::logInfo(sprintf("Main Analysis %d -- COMPLETE (%f %s)", mainSql$analysisId, delta, attr(delta, "units")))  
                                            }, error = function(e) {
                                              ParallelLogger::logError(sprintf("Analysis %d -- ERROR %s", mainSql$analysisId, e))
-                                           }, finally = function(f) {
+                                           }, finally = {
                                              DatabaseConnector::disconnect(connection = connection)
                                            })
                                          })
@@ -1073,7 +1073,7 @@ dropAllScratchTables <- function(connectionDetails,
                                            DatabaseConnector::executeSql(connection = connection, sql = sql)  
                                          }, error = function(e) {
                                            ParallelLogger::logError(sprintf("Drop Achilles Scratch Table -- ERROR (%s)", e))  
-                                         }, finally = function(f) {
+                                         }, finally = {
                                            DatabaseConnector::disconnect(connection = connection)
                                          })
                                        })
@@ -1112,7 +1112,7 @@ dropAllScratchTables <- function(connectionDetails,
                                            DatabaseConnector::executeSql(connection = connection, sql = sql)  
                                          }, error = function(e) {
                                            ParallelLogger::logError(sprintf("Drop Heel Scratch Table -- ERROR (%s)", e))  
-                                         }, finally = function(f) {
+                                         }, finally = {
                                            DatabaseConnector::disconnect(connection = connection)
                                          })
                                        })
@@ -1143,7 +1143,7 @@ dropAllScratchTables <- function(connectionDetails,
                                            DatabaseConnector::executeSql(connection = connection, sql = sql)  
                                          }, error = function(e) {
                                            ParallelLogger::logError(sprintf("Drop Concept Hierarchy Scratch Table -- ERROR (%s)", e))  
-                                         }, finally = function(f) {
+                                         }, finally = {
                                            DatabaseConnector::disconnect(connection = connection)
                                          })
                                        })
