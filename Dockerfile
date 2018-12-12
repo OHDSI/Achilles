@@ -54,11 +54,13 @@ RUN echo 'options(repos=structure(c(CRAN="http://cran.cnr.berkeley.edu/")))' > /
     /usr/share/doc/littler/examples/install.r R.utils && \
     /usr/share/doc/littler/examples/install.r snow && \
     /usr/share/doc/littler/examples/install.r mailR && \
+    /usr/share/doc/littler/examples/install.r dplyr && \
     /usr/share/doc/littler/examples/installGithub.r \
       OHDSI/SqlRender \
       OHDSI/DatabaseConnectorJars \
       OHDSI/DatabaseConnector \
       OHDSI/OhdsiRTools \
+      OHDSI/ParallelLogger \
     && rm -rf /tmp/downloaded_packages/ /tmp/*.rds
 
 # Configure workspace
