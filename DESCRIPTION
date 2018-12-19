@@ -23,7 +23,8 @@ Depends:
 Imports:
   dplyr,
   rjson,
-  ParallelLogger
+  ParallelLogger,
+  OhdsiRTools
 Suggests:
   testthat,
   R.utils,
@@ -37,5 +38,5 @@ Suggests:
 VignetteBuilder: knitr
 License: Apache License
 Roxygen: list(wrap = FALSE)
-RoxygenNote: 6.1.0
+RoxygenNote: 6.1.1
 Encoding: UTF-8
