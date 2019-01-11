@@ -6,6 +6,6 @@ select 1809 as analysis_id,
 	COUNT_BIG(m.PERSON_ID) as count_value
 into @scratchDatabaseSchema@schemaDelim@tempAchillesPrefix_1809
 from @cdmDatabaseSchema.measurement m
-	left join @cdmDatabaseSchema.PERSON p1 on p1.person_id = m.person_id
+	left join @cdmDatabaseSchema.person p1 on p1.person_id = m.person_id
 where p1.person_id is null
 ;

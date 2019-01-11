@@ -3,7 +3,7 @@
 --HINT DISTRIBUTE_ON_KEY(count_value)
 with rawData(count_value) as
 (
-  select COUNT_BIG(distinct po.procedure_concept_id) as num_procedures
+  select COUNT_BIG(distinct po.procedure_concept_id) as count_value
 	from @cdmDatabaseSchema.procedure_occurrence po
 	group by po.person_id
 ),

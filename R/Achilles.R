@@ -207,8 +207,11 @@ achilles <- function (connectionDetails,
   
   if (numThreads == 1 || scratchDatabaseSchema == "#") {
     numThreads <- 1
-    scratchDatabaseSchema <- "#"
-    schemaDelim <- "s_"
+
+    if (!(connectionDetails$dbms %in% c("bigquery"))) {
+        scratchDatabaseSchema <- "#"
+        schemaDelim <- "s_"
+    }
     
     ParallelLogger::logInfo("Beginning single-threaded execution")
     
@@ -1195,6 +1198,7 @@ dropAllScratchTables <- function(connectionDetails,
                                          resultsDatabaseSchema = resultsDatabaseSchema,
                                          schemaDelim = schemaDelim,
                                          tempAchillesPrefix = tempAchillesPrefix,
+                                         oracleTempSchema = scratchDatabaseSchema,
                                          source_name = sourceName,
                                          achilles_version = packageVersion(pkg = "Achilles"),
                                          cdmVersion = cdmVersion,

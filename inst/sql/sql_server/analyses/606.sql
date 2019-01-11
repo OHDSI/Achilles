@@ -5,7 +5,7 @@ select po1.procedure_concept_id as subject_id,
   p1.gender_concept_id,
 	po1.procedure_start_year - p1.year_of_birth as count_value
 INTO #rawData_606
-from @cdmDatabaseSchema.PERSON p1
+from @cdmDatabaseSchema.person p1
 inner join
 (
 	select person_id, procedure_concept_id, min(year(procedure_date)) as procedure_start_year

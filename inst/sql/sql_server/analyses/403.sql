@@ -3,7 +3,7 @@
 --HINT DISTRIBUTE_ON_KEY(count_value)
 with rawData(person_id, count_value) as
 (
-  select person_id, COUNT_BIG(distinct condition_concept_id) as num_conditions
+  select person_id, COUNT_BIG(distinct condition_concept_id) as count_value
   from @cdmDatabaseSchema.condition_occurrence
 	group by person_id
 ),

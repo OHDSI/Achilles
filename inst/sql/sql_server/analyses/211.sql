@@ -3,7 +3,7 @@
 --HINT DISTRIBUTE_ON_KEY(stratum_id) 
 with rawData(stratum_id, count_value) as
 (
-  select visit_concept_id, datediff(dd,visit_start_date,visit_end_date) as count_value
+  select visit_concept_id AS stratum_id, datediff(dd,visit_start_date,visit_end_date) as count_value
   from @cdmDatabaseSchema.visit_occurrence
 ),
 overallStats (stratum_id, avg_value, stdev_value, min_value, max_value, total) as

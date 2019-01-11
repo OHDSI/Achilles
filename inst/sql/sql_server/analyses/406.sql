@@ -5,7 +5,7 @@ select co1.condition_concept_id as subject_id,
   p1.gender_concept_id,
 	(co1.condition_start_year - p1.year_of_birth) as count_value
 INTO #rawData_406
-from @cdmDatabaseSchema.PERSON p1
+from @cdmDatabaseSchema.person p1
 inner join 
 (
 	select person_id, condition_concept_id, min(year(condition_start_date)) as condition_start_year

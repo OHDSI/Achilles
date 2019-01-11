@@ -7,7 +7,7 @@ FROM
 (
   select DATEDIFF(dd,op.observation_period_start_date, op.observation_period_end_date) as count_value,
 	  ROW_NUMBER() over (PARTITION by op.person_id order by op.observation_period_start_date asc) as rn
-  from @cdmDatabaseSchema.OBSERVATION_PERIOD op
+  from @cdmDatabaseSchema.observation_period op
 ) A
 where rn = 1;
 	

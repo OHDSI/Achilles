@@ -1,12 +1,12 @@
 -- 206	Distribution of age by visit_concept_id
 
 --HINT DISTRIBUTE_ON_KEY(stratum1_id)
-with rawData(stratum1_id, stratum2_id, count_value) as
+with rawData (stratum1_id, stratum2_id, count_value) as
 (
-  select vo1.visit_concept_id,
-  	p1.gender_concept_id,
+  select vo1.visit_concept_id AS stratum1_id,
+  	p1.gender_concept_id AS stratum2_id,
 		vo1.visit_start_year - p1.year_of_birth as count_value
-	from @cdmDatabaseSchema.PERSON p1
+	from @cdmDatabaseSchema.person p1
 	inner join 
   (
 		select person_id, visit_concept_id, min(year(visit_start_date)) as visit_start_year

@@ -4,9 +4,9 @@
 --HINT DISTRIBUTE_ON_KEY(stratum_id)
 with rawData(stratum_id, count_value) as
 (
-  select p1.gender_concept_id,
+  select p1.gender_concept_id AS stratum_id,
     d1.death_year - p1.year_of_birth as count_value
-  from @cdmDatabaseSchema.PERSON p1
+  from @cdmDatabaseSchema.person p1
   inner join
   (select person_id, min(year(death_date)) as death_year
   from @cdmDatabaseSchema.death

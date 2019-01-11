@@ -3,7 +3,7 @@
 --HINT DISTRIBUTE_ON_KEY(stratum_id)
 with rawData(stratum_id, count_value) as
 (
-  select drug_concept_id,
+  select drug_concept_id AS stratum_id,
     refills as count_value
 	from @cdmDatabaseSchema.drug_exposure 
 	where refills is not null

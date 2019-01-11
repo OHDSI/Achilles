@@ -11,9 +11,9 @@ with rawData (age_decile, count_value) as
   		op.observation_period_start_date,
   		op.observation_period_end_date,
       ROW_NUMBER() over (PARTITION by op.person_id order by op.observation_period_start_date asc) as rn
-    from @cdmDatabaseSchema.OBSERVATION_PERIOD op
+    from @cdmDatabaseSchema.observation_period op
   ) op
-  JOIN @cdmDatabaseSchema.PERSON p on op.person_id = p.person_id
+  JOIN @cdmDatabaseSchema.person p on op.person_id = p.person_id
   where op.rn = 1
 ),
 overallStats (age_decile, avg_value, stdev_value, min_value, max_value, total) as

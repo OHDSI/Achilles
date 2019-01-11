@@ -4,8 +4,8 @@
 with rawData (gender_concept_id, age_value) as
 (
   select p.gender_concept_id, MIN(YEAR(observation_period_start_date)) - P.YEAR_OF_BIRTH as age_value
-	from @cdmDatabaseSchema.PERSON p
-	JOIN @cdmDatabaseSchema.OBSERVATION_PERIOD op on p.person_id = op.person_id
+	from @cdmDatabaseSchema.person p
+	JOIN @cdmDatabaseSchema.observation_period op on p.person_id = op.person_id
 	group by p.person_id,p.gender_concept_id, p.year_of_birth
 ),
 overallStats (gender_concept_id, avg_value, stdev_value, min_value, max_value, total) as

@@ -5,7 +5,7 @@ with rawData(stratum_id, count_value) as
 (
   select floor((year(ppp1.payer_plan_period_START_DATE) - p1.YEAR_OF_BIRTH)/10) as stratum_id,
     DATEDIFF(dd,ppp1.payer_plan_period_start_date, ppp1.payer_plan_period_end_date) as count_value
-  from @cdmDatabaseSchema.PERSON p1
+  from @cdmDatabaseSchema.person p1
 	inner join 
 	(select person_id, 
 		payer_plan_period_START_DATE, 

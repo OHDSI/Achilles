@@ -9,7 +9,7 @@ select 2104 as analysis_id,
 	cast(null as varchar(255)) as stratum_5,
 	COUNT_BIG(distinct p1.PERSON_ID) as count_value
 into @scratchDatabaseSchema@schemaDelim@tempAchillesPrefix_2104
-from @cdmDatabaseSchema.PERSON p1
+from @cdmDatabaseSchema.person p1
 inner join @cdmDatabaseSchema.device_exposure m on p1.person_id = m.person_id
 group by m.device_CONCEPT_ID, 
 	YEAR(device_exposure_start_date),

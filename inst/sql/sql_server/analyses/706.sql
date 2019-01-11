@@ -5,7 +5,7 @@ select de1.drug_concept_id as subject_id,
   p1.gender_concept_id,
 	de1.drug_start_year - p1.year_of_birth as count_value
 INTO #rawData_706
-from @cdmDatabaseSchema.PERSON p1
+from @cdmDatabaseSchema.person p1
 inner join
 (
 	select person_id, drug_concept_id, min(year(drug_exposure_start_date)) as drug_start_year

@@ -20,7 +20,7 @@ select
 	COUNT_BIG(distinct p1.PERSON_ID) as count_value
 into @scratchDatabaseSchema@schemaDelim@tempAchillesPrefix_1410
 from
-	@cdmDatabaseSchema.PERSON p1
+	@cdmDatabaseSchema.person p1
 	inner join 
   @cdmDatabaseSchema.payer_plan_period ppp1
 	on p1.person_id = ppp1.person_id

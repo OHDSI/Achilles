@@ -5,7 +5,7 @@ with rawData(stratum1_id, count_value) as
 (
   select p1.gender_concept_id as stratum1_id,
     DATEDIFF(dd,ppp1.payer_plan_period_start_date, ppp1.payer_plan_period_end_date) as count_value
-  from @cdmDatabaseSchema.PERSON p1
+  from @cdmDatabaseSchema.person p1
 	inner join 
 	(select person_id, 
 		payer_plan_period_START_DATE, 
