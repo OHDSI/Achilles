@@ -7,13 +7,13 @@ select * into #tempResults
 from 
 (
   select 
-  (select count_value from @resultsDatabaseSchema.achilles_results where analysis_id = 1821)*100.0/all_count as statistic_value,
+    t2.count_value*100.0/all_count as statistic_value,
   CAST('Meas:NoNumValue:Percentage' AS VARCHAR(100)) as measure_id
   from 
   (
     select sum(count_value) as all_count from @resultsDatabaseSchema.achilles_results where analysis_id = 1820
-  ) t1
-) t2
+  ) t1 join (select count_value from @resultsDatabaseSchema.achilles_results where analysis_id = 1821) t2
+) t3
 ;
 
 select * into #serial_rd_@rdNewId
