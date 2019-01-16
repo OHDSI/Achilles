@@ -14,9 +14,9 @@ from
     23 as rule_id,
     COUNT_BIG(DISTINCT ar1.stratum_1) as record_count
   FROM @resultsDatabaseSchema.ACHILLES_analysis aa1
-  INNER JOIN @resultsDatabaseSchema.ACHILLES_results ar1
+  INNER JOIN @resultsDatabaseSchema.achilles_results ar1
   	ON aa1.analysis_id = ar1.analysis_id
-  INNER JOIN @resultsDatabaseSchema.ACHILLES_results ar2
+  INNER JOIN @resultsDatabaseSchema.achilles_results ar2
   	ON ar1.analysis_id = ar2.analysis_id
   		AND ar1.stratum_1 = ar2.stratum_1
   		AND ar1.analysis_id IN (

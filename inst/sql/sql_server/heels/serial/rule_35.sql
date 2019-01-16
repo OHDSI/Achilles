@@ -23,7 +23,7 @@ from
           select meas_concept_id_cnt from (select sum(freq) as meas_concept_id_cnt from
                           (select u_cnt, count(*) as freq from 
                                   (select stratum_1, count(*) as u_cnt
-                                      from @resultsDatabaseSchema.ACHILLES_results where analysis_id = 1807 group by stratum_1) a 
+                                      from @resultsDatabaseSchema.achilles_results where analysis_id = 1807 group by stratum_1) a
                                       group by u_cnt
                           ) b 
                   where u_cnt >= 5 --threshold one for the rule

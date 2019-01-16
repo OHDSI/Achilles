@@ -13,14 +13,14 @@ FROM (
 		denom.count_value AS denom_count_value
 	FROM (
     SELECT CAST(stratum_1 as int) stratum_1, CAST(stratum_2 as int) stratum_2, CAST(stratum_3 as int) stratum_3, cast(stratum_4 as int) stratum_4, count_value
-		FROM @results_database_schema.ACHILLES_results
+		FROM @results_database_schema.achilles_results
 		WHERE analysis_id = 804
 			AND stratum_3 IN ('8507', '8532')
 		group by stratum_1, stratum_2, stratum_3, stratum_4, count_value
 		) num
 	INNER JOIN (
     SELECT CAST(stratum_1 as int) stratum_1, CAST(stratum_2 as int) stratum_2, CAST(stratum_3 as int) stratum_3, cast(stratum_4 as int) stratum_4, count_value
-		FROM @results_database_schema.ACHILLES_results
+		FROM @results_database_schema.achilles_results
 		WHERE analysis_id = 116
 			AND stratum_2 IN ('8507', '8532')
 		group by stratum_1, stratum_2, stratum_3, stratum_4, count_value

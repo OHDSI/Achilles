@@ -3,7 +3,7 @@ select c1.concept_id as concept_id,
 	ar1.count_value as count_value
 from (
   select cast(stratum_1 as int) stratum_1, count_value
-  from @results_database_schema.ACHILLES_results
+  from @results_database_schema.achilles_results
   where analysis_id = 5
   GROUP BY analysis_id, stratum_1, count_value
 ) ar1

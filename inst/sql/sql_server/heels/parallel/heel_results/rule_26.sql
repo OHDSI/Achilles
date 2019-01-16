@@ -14,7 +14,7 @@ from
     26 as rule_id,
     ord1.record_count
   FROM @resultsDatabaseSchema.ACHILLES_analysis oa1
-    INNER JOIN(SELECT analysis_id, count(max_value) as record_count FROM @resultsDatabaseSchema.ACHILLES_results_dist
+    INNER JOIN(SELECT analysis_id, count(max_value) as record_count FROM @resultsDatabaseSchema.achilles_results_dist
     WHERE analysis_id IN (717)
   	AND max_value > 600
     GROUP BY analysis_id) ord1 ON ord1.analysis_id = oa1.analysis_id

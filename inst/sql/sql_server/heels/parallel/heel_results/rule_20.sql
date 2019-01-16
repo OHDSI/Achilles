@@ -13,7 +13,7 @@ from
   	CAST(CONCAT('ERROR: ', cast(or1.analysis_id as VARCHAR(10)), '-', oa1.analysis_name, '; should not have age < 0, (n=', cast(sum(or1.count_value) as VARCHAR(19)), ')') AS VARCHAR(255)) AS ACHILLES_HEEL_warning,
     20 as rule_id,
     sum(or1.count_value) as record_count
-  FROM @resultsDatabaseSchema.ACHILLES_results or1
+  FROM @resultsDatabaseSchema.achilles_results or1
   INNER JOIN @resultsDatabaseSchema.ACHILLES_analysis oa1
   	ON or1.analysis_id = oa1.analysis_id
   WHERE or1.analysis_id IN (101)

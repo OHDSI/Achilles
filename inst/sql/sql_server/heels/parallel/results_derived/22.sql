@@ -9,7 +9,7 @@ cast('Death:byYear:SafePatientCnt' as varchar(255)) as measure_id
 into @scratchDatabaseSchema@schemaDelim@tempHeelPrefix_@heelName
 from
    (select stratum_1,sum(count_value) as temp_cnt 
-    from @resultsDatabaseSchema.ACHILLES_results where analysis_id = 504     
+    from @resultsDatabaseSchema.achilles_results where analysis_id = 504
     group by stratum_1
    ) a
 where temp_cnt >= @derivedDataSmPtCount;

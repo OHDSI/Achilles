@@ -3,7 +3,7 @@
 --HINT DISTRIBUTE_ON_KEY(stratum_1)
 with rawData(stratum1_id, count_value) as
 (
-  select drug_concept_id,
+  select drug_concept_id as stratum1_id,
     datediff(dd,drug_era_start_date, drug_era_end_date) as count_value
   from  @cdmDatabaseSchema.drug_era de1
 ),

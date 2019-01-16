@@ -22,7 +22,7 @@ from
     cast(null as varchar(255)) as stratum_2,
     count_value,
     CAST(concat('ach_',CAST(analysis_id as VARCHAR), ':GlobalCnt') as varchar(255)) as measure_id
-  from @resultsDatabaseSchema.ACHILLES_results 
+  from @resultsDatabaseSchema.achilles_results
   where analysis_id in (1805,705,605,805,405) 
 ) Q
 group by analysis_id, stratum_1, stratum_2, measure_id

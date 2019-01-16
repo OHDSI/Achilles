@@ -2,7 +2,7 @@
 --unusual diagnosis present, this rule is terminology dependend
 
 with tempcnt as(
-	select sum(count_value) as pt_cnt from @resultsDatabaseSchema.ACHILLES_results 
+	select sum(count_value) as pt_cnt from @resultsDatabaseSchema.achilles_results
 	where analysis_id = 404 --dx by decile
 	and stratum_1 = '195075' --meconium
 	--and stratum_3 = '8507' --possible limit to males only

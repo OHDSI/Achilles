@@ -15,7 +15,7 @@ from
     ord1.record_count as record_count
   FROM @resultsDatabaseSchema.ACHILLES_analysis oa1
     INNER JOIN (SELECT analysis_id, COUNT_BIG(max_value) AS record_count
-      FROM @resultsDatabaseSchema.ACHILLES_results_dist
+      FROM @resultsDatabaseSchema.achilles_results_dist
       WHERE analysis_id IN (715)
           AND max_value > 180
       GROUP BY analysis_id
