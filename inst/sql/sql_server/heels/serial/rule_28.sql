@@ -12,7 +12,7 @@ from
   from 
   (
     select sum(count_value) as all_count from @resultsDatabaseSchema.achilles_results where analysis_id = 1820
-  ) t1 join (select count_value from @resultsDatabaseSchema.achilles_results where analysis_id = 1821) t2
+  ) t1 cross join (select count_value from @resultsDatabaseSchema.achilles_results where analysis_id = 1821) t2
 ) t3
 ;
 

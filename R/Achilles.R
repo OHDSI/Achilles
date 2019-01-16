@@ -285,7 +285,7 @@ achilles <- function (connectionDetails,
 
   # Clean up existing scratch tables -----------------------------------------------
 
-  if ((numThreads > 1 && !sqlOnly) || !.supportsTempTables(connectionDetails)) {
+  if ((numThreads > 1 || !.supportsTempTables(connectionDetails)) && !sqlOnly) {
     # Drop the scratch tables
     ParallelLogger::logInfo(sprintf("Dropping scratch Achilles tables from schema %s", scratchDatabaseSchema))
 
