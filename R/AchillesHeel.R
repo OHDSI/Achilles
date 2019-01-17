@@ -369,7 +369,7 @@ achillesHeel <- function(connectionDetails,
                                              destination = "achilles_heel_results",
                                              resultSqls = SqlRender::translateSql(
                                                 sql = sprintf("select * from #serial_hr_%d", hrId),
-                                                targetDialect = connectionDetails$dbms, oracleTempSchema = scratchDatabaseSchema)$sql,
+                                                targetDialect = connectionDetails$dbms, oracleTempSchema = scratchDatabaseSchema)$sql
                                              )
   
   finalSqls <- c(sqlRd, sqlHr)
@@ -410,6 +410,10 @@ achillesHeel <- function(connectionDetails,
   }
   
   ParallelLogger::unregisterLogger("achillesHeel")
+
+  if (exists('connection')) {
+    DatabaseConnector::disconnect(connection = connection)
+  }
   
   heelResults <- list(resultsConnectionDetails = connectionDetails,
                       resultsTable = "achilles_heel_results",
