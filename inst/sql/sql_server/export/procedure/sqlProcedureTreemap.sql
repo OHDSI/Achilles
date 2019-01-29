@@ -20,7 +20,7 @@ from (select cast(stratum_1 as int) stratum_1, count_value from @results_databas
 	 from
 		(
 			select c1.concept_id, 
-				v1.vocabulary_name + ' ' + c1.concept_code + ': ' + c1.concept_name as proc_concept_name
+				CONCAT(v1.vocabulary_name, ' ', c1.concept_code, ': ', c1.concept_name) as proc_concept_name
 			from @vocab_database_schema.concept c1
 				inner join @vocab_database_schema.vocabulary v1
 				on c1.vocabulary_id = v1.vocabulary_id
