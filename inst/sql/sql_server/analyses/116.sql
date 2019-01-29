@@ -6,7 +6,7 @@
 select distinct 
   YEAR(observation_period_start_date) as obs_year 
 INTO
-  #temp_dates
+  #temp_dates_116
 from 
   @cdmDatabaseSchema.observation_period
 ;
@@ -24,7 +24,7 @@ WITH raw AS (
     @cdmDatabaseSchema.observation_period op1
     on p1.person_id = op1.person_id
     ,
-    #temp_dates t1
+    #temp_dates_116 t1
   where year(op1.OBSERVATION_PERIOD_START_DATE) <= t1.obs_year
     and year(op1.OBSERVATION_PERIOD_END_DATE) >= t1.obs_year
   group by t1.obs_year,
@@ -42,5 +42,5 @@ SELECT
 into @scratchDatabaseSchema@schemaDelim@tempAchillesPrefix_116
 FROM raw;
 
-TRUNCATE TABLE #temp_dates;
-DROP TABLE #temp_dates;
+TRUNCATE TABLE #temp_dates_116;
+DROP TABLE #temp_dates_116;

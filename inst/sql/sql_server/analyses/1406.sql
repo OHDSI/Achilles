@@ -55,7 +55,7 @@ select 1406 as analysis_id,
 	MIN(case when p.accumulated >= .25 * o.total then count_value else o.max_value end) as p25_value,
 	MIN(case when p.accumulated >= .75 * o.total then count_value else o.max_value end) as p75_value,
 	MIN(case when p.accumulated >= .90 * o.total then count_value else o.max_value end) as p90_value
-into #tempResults
+into #tempResults_1406
 from priorStats p
 join overallStats o on p.stratum1_id = o.stratum1_id
 GROUP BY p.stratum1_id, o.total, o.min_value, o.max_value, o.avg_value, o.stdev_value
@@ -66,8 +66,8 @@ select analysis_id, stratum_1,
 cast(null as varchar(255)) as stratum_2, cast(null as varchar(255)) as stratum_3, cast(null as varchar(255)) as stratum_4, cast(null as varchar(255)) as stratum_5,
 count_value, min_value, max_value, avg_value, stdev_value, median_value, p10_value, p25_value, p75_value, p90_value
 into @scratchDatabaseSchema@schemaDelim@tempAchillesPrefix_dist_1406
-from #tempResults
+from #tempResults_1406
 ;
 
-truncate table #tempResults;
-drop table #tempResults;
+truncate table #tempResults_1406;
+drop table #tempResults_1406;
