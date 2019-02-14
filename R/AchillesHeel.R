@@ -1,6 +1,6 @@
 # @file AchillesHeel
 #
-# Copyright 2018 Observational Health Data Sciences and Informatics
+# Copyright 2019 Observational Health Data Sciences and Informatics
 #
 # This file is part of Achilles
 # 
@@ -132,13 +132,13 @@ achillesHeel <- function(connectionDetails,
     ParallelLogger::logInfo("Beginning single-threaded execution")
     # first invocation of the connection, to persist throughout to maintain temp tables
     connection <- DatabaseConnector::connect(connectionDetails = connectionDetails) 
-  } else if (!requireNamespace("OhdsiRTools", quietly = TRUE)) {
+  } else if (!requireNamespace("ParallelLogger", quietly = TRUE)) {
     stop(
-      "Multi-threading support requires package 'OhdsiRTools'.",
+      "Multi-threading support requires package 'ParallelLogger'.",
       " Consider running single-threaded by setting",
       " `numThreads = 1` and `scratchDatabaseSchema = '#'`.",
       " You may install it using devtools with the following code:",
-      "\n    devtools::install_github('OHDSI/OhdsiRTools')",
+      "\n    devtools::install_github('OHDSI/ParallelLogger')",
       "\n\nAlternately, you might want to install ALL suggested packages using:",
       "\n    devtools::install_github('OHDSI/Achilles', dependencies = TRUE)",
       call. = FALSE
@@ -198,15 +198,15 @@ achillesHeel <- function(connectionDetails,
         DatabaseConnector::executeSql(connection = connection, sql = sql)
       }
     } else {
-      cluster <- OhdsiRTools::makeCluster(numberOfThreads = numThreads, singleThreadToMain = TRUE)
-      dummy <- OhdsiRTools::clusterApply(cluster = cluster, 
+      cluster <- ParallelLogger::makeCluster(numberOfThreads = numThreads, singleThreadToMain = TRUE)
+      dummy <- ParallelLogger::clusterApply(cluster = cluster, 
                                          x = parallelSqls, 
                                          function(sql) {
                                            connection <- DatabaseConnector::connect(connectionDetails = connectionDetails)
                                            DatabaseConnector::executeSql(connection = connection, sql = sql)
                                            DatabaseConnector::disconnect(connection = connection)
                                          })
-      OhdsiRTools::stopCluster(cluster = cluster)
+      ParallelLogger::stopCluster(cluster = cluster)
     }
   }
   
