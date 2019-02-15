@@ -33,7 +33,7 @@ RUN echo "en_US.UTF-8 UTF-8" >> /etc/locale.gen \
 ENV LC_ALL en_US.UTF-8
 ENV LANG en_US.UTF-8
 
-# Install OHDSI/OhdsiRTools 
+# Install OHDSI/ParallelLogger 
 RUN R -e "install.packages( \
  c( \
   'XML', \
@@ -59,7 +59,6 @@ RUN echo 'options(repos=structure(c(CRAN="http://cran.cnr.berkeley.edu/")))' > /
       OHDSI/SqlRender \
       OHDSI/DatabaseConnectorJars \
       OHDSI/DatabaseConnector \
-      OHDSI/OhdsiRTools \
       OHDSI/ParallelLogger \
     && rm -rf /tmp/downloaded_packages/ /tmp/*.rds
 

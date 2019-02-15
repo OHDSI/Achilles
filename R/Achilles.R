@@ -1,6 +1,6 @@
 # @file Achilles
 #
-# Copyright 2018 Observational Health Data Sciences and Informatics
+# Copyright 2019 Observational Health Data Sciences and Informatics
 #
 # This file is part of Achilles
 # 
@@ -201,7 +201,7 @@ achilles <- function (connectionDetails,
                            header = TRUE),
                       analysisIds = analysisDetails[abs(analysisDetails$DISTRIBUTION) == 1, ]$ANALYSIS_ID))
   
-  # Initialize thread and scratchDatabaseSchema settings and verify OhdsiRTools installed ---------------------------
+  # Initialize thread and scratchDatabaseSchema settings and verify ParallelLogger installed ---------------------------
   
   schemaDelim <- "."
   
@@ -214,13 +214,13 @@ achilles <- function (connectionDetails,
     
     # first invocation of the connection, to persist throughout to maintain temp tables
     connection <- DatabaseConnector::connect(connectionDetails = connectionDetails) 
-  } else if (!requireNamespace("OhdsiRTools", quietly = TRUE)) {
+  } else if (!requireNamespace("ParallelLogger", quietly = TRUE)) {
     stop(
-      "Multi-threading support requires package 'OhdsiRTools'.",
+      "Multi-threading support requires package 'ParallelLogger'.",
       " Consider running single-threaded by setting",
       " `numThreads = 1` and `scratchDatabaseSchema = '#'`.",
       " You may install it using devtools with the following code:",
-      "\n    devtools::install_github('OHDSI/OhdsiRTools')",
+      "\n    devtools::install_github('OHDSI/ParallelLogger')",
       "\n\nAlternately, you might want to install ALL suggested packages using:",
       "\n    devtools::install_github('OHDSI/Achilles', dependencies = TRUE)",
       call. = FALSE
@@ -330,9 +330,9 @@ achilles <- function (connectionDetails,
           ParallelLogger::logInfo(sprintf("Raw Cost %d: COMPLETE (%f seconds)", rawCostSql$analysisId, Sys.time() - start))
         }
       } else {
-        cluster <- OhdsiRTools::makeCluster(numberOfThreads = length(rawCostSqls), 
+        cluster <- ParallelLogger::makeCluster(numberOfThreads = length(rawCostSqls), 
                                             singleThreadToMain = TRUE)
-        results <- OhdsiRTools::clusterApply(cluster = cluster, 
+        results <- ParallelLogger::clusterApply(cluster = cluster, 
                                              x = rawCostSqls, 
                                              function(rawCostSql) {
                                                start <- Sys.time()
@@ -343,7 +343,7 @@ achilles <- function (connectionDetails,
                                                ParallelLogger::logInfo(sprintf("Raw Cost %d: COMPLETE (%f seconds)", rawCostSql$analysisId, Sys.time() - start))
                                              })
         
-        OhdsiRTools::stopCluster(cluster = cluster) 
+        ParallelLogger::stopCluster(cluster = cluster) 
       }
     }
     
@@ -412,9 +412,9 @@ achilles <- function (connectionDetails,
           DatabaseConnector::executeSql(connection = connection, sql = dropRawCostSql)
         }
       } else {
-        cluster <- OhdsiRTools::makeCluster(numberOfThreads = length(distCostAnalysisSqls), 
+        cluster <- ParallelLogger::makeCluster(numberOfThreads = length(distCostAnalysisSqls), 
                                             singleThreadToMain = TRUE)
-        results <- OhdsiRTools::clusterApply(cluster = cluster, 
+        results <- ParallelLogger::clusterApply(cluster = cluster, 
                                            x = distCostAnalysisSqls, 
                                            function(distCostAnalysisSql) {
                                              start <- Sys.time()
@@ -426,18 +426,18 @@ achilles <- function (connectionDetails,
                                                                              Sys.time() - start))
                                            })
         
-        OhdsiRTools::stopCluster(cluster = cluster) 
+        ParallelLogger::stopCluster(cluster = cluster) 
         
-        cluster <- OhdsiRTools::makeCluster(numberOfThreads = length(dropRawCostSqls), 
+        cluster <- ParallelLogger::makeCluster(numberOfThreads = length(dropRawCostSqls), 
                                             singleThreadToMain = TRUE)
-        dummy <- OhdsiRTools::clusterApply(cluster = cluster, 
+        dummy <- ParallelLogger::clusterApply(cluster = cluster, 
                                            x = dropRawCostSqls, 
                                            function(dropRawCostSql) {
                                              connection <- DatabaseConnector::connect(connectionDetails = connectionDetails)
                                              DatabaseConnector::executeSql(connection = connection, sql = dropRawCostSql)
                                              DatabaseConnector::disconnect(connection = connection)
                                            })
-        OhdsiRTools::stopCluster(cluster = cluster) 
+        ParallelLogger::stopCluster(cluster = cluster) 
       }
     }
   }
@@ -501,8 +501,8 @@ achilles <- function (connectionDetails,
         })
       }
     } else {
-      cluster <- OhdsiRTools::makeCluster(numberOfThreads = numThreads, singleThreadToMain = TRUE)
-      results <- OhdsiRTools::clusterApply(cluster = cluster, 
+      cluster <- ParallelLogger::makeCluster(numberOfThreads = numThreads, singleThreadToMain = TRUE)
+      results <- ParallelLogger::clusterApply(cluster = cluster, 
                                          x = mainSqls, 
                                          function(mainSql) {
                                            start <- Sys.time()
@@ -520,7 +520,7 @@ achilles <- function (connectionDetails,
                                            })
                                          })
       
-      OhdsiRTools::stopCluster(cluster = cluster)
+      ParallelLogger::stopCluster(cluster = cluster)
     }
   }
   
@@ -555,15 +555,15 @@ achilles <- function (connectionDetails,
         DatabaseConnector::executeSql(connection = connection, sql = sql)
       }
     } else {
-      cluster <- OhdsiRTools::makeCluster(numberOfThreads = numThreads, singleThreadToMain = TRUE)
-      dummy <- OhdsiRTools::clusterApply(cluster = cluster, 
+      cluster <- ParallelLogger::makeCluster(numberOfThreads = numThreads, singleThreadToMain = TRUE)
+      dummy <- ParallelLogger::clusterApply(cluster = cluster, 
                                          x = mergeSqls, 
                                          function(sql) {
                                            connection <- DatabaseConnector::connect(connectionDetails = connectionDetails)
                                            DatabaseConnector::executeSql(connection = connection, sql = sql)
                                            DatabaseConnector::disconnect(connection = connection)
                                          })
-      OhdsiRTools::stopCluster(cluster = cluster)
+      ParallelLogger::stopCluster(cluster = cluster)
     }
   }
   
@@ -764,15 +764,15 @@ createConceptHierarchy <- function(connectionDetails,
       DatabaseConnector::executeSql(connection = connection, sql = mergeSql)
       DatabaseConnector::disconnect(connection = connection)
     } else {
-      cluster <- OhdsiRTools::makeCluster(numberOfThreads = numThreads, singleThreadToMain = TRUE)
-      dummy <- OhdsiRTools::clusterApply(cluster = cluster, 
+      cluster <- ParallelLogger::makeCluster(numberOfThreads = numThreads, singleThreadToMain = TRUE)
+      dummy <- ParallelLogger::clusterApply(cluster = cluster, 
                                          x = hierarchySqls, 
                                          function(sql) {
                                            connection <- DatabaseConnector::connect(connectionDetails = connectionDetails)
                                            DatabaseConnector::executeSql(connection = connection, sql = sql)
                                            DatabaseConnector::disconnect(connection = connection)
                                          })
-      OhdsiRTools::stopCluster(cluster = cluster)
+      ParallelLogger::stopCluster(cluster = cluster)
       
       connection <- DatabaseConnector::connect(connectionDetails = connectionDetails)
       DatabaseConnector::executeSql(connection = connection, sql = mergeSql)
@@ -1064,8 +1064,8 @@ dropAllScratchTables <- function(connectionDetails,
       sql <- SqlRender::translateSql(sql = sql, targetDialect = connectionDetails$dbms)$sql
     })
     
-    cluster <- OhdsiRTools::makeCluster(numberOfThreads = numThreads, singleThreadToMain = TRUE)
-    dummy <- OhdsiRTools::clusterApply(cluster = cluster, 
+    cluster <- ParallelLogger::makeCluster(numberOfThreads = numThreads, singleThreadToMain = TRUE)
+    dummy <- ParallelLogger::clusterApply(cluster = cluster, 
                                        x = dropSqls, 
                                        function(sql) {
                                          connection <- DatabaseConnector::connect(connectionDetails = connectionDetails)
@@ -1078,7 +1078,7 @@ dropAllScratchTables <- function(connectionDetails,
                                          })
                                        })
     
-    OhdsiRTools::stopCluster(cluster = cluster)
+    ParallelLogger::stopCluster(cluster = cluster)
   }
   
   if ("heel" %in% tableTypes) {
@@ -1103,8 +1103,8 @@ dropAllScratchTables <- function(connectionDetails,
       sql <- SqlRender::translateSql(sql = sql, targetDialect = connectionDetails$dbms)$sql
     })
     
-    cluster <- OhdsiRTools::makeCluster(numberOfThreads = numThreads, singleThreadToMain = TRUE)
-    dummy <- OhdsiRTools::clusterApply(cluster = cluster, 
+    cluster <- ParallelLogger::makeCluster(numberOfThreads = numThreads, singleThreadToMain = TRUE)
+    dummy <- ParallelLogger::clusterApply(cluster = cluster, 
                                        x = dropSqls, 
                                        function(sql) {
                                          connection <- DatabaseConnector::connect(connectionDetails = connectionDetails)
@@ -1117,7 +1117,7 @@ dropAllScratchTables <- function(connectionDetails,
                                          })
                                        })
     
-    OhdsiRTools::stopCluster(cluster = cluster)
+    ParallelLogger::stopCluster(cluster = cluster)
   }
   
   if ("concept_hierarchy" %in% tableTypes) {
@@ -1134,8 +1134,8 @@ dropAllScratchTables <- function(connectionDetails,
       sql <- SqlRender::translateSql(sql = sql, targetDialect = connectionDetails$dbms)$sql
     })
     
-    cluster <- OhdsiRTools::makeCluster(numberOfThreads = numThreads, singleThreadToMain = TRUE)
-    dummy <- OhdsiRTools::clusterApply(cluster = cluster, 
+    cluster <- ParallelLogger::makeCluster(numberOfThreads = numThreads, singleThreadToMain = TRUE)
+    dummy <- ParallelLogger::clusterApply(cluster = cluster, 
                                        x = dropSqls, 
                                        function(sql) {
                                          connection <- DatabaseConnector::connect(connectionDetails = connectionDetails)
@@ -1148,7 +1148,7 @@ dropAllScratchTables <- function(connectionDetails,
                                          })
                                        })
     
-    OhdsiRTools::stopCluster(cluster = cluster)
+    ParallelLogger::stopCluster(cluster = cluster)
   }
   
   ParallelLogger::unregisterLogger("dropAllScratchTables")
