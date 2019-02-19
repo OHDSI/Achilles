@@ -1,7 +1,7 @@
 -- 2104	Number of persons with at least one device occurrence, by device_concept_id by calendar year by gender by age decile
 
 --HINT DISTRIBUTE_ON_KEY(stratum_1)
-WITH raw AS (
+WITH rawData AS (
   select
     m.device_CONCEPT_ID as stratum_1,
     YEAR(device_exposure_start_date) as stratum_2,
@@ -24,4 +24,4 @@ SELECT
   cast(null as varchar(255)) as stratum_5,
   count_value
 into @scratchDatabaseSchema@schemaDelim@tempAchillesPrefix_2104
-FROM raw;
+FROM rawData;

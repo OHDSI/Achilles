@@ -1,7 +1,7 @@
 -- 102	Number of persons by gender by age, with age at first observation period
 
 --HINT DISTRIBUTE_ON_KEY(stratum_1)
-WITH raw AS (
+WITH rawData AS (
   select
     p1.gender_concept_id as stratum_1,
     year(op1.index_date) - p1.YEAR_OF_BIRTH as stratum_2,
@@ -19,4 +19,4 @@ SELECT
   cast(null as varchar(255)) as stratum_5,
   count_value
 into @scratchDatabaseSchema@schemaDelim@tempAchillesPrefix_102
-FROM raw;
+FROM rawData;

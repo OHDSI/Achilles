@@ -1,7 +1,7 @@
 -- 212	Number of persons with at least one visit occurrence by calendar year by gender by age decile
 
 --HINT DISTRIBUTE_ON_KEY(stratum_1)
-WITH raw AS (
+WITH rawData AS (
   select
     YEAR(visit_start_date) as stratum_1,
     p1.gender_concept_id as stratum_2,
@@ -25,4 +25,4 @@ SELECT
   cast(null as varchar(255)) as stratum_5,
   count_value
 into @scratchDatabaseSchema@schemaDelim@tempAchillesPrefix_212
-FROM raw;
+FROM rawData;

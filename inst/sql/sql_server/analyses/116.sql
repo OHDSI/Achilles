@@ -12,7 +12,7 @@ from
 ;
 
 --HINT DISTRIBUTE_ON_KEY(stratum_1)
-WITH raw AS (
+WITH rawData AS (
   select
     t1.obs_year as stratum_1,
     p1.gender_concept_id as stratum_2,
@@ -40,7 +40,7 @@ SELECT
   cast(null as varchar(255)) as stratum_5,
   count_value
 into @scratchDatabaseSchema@schemaDelim@tempAchillesPrefix_116
-FROM raw;
+FROM rawData;
 
 TRUNCATE TABLE #temp_dates_116;
 DROP TABLE #temp_dates_116;

@@ -1,7 +1,7 @@
 -- 404	Number of persons with at least one condition occurrence, by condition_concept_id by calendar year by gender by age decile
 
 --HINT DISTRIBUTE_ON_KEY(stratum_1)
-WITH raw AS (
+WITH rawData AS (
   select
     co1.condition_concept_id as stratum_1,
     YEAR(condition_start_date) as stratum_2,
@@ -26,4 +26,4 @@ SELECT
   cast(null as varchar(255)) as stratum_5,
   count_value
 into @scratchDatabaseSchema@schemaDelim@tempAchillesPrefix_404
-FROM raw;
+FROM rawData;

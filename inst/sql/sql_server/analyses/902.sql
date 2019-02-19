@@ -1,7 +1,7 @@
 -- 902	Number of persons by drug occurrence start month, by drug_concept_id
 
 --HINT DISTRIBUTE_ON_KEY(stratum_1)
-WITH raw AS (
+WITH rawData AS (
   select
     de1.drug_concept_id as stratum_1,
     YEAR(drug_era_start_date)*100 + month(drug_era_start_date) as stratum_2,
@@ -20,4 +20,4 @@ SELECT
   cast(null as varchar(255)) as stratum_5,
   count_value
 into @scratchDatabaseSchema@schemaDelim@tempAchillesPrefix_902
-FROM raw;
+FROM rawData;

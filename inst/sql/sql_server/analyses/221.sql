@@ -1,7 +1,7 @@
 -- 221	Number of persons by visit start year 
 
 --HINT DISTRIBUTE_ON_KEY(stratum_1)
-WITH raw AS (
+WITH rawData AS (
   select
     YEAR(visit_start_date) as stratum_1,
     COUNT_BIG(distinct PERSON_ID) as count_value
@@ -18,4 +18,4 @@ SELECT
   cast(null as varchar(255)) as stratum_5,
   count_value
 into @scratchDatabaseSchema@schemaDelim@tempAchillesPrefix_221
-FROM raw;
+FROM rawData;

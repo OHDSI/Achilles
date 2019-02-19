@@ -1,7 +1,7 @@
 -- 202	Number of persons by visit occurrence start month, by visit_concept_id
 
 --HINT DISTRIBUTE_ON_KEY(stratum_1)
-WITH raw AS (
+WITH rawData AS (
   select
     vo1.visit_concept_id as stratum_1,
     YEAR(visit_start_date)*100 + month(visit_start_date) as stratum_2,
@@ -20,4 +20,4 @@ SELECT
   cast(null as varchar(255)) as stratum_5,
   count_value
 into @scratchDatabaseSchema@schemaDelim@tempAchillesPrefix_202
-FROM raw;
+FROM rawData;
