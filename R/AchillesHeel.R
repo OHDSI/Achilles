@@ -327,9 +327,9 @@ achillesHeel <- function(connectionDetails,
     
     if (i > 1) {
       sqlDropPriors <- lapply(drops, function(drop) {
-        sql <- SqlRender::renderSql(sql = "IF OBJECT_ID('tempdb..#@table', 'U') IS NOT NULL DROP TABLE #@table;",
-                             table = sprintf("serial_%2s", drop))$sql
-        sql <- SqlRender::translateSql(sql = sql, targetDialect = connectionDetails$dbms, oracleTempSchema = scratchDatabaseSchema)$sql
+        sql <- SqlRender::render(sql = "IF OBJECT_ID('tempdb..#@table', 'U') IS NOT NULL DROP TABLE #@table;",
+                             table = sprintf("serial_%2s", drop))
+        sql <- SqlRender::translate(sql = sql, targetDialect = connectionDetails$dbms, oracleTempSchema = scratchDatabaseSchema)
       }) 
       sqlDropPrior <- paste(sqlDropPriors, collapse = "\n\n")
     }
@@ -355,9 +355,9 @@ achillesHeel <- function(connectionDetails,
                                              schema = resultsDatabaseSchema,
                                              schemaDelim = ".",
                                              destination = "achilles_results_derived",
-                                             derivedSqls = SqlRender::translateSql(
+                                             derivedSqls = SqlRender::translate(
                                                 sql = sprintf("select * from #serial_rd_%d", rdId),
-                                                targetDialect = connectionDetails$dbms, oracleTempSchema = scratchDatabaseSchema)$sql
+                                                targetDialect = connectionDetails$dbms, oracleTempSchema = scratchDatabaseSchema)
                                              )
   
   sqlHr <- SqlRender::loadRenderTranslateSql(sqlFilename = "heels/merge_heel_results.sql", 
@@ -367,9 +367,9 @@ achillesHeel <- function(connectionDetails,
                                              schema = resultsDatabaseSchema,
                                              schemaDelim = ".",
                                              destination = "achilles_heel_results",
-                                             resultSqls = SqlRender::translateSql(
+                                             resultSqls = SqlRender::translate(
                                                 sql = sprintf("select * from #serial_hr_%d", hrId),
-                                                targetDialect = connectionDetails$dbms, oracleTempSchema = scratchDatabaseSchema)$sql
+                                                targetDialect = connectionDetails$dbms, oracleTempSchema = scratchDatabaseSchema)
                                              )
   
   finalSqls <- c(sqlRd, sqlHr)
