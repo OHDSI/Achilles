@@ -215,7 +215,7 @@ achillesHeel <- function(connectionDetails,
   isDerived <- sapply(parallelFiles, function(parallelFile) { grepl(pattern = "derived", parallelFile) })
   
   derivedSqls <- lapply(parallelFiles[isDerived], function(parallelFile) {
-    SqlRender::renderSql(sql = 
+    SqlRender::render(sql = 
                            "select 
                          cast(analysis_id as int) as analysis_id, 
                          cast(stratum_1 as varchar(255)) as stratum_1, 
@@ -226,7 +226,7 @@ achillesHeel <- function(connectionDetails,
                          scratchDatabaseSchema = scratchDatabaseSchema, 
                          schemaDelim = ifelse(scratchDatabaseSchema == "#", "s_", "."),
                          tempHeelPrefix = tempHeelPrefix,
-                         heelName = gsub(pattern = ".sql", replacement = "", x = basename(parallelFile)))$sql   
+                         heelName = gsub(pattern = ".sql", replacement = "", x = basename(parallelFile))) 
   })
   
   derivedSql <- SqlRender::loadRenderTranslateSql(sqlFilename = "heels/merge_derived.sql", 
@@ -239,7 +239,7 @@ achillesHeel <- function(connectionDetails,
                                                   derivedSqls = paste(derivedSqls, collapse = " \nunion all\n "))
   
   resultSqls <- lapply(X = parallelFiles[!isDerived], function(parallelFile) {
-    SqlRender::renderSql(sql = 
+    SqlRender::render(sql = 
                            "select 
                          cast(analysis_id as int) as analysis_id, 
                          cast(ACHILLES_HEEL_warning as varchar(255)) as ACHILLES_HEEL_warning, 
@@ -249,7 +249,7 @@ achillesHeel <- function(connectionDetails,
                          scratchDatabaseSchema = scratchDatabaseSchema,
                          schemaDelim = schemaDelim,
                          tempHeelPrefix = tempHeelPrefix,
-                         heelName = gsub(pattern = ".sql", replacement = "", x = basename(parallelFile)))$sql   
+                         heelName = gsub(pattern = ".sql", replacement = "", x = basename(parallelFile)))
   })
   
   resultSql <- SqlRender::loadRenderTranslateSql(sqlFilename = "heels/merge_heel_results.sql", 
@@ -316,9 +316,9 @@ achillesHeel <- function(connectionDetails,
     
     if (i > 1) {
       sqlDropPriors <- lapply(drops, function(drop) {
-        sql <- SqlRender::renderSql(sql = "IF OBJECT_ID('tempdb..#@table', 'U') IS NOT NULL DROP TABLE #@table;",
-                             table = sprintf("serial_%2s", drop))$sql
-        sql <- SqlRender::translateSql(sql = sql, targetDialect = connectionDetails$dbms)$sql
+        sql <- SqlRender::render(sql = "IF OBJECT_ID('tempdb..#@table', 'U') IS NOT NULL DROP TABLE #@table;",
+                             table = sprintf("serial_%2s", drop))
+        sql <- SqlRender::translate(sql = sql, targetDialect = connectionDetails$dbms)
       }) 
       sqlDropPrior <- paste(sqlDropPriors, collapse = "\n\n")
     }

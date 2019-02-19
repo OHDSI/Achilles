@@ -123,9 +123,9 @@ launchHeelResultsViewer <- function(connectionDetails,
 fetchAchillesHeelResults <- function(connectionDetails, 
                                      resultsDatabaseSchema) { 
   connection <- DatabaseConnector::connect(connectionDetails = connectionDetails)
-  sql <- SqlRender::renderSql(sql = "select * from @resultsDatabaseSchema.achilles_heel_results",
-                              resultsDatabaseSchema = resultsDatabaseSchema)$sql
-  sql <- SqlRender::translateSql(sql = sql, targetDialect = connectionDetails$dbms)$sql  
+  sql <- SqlRender::render(sql = "select * from @resultsDatabaseSchema.achilles_heel_results",
+                              resultsDatabaseSchema = resultsDatabaseSchema)
+  sql <- SqlRender::translate(sql = sql, targetDialect = connectionDetails$dbms)
   issues <- DatabaseConnector::querySql(connection = connection, sql = sql)
   DatabaseConnector::disconnect(connection = connection)
   
@@ -161,17 +161,17 @@ fetchAchillesAnalysisResults <- function (connectionDetails,
   
   if (analysisDetails$DISTRIBUTION[analysisDetails$ANALYSIS_ID == analysisId] == 0) {
     sql <- "select * from @resultsDatabaseSchema.achilles_results where analysis_id = @analysisId"
-    sql <- SqlRender::renderSql(sql = sql,
+    sql <- SqlRender::render(sql = sql,
                                 resultsDatabaseSchema = resultsDatabaseSchema,
-                                analysisId = analysisId)$sql
-    sql <- SqlRender::translateSql(sql = sql, targetDialect = connectionDetails$dbms)$sql
+                                analysisId = analysisId)
+    sql <- SqlRender::translate(sql = sql, targetDialect = connectionDetails$dbms)
     analysisResults <- DatabaseConnector::querySql(connection = connection, sql = sql)
   } else {
     sql <- "select * from @resultsDatabaseSchema.achilles_results_dist where analysis_id = @analysisId"
-    sql <- SqlRender::renderSql(sql = sql,
+    sql <- SqlRender::render(sql = sql,
                                 resultsDatabaseSchema = resultsDatabaseSchema,
-                                analysisId = analysisId)$sql
-    sql <- SqlRender::translateSql(sql = sql, targetDialect = connectionDetails$dbms)$sql
+                                analysisId = analysisId)
+    sql <- SqlRender::translate(sql = sql, targetDialect = connectionDetails$dbms)
     analysisResults <- DatabaseConnector::querySql(connection = connection, sql = sql)
   }
   
