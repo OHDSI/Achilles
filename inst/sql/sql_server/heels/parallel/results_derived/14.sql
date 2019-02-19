@@ -12,14 +12,14 @@ from
   stratum_1,  
   stratum_4, 
   sum(count_value) as person_cnt  
-  from @resultsDatabaseSchema.ACHILLES_results 
+  from @resultsDatabaseSchema.achilles_results
   where analysis_id = 204 
   group by stratum_1, stratum_4) a
 inner join 
 (select
   stratum_4, 
   sum(count_value) as population_size
-  from @resultsDatabaseSchema.ACHILLES_results 
+  from @resultsDatabaseSchema.achilles_results
   where analysis_id = 204 
   group by stratum_4) b
 on a.stratum_4=b.stratum_4

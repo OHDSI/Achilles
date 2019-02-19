@@ -8,7 +8,7 @@ from (
     cast(null as varchar(255)) as stratum_2,
     count_value,
     cast('AgeAtFirstObsByDecile:PersonCnt' as varchar(255)) as measure_id
-  from @resultsDatabaseSchema.ACHILLES_results where analysis_id = 101
+  from @resultsDatabaseSchema.achilles_results where analysis_id = 101
 ) Q
 group by analysis_id, stratum_1, stratum_2, measure_id
 ;

@@ -7,7 +7,7 @@ select 908 as analysis_id,
 into @scratchDatabaseSchema@schemaDelim@tempAchillesPrefix_908
 from
 	@cdmDatabaseSchema.drug_era de1
-	left join @cdmDatabaseSchema.PERSON p1
+	left join @cdmDatabaseSchema.person p1
 	on p1.person_id = de1.person_id
 where p1.person_id is null
 ;

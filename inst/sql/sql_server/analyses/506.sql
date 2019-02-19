@@ -4,9 +4,9 @@
 --HINT DISTRIBUTE_ON_KEY(stratum_id)
 with rawData(stratum_id, count_value) as
 (
-  select p1.gender_concept_id,
+  select p1.gender_concept_id AS stratum_id,
     d1.death_year - p1.year_of_birth as count_value
-  from @cdmDatabaseSchema.PERSON p1
+  from @cdmDatabaseSchema.person p1
   inner join
   (select person_id, min(year(death_date)) as death_year
   from @cdmDatabaseSchema.death
@@ -50,7 +50,7 @@ select 506 as analysis_id,
 	MIN(case when p.accumulated >= .25 * o.total then count_value else o.max_value end) as p25_value,
 	MIN(case when p.accumulated >= .75 * o.total then count_value else o.max_value end) as p75_value,
 	MIN(case when p.accumulated >= .90 * o.total then count_value else o.max_value end) as p90_value
-into #tempResults
+into #tempResults_506
 from priorStats p
 join overallStats o on p.stratum_id = o.stratum_id
 GROUP BY o.stratum_id, o.total, o.min_value, o.max_value, o.avg_value, o.stdev_value
@@ -61,9 +61,9 @@ select analysis_id, stratum_id as stratum_1,
 cast(null as varchar(255)) as stratum_2, cast(null as varchar(255)) as stratum_3, cast(null as varchar(255)) as stratum_4, cast(null as varchar(255)) as stratum_5,
 count_value, min_value, max_value, avg_value, stdev_value, median_value, p10_value, p25_value, p75_value, p90_value
 into @scratchDatabaseSchema@schemaDelim@tempAchillesPrefix_dist_506
-from #tempResults
+from #tempResults_506
 ;
 
-truncate table #tempResults;
+truncate table #tempResults_506;
 
-drop table #tempResults;
+drop table #tempResults_506;

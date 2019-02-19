@@ -11,5 +11,5 @@ select
   sum(count_value) as statistic_value, 
        CAST(concat('ach_',CAST(r.analysis_id as VARCHAR),':GlobalRowCnt') as varchar(255)) as measure_id
 into @scratchDatabaseSchema@schemaDelim@tempHeelPrefix_@heelName
-from @resultsDatabaseSchema.ACHILLES_results r
+from @resultsDatabaseSchema.achilles_results r
 where analysis_id in (401,601,701,801,1801) group by r.analysis_id;

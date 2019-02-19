@@ -7,7 +7,7 @@ SELECT DISTINCT
   DATEFROMPARTS(YEAR(observation_period_start_date), 1, 1) AS obs_year_start,
   DATEFROMPARTS(YEAR(observation_period_start_date), 12, 31) AS obs_year_end
 INTO
-  #temp_dates
+  #temp_dates_109
 FROM @cdmDatabaseSchema.observation_period
 ;
 
@@ -19,7 +19,7 @@ SELECT
 	COUNT_BIG(DISTINCT person_id) AS count_value
 into @scratchDatabaseSchema@schemaDelim@tempAchillesPrefix_109
 FROM @cdmDatabaseSchema.observation_period,
-	#temp_dates
+	#temp_dates_109
 WHERE  
 		observation_period_start_date <= obs_year_start
 	AND 
@@ -28,5 +28,5 @@ GROUP BY
 	obs_year
 ;
 
-TRUNCATE TABLE #temp_dates;
-DROP TABLE #temp_dates;
+TRUNCATE TABLE #temp_dates_109;
+DROP TABLE #temp_dates_109;

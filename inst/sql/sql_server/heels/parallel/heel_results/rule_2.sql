@@ -13,7 +13,7 @@ select
     CAST(CONCAT('ERROR: ', cast(ord1.analysis_id as VARCHAR(10)), ' - ', oa1.analysis_name, ' (count = ', cast(COUNT_BIG(ord1.min_value) as VARCHAR(19)), '); min value should not be negative') AS VARCHAR(255)) AS ACHILLES_HEEL_warning,
     2 as rule_id,
     COUNT_BIG(ord1.min_value) as record_count
-  FROM @resultsDatabaseSchema.ACHILLES_results_dist ord1
+  FROM @resultsDatabaseSchema.achilles_results_dist ord1
   INNER JOIN @resultsDatabaseSchema.ACHILLES_analysis oa1
   	ON ord1.analysis_id = oa1.analysis_id
   WHERE ord1.analysis_id IN (

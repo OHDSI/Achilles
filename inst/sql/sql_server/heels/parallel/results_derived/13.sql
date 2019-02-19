@@ -5,6 +5,6 @@ select
   COUNT_BIG(*) as statistic_value, 
   cast('Achilles:byAnalysis:RowCnt' as varchar(255)) as measure_id
 into @scratchDatabaseSchema@schemaDelim@tempHeelPrefix_@heelName
-from @resultsDatabaseSchema.ACHILLES_results r
+from @resultsDatabaseSchema.achilles_results r
 group by r.analysis_id
 ;

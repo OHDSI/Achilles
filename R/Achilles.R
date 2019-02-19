@@ -207,8 +207,11 @@ achilles <- function (connectionDetails,
   
   if (numThreads == 1 || scratchDatabaseSchema == "#") {
     numThreads <- 1
-    scratchDatabaseSchema <- "#"
-    schemaDelim <- "s_"
+
+    if (.supportsTempTables(connectionDetails)) {
+        scratchDatabaseSchema <- "#"
+        schemaDelim <- "s_"
+    }
     
     ParallelLogger::logInfo("Beginning single-threaded execution")
     
@@ -279,6 +282,22 @@ achilles <- function (connectionDetails,
       }
     }
   }
+
+  # Clean up existing scratch tables -----------------------------------------------
+
+  if ((numThreads > 1 || !.supportsTempTables(connectionDetails)) && !sqlOnly) {
+    # Drop the scratch tables
+    ParallelLogger::logInfo(sprintf("Dropping scratch Achilles tables from schema %s", scratchDatabaseSchema))
+
+    dropAllScratchTables(connectionDetails = connectionDetails,
+                         scratchDatabaseSchema = scratchDatabaseSchema,
+                         tempAchillesPrefix = tempAchillesPrefix,
+                         numThreads = numThreads,
+                         tableTypes = c("achilles", "concept_hierarchy"),
+                         outputFolder = outputFolder)
+
+    ParallelLogger::logInfo(sprintf("Temporary Achilles tables removed from schema %s", scratchDatabaseSchema))
+  }
   
   # Generate cost analyses ----------------------------------------------------------
   
@@ -311,6 +330,7 @@ achilles <- function (connectionDetails,
                                                 warnOnMissingParameters = FALSE,
                                                 cdmDatabaseSchema = cdmDatabaseSchema,
                                                 scratchDatabaseSchema = scratchDatabaseSchema,
+                                                oracleTempSchema = scratchDatabaseSchema,
                                                 schemaDelim = schemaDelim,
                                                 tempAchillesPrefix = tempAchillesPrefix,
                                                 domainId = domainId,
@@ -325,9 +345,9 @@ achilles <- function (connectionDetails,
       if (numThreads == 1) {
         for (rawCostSql in rawCostSqls) {
           start <- Sys.time()
-          ParallelLogger::logInfo(sprintf("Raw Cost %d: START", rawCostSql$analysisId))
+          ParallelLogger::logInfo(sprintf("Raw Cost %s: START", rawCostSql$analysisId))
           DatabaseConnector::executeSql(connection = connection, sql = rawCostSql$sql)
-          ParallelLogger::logInfo(sprintf("Raw Cost %d: COMPLETE (%f seconds)", rawCostSql$analysisId, Sys.time() - start))
+          ParallelLogger::logInfo(sprintf("Raw Cost %s: COMPLETE (%f seconds)", rawCostSql$analysisId, Sys.time() - start))
         }
       } else {
         cluster <- ParallelLogger::makeCluster(numberOfThreads = length(rawCostSqls), 
@@ -336,11 +356,11 @@ achilles <- function (connectionDetails,
                                              x = rawCostSqls, 
                                              function(rawCostSql) {
                                                start <- Sys.time()
-                                               ParallelLogger::logInfo(sprintf("Raw Cost %d: START", rawCostSql$analysisId))
+                                               ParallelLogger::logInfo(sprintf("Raw Cost %s: START", rawCostSql$analysisId))
                                                connection <- DatabaseConnector::connect(connectionDetails = connectionDetails)
                                                DatabaseConnector::executeSql(connection = connection, sql = rawCostSql$sql)
                                                DatabaseConnector::disconnect(connection = connection)
-                                               ParallelLogger::logInfo(sprintf("Raw Cost %d: COMPLETE (%f seconds)", rawCostSql$analysisId, Sys.time() - start))
+                                               ParallelLogger::logInfo(sprintf("Raw Cost %s: COMPLETE (%f seconds)", rawCostSql$analysisId, Sys.time() - start))
                                              })
         
         ParallelLogger::stopCluster(cluster = cluster) 
@@ -359,6 +379,7 @@ achilles <- function (connectionDetails,
                                                            schemaDelim = schemaDelim,
                                                            cdmDatabaseSchema = cdmDatabaseSchema,
                                                            scratchDatabaseSchema = scratchDatabaseSchema,
+                                                           oracleTempSchema = scratchDatabaseSchema,
                                                            costColumn = drugCostMappings[drugCostMappings$OLD == analysisDetail["DISTRIBUTED_FIELD"][[1]], ]$CURRENT,
                                                            domainId = "Drug",
                                                            domainTable = "drug_exposure", 
@@ -379,6 +400,7 @@ achilles <- function (connectionDetails,
                                                            schemaDelim = schemaDelim,
                                                            cdmDatabaseSchema = cdmDatabaseSchema,
                                                            scratchDatabaseSchema = scratchDatabaseSchema,
+                                                           oracleTempSchema = scratchDatabaseSchema,
                                                            costColumn = procedureCostMappings[procedureCostMappings$OLD == analysisDetail["DISTRIBUTED_FIELD"][[1]], ]$CURRENT,
                                                            domainId = "Procedure",
                                                            domainTable = "procedure_occurrence", 
@@ -403,9 +425,9 @@ achilles <- function (connectionDetails,
       if (numThreads == 1) {
         for (distCostAnalysisSql in distCostAnalysisSqls) {
           start <- Sys.time()
-          ParallelLogger::logInfo(sprintf("Cost Analysis %d: START", distCostAnalysisSql$analysisId))
+          ParallelLogger::logInfo(sprintf("Cost Analysis %s: START", distCostAnalysisSql$analysisId))
           DatabaseConnector::executeSql(connection = connection, sql = distCostAnalysisSql$sql)
-          ParallelLogger::logInfo(sprintf("Cost Analysis %d: COMPLETE (%f seconds)", distCostAnalysisSql$analysisId, 
+          ParallelLogger::logInfo(sprintf("Cost Analysis %s: COMPLETE (%f seconds)", distCostAnalysisSql$analysisId,
                                   Sys.time() - start))
         }
         for (dropRawCostSql in dropRawCostSqls) {
@@ -418,11 +440,11 @@ achilles <- function (connectionDetails,
                                            x = distCostAnalysisSqls, 
                                            function(distCostAnalysisSql) {
                                              start <- Sys.time()
-                                             ParallelLogger::logInfo(sprintf("Cost Analysis %d: START", distCostAnalysisSql$analysisId))
+                                             ParallelLogger::logInfo(sprintf("Cost Analysis %s: START", distCostAnalysisSql$analysisId))
                                              connection <- DatabaseConnector::connect(connectionDetails = connectionDetails)
                                              DatabaseConnector::executeSql(connection = connection, sql = distCostAnalysisSql$sql)
                                              DatabaseConnector::disconnect(connection = connection)
-                                             ParallelLogger::logInfo(sprintf("Cost Analysis %d: COMPLETE (%f seconds)", distCostAnalysisSql$analysisId, 
+                                             ParallelLogger::logInfo(sprintf("Cost Analysis %s: COMPLETE (%f seconds)", distCostAnalysisSql$analysisId,
                                                                              Sys.time() - start))
                                            })
         
@@ -440,22 +462,6 @@ achilles <- function (connectionDetails,
         ParallelLogger::stopCluster(cluster = cluster) 
       }
     }
-  }
-  
-  # Clean up existing scratch tables -----------------------------------------------
-  
-  if (numThreads > 1 & !sqlOnly) {
-    # Drop the scratch tables
-    ParallelLogger::logInfo(sprintf("Dropping scratch Achilles tables from schema %s", scratchDatabaseSchema))
-    
-    dropAllScratchTables(connectionDetails = connectionDetails, 
-                         scratchDatabaseSchema = scratchDatabaseSchema, 
-                         tempAchillesPrefix = tempAchillesPrefix, 
-                         numThreads = numThreads,
-                         tableTypes = c("achilles", "concept_hierarchy"),
-                         outputFolder = outputFolder)
-    
-    ParallelLogger::logInfo(sprintf("Temporary Achilles tables removed from schema %s", scratchDatabaseSchema))
   }
   
   # Generate Main Analyses ----------------------------------------------------------------------------------------------------------------
@@ -573,7 +579,7 @@ achilles <- function (connectionDetails,
   
   # Clean up scratch tables -----------------------------------------------
   
-  if (numThreads == 1) {
+  if (numThreads == 1 & .supportsTempTables(connectionDetails)) {
     # Dropping the connection removes the temporary scratch tables if running in serial
     DatabaseConnector::disconnect(connection = connection)
   } else if (dropScratchTables & !sqlOnly) {
@@ -645,6 +651,10 @@ achilles <- function (connectionDetails,
   if (sqlOnly) {
     SqlRender::writeSql(sql = paste(achillesSql, collapse = "\n\n"), targetFile = file.path(outputFolder, "achilles.sql"))
     ParallelLogger::logInfo(sprintf("All Achilles SQL scripts can be found in folder: %s", file.path(outputFolder, "achilles.sql")))
+  }
+
+  if (exists('connection')) {
+    DatabaseConnector::disconnect(connection = connection)
   }
   
   achillesResults <- list(resultsConnectionDetails = connectionDetails,
@@ -718,8 +728,11 @@ createConceptHierarchy <- function(connectionDetails,
   
   if (numThreads == 1 || scratchDatabaseSchema == "#") {
     numThreads <- 1
-    scratchDatabaseSchema <- "#"
-    schemaDelim <- "s_"
+
+    if (.supportsTempTables(connectionDetails)) {
+      scratchDatabaseSchema <- "#"
+      schemaDelim <- "s_"
+    }
   }
   
   hierarchySqlFiles <- list.files(path = file.path(system.file(package = "Achilles"), 
@@ -737,6 +750,7 @@ createConceptHierarchy <- function(connectionDetails,
                                              dbms = connectionDetails$dbms,
                                              warnOnMissingParameters = FALSE,
                                              scratchDatabaseSchema = scratchDatabaseSchema,
+                                             oracleTempSchema = scratchDatabaseSchema,
                                              vocabDatabaseSchema = vocabDatabaseSchema,
                                              schemaDelim = schemaDelim,
                                              tempAchillesPrefix = tempAchillesPrefix)
@@ -749,6 +763,7 @@ createConceptHierarchy <- function(connectionDetails,
                                                 warnOnMissingParameters = FALSE,
                                                 resultsDatabaseSchema = resultsDatabaseSchema,
                                                 scratchDatabaseSchema = scratchDatabaseSchema,
+                                                oracleTempSchema = scratchDatabaseSchema,
                                                 schemaDelim = schemaDelim,
                                                 tempAchillesPrefix = tempAchillesPrefix)
 
@@ -833,7 +848,7 @@ createIndices <- function(connectionDetails,
   dropIndicesSql <- c()
   indicesSql <- c()
   
-  if (connectionDetails$dbms %in% c("redshift", "netezza")) {
+  if (connectionDetails$dbms %in% c("redshift", "netezza", "bigquery")) {
     return (sprintf("/* INDEX CREATION SKIPPED, INDICES NOT SUPPORTED IN %s */", toupper(connectionDetails$dbms)))
   }
   
@@ -1036,12 +1051,13 @@ dropAllScratchTables <- function(connectionDetails,
   
   if (numThreads == 1 || scratchDatabaseSchema == "#") {
     numThreads <- 1
-    scratchDatabaseSchema <- "#"
-    schemaDelim <- "s_"
-  }  
-  
-  connection <- DatabaseConnector::connect(connectionDetails = connectionDetails)
-  
+
+    if (.supportsTempTables(connectionDetails)) {
+      scratchDatabaseSchema <- "#"
+      schemaDelim <- "s_"
+    }
+  }
+
   if ("achilles" %in% tableTypes) {
   
     # Drop Achilles Scratch Tables ------------------------------------------------------
@@ -1173,6 +1189,10 @@ dropAllScratchTables <- function(connectionDetails,
   cdmVersion
 }
 
+.supportsTempTables <- function(connectionDetails) {
+    !(connectionDetails$dbms %in% c("bigquery"))
+}
+
 .getAnalysisSql <- function(analysisId, 
                             connectionDetails,
                             schemaDelim,
@@ -1195,6 +1215,7 @@ dropAllScratchTables <- function(connectionDetails,
                                          resultsDatabaseSchema = resultsDatabaseSchema,
                                          schemaDelim = schemaDelim,
                                          tempAchillesPrefix = tempAchillesPrefix,
+                                         oracleTempSchema = scratchDatabaseSchema,
                                          source_name = sourceName,
                                          achilles_version = packageVersion(pkg = "Achilles"),
                                          cdmVersion = cdmVersion,
