@@ -1,7 +1,7 @@
 -- 1100	Number of persons by location 3-digit zip
 
 --HINT DISTRIBUTE_ON_KEY(stratum_1)
-WITH raw AS (
+WITH rawData AS (
   select
     left(l1.zip,3) as stratum_1,
     COUNT_BIG(distinct person_id) as count_value
@@ -21,4 +21,4 @@ SELECT
   cast(null as varchar(255)) as stratum_5,
   count_value
 into @scratchDatabaseSchema@schemaDelim@tempAchillesPrefix_1100
-FROM raw;
+FROM rawData;

@@ -1,7 +1,7 @@
 -- 108	Number of persons by length of observation period, in 30d increments
 
 --HINT DISTRIBUTE_ON_KEY(stratum_1)
-WITH raw AS (
+WITH rawData AS (
   select
     floor(DATEDIFF(dd, op1.observation_period_start_date, op1.observation_period_end_date)/30) as stratum_1,
     COUNT_BIG(distinct p1.person_id) as count_value
@@ -26,4 +26,4 @@ SELECT
   cast(null as varchar(255)) as stratum_5,
   count_value
 into @scratchDatabaseSchema@schemaDelim@tempAchillesPrefix_108
-FROM raw;
+FROM rawData;

@@ -1,7 +1,7 @@
 -- 802	Number of persons by observation occurrence start month, by observation_concept_id
 
 --HINT DISTRIBUTE_ON_KEY(stratum_1)
-WITH raw AS (
+WITH rawData AS (
   select
     CAST(o1.observation_concept_id AS VARCHAR(255)) as stratum_1,
     YEAR(observation_date)*100 + month(observation_date) as stratum_2,
@@ -20,4 +20,4 @@ SELECT
   cast(null as varchar(255)) as stratum_5,
   count_value
 into @scratchDatabaseSchema@schemaDelim@tempAchillesPrefix_802
-FROM raw;
+FROM rawData;

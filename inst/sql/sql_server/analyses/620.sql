@@ -1,7 +1,7 @@
 -- 620	Number of procedure occurrence records by condition occurrence start month
 
 --HINT DISTRIBUTE_ON_KEY(stratum_1)
-WITH raw AS (
+WITH rawData AS (
   select
     YEAR(procedure_date)*100 + month(procedure_date) as stratum_1,
     COUNT_BIG(PERSON_ID) as count_value
@@ -18,4 +18,4 @@ SELECT
   cast(null as varchar(255)) as stratum_5,
   count_value
 into @scratchDatabaseSchema@schemaDelim@tempAchillesPrefix_620
-FROM raw;
+FROM rawData;

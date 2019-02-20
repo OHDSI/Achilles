@@ -1,7 +1,7 @@
 -- 111	Number of persons by observation period start month
 
 --HINT DISTRIBUTE_ON_KEY(stratum_1)
-WITH raw AS (
+WITH rawData AS (
   select
     YEAR(observation_period_start_date)*100 + month(OBSERVATION_PERIOD_START_DATE) as stratum_1,
     COUNT_BIG(distinct op1.PERSON_ID) as count_value
@@ -18,4 +18,4 @@ SELECT
   cast(null as varchar(255)) as stratum_5,
   count_value
 into @scratchDatabaseSchema@schemaDelim@tempAchillesPrefix_111
-FROM raw;
+FROM rawData;

@@ -1,7 +1,7 @@
 -- 101	Number of persons by age, with age at first observation period
 
 --HINT DISTRIBUTE_ON_KEY(stratum_1)
-WITH raw AS (
+WITH rawData AS (
   select
     year(op1.index_date) - p1.YEAR_OF_BIRTH as stratum_1,
     COUNT_BIG(p1.person_id) as count_value
@@ -19,4 +19,4 @@ SELECT
   cast(null as varchar(255)) as stratum_5,
   count_value
 INTO @scratchDatabaseSchema@schemaDelim@tempAchillesPrefix_101
-FROM raw;
+FROM rawData;

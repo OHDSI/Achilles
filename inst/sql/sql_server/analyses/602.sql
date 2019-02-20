@@ -1,7 +1,7 @@
 -- 602	Number of persons by procedure occurrence start month, by procedure_concept_id
 
 --HINT DISTRIBUTE_ON_KEY(stratum_1)
-WITH raw AS (
+WITH rawData AS (
   select
     po1.procedure_concept_id as stratum_1,
     YEAR(procedure_date)*100 + month(procedure_date) as stratum_2,
@@ -20,4 +20,4 @@ SELECT
   cast(null as varchar(255)) as stratum_5,
   count_value
 into @scratchDatabaseSchema@schemaDelim@tempAchillesPrefix_602
-FROM raw;
+FROM rawData;
