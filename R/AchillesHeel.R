@@ -411,10 +411,6 @@ achillesHeel <- function(connectionDetails,
   
   ParallelLogger::unregisterLogger("achillesHeel")
 
-  if (exists('connection')) {
-    DatabaseConnector::disconnect(connection = connection)
-  }
-  
   heelResults <- list(resultsConnectionDetails = connectionDetails,
                       resultsTable = "achilles_heel_results",
                       heelSql = paste(heelSql, collapse = "\n\n"),
