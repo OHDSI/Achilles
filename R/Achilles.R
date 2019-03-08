@@ -653,10 +653,6 @@ achilles <- function (connectionDetails,
     ParallelLogger::logInfo(sprintf("All Achilles SQL scripts can be found in folder: %s", file.path(outputFolder, "achilles.sql")))
   }
 
-  if (exists('connection')) {
-    DatabaseConnector::disconnect(connection = connection)
-  }
-  
   achillesResults <- list(resultsConnectionDetails = connectionDetails,
                           resultsTable = "achilles_results",
                           resultsDistributionTable = "achilles_results_dist",
