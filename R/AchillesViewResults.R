@@ -157,28 +157,34 @@ fetchAchillesAnalysisResults <- function (connectionDetails,
                                           analysisId) {
   
   analysisDetails <- getAnalysisDetails()
+  analysisDetails <- analysisDetails[analysisDetails$ANALYSIS_ID == analysisId,]
+  
   connection <- DatabaseConnector::connect(connectionDetails = connectionDetails)
+  on.exit(DatabaseConnector::disconnect(connection = connection))
   
-  if (analysisDetails$DISTRIBUTION[analysisDetails$ANALYSIS_ID == analysisId] == 0) {
-    sql <- "select * from @resultsDatabaseSchema.achilles_results where analysis_id = @analysisId"
-    sql <- SqlRender::render(sql = sql,
-                                resultsDatabaseSchema = resultsDatabaseSchema,
-                                analysisId = analysisId)
-    sql <- SqlRender::translate(sql = sql, targetDialect = connectionDetails$dbms)
-    analysisResults <- DatabaseConnector::querySql(connection = connection, sql = sql)
-  } else {
-    sql <- "select * from @resultsDatabaseSchema.achilles_results_dist where analysis_id = @analysisId"
-    sql <- SqlRender::render(sql = sql,
-                                resultsDatabaseSchema = resultsDatabaseSchema,
-                                analysisId = analysisId)
-    sql <- SqlRender::translate(sql = sql, targetDialect = connectionDetails$dbms)
-    analysisResults <- DatabaseConnector::querySql(connection = connection, sql = sql)
-  }
+  sql <- "select * from @resultsDatabaseSchema.achilles_results@dist where analysis_id = @analysisId;"
+  sql <- SqlRender::render(sql = sql,
+                           resultsDatabaseSchema = resultsDatabaseSchema,
+                           analysisId = analysisId,
+                           dist = ifelse(analysisDetails[1,]$DISTRIBUTION == 0, "", "_dist"))
+  sql <- SqlRender::translate(sql = sql, targetDialect = connectionDetails$dbms)
+  analysisResults <- DatabaseConnector::querySql(connection = connection, sql = sql)
   
-  DatabaseConnector::disconnect(connection = connection)
+  colnames(analysisResults) <- lapply(colnames(analysisResults), function(s) {
+    if (startsWith(x = s, prefix = "STRATUM")) {
+      strataName <- analysisDetails[sprintf("%s_NAME", s)][[1]] 
+      if (is.na(strataName) | strataName == "") {
+        s
+      } else {
+        strataName
+      }
+    } else {
+      s
+    }
+  })
   
   result <- list(analysisId = analysisId,
-                 analysisName = analysisDetails$ANALYSIS_NAME[analysisDetails$ANALYSIS_ID == analysisId],
+                 analysisName = analysisDetails[1,]$ANALYSIS_NAME,
                  analysisResults = analysisResults)
   
   class(result) <- "achillesAnalysisResults"
