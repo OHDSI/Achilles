@@ -160,8 +160,13 @@ achilles <- function (connectionDetails,
   # Obtain analyses to run --------------------------------------------------------------------------------------------------------
   
   analysisDetails <- getAnalysisDetails()
+  costIds <- analysisDetails$ANALYSIS_ID[analysisDetails$COST == 1]
+  
   if (!missing(analysisIds)) {
     analysisDetails <- analysisDetails[analysisDetails$ANALYSIS_ID %in% analysisIds, ]
+    
+    # determine if cost analysis ids have been selected
+    runCostAnalysis <- any(analysisIds %in% costIds)
   }
   
   if (!runCostAnalysis) {
@@ -341,7 +346,7 @@ achilles <- function (connectionDetails,
     
     achillesSql <- c(achillesSql, rawCostSqls)
     
-    if (!sqlOnly) {
+    if (!sqlOnly & length(rawCostSqls) > 0) {
       if (numThreads == 1) {
         for (rawCostSql in rawCostSqls) {
           start <- Sys.time()
@@ -411,17 +416,9 @@ achilles <- function (connectionDetails,
     
     distCostAnalysisSqls <- c(distCostDrugSqls, distCostProcedureSqls)
     
-    dropRawCostSqls <- lapply(c("Drug", "Procedure"), function(domainId) {
-      SqlRender::render(sql = "drop table @scratchDatabaseSchema@schemaDelim@tempAchillesPrefix_@domainId_cost_raw;",
-                           scratchDatabaseSchema = scratchDatabaseSchema,
-                           schemaDelim = schemaDelim,
-                           tempAchillesPrefix = tempAchillesPrefix,
-                           domainId = domainId)
-    })
+    achillesSql <- c(achillesSql, lapply(distCostAnalysisSqls, function(s) s$sql))
     
-    achillesSql <- c(achillesSql, lapply(distCostAnalysisSqls, function(s) s$sql), dropRawCostSqls)
-    
-    if (!sqlOnly) {
+    if (!sqlOnly & length(distCostAnalysisSqls) > 0) {
       if (numThreads == 1) {
         for (distCostAnalysisSql in distCostAnalysisSqls) {
           start <- Sys.time()
@@ -429,9 +426,6 @@ achilles <- function (connectionDetails,
           DatabaseConnector::executeSql(connection = connection, sql = distCostAnalysisSql$sql)
           ParallelLogger::logInfo(sprintf("Cost Analysis %s: COMPLETE (%f seconds)", distCostAnalysisSql$analysisId,
                                   Sys.time() - start))
-        }
-        for (dropRawCostSql in dropRawCostSqls) {
-          DatabaseConnector::executeSql(connection = connection, sql = dropRawCostSql)
         }
       } else {
         cluster <- ParallelLogger::makeCluster(numberOfThreads = length(distCostAnalysisSqls), 
@@ -447,19 +441,6 @@ achilles <- function (connectionDetails,
                                              ParallelLogger::logInfo(sprintf("Cost Analysis %s: COMPLETE (%f seconds)", distCostAnalysisSql$analysisId,
                                                                              Sys.time() - start))
                                            })
-        
-        ParallelLogger::stopCluster(cluster = cluster) 
-        
-        cluster <- ParallelLogger::makeCluster(numberOfThreads = length(dropRawCostSqls), 
-                                            singleThreadToMain = TRUE)
-        dummy <- ParallelLogger::clusterApply(cluster = cluster, 
-                                           x = dropRawCostSqls, 
-                                           function(dropRawCostSql) {
-                                             connection <- DatabaseConnector::connect(connectionDetails = connectionDetails)
-                                             DatabaseConnector::executeSql(connection = connection, sql = dropRawCostSql)
-                                             DatabaseConnector::disconnect(connection = connection)
-                                           })
-        ParallelLogger::stopCluster(cluster = cluster) 
       }
     }
   }
@@ -1075,6 +1056,17 @@ dropAllScratchTables <- function(connectionDetails,
                                   scratchTable = scratchTable)
       sql <- SqlRender::translate(sql = sql, targetDialect = connectionDetails$dbms)
     })
+    
+    dropRawCostSqls <- lapply(c("Drug", "Procedure"), function(domainId) {
+      sql <- SqlRender::render(sql = "IF OBJECT_ID('@scratchDatabaseSchema@schemaDelim@tempAchillesPrefix_@domainId_cost_raw', 'U') IS NOT NULL DROP TABLE @scratchDatabaseSchema@schemaDelim@tempAchillesPrefix_@domainId_cost_raw;",
+                               scratchDatabaseSchema = scratchDatabaseSchema,
+                               schemaDelim = schemaDelim,
+                               tempAchillesPrefix = tempAchillesPrefix,
+                               domainId = domainId)
+      sql <- SqlRender::translate(sql = sql, targetDialect = connectionDetails$dbms)
+    })
+    
+    dropSqls <- c(dropSqls, dropRawCostSqls)
     
     cluster <- ParallelLogger::makeCluster(numberOfThreads = numThreads, singleThreadToMain = TRUE)
     dummy <- ParallelLogger::clusterApply(cluster = cluster, 

@@ -158,7 +158,7 @@ When running **achilles**, the return value, if you assign a variable to the fun
 
 # Running Achilles: Single-Threaded Mode
 
-In single-threaded mode, there is no need to set a `scratchDatabaseSchema`, as temporary tables will be used.
+In single-threaded mode, there is no need to set a `scratchDatabaseSchema`, as temporary tables will be used. Here we will focus only on achilles execution and skip running Heel.
 
 ```{r tidy = FALSE, eval = FALSE}
 connectionDetails <- createConnectionDetails(dbms = "postgresql", 
@@ -172,12 +172,13 @@ achilles(connectionDetails = connectionDetails,
          vocabDatabaseSchema = "vocab", 
          sourceName = "Synpuf", 
          cdmVersion = 5.3, 
-         numThreads = 1)
+         numThreads = 1,
+         runHeel = FALSE)
 ```
 
 # Running Achilles: Multi-Threaded Mode
 
-In multi-threaded mode, you need to specify `scratchDatabaseSchema` and use > 1 for `numThreads`. 
+In multi-threaded mode, you need to specify `scratchDatabaseSchema` and use > 1 for `numThreads`. Here we will focus only on achilles execution and skip running Heel.
 
 ```{r tidy = FALSE, eval = FALSE}
 connectionDetails <- createConnectionDetails(dbms = "postgresql", 
@@ -192,7 +193,8 @@ achilles(connectionDetails = connectionDetails,
          vocabDatabaseSchema = "vocab", 
          sourceName = "Synpuf", 
          cdmVersion = 5.3, 
-         numThreads = 5)
+         numThreads = 5,
+         runHeel = FALSE)
 ```
 
 
