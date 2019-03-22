@@ -7,5 +7,3 @@ idx_ar_aid_s1234,achilles_results,analysis_id~stratum_1~stratum_2~stratum_3~stra
 idx_ard_aid,achilles_results_dist,analysis_id
 idx_ard_s1,achilles_results_dist,stratum_1
 idx_ard_s2,achilles_results_dist,stratum_2
-idx_ch_cid,concept_hierarchy,concept_id
-idx_ch_tmap,concept_hierarchy,treemap

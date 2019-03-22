@@ -51,9 +51,6 @@
 #' @param runHeel                          Boolean to determine if Achilles Heel data quality reporting will be produced based on the summary statistics.  Default = TRUE
 #' @param validateSchema                   Boolean to determine if CDM Schema Validation should be run. Default = FALSE
 #' @param runCostAnalysis                  Boolean to determine if cost analysis should be run. Note: only works on v5.1+ style cost tables.
-#' @param conceptHierarchy                 Boolean to determine if the concept_hierarchy result table should be created, for use by Atlas treemaps. Default is FALSE
-#'                                         Please note: this table creation only requires the Vocabulary, not the CDM itself. 
-#'                                         You could run this once for 1 Vocab version, and then copy the table to all CDMs using that Vocab.
 #' @param createIndices                    Boolean to determine if indices should be created on the resulting Achilles and concept_hierarchy table. Default= TRUE
 #' @param numThreads                       (OPTIONAL, multi-threaded mode) The number of threads to use to run Achilles in parallel. Default is 1 thread.
 #' @param tempAchillesPrefix               (OPTIONAL, multi-threaded mode) The prefix to use for the scratch Achilles analyses tables. Default is "tmpach"
@@ -61,6 +58,9 @@
 #' @param sqlOnly                          Boolean to determine if Achilles should be fully executed. TRUE = just generate SQL files, don't actually run, FALSE = run Achilles
 #' @param outputFolder                     Path to store logs and SQL files
 #' @param verboseMode                      Boolean to determine if the console will show all execution steps. Default = TRUE
+#' @param conceptHierarchy                 (DEPRECATED) Boolean to determine if the concept_hierarchy result table should be created, for use by Atlas treemaps. Default is FALSE
+#'                                         Please note: this table creation only requires the Vocabulary, not the CDM itself. 
+#'                                         You could run this once for 1 Vocab version, and then copy the table to all CDMs using that Vocab.
 #' 
 #' @return                                 An object of type \code{achillesResults} containing details for connecting to the database containing the results 
 #' @examples                               \dontrun{
@@ -89,14 +89,14 @@ achilles <- function (connectionDetails,
                       runHeel = TRUE,
                       validateSchema = FALSE,
                       runCostAnalysis = FALSE,
-                      conceptHierarchy = FALSE,
                       createIndices = TRUE,
                       numThreads = 1,
                       tempAchillesPrefix = "tmpach",
                       dropScratchTables = TRUE,
                       sqlOnly = FALSE,
                       outputFolder = "output",
-                      verboseMode = TRUE) {
+                      verboseMode = TRUE,
+                      conceptHierarchy) {
   
   achillesSql <- c()
   
@@ -117,6 +117,13 @@ achilles <- function (connectionDetails,
                                          threshold = "INFO",
                                          appenders = appenders)
   ParallelLogger::registerLogger(logger) 
+  
+  # handle deprecated parameters -------------------------------------------------------------------------------------------------
+  
+  if (!missing(conceptHierarchy)) {
+    conceptHierarchyWarning <- "The conceptHierarchy parameter is deprecated, as the creation of this table is now handled in Atlas"
+    ParallelLogger::logWarn(conceptHierarchyWarning)
+  }
   
   # Try to get CDM Version if not provided ----------------------------------------------------------------------------------------
   
@@ -328,7 +335,7 @@ achilles <- function (connectionDetails,
         costColumns <- costMappings$CURRENT
       }
       list(
-        analysisId = domainId,
+        analysisId = ifelse(domainId == "Drug", 15000, 16000),
         sql = SqlRender::loadRenderTranslateSql(sqlFilename = "analyses/raw_cost_template.sql", 
                                                 packageName = "Achilles", 
                                                 dbms = connectionDetails$dbms,
@@ -350,9 +357,14 @@ achilles <- function (connectionDetails,
       if (numThreads == 1) {
         for (rawCostSql in rawCostSqls) {
           start <- Sys.time()
-          ParallelLogger::logInfo(sprintf("Raw Cost %s: START", rawCostSql$analysisId))
+          ParallelLogger::logInfo(sprintf("[Raw Cost] [START] %s", 
+                                          rawCostSql$analysisId))
           DatabaseConnector::executeSql(connection = connection, sql = rawCostSql$sql)
-          ParallelLogger::logInfo(sprintf("Raw Cost %s: COMPLETE (%f seconds)", rawCostSql$analysisId, Sys.time() - start))
+          delta <- Sys.time() - start
+          ParallelLogger::logInfo(sprintf("[Raw Cost] [COMPLETE] %s (%f %s)", 
+                                          rawCostSql$analysisId, 
+                                          delta, 
+                                          attr(delta, "units")))
         }
       } else {
         cluster <- ParallelLogger::makeCluster(numberOfThreads = length(rawCostSqls), 
@@ -361,11 +373,15 @@ achilles <- function (connectionDetails,
                                              x = rawCostSqls, 
                                              function(rawCostSql) {
                                                start <- Sys.time()
-                                               ParallelLogger::logInfo(sprintf("Raw Cost %s: START", rawCostSql$analysisId))
+                                               ParallelLogger::logInfo(sprintf("[Raw Cost] [START] %s", rawCostSql$analysisId))
                                                connection <- DatabaseConnector::connect(connectionDetails = connectionDetails)
+                                               on.exit(DatabaseConnector::disconnect(connection = connection))
                                                DatabaseConnector::executeSql(connection = connection, sql = rawCostSql$sql)
-                                               DatabaseConnector::disconnect(connection = connection)
-                                               ParallelLogger::logInfo(sprintf("Raw Cost %s: COMPLETE (%f seconds)", rawCostSql$analysisId, Sys.time() - start))
+                                               delta <- Sys.time() - start
+                                               ParallelLogger::logInfo(sprintf("[Raw Cost] [COMPLETE] %s (%f %s)", 
+                                                                               rawCostSql$analysisId, 
+                                                                               delta,
+                                                                               attr(delta, "units")))
                                              })
         
         ParallelLogger::stopCluster(cluster = cluster) 
@@ -422,10 +438,14 @@ achilles <- function (connectionDetails,
       if (numThreads == 1) {
         for (distCostAnalysisSql in distCostAnalysisSqls) {
           start <- Sys.time()
-          ParallelLogger::logInfo(sprintf("Cost Analysis %s: START", distCostAnalysisSql$analysisId))
+          ParallelLogger::logInfo(sprintf("[Cost Analysis] [START] %d", 
+                                          as.integer(distCostAnalysisSql$analysisId)))
           DatabaseConnector::executeSql(connection = connection, sql = distCostAnalysisSql$sql)
-          ParallelLogger::logInfo(sprintf("Cost Analysis %s: COMPLETE (%f seconds)", distCostAnalysisSql$analysisId,
-                                  Sys.time() - start))
+          delta <- Sys.time() - start
+          ParallelLogger::logInfo(sprintf("[Cost Analysis] [COMPLETE] %d (%f %s)", 
+                                          as.integer(distCostAnalysisSql$analysisId), 
+                                          delta,
+                                          attr(delta, "units")))
         }
       } else {
         cluster <- ParallelLogger::makeCluster(numberOfThreads = length(distCostAnalysisSqls), 
@@ -434,13 +454,18 @@ achilles <- function (connectionDetails,
                                            x = distCostAnalysisSqls, 
                                            function(distCostAnalysisSql) {
                                              start <- Sys.time()
-                                             ParallelLogger::logInfo(sprintf("Cost Analysis %s: START", distCostAnalysisSql$analysisId))
+                                             ParallelLogger::logInfo(sprintf("[Cost Analysis] [START] %d", 
+                                                                             as.integer(distCostAnalysisSql$analysisId)))
                                              connection <- DatabaseConnector::connect(connectionDetails = connectionDetails)
+                                             on.exit(DatabaseConnector::disconnect(connection = connection))
                                              DatabaseConnector::executeSql(connection = connection, sql = distCostAnalysisSql$sql)
-                                             DatabaseConnector::disconnect(connection = connection)
-                                             ParallelLogger::logInfo(sprintf("Cost Analysis %s: COMPLETE (%f seconds)", distCostAnalysisSql$analysisId,
-                                                                             Sys.time() - start))
+                                             delta <- Sys.time() - start
+                                             ParallelLogger::logInfo(sprintf("[Cost Analysis] [COMPLETE] %d (%f %s)", 
+                                                                             as.integer(distCostAnalysisSql$analysisId), 
+                                                                             delta,
+                                                                             attr(delta, "units")))
                                            })
+        ParallelLogger::stopCluster(cluster = cluster) 
       }
     }
   }
@@ -482,7 +507,10 @@ achilles <- function (connectionDetails,
         tryCatch({
           DatabaseConnector::executeSql(connection = connection, sql = mainSql$sql)
           delta <- Sys.time() - start
-          ParallelLogger::logInfo(sprintf("Analysis %d -- COMPLETE (%f %s)", mainSql$analysisId, delta, attr(delta, "units")))  
+          ParallelLogger::logInfo(sprintf("[Main Analysis] [COMPLETE] %d (%f %s)", 
+                                          as.integer(mainSql$analysisId), 
+                                          delta, 
+                                          attr(delta, "units")))  
         }, error = function(e) {
           ParallelLogger::logError(sprintf("Analysis %d -- ERROR %s", mainSql$analysisId, e))
         })
@@ -494,16 +522,21 @@ achilles <- function (connectionDetails,
                                          function(mainSql) {
                                            start <- Sys.time()
                                            connection <- DatabaseConnector::connect(connectionDetails = connectionDetails)
-                                           ParallelLogger::logInfo(sprintf("Main Analysis %d (%s) -- START", mainSql$analysisId, 
+                                           on.exit(DatabaseConnector::disconnect(connection = connection))
+                                           ParallelLogger::logInfo(sprintf("[Main Analysis] [START] %d (%s)", 
+                                                                           as.integer(mainSql$analysisId), 
                                                                            analysisDetails$ANALYSIS_NAME[analysisDetails$ANALYSIS_ID == mainSql$analysisId]))
                                            tryCatch({
                                              DatabaseConnector::executeSql(connection = connection, sql = mainSql$sql)
                                              delta <- Sys.time() - start
-                                             ParallelLogger::logInfo(sprintf("Main Analysis %d -- COMPLETE (%f %s)", mainSql$analysisId, delta, attr(delta, "units")))  
+                                             ParallelLogger::logInfo(sprintf("[Main Analysis] [COMPLETE] %d (%f %s)", 
+                                                                             as.integer(mainSql$analysisId), 
+                                                                             delta, 
+                                                                             attr(delta, "units")))  
                                            }, error = function(e) {
-                                             ParallelLogger::logError(sprintf("Analysis %d -- ERROR %s", mainSql$analysisId, e))
-                                           }, finally = {
-                                             DatabaseConnector::disconnect(connection = connection)
+                                             ParallelLogger::logError(sprintf("[Main Analysis] [ERROR] %d (%s)", 
+                                                                              as.integer(mainSql$analysisId), 
+                                                                              e))
                                            })
                                          })
       
@@ -528,7 +561,9 @@ achilles <- function (connectionDetails,
                                tempAchillesPrefix = tempAchillesPrefix,
                                numThreads = numThreads,
                                smallCellCount = smallCellCount,
-                               outputFolder = outputFolder)
+                               outputFolder = outputFolder,
+                               sqlOnly = sqlOnly,
+                               includeRawCost = ifelse(table$detailType == "results_dist", runCostAnalysis, FALSE))
   })
   
   achillesSql <- c(achillesSql, mergeSqls)
@@ -547,8 +582,8 @@ achilles <- function (connectionDetails,
                                          x = mergeSqls, 
                                          function(sql) {
                                            connection <- DatabaseConnector::connect(connectionDetails = connectionDetails)
+                                           on.exit(DatabaseConnector::disconnect(connection = connection))
                                            DatabaseConnector::executeSql(connection = connection, sql = sql)
-                                           DatabaseConnector::disconnect(connection = connection)
                                          })
       ParallelLogger::stopCluster(cluster = cluster)
     }
@@ -577,33 +612,24 @@ achilles <- function (connectionDetails,
     ParallelLogger::logInfo(sprintf("Temporary Achilles tables removed from schema %s", scratchDatabaseSchema))
   }
   
-  # Create concept hierarchy table -----------------------------------------------------------------
-  
-  hierarchySql <- "/* CONCEPT HIERARCHY EXECUTION SKIPPED PER USER REQUEST */"
-  if (conceptHierarchy) {
-    hierarchySql <- createConceptHierarchy(connectionDetails = connectionDetails, 
-                                           resultsDatabaseSchema = resultsDatabaseSchema,
-                                           scratchDatabaseSchema = scratchDatabaseSchema,
-                                           vocabDatabaseSchema = vocabDatabaseSchema,
-                                           numThreads = numThreads,
-                                           tempAchillesPrefix = tempAchillesPrefix,
-                                           sqlOnly = sqlOnly,
-                                           outputFolder = outputFolder,
-                                           verboseMode = verboseMode)
-  }
-  achillesSql <- c(achillesSql, hierarchySql)
-
-  
   # Create indices -----------------------------------------------------------------
   
   indicesSql <- "/* INDEX CREATION SKIPPED PER USER REQUEST */"
   
   if (createIndices) {
+    achillesTables <- lapply(unique(analysisDetails$DISTRIBUTION), function(a) {
+      if (a == 0) {
+        "achilles_results"
+      } else {
+        "achilles_results_dist"
+      }
+    })
     indicesSql <- createIndices(connectionDetails = connectionDetails,
                                 resultsDatabaseSchema = resultsDatabaseSchema,
                                 outputFolder = outputFolder,
                                 sqlOnly = sqlOnly,
-                                verboseMode = verboseMode)    
+                                verboseMode = verboseMode, 
+                                achillesTables = unique(achillesTables))
   }
   achillesSql <- c(achillesSql, indicesSql)
   
@@ -642,7 +668,6 @@ achilles <- function (connectionDetails,
                           analysisIds = analysisDetails$ANALYSIS_ID,
                           achillesSql = paste(achillesSql, collapse = "\n\n"),
                           heelSql = heelSql,
-                          hierarchySql = hierarchySql,
                           indicesSql = indicesSql,
                           call = match.call())
   
@@ -651,7 +676,7 @@ achilles <- function (connectionDetails,
   invisible(achillesResults)
 }
 
-#' Create the concept hierarchy
+#' (DEPRECATED) Create the concept hierarchy
 #' 
 #' @details 
 #' Post-processing, create the concept hierarchy.
@@ -682,108 +707,7 @@ createConceptHierarchy <- function(connectionDetails,
                                    sqlOnly = FALSE,
                                    verboseMode = TRUE) {
   
-  # Log execution --------------------------------------------------------------------------------------------------------------------
-  
-  unlink(file.path(outputFolder, "log_conceptHierarchy.txt"))
-  if (verboseMode) {
-    appenders <- list(ParallelLogger::createConsoleAppender(),
-                      ParallelLogger::createFileAppender(layout = ParallelLogger::layoutParallel, 
-                                                         fileName = file.path(outputFolder, "log_conceptHierarchy.txt")))    
-  } else {
-    appenders <- list(ParallelLogger::createFileAppender(layout = ParallelLogger::layoutParallel, 
-                                                         fileName = file.path(outputFolder, "log_conceptHierarchy.txt")))
-  }
-  
-  logger <- ParallelLogger::createLogger(name = "conceptHierarchy",
-                                         threshold = "INFO",
-                                         appenders = appenders)
-  ParallelLogger::registerLogger(logger) 
-  
-  # Initialize thread and scratchDatabaseSchema settings ----------------------------------------------------------------
-  
-  schemaDelim <- "."
-  
-  if (numThreads == 1 || scratchDatabaseSchema == "#") {
-    numThreads <- 1
-
-    if (.supportsTempTables(connectionDetails)) {
-      scratchDatabaseSchema <- "#"
-      schemaDelim <- "s_"
-    }
-  }
-  
-  hierarchySqlFiles <- list.files(path = file.path(system.file(package = "Achilles"), 
-                                               "sql", "sql_server", "post_processing", "concept_hierarchies"), 
-                              recursive = TRUE, 
-                              full.names = FALSE, 
-                              all.files = FALSE,
-                              pattern = "\\.sql$")
-  
-  hierarchySqls <- lapply(hierarchySqlFiles, function(hierarchySqlFile) {
-    sql <- SqlRender::loadRenderTranslateSql(sqlFilename = file.path("post_processing", 
-                                                                     "concept_hierarchies", 
-                                                                     hierarchySqlFile),
-                                             packageName = "Achilles",
-                                             dbms = connectionDetails$dbms,
-                                             warnOnMissingParameters = FALSE,
-                                             scratchDatabaseSchema = scratchDatabaseSchema,
-                                             oracleTempSchema = scratchDatabaseSchema,
-                                             vocabDatabaseSchema = vocabDatabaseSchema,
-                                             schemaDelim = schemaDelim,
-                                             tempAchillesPrefix = tempAchillesPrefix)
-  })
-  
-  mergeSql <- SqlRender::loadRenderTranslateSql(sqlFilename = file.path("post_processing", 
-                                                                        "merge_concept_hierarchy.sql"),
-                                                packageName = "Achilles",
-                                                dbms = connectionDetails$dbms,
-                                                warnOnMissingParameters = FALSE,
-                                                resultsDatabaseSchema = resultsDatabaseSchema,
-                                                scratchDatabaseSchema = scratchDatabaseSchema,
-                                                oracleTempSchema = scratchDatabaseSchema,
-                                                schemaDelim = schemaDelim,
-                                                tempAchillesPrefix = tempAchillesPrefix)
-
-  
-  if (!sqlOnly) {
-    ParallelLogger::logInfo("Executing Concept Hierarchy creation. This could take a while")
-  
-    if (numThreads == 1) {
-      connection <- DatabaseConnector::connect(connectionDetails = connectionDetails)
-      for (sql in hierarchySqls) {
-        DatabaseConnector::executeSql(connection = connection, sql = sql)
-      }
-      DatabaseConnector::executeSql(connection = connection, sql = mergeSql)
-      DatabaseConnector::disconnect(connection = connection)
-    } else {
-      cluster <- ParallelLogger::makeCluster(numberOfThreads = numThreads, singleThreadToMain = TRUE)
-      dummy <- ParallelLogger::clusterApply(cluster = cluster, 
-                                         x = hierarchySqls, 
-                                         function(sql) {
-                                           connection <- DatabaseConnector::connect(connectionDetails = connectionDetails)
-                                           DatabaseConnector::executeSql(connection = connection, sql = sql)
-                                           DatabaseConnector::disconnect(connection = connection)
-                                         })
-      ParallelLogger::stopCluster(cluster = cluster)
-      
-      connection <- DatabaseConnector::connect(connectionDetails = connectionDetails)
-      DatabaseConnector::executeSql(connection = connection, sql = mergeSql)
-      DatabaseConnector::disconnect(connection = connection)
-    }
-    
-    dropAllScratchTables(connectionDetails = connectionDetails, 
-                         scratchDatabaseSchema = scratchDatabaseSchema, 
-                         tempAchillesPrefix = tempAchillesPrefix, 
-                         numThreads = numThreads,
-                         tableTypes = c("concept_hierarchy"),
-                         outputFolder = outputFolder)
-    
-    ParallelLogger::logInfo(sprintf("Done. Concept Hierarchy table can now be found in %s", resultsDatabaseSchema))  
-  }
-  
-  ParallelLogger::unregisterLogger("conceptHierarchy")
-
-  invisible(c(hierarchySqls, mergeSql))
+  .Deprecated(msg = "'createConceptHierarchy' will be removed in the next version of Achilles. The concept_hierarchy table creation is now handled in Atlas.")
 }
 
 
@@ -797,14 +721,16 @@ createConceptHierarchy <- function(connectionDetails,
 #'                                         On SQL Server, this should specifiy both the database and the schema, so for example, on SQL Server, 'cdm_results.dbo'.
 #' @param outputFolder                     Path to store logs and SQL files
 #' @param sqlOnly                          TRUE = just generate SQL files, don't actually run, FALSE = run Achilles
-#' @param verboseMode                      Boolean to determine if the console will show all execution steps. Default = TRUE  
+#' @param verboseMode                      Boolean to determine if the console will show all execution steps. Default = TRUE 
+#' @param achillesTables                   Which achilles tables should be indexed? Default is both achilles_results and achilles_results_dist. 
 #' 
 #' @export
 createIndices <- function(connectionDetails,
                           resultsDatabaseSchema,
                           outputFolder,
                           sqlOnly = FALSE,
-                          verboseMode = TRUE) {
+                          verboseMode = TRUE,
+                          achillesTables = c("achilles_results", "achilles_results_dist")) {
   
   # Log execution --------------------------------------------------------------------------------------------------------------------
   
@@ -825,6 +751,8 @@ createIndices <- function(connectionDetails,
   dropIndicesSql <- c()
   indicesSql <- c()
   
+  # dbms specific index operations -----------------------------------------------------------------------------------------
+  
   if (connectionDetails$dbms %in% c("redshift", "netezza", "bigquery")) {
     return (sprintf("/* INDEX CREATION SKIPPED, INDICES NOT SUPPORTED IN %s */", toupper(connectionDetails$dbms)))
   }
@@ -838,48 +766,33 @@ createIndices <- function(connectionDetails,
   indices <- read.csv(file = system.file("csv", "post_processing", "indices.csv", package = "Achilles"), 
                       header = TRUE, stringsAsFactors = FALSE)
   
-  # Check if concept_hierarchy table exists ------------------------------------------------------------------
-  
-  sql <- SqlRender::render("select top 1 * from @resultsDatabaseSchema.concept_hierarchy;", 
-                              resultsDatabaseSchema = resultsDatabaseSchema)
-  sql <- SqlRender::translate(sql = sql, targetDialect = connectionDetails$dbms)
-  
-  connection <- DatabaseConnector::connect(connectionDetails = connectionDetails)
-  conceptHierarchyTableExists <- tryCatch({
-    DatabaseConnector::querySql(connection = connection, sql = sql)
-    TRUE
-  }, error = function(e) {
-    FALSE
-  })
-  DatabaseConnector::disconnect(connection = connection)
-  
-  if (!conceptHierarchyTableExists) {
-    indices <- indices[indices$TABLE_NAME != "concept_hierarchy",]
-  }
-  
-  for (i in 1:nrow(indices)) {
-    sql <- SqlRender::render(sql = "drop index @resultsDatabaseSchema.@indexName;",
-                                resultsDatabaseSchema = resultsDatabaseSchema,
-                                indexName = indices[i,]$INDEX_NAME)
-    sql <- SqlRender::translate(sql = sql, targetDialect = connectionDetails$dbms)
-    dropIndicesSql <- c(dropIndicesSql, sql)
+  # create index SQLs ------------------------------------------------------------------------------------------------  
     
-    sql <- SqlRender::render(sql = "create index @indexName on @resultsDatabaseSchema.@tableName (@fields);",
-                                resultsDatabaseSchema = resultsDatabaseSchema,
-                                tableName = indices[i,]$TABLE_NAME,
-                                indexName = indices[i,]$INDEX_NAME,
-                                fields = paste(strsplit(x = indices[i,]$FIELDS, split = "~")[[1]], collapse = ","))
-    sql <- SqlRender::translate(sql = sql, targetDialect = connectionDetails$dbms)
-    indicesSql <- c(indicesSql, sql)
+  for (i in 1:nrow(indices)) {
+    if (indices[i,]$TABLE_NAME %in% achillesTables) {
+      sql <- SqlRender::render(sql = "drop index @resultsDatabaseSchema.@indexName;",
+                                  resultsDatabaseSchema = resultsDatabaseSchema,
+                                  indexName = indices[i,]$INDEX_NAME)
+      sql <- SqlRender::translate(sql = sql, targetDialect = connectionDetails$dbms)
+      dropIndicesSql <- c(dropIndicesSql, sql)
+      
+      sql <- SqlRender::render(sql = "create index @indexName on @resultsDatabaseSchema.@tableName (@fields);",
+                                  resultsDatabaseSchema = resultsDatabaseSchema,
+                                  tableName = indices[i,]$TABLE_NAME,
+                                  indexName = indices[i,]$INDEX_NAME,
+                                  fields = paste(strsplit(x = indices[i,]$FIELDS, split = "~")[[1]], collapse = ","))
+      sql <- SqlRender::translate(sql = sql, targetDialect = connectionDetails$dbms)
+      indicesSql <- c(indicesSql, sql)
+    }
   }
   
   if (!sqlOnly) {
     connection <- DatabaseConnector::connect(connectionDetails = connectionDetails)
+    on.exit(DatabaseConnector::disconnect(connection = connection))
     
     try(DatabaseConnector::executeSql(connection = connection, sql = paste(dropIndicesSql, collapse = "\n\n")), silent = TRUE)
     DatabaseConnector::executeSql(connection = connection, 
                                   sql = paste(indicesSql, collapse = "\n\n"))
-    DatabaseConnector::disconnect(connection = connection)
   }
   
   ParallelLogger::unregisterLogger("createIndices")
@@ -1124,37 +1037,6 @@ dropAllScratchTables <- function(connectionDetails,
     ParallelLogger::stopCluster(cluster = cluster)
   }
   
-  if ("concept_hierarchy" %in% tableTypes) {
-    # Drop Concept Hierarchy Tables ------------------------------------------------------
-    
-    conceptHierarchyTables <- c("condition", "drug", "drug_era", "meas", "obs", "proc")
-    
-    dropSqls <- lapply(conceptHierarchyTables, function(scratchTable) {
-      sql <- SqlRender::render("IF OBJECT_ID('@scratchDatabaseSchema@schemaDelim@tempAchillesPrefix@scratchTable', 'U') IS NOT NULL DROP TABLE @scratchDatabaseSchema@schemaDelim@tempAchillesPrefix@scratchTable;", 
-                           scratchDatabaseSchema = scratchDatabaseSchema,
-                           schemaDelim = schemaDelim,
-                           tempAchillesPrefix = tempAchillesPrefix,
-                           scratchTable = scratchTable)
-      sql <- SqlRender::translate(sql = sql, targetDialect = connectionDetails$dbms)
-    })
-    
-    cluster <- ParallelLogger::makeCluster(numberOfThreads = numThreads, singleThreadToMain = TRUE)
-    dummy <- ParallelLogger::clusterApply(cluster = cluster, 
-                                       x = dropSqls, 
-                                       function(sql) {
-                                         connection <- DatabaseConnector::connect(connectionDetails = connectionDetails)
-                                         tryCatch({
-                                           DatabaseConnector::executeSql(connection = connection, sql = sql)  
-                                         }, error = function(e) {
-                                           ParallelLogger::logError(sprintf("Drop Concept Hierarchy Scratch Table -- ERROR (%s)", e))  
-                                         }, finally = {
-                                           DatabaseConnector::disconnect(connection = connection)
-                                         })
-                                       })
-    
-    ParallelLogger::stopCluster(cluster = cluster)
-  }
-  
   ParallelLogger::unregisterLogger("dropAllScratchTables")
 }
 
@@ -1221,7 +1103,9 @@ dropAllScratchTables <- function(connectionDetails,
                                         tempAchillesPrefix,
                                         numThreads,
                                         smallCellCount,
-                                        outputFolder) {
+                                        outputFolder,
+                                        sqlOnly,
+                                        includeRawCost) {
   
   castedNames <- apply(resultsTable$schema, 1, function(field) {
     SqlRender::render("cast(@fieldName as @fieldType) as @fieldName", 
@@ -1229,29 +1113,77 @@ dropAllScratchTables <- function(connectionDetails,
                          fieldType = field["FIELD_TYPE"])
   })
   
-  detailSqls <- lapply(resultsTable$analysisIds[resultsTable$analysisIds %in% analysisIds], function(analysisId) { 
-                  sql <- SqlRender::render(sql = "select @castedNames from 
-                                                    @scratchDatabaseSchema@schemaDelim@tablePrefix_@analysisId", 
-                                                    scratchDatabaseSchema = scratchDatabaseSchema,
-                                                    schemaDelim = schemaDelim,
-                                                    castedNames = paste(castedNames, collapse = ", "), 
-                                                    tablePrefix = resultsTable$tablePrefix, 
-                                                    analysisId = analysisId)
+  # obtain the analysis SQLs to union in the merge ------------------------------------------------------------------
   
-                  sql <- SqlRender::translate(sql = sql, targetDialect = connectionDetails$dbms)
+  detailSqls <- lapply(resultsTable$analysisIds[resultsTable$analysisIds %in% analysisIds], function(analysisId) { 
+    analysisSql <- SqlRender::render(sql = "select @castedNames from 
+                                     @scratchDatabaseSchema@schemaDelim@tablePrefix_@analysisId", 
+                                     scratchDatabaseSchema = scratchDatabaseSchema,
+                                     schemaDelim = schemaDelim,
+                                     castedNames = paste(castedNames, collapse = ", "), 
+                                     tablePrefix = resultsTable$tablePrefix, 
+                                     analysisId = analysisId)
+    
+    if (!sqlOnly) {
+      # obtain the runTime for this analysis
+      runTime <- .getAchillesResultBenchmark(analysisId,
+                                             outputFolder)
+      
+      benchmarkSelects <- lapply(resultsTable$schema$FIELD_NAME, function(c) {
+        if (tolower(c) == "analysis_id") {
+          sprintf("%d as analysis_id", .getBenchmarkOffset() + as.integer(analysisId))
+        } else if (tolower(c) == "stratum_1") {
+          sprintf("'%s' as stratum_1", runTime)
+        } else if (tolower(c) == "count_value") {
+          sprintf("%d as count_value", smallCellCount + 1) 
+        } else {
+          sprintf("NULL as %s", c)
+        }
+      })
+      
+      benchmarkSql <- SqlRender::render(sql = "select @benchmarkSelect",
+                                        benchmarkSelect = paste(benchmarkSelects, collapse = ", "))
+      
+      analysisSql <- paste(c(analysisSql, benchmarkSql), collapse = " union all ")
+      
+    } 
+    SqlRender::translate(sql = analysisSql, targetDialect = connectionDetails$dbms)
   })
   
-  SqlRender::loadRenderTranslateSql(sqlFilename = "analyses/merge_achilles_tables.sql",
-                                         packageName = "Achilles",
-                                         dbms = connectionDetails$dbms,
-                                         warnOnMissingParameters = FALSE,
-                                         createTable = createTable,
-                                         resultsDatabaseSchema = resultsDatabaseSchema,
-                                         detailType = resultsTable$detailType,
-                                         detailSqls = paste(detailSqls, collapse = " \nunion all\n "),
-                                         fieldNames = paste(resultsTable$schema$FIELD_NAME, collapse = ", "),
-                                         smallCellCount = smallCellCount)
+  if (!sqlOnly & includeRawCost) {
+    # obtain the runTime for this analysis
+    
+    benchmarkSqls <- lapply(c(15000, 16000), function(rawCostId) {
+      runTime <- .getAchillesResultBenchmark(rawCostId, outputFolder)  
+    
+      benchmarkSelects <- lapply(resultsTable$schema$FIELD_NAME, function(c) {
+        if (tolower(c) == "analysis_id") {
+          sprintf("%d as analysis_id", .getBenchmarkOffset() + rawCostId)
+        } else if (tolower(c) == "stratum_1") {
+          sprintf("'%s' as stratum_1", runTime)
+        } else if (tolower(c) == "count_value") {
+          sprintf("%d as count_value", smallCellCount + 1) 
+        } else {
+          sprintf("NULL as %s", c)
+        }
+      })
+      SqlRender::render(sql = "select @benchmarkSelect", benchmarkSelect = paste(benchmarkSelects, collapse = ", "))
+    })
+    benchmarkSql <- paste(benchmarkSqls, collapse = " union all ")
+    benchmarkSql <- SqlRender::translate(sql = benchmarkSql, targetDialect = connectionDetails$dbms)
+    detailSqls <- c(detailSqls, benchmarkSql)
+  }
   
+  SqlRender::loadRenderTranslateSql(sqlFilename = "analyses/merge_achilles_tables.sql",
+                                    packageName = "Achilles",
+                                    dbms = connectionDetails$dbms,
+                                    warnOnMissingParameters = FALSE,
+                                    createTable = createTable,
+                                    resultsDatabaseSchema = resultsDatabaseSchema,
+                                    detailType = resultsTable$detailType,
+                                    detailSqls = paste(detailSqls, collapse = " \nunion all\n "),
+                                    fieldNames = paste(resultsTable$schema$FIELD_NAME, collapse = ", "),
+                                    smallCellCount = smallCellCount)
 }
 
 .getSourceName <- function(connectionDetails,
@@ -1285,8 +1217,8 @@ dropAllScratchTables <- function(connectionDetails,
                                 analysisIds = paste(resultIds, collapse = ","))
     sql <- SqlRender::translate(sql = sql, targetDialect = connectionDetails$dbms)
     connection <- DatabaseConnector::connect(connectionDetails = connectionDetails)
+    on.exit(DatabaseConnector::disconnect(connection = connection))
     DatabaseConnector::executeSql(connection = connection, sql = sql)
-    DatabaseConnector::disconnect(connection = connection)
   }
   
   if (length(distIds) > 0) {
@@ -1295,7 +1227,42 @@ dropAllScratchTables <- function(connectionDetails,
                                 analysisIds = paste(distIds, collapse = ","))
     sql <- SqlRender::translate(sql = sql, targetDialect = connectionDetails$dbms)
     connection <- DatabaseConnector::connect(connectionDetails = connectionDetails)
+    on.exit(DatabaseConnector::disconnect(connection = connection))
     DatabaseConnector::executeSql(connection = connection, sql = sql)
-    DatabaseConnector::disconnect(connection = connection)
   }
+}
+
+.getAchillesResultBenchmark <- function(analysisId,
+                                        outputFolder) {
+  
+  logs <- read.table(file = file.path(outputFolder, "log_achilles.txt"), 
+                     header = FALSE, sep = "\t", stringsAsFactors = FALSE)
+  names(logs) <- c("startTime", "thread", "logType", "package", "packageFunction", "comment")
+  logs <- logs[grepl(pattern = "COMPLETE", x = logs$comment),]
+  logs$analysisId <- logs$runTime <- NA
+  
+  for (i in 1:nrow(logs)) {
+    logs[i,]$analysisId <- .getAnalysisId(logs[i,]$comment)
+    logs[i,]$runTime <- .getRunTime(logs[i,]$comment)
+  }
+  
+  logs$runTime[logs$analysisId == analysisId]
+}
+
+.formatName <- function(name) {
+  gsub("_", " ", gsub("\\[(.*?)\\]_", "", gsub(" ", "_", name)))
+}
+
+.getAnalysisId <- function(comment) {
+  comment <- .formatName(comment)
+  as.integer(gsub("\\s*\\([^\\)]+\\)","", as.character(comment)))
+}
+
+.getRunTime <- function(comment) {
+  comment <- .formatName(comment)
+  gsub("[\\(\\)]", "", regmatches(comment, gregexpr("\\(.*?\\)", comment))[[1]])
+}
+
+.getBenchmarkOffset <- function() {
+  2000000
 }

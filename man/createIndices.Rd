@@ -5,7 +5,8 @@
 \title{Create indicies}
 \usage{
 createIndices(connectionDetails, resultsDatabaseSchema, outputFolder,
-  sqlOnly = FALSE, verboseMode = TRUE)
+  sqlOnly = FALSE, verboseMode = TRUE,
+  achillesTables = c("achilles_results", "achilles_results_dist"))
 }
 \arguments{
 \item{connectionDetails}{An R object of type \code{connectionDetails} created using the function \code{createConnectionDetails} in the \code{DatabaseConnector} package.}
@@ -18,6 +19,8 @@ On SQL Server, this should specifiy both the database and the schema, so for exa
 \item{sqlOnly}{TRUE = just generate SQL files, don't actually run, FALSE = run Achilles}
 
 \item{verboseMode}{Boolean to determine if the console will show all execution steps. Default = TRUE}
+
+\item{achillesTables}{Which achilles tables should be indexed? Default is both achilles_results and achilles_results_dist.}
 }
 \description{
 Create indicies
