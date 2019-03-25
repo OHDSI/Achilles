@@ -121,7 +121,7 @@ achilles <- function (connectionDetails,
   # handle deprecated parameters -------------------------------------------------------------------------------------------------
   
   if (!missing(conceptHierarchy)) {
-    conceptHierarchyWarning <- "The conceptHierarchy parameter is deprecated, as the creation of this table is now handled in Atlas"
+    conceptHierarchyWarning <- "The conceptHierarchy parameter is deprecated, as the creation of this table is now handled in Atlas. However, you can still call the createConceptHierarchy function separately if needed."
     ParallelLogger::logWarn(conceptHierarchyWarning)
   }
   
@@ -680,9 +680,7 @@ achilles <- function (connectionDetails,
 #' (DEPRECATED) Create the concept hierarchy
 #' 
 #' @details 
-#' Post-processing, create the concept hierarchy.
-#' Please note: this table creation only requires the Vocabulary, not the CDM itself. 
-#' You could run this once for 1 Vocab version, and then copy the table to all CDMs using that Vocab.
+#' This function is no longer necessary for Atlas Data Sources, as its functionality is handled by WebAPI.
 #' 
 #' @param connectionDetails                An R object of type \code{connectionDetails} created using the function \code{createConnectionDetails} in the \code{DatabaseConnector} package.
 #' @param resultsDatabaseSchema		         Fully qualified name of database schema that we can write final results to. Default is cdmDatabaseSchema. 
@@ -709,6 +707,109 @@ createConceptHierarchy <- function(connectionDetails,
                                    verboseMode = TRUE) {
   
   .Deprecated(msg = "'createConceptHierarchy' will be removed in the next version of Achilles. The concept_hierarchy table creation is now handled in Atlas.")
+  
+  # Log execution --------------------------------------------------------------------------------------------------------------------
+  
+  unlink(file.path(outputFolder, "log_conceptHierarchy.txt"))
+  if (verboseMode) {
+    appenders <- list(ParallelLogger::createConsoleAppender(),
+                      ParallelLogger::createFileAppender(layout = ParallelLogger::layoutParallel, 
+                                                         fileName = file.path(outputFolder, "log_conceptHierarchy.txt")))    
+  } else {
+    appenders <- list(ParallelLogger::createFileAppender(layout = ParallelLogger::layoutParallel, 
+                                                         fileName = file.path(outputFolder, "log_conceptHierarchy.txt")))
+  }
+  
+  logger <- ParallelLogger::createLogger(name = "conceptHierarchy",
+                                         threshold = "INFO",
+                                         appenders = appenders)
+  ParallelLogger::registerLogger(logger) 
+  
+  # Initialize thread and scratchDatabaseSchema settings ----------------------------------------------------------------
+  
+  schemaDelim <- "."
+  
+  if (numThreads == 1 || scratchDatabaseSchema == "#") {
+    numThreads <- 1
+    
+    if (.supportsTempTables(connectionDetails)) {
+      scratchDatabaseSchema <- "#"
+      schemaDelim <- "s_"
+    }
+  }
+  
+  hierarchySqlFiles <- list.files(path = file.path(system.file(package = "Achilles"), 
+                                                   "sql", "sql_server", "post_processing", "concept_hierarchies"), 
+                                  recursive = TRUE, 
+                                  full.names = FALSE, 
+                                  all.files = FALSE,
+                                  pattern = "\\.sql$")
+  
+  hierarchySqls <- lapply(hierarchySqlFiles, function(hierarchySqlFile) {
+    sql <- SqlRender::loadRenderTranslateSql(sqlFilename = file.path("post_processing", 
+                                                                     "concept_hierarchies", 
+                                                                     hierarchySqlFile),
+                                             packageName = "Achilles",
+                                             dbms = connectionDetails$dbms,
+                                             warnOnMissingParameters = FALSE,
+                                             scratchDatabaseSchema = scratchDatabaseSchema,
+                                             oracleTempSchema = scratchDatabaseSchema,
+                                             vocabDatabaseSchema = vocabDatabaseSchema,
+                                             schemaDelim = schemaDelim,
+                                             tempAchillesPrefix = tempAchillesPrefix)
+  })
+  
+  mergeSql <- SqlRender::loadRenderTranslateSql(sqlFilename = file.path("post_processing", 
+                                                                        "merge_concept_hierarchy.sql"),
+                                                packageName = "Achilles",
+                                                dbms = connectionDetails$dbms,
+                                                warnOnMissingParameters = FALSE,
+                                                resultsDatabaseSchema = resultsDatabaseSchema,
+                                                scratchDatabaseSchema = scratchDatabaseSchema,
+                                                oracleTempSchema = scratchDatabaseSchema,
+                                                schemaDelim = schemaDelim,
+                                                tempAchillesPrefix = tempAchillesPrefix)
+  
+  
+  if (!sqlOnly) {
+    ParallelLogger::logInfo("Executing Concept Hierarchy creation. This could take a while")
+    
+    if (numThreads == 1) {
+      connection <- DatabaseConnector::connect(connectionDetails = connectionDetails)
+      for (sql in hierarchySqls) {
+        DatabaseConnector::executeSql(connection = connection, sql = sql)
+      }
+      DatabaseConnector::executeSql(connection = connection, sql = mergeSql)
+      DatabaseConnector::disconnect(connection = connection)
+    } else {
+      cluster <- ParallelLogger::makeCluster(numberOfThreads = numThreads, singleThreadToMain = TRUE)
+      dummy <- ParallelLogger::clusterApply(cluster = cluster, 
+                                            x = hierarchySqls, 
+                                            function(sql) {
+                                              connection <- DatabaseConnector::connect(connectionDetails = connectionDetails)
+                                              DatabaseConnector::executeSql(connection = connection, sql = sql)
+                                              DatabaseConnector::disconnect(connection = connection)
+                                            })
+      ParallelLogger::stopCluster(cluster = cluster)
+      
+      connection <- DatabaseConnector::connect(connectionDetails = connectionDetails)
+      DatabaseConnector::executeSql(connection = connection, sql = mergeSql)
+      DatabaseConnector::disconnect(connection = connection)
+    }
+    
+    dropAllScratchTables(connectionDetails = connectionDetails, 
+                         scratchDatabaseSchema = scratchDatabaseSchema, 
+                         tempAchillesPrefix = tempAchillesPrefix, 
+                         numThreads = numThreads,
+                         tableTypes = c("concept_hierarchy"),
+                         outputFolder = outputFolder)
+    
+    ParallelLogger::logInfo(sprintf("Done. Concept Hierarchy table can now be found in %s", resultsDatabaseSchema))  
+  }
+  
+  ParallelLogger::unregisterLogger("conceptHierarchy")
+  
+  invisible(c(hierarchySqls, mergeSql))
 }
 
 

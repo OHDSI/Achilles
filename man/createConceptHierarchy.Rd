@@ -35,7 +35,5 @@ Making this "#" will run Achilles in single-threaded mode and use temporary tabl
 (DEPRECATED) Create the concept hierarchy
 }
 \details{
-Post-processing, create the concept hierarchy.
-Please note: this table creation only requires the Vocabulary, not the CDM itself. 
-You could run this once for 1 Vocab version, and then copy the table to all CDMs using that Vocab.
+This function is no longer necessary for Atlas Data Sources, as its functionality is handled by WebAPI.
 }
