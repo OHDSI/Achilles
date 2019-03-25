@@ -1246,7 +1246,12 @@ dropAllScratchTables <- function(connectionDetails,
     logs[i,]$runTime <- .getRunTime(logs[i,]$comment)
   }
   
-  logs$runTime[logs$analysisId == analysisId]
+  logs <- logs[logs$analysisId == analysisId,]
+  if (nrow(logs) == 1) {
+    logs[1,]$runTime
+  } else {
+    "ERROR: check log files"
+  }
 }
 
 .formatName <- function(name) {
