@@ -2,7 +2,7 @@
 % Please edit documentation in R/Achilles.R
 \name{createConceptHierarchy}
 \alias{createConceptHierarchy}
-\title{Create the concept hierarchy}
+\title{(DEPRECATED) Create the concept hierarchy}
 \usage{
 createConceptHierarchy(connectionDetails, resultsDatabaseSchema,
   scratchDatabaseSchema, vocabDatabaseSchema, outputFolder,
@@ -32,10 +32,8 @@ Making this "#" will run Achilles in single-threaded mode and use temporary tabl
 \item{verboseMode}{Boolean to determine if the console will show all execution steps. Default = TRUE}
 }
 \description{
-Create the concept hierarchy
+(DEPRECATED) Create the concept hierarchy
 }
 \details{
-Post-processing, create the concept hierarchy.
-Please note: this table creation only requires the Vocabulary, not the CDM itself. 
-You could run this once for 1 Vocab version, and then copy the table to all CDMs using that Vocab.
+This function is no longer necessary for Atlas Data Sources, as its functionality is handled by WebAPI.
 }

@@ -1,8 +1,8 @@
 Package: Achilles
 Type: Package
 Title: Creates Descriptive Statistics Summary for an Entire OMOP CDM Instance
-Version: 1.6.5
-Date: 2019-02-19
+Version: 1.6.6
+Date: 2019-03-22
 Authors@R: c(
   person("Patrick", "Ryan", email = "ryan@ohdsi.org", role = c("aut", "cre")),
   person("Martijn", "Schuemie", email = "schuemie@ohdsi.org", role = c("aut")),
