@@ -260,7 +260,13 @@ achilles <- function (connectionDetails,
                            stratum5Name = analysisDetail["STRATUM_5_NAME"])$sql
     })  
     
-    sql <- SqlRender::loadRenderTranslateSql(sqlFilename = "analyses/create_analysis_table.sql", 
+    sqlFileName <- file.path("analyses_v5", "create_analysis_table.sql")
+    
+    if (cdmVersion >= 6) {
+      sqlFileName <- file.path("analyses_v6", "create_analysis_table.sql")
+    }
+    
+    sql <- SqlRender::loadRenderTranslateSql(sqlFilename = sqlFilename, 
                                              packageName = "Achilles", 
                                              dbms = connectionDetails$dbms,
                                              warnOnMissingParameters = FALSE,
