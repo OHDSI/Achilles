@@ -1,4 +1,4 @@
---
+-- 624
 -- For each procedure concept, compute the top 15 co-occurring procedure concepts.
 --
 
