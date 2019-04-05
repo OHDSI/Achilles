@@ -15,8 +15,10 @@ union
 select 'condition_occurrence'  as table_name, condition_source_value    as source_value, count_big(*) as cnt from @cdmDatabaseSchema.condition_occurrence where condition_concept_id = 0    group by condition_source_value 
 union
 select 'observation'           as table_name, observation_source_value  as source_value, count_big(*) as cnt from @cdmDatabaseSchema.observation          where observation_concept_id = 0  group by observation_source_value                  
+{@cdmVersion not in ('5', '5.0', '5.0.0', '5.1', '5.1.0', '5.2', '5.2.0')}?{
 union
 select 'visit_detail'          as table_name, visit_detail_source_value as source_value, count_big(*) as cnt from @cdmDatabaseSchema.visit_detail         where visit_detail_concept_id = 0 group by visit_detail_source_value
+}
 union
 select 'visit_occurrence'      as table_name, visit_source_value        as source_value, count_big(*) as cnt from @cdmDatabaseSchema.visit_occurrence     where visit_concept_id = 0        group by visit_source_value
 union
