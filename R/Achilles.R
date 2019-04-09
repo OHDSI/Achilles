@@ -266,7 +266,7 @@ achilles <- function (connectionDetails,
       sqlFileName <- file.path("analyses_v6", "create_analysis_table.sql")
     }
     
-    sql <- SqlRender::loadRenderTranslateSql(sqlFilename = sqlFilename, 
+    sql <- SqlRender::loadRenderTranslateSql(sqlFilename = sqlFileName, 
                                              packageName = "Achilles", 
                                              dbms = connectionDetails$dbms,
                                              warnOnMissingParameters = FALSE,
