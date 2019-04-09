@@ -39,8 +39,7 @@ select t1.drug_concept_id concept_id_1,
 having count(distinct t1.person_id) >= 1000 
        ) tmp
        ) tmp
- where rnk <= 15
- order by 1;
+ where rnk <= 15;
 
 truncate table #unique_pairs_724;
 drop table #unique_pairs_724;
