@@ -22,6 +22,8 @@ select 724 as analysis_id,
        cast(concept_id_1 as varchar(255)) as stratum_1,
 	   cast(concept_id_2 as varchar(255)) as stratum_2,
 	   cast(ranking      as varchar(255)) as stratum_3,
+	   cast(null         as varchar(255)) as stratum_4,
+       cast(null         as varchar(255)) as stratum_5,
 	   num_people        as count_value		
   into @scratchDatabaseSchema@schemaDelim@tempAchillesPrefix_724
   from (
@@ -39,7 +41,7 @@ select t1.drug_concept_id concept_id_1,
 having count(distinct t1.person_id) >= 1000 
        ) tmp
        ) tmp
- where rnk <= 15;
+ where ranking <= 15;
 
 truncate table #unique_pairs_724;
 drop table #unique_pairs_724;
