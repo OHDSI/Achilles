@@ -176,11 +176,12 @@ achilles <- function (connectionDetails,
                               resultsDatabaseSchema = resultsDatabaseSchema)$sql
   sql <- SqlRender::translateSql(sql = sql, targetDialect = connectionDetails$dbms)$sql
   
-  cohortTableExists <- TRUE
-  tryCatch({
-    dummy <- DatabaseConnector::querySql(connection = connection, sql = sql)
+  cohortTableExists <- tryCatch({
+  	dummy <- DatabaseConnector::querySql(connection = connection, sql = sql)
+  	TRUE
   }, error = function(e) {
-    cohortTableExists <- FALSE
+  	ParallelLogger::logWarn("Cohort table not found, will skip analyses 1700 and 1701")
+  	FALSE
   })
   DatabaseConnector::disconnect(connection = connection)
   
@@ -266,7 +267,7 @@ achilles <- function (connectionDetails,
       sqlFileName <- file.path("analyses_v6", "create_analysis_table.sql")
     }
     
-    sql <- SqlRender::loadRenderTranslateSql(sqlFilename = sqlFilename, 
+    sql <- SqlRender::loadRenderTranslateSql(sqlFilename = sqlFileName, 
                                              packageName = "Achilles", 
                                              dbms = connectionDetails$dbms,
                                              warnOnMissingParameters = FALSE,
