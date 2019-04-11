@@ -17,7 +17,7 @@ with rawData(stratum_id, count_value) as
     where O.observation_concept_id = 4306655 -- death concept id  
     group by O.person_id
   ) D
-  on P.person_id = d1.person_id
+  on P.person_id = D.person_id
 ),
 overallStats (stratum_id, avg_value, stdev_value, min_value, max_value, total) as
 (
