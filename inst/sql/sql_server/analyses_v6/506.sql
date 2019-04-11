@@ -5,7 +5,8 @@
 with rawData(stratum_id, count_value) as
 (
  select 
-    P.gender_concept_id,
+    P.gender_concept_id, 
+    P.person_id,
     D.death_year - P.year_of_birth as count_value
   from @cdmDatabaseSchema.person P
   join
