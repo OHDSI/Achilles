@@ -171,7 +171,8 @@ achilles <- function (connectionDetails,
   # Check if cohort table is present ---------------------------------------------------------------------------------------------
   
   connection <- DatabaseConnector::connect(connectionDetails = connectionDetails)
-  sql <- SqlRender::renderSql("select * from @resultsDatabaseSchema.cohort limit 1", 
+  
+  sql <- SqlRender::renderSql("select top 1 * from @resultsDatabaseSchema.cohort", 
                               resultsDatabaseSchema = resultsDatabaseSchema)$sql
   sql <- SqlRender::translateSql(sql = sql, targetDialect = connectionDetails$dbms)$sql
   
