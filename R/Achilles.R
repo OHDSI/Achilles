@@ -174,7 +174,7 @@ achilles <- function (connectionDetails,
   
   sql <- SqlRender::renderSql("select top 1 * from @resultsDatabaseSchema.cohort;", 
                               resultsDatabaseSchema = resultsDatabaseSchema)$sql
-  sql <- SqlRender::translate(sql = sql, targetDialect = connectionDetails$dbms)$sql
+  sql <- SqlRender::translateSql(sql = sql, targetDialect = connectionDetails$dbms)$sql
   
   cohortTableExists <- tryCatch({
   	dummy <- DatabaseConnector::querySql(connection = connection, sql = sql)
@@ -853,7 +853,7 @@ createIndices <- function(connectionDetails,
   
   sql <- SqlRender::renderSql("select top 1 * from @resultsDatabaseSchema.concept_hierarchy;", 
                               resultsDatabaseSchema = resultsDatabaseSchema)$sql
-  sql <- SqlRender::translate(sql = sql, targetDialect = connectionDetails$dbms)$sql
+  sql <- SqlRender::translateSql(sql = sql, targetDialect = connectionDetails$dbms)$sql
   
   connection <- DatabaseConnector::connect(connectionDetails = connectionDetails)
   conceptHierarchyTableExists <- tryCatch({
@@ -872,7 +872,7 @@ createIndices <- function(connectionDetails,
     sql <- SqlRender::renderSql(sql = "drop index @resultsDatabaseSchema.@indexName;",
                                 resultsDatabaseSchema = resultsDatabaseSchema,
                                 indexName = indices[i,]$INDEX_NAME)$sql
-    sql <- SqlRender::translate(sql = sql, targetDialect = connectionDetails$dbms)$sql
+    sql <- SqlRender::translateSql(sql = sql, targetDialect = connectionDetails$dbms)$sql
     dropIndicesSql <- c(dropIndicesSql, sql)
     
     sql <- SqlRender::renderSql(sql = "create index @indexName on @resultsDatabaseSchema.@tableName (@fields);",
@@ -880,7 +880,7 @@ createIndices <- function(connectionDetails,
                                 tableName = indices[i,]$TABLE_NAME,
                                 indexName = indices[i,]$INDEX_NAME,
                                 fields = paste(strsplit(x = indices[i,]$FIELDS, split = "~")[[1]], collapse = ","))$sql
-    sql <- SqlRender::translate(sql = sql, targetDialect = connectionDetails$dbms)$sql
+    sql <- SqlRender::translateSql(sql = sql, targetDialect = connectionDetails$dbms)$sql
     indicesSql <- c(indicesSql, sql)
   }
   
@@ -1052,7 +1052,7 @@ dropAllScratchTables <- function(connectionDetails,
       sql <- SqlRender::renderSql("IF OBJECT_ID('@scratchDatabaseSchema.@scratchTable', 'U') IS NOT NULL DROP TABLE @scratchDatabaseSchema.@scratchTable;", 
                                   scratchDatabaseSchema = scratchDatabaseSchema,
                                   scratchTable = scratchTable)$sql
-      sql <- SqlRender::translate(sql = sql, targetDialect = connectionDetails$dbms)$sql
+      sql <- SqlRender::translateSql(sql = sql, targetDialect = connectionDetails$dbms)$sql
     })
     
     cluster <- OhdsiRTools::makeCluster(numberOfThreads = numThreads, singleThreadToMain = TRUE)
@@ -1090,7 +1090,7 @@ dropAllScratchTables <- function(connectionDetails,
       sql <- SqlRender::renderSql("IF OBJECT_ID('@scratchDatabaseSchema.@scratchTable', 'U') IS NOT NULL DROP TABLE @scratchDatabaseSchema.@scratchTable;", 
                            scratchDatabaseSchema = scratchDatabaseSchema,
                            scratchTable = scratchTable)$sql
-      sql <- SqlRender::translate(sql = sql, targetDialect = connectionDetails$dbms)$sql
+      sql <- SqlRender::translateSql(sql = sql, targetDialect = connectionDetails$dbms)$sql
     })
     
     cluster <- OhdsiRTools::makeCluster(numberOfThreads = numThreads, singleThreadToMain = TRUE)
@@ -1128,7 +1128,7 @@ dropAllScratchTables <- function(connectionDetails,
       sql <- SqlRender::renderSql("IF OBJECT_ID('@scratchDatabaseSchema.@scratchTable', 'U') IS NOT NULL DROP TABLE @scratchDatabaseSchema.@scratchTable;", 
                            scratchDatabaseSchema = scratchDatabaseSchema,
                            scratchTable = scratchTable)$sql
-      sql <- SqlRender::translate(sql = sql, targetDialect = connectionDetails$dbms)$sql
+      sql <- SqlRender::translateSql(sql = sql, targetDialect = connectionDetails$dbms)$sql
     })
     
     cluster <- OhdsiRTools::makeCluster(numberOfThreads = numThreads, singleThreadToMain = TRUE)
@@ -1155,7 +1155,7 @@ dropAllScratchTables <- function(connectionDetails,
                            cdmDatabaseSchema) {
   sql <- SqlRender::renderSql(sql = "select top 1 cdm_version from @cdmDatabaseSchema.cdm_source;",
                               cdmDatabaseSchema = cdmDatabaseSchema)$sql
-  sql <- SqlRender::translate(sql = sql, targetDialect = connectionDetails$dbms)$sql
+  sql <- SqlRender::translateSql(sql = sql, targetDialect = connectionDetails$dbms)$sql
   connection <- DatabaseConnector::connect(connectionDetails = connectionDetails)
   cdmVersion <- tryCatch({
     c <- tolower((DatabaseConnector::querySql(connection = connection, sql = sql))[1,])
@@ -1232,7 +1232,7 @@ dropAllScratchTables <- function(connectionDetails,
                                                     tablePrefix = resultsTable$tablePrefix, 
                                                     analysisId = analysisId)$sql
   
-                  sql <- SqlRender::translate(sql = sql, targetDialect = connectionDetails$dbms)$sql
+                  sql <- SqlRender::translateSql(sql = sql, targetDialect = connectionDetails$dbms)$sql
   })
   
   SqlRender::loadRenderTranslateSql(sqlFilename = "analyses/merge_achilles_tables.sql",
@@ -1252,7 +1252,7 @@ dropAllScratchTables <- function(connectionDetails,
                            cdmDatabaseSchema) {
   sql <- SqlRender::renderSql(sql = "select cdm_source_name from @cdmDatabaseSchema.cdm_source",
                               cdmDatabaseSchema = cdmDatabaseSchema)$sql
-  sql <- SqlRender::translate(sql = sql, targetDialect = connectionDetails$dbms)$sql
+  sql <- SqlRender::translateSql(sql = sql, targetDialect = connectionDetails$dbms)$sql
   connection <- DatabaseConnector::connect(connectionDetails = connectionDetails)
   sourceName <- tryCatch({
     s <- DatabaseConnector::querySql(connection = connection, sql = sql)
@@ -1277,7 +1277,7 @@ dropAllScratchTables <- function(connectionDetails,
     sql <- SqlRender::renderSql(sql = "delete from @resultsDatabaseSchema.achilles_results where analysis_id in (@analysisIds);",
                                 resultsDatabaseSchema = resultsDatabaseSchema,
                                 analysisIds = paste(resultIds, collapse = ","))$sql  
-    sql <- SqlRender::translate(sql = sql, targetDialect = connectionDetails$dbms)$sql
+    sql <- SqlRender::translateSql(sql = sql, targetDialect = connectionDetails$dbms)$sql
     connection <- DatabaseConnector::connect(connectionDetails = connectionDetails)
     DatabaseConnector::executeSql(connection = connection, sql = sql)
     DatabaseConnector::disconnect(connection = connection)
@@ -1287,7 +1287,7 @@ dropAllScratchTables <- function(connectionDetails,
     sql <- SqlRender::renderSql(sql = "delete from @resultsDatabaseSchema.achilles_results_dist where analysis_id in (@analysisIds);",
                                 resultsDatabaseSchema = resultsDatabaseSchema,
                                 analysisIds = paste(distIds, collapse = ","))$sql
-    sql <- SqlRender::translate(sql = sql, targetDialect = connectionDetails$dbms)$sql
+    sql <- SqlRender::translateSql(sql = sql, targetDialect = connectionDetails$dbms)$sql
     connection <- DatabaseConnector::connect(connectionDetails = connectionDetails)
     DatabaseConnector::executeSql(connection = connection, sql = sql)
     DatabaseConnector::disconnect(connection = connection)
