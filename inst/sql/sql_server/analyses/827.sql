@@ -1,4 +1,4 @@
--- 827	Number of measurement records, by unit_concept_id
+-- 827	Number of observation records, by unit_concept_id
 
 --HINT DISTRIBUTE_ON_KEY(stratum_1)
 select 827 as analysis_id, 
