@@ -850,7 +850,7 @@ createIndices <- function(connectionDetails,
   
   # Check if concept_hierarchy table exists ------------------------------------------------------------------
   
-  sql <- SqlRender::renderSql("select * from @resultsDatabaseSchema.concept_hierarchy limit 1;", 
+  sql <- SqlRender::renderSql("select top 1 * from @resultsDatabaseSchema.concept_hierarchy;", 
                               resultsDatabaseSchema = resultsDatabaseSchema)$sql
   sql <- SqlRender::translateSql(sql = sql, targetDialect = connectionDetails$dbms)$sql
   
@@ -1152,7 +1152,7 @@ dropAllScratchTables <- function(connectionDetails,
 
 .getCdmVersion <- function(connectionDetails, 
                            cdmDatabaseSchema) {
-  sql <- SqlRender::renderSql(sql = "select cdm_version from @cdmDatabaseSchema.cdm_source limit 1;",
+  sql <- SqlRender::renderSql(sql = "select top 1 cdm_version from @cdmDatabaseSchema.cdm_source;",
                               cdmDatabaseSchema = cdmDatabaseSchema)$sql
   sql <- SqlRender::translateSql(sql = sql, targetDialect = connectionDetails$dbms)$sql
   connection <- DatabaseConnector::connect(connectionDetails = connectionDetails)
