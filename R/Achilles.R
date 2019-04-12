@@ -172,7 +172,7 @@ achilles <- function (connectionDetails,
   
   connection <- DatabaseConnector::connect(connectionDetails = connectionDetails)
   
-  sql <- SqlRender::renderSql("select top 1 * from @resultsDatabaseSchema.cohort", 
+  sql <- SqlRender::renderSql("select top 1 * from @resultsDatabaseSchema.cohort;", 
                               resultsDatabaseSchema = resultsDatabaseSchema)$sql
   sql <- SqlRender::translateSql(sql = sql, targetDialect = connectionDetails$dbms)$sql
   
