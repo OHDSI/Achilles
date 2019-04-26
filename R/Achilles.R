@@ -51,6 +51,7 @@
 #' @param runHeel                          Boolean to determine if Achilles Heel data quality reporting will be produced based on the summary statistics.  Default = TRUE
 #' @param validateSchema                   Boolean to determine if CDM Schema Validation should be run. Default = FALSE
 #' @param runCostAnalysis                  Boolean to determine if cost analysis should be run. Note: only works on v5.1+ style cost tables.
+#' @param runLocationAnalysis              Boolean to determine if location analysis should be run. Note: only works on v6.1+ style location tables.
 #' @param createIndices                    Boolean to determine if indices should be created on the resulting Achilles and concept_hierarchy table. Default= TRUE
 #' @param numThreads                       (OPTIONAL, multi-threaded mode) The number of threads to use to run Achilles in parallel. Default is 1 thread.
 #' @param tempAchillesPrefix               (OPTIONAL, multi-threaded mode) The prefix to use for the scratch Achilles analyses tables. Default is "tmpach"
@@ -71,7 +72,8 @@
 #'                                             scratchDatabaseSchema="scratch",
 #'                                             sourceName="Some Source", 
 #'                                             cdmVersion = "5.3", 
-#'                                             runCostAnalysis = TRUE, 
+#'                                             runCostAnalysis = TRUE,
+#'                                             runLocationAnalysis = FALSE,
 #'                                             numThreads = 10,
 #'                                             outputFolder = "output")
 #'                                         }
@@ -89,6 +91,7 @@ achilles <- function (connectionDetails,
                       runHeel = TRUE,
                       validateSchema = FALSE,
                       runCostAnalysis = FALSE,
+                      runLocationAnalysis = FALSE,
                       createIndices = TRUE,
                       numThreads = 1,
                       tempAchillesPrefix = "tmpach",
@@ -178,6 +181,10 @@ achilles <- function (connectionDetails,
   
   if (!runCostAnalysis) {
     analysisDetails <- analysisDetails[analysisDetails$COST == 0, ]
+  }
+
+  if (!runLocationAnalysis) {
+    analysisDetails <- analysisDetails[analysisDetails$LOCATION == 0, ]
   }
   
   # Check if cohort table is present ---------------------------------------------------------------------------------------------
