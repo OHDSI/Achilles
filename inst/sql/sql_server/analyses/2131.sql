@@ -24,7 +24,7 @@ select *,
        1.0*sum(count_value)over(
 	            partition by device_concept_id 
 				    order by lookforward_days 
-	                 rows between current row and unbounded following)/sum(count_value)over() as proportion       
+	                 rows between current row and unbounded following)/sum(count_value)over(partition by device_concept_id) as proportion       
   from lookforward
 )
 -- To avoid flooding Achilles, limit look forward days to the Atlas defaults

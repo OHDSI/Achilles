@@ -24,7 +24,7 @@ select *,
        1.0*sum(count_value)over(
 	            partition by observation_concept_id 
 				    order by lookback_days 
-	                 rows between current row and unbounded following)/sum(count_value)over() as proportion       
+	                 rows between current row and unbounded following)/sum(count_value)over(partition by observation_concept_id) as proportion       
   from lookback
 )
 -- To avoid flooding Achilles, limit look back days to the Atlas defaults
