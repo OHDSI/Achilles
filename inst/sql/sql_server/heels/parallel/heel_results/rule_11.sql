@@ -21,7 +21,7 @@ from
   WHERE or1.analysis_id IN (301)
   	AND or1.stratum_1 IS NOT NULL
   	AND c1.concept_id <> 0 
-    AND lower(c1.domain_id) NOT IN ('provider specialty')
+    AND lower(c1.domain_id) NOT IN ('provider')
   GROUP BY or1.analysis_id,
   	oa1.analysis_name
 ) A;
