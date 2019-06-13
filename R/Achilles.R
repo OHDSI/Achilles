@@ -1162,7 +1162,7 @@ dropAllScratchTables <- function(connectionDetails,
 }
 
 .supportsTempTables <- function(connectionDetails) {
-    !(connectionDetails$dbms %in% c("bigquery"))
+    !(connectionDetails$dbms %in% c("bigquery", "impala"))
 }
 
 .getAnalysisSql <- function(analysisId, 
