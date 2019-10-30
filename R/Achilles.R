@@ -201,6 +201,10 @@ achilles <- function (connectionDetails,
     analysisDetails <- analysisDetails[!analysisDetails$ANALYSIS_ID %in% c(1700,1701),]
   }
   
+  if (cdmVersion < "5.3") { 
+    analysisDetails <- analysisDetails[!analysisDetails$ANALYSIS_ID == 1425,]
+  }
+  
   resultsTables <- list(
     list(detailType = "results",
                   tablePrefix = tempAchillesPrefix, 
