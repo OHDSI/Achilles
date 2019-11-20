@@ -257,7 +257,8 @@ achilles <- function (connectionDetails,
   ## Remove existing results if createTable is FALSE ----------------------------------------------------------------
   
   if (!createTable) {
-    .deleteExistingResults(connectionDetails = connectionDetails, 
+    .deleteExistingResults(connectionDetails = connectionDetails,
+                           resultsDatabaseSchema = resultsDatabaseSchema,
                            analysisDetails = analysisDetails)  
   }
   
@@ -1311,6 +1312,7 @@ dropAllScratchTables <- function(connectionDetails,
 }
 
 .deleteExistingResults <- function(connectionDetails,
+                                   resultsDatabaseSchema,
                                    analysisDetails) {
   
   
