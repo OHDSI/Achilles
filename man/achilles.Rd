@@ -7,7 +7,8 @@
 achilles(connectionDetails, cdmDatabaseSchema,
   resultsDatabaseSchema = cdmDatabaseSchema,
   scratchDatabaseSchema = resultsDatabaseSchema,
-  vocabDatabaseSchema = cdmDatabaseSchema, sourceName = "",
+  vocabDatabaseSchema = cdmDatabaseSchema,
+  oracleTempSchema = resultsDatabaseSchema, sourceName = "",
   analysisIds, createTable = TRUE, smallCellCount = 5,
   cdmVersion = "5", runHeel = TRUE, validateSchema = FALSE,
   runCostAnalysis = FALSE, createIndices = TRUE, numThreads = 1,
@@ -29,6 +30,8 @@ Must be accessible to/from the cdmDatabaseSchema and the resultsDatabaseSchema. 
 Making this "#" will run Achilles in single-threaded mode and use temporary tables instead of permanent tables.}
 
 \item{vocabDatabaseSchema}{String name of database schema that contains OMOP Vocabulary. Default is cdmDatabaseSchema. On SQL Server, this should specifiy both the database and the schema, so for example 'results.dbo'.}
+
+\item{oracleTempSchema}{For Oracle only: the name of the database schema where you want all temporary tables to be managed. Requires create/insert permissions to this database.}
 
 \item{sourceName}{String name of the data source name. If blank, CDM_SOURCE table will be queried to try to obtain this.}
 

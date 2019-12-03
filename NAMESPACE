@@ -3,7 +3,6 @@
 export(achilles)
 export(achillesHeel)
 export(addDataSource)
-export(createConceptHierarchy)
 export(createIndices)
 export(dropAllScratchTables)
 export(exportConditionEraToJson)

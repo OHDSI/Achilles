@@ -42,6 +42,7 @@
 #'                                         Must be accessible to/from the cdmDatabaseSchema and the resultsDatabaseSchema. Default is resultsDatabaseSchema. 
 #'                                         Making this "#" will run Achilles in single-threaded mode and use temporary tables instead of permanent tables.
 #' @param vocabDatabaseSchema		           String name of database schema that contains OMOP Vocabulary. Default is cdmDatabaseSchema. On SQL Server, this should specifiy both the database and the schema, so for example 'results.dbo'.
+#' @param oracleTempSchema                 For Oracle only: the name of the database schema where you want all temporary tables to be managed. Requires create/insert permissions to this database. 
 #' @param sourceName		                   String name of the data source name. If blank, CDM_SOURCE table will be queried to try to obtain this.
 #' @param analysisIds		                   (OPTIONAL) A vector containing the set of Achilles analysisIds for which results will be generated. 
 #'                                         If not specified, all analyses will be executed. Use \code{\link{getAnalysisDetails}} to get a list of all Achilles analyses and their Ids.
@@ -81,6 +82,7 @@ achilles <- function (connectionDetails,
                       resultsDatabaseSchema = cdmDatabaseSchema, 
                       scratchDatabaseSchema = resultsDatabaseSchema,
                       vocabDatabaseSchema = cdmDatabaseSchema,
+                      oracleTempSchema = resultsDatabaseSchema,
                       sourceName = "", 
                       analysisIds, 
                       createTable = TRUE,
@@ -189,9 +191,10 @@ achilles <- function (connectionDetails,
   sql <- SqlRender::translate(sql = sql, targetDialect = connectionDetails$dbms)
   
   cohortTableExists <- tryCatch({
-    dummy <- DatabaseConnector::querySql(connection = connection, sql = sql)
+    dummy <- DatabaseConnector::querySql(connection = connection, sql = sql, errorReportFile = "cohortTableNotExist.sql")
     TRUE
   }, error = function(e) {
+    unlink("cohortTableNotExist.sql")
     ParallelLogger::logWarn("Cohort table not found, will skip analyses 1700 and 1701")
     FALSE
   })
@@ -347,7 +350,7 @@ achilles <- function (connectionDetails,
                                                 warnOnMissingParameters = FALSE,
                                                 cdmDatabaseSchema = cdmDatabaseSchema,
                                                 scratchDatabaseSchema = scratchDatabaseSchema,
-                                                oracleTempSchema = scratchDatabaseSchema,
+                                                oracleTempSchema = oracleTempSchema,
                                                 schemaDelim = schemaDelim,
                                                 tempAchillesPrefix = tempAchillesPrefix,
                                                 domainId = domainId,
@@ -405,7 +408,7 @@ achilles <- function (connectionDetails,
                                                            schemaDelim = schemaDelim,
                                                            cdmDatabaseSchema = cdmDatabaseSchema,
                                                            scratchDatabaseSchema = scratchDatabaseSchema,
-                                                           oracleTempSchema = scratchDatabaseSchema,
+                                                           oracleTempSchema = oracleTempSchema,
                                                            costColumn = drugCostMappings[drugCostMappings$OLD == analysisDetail["DISTRIBUTED_FIELD"][[1]], ]$CURRENT,
                                                            domainId = "Drug",
                                                            domainTable = "drug_exposure", 
@@ -426,7 +429,7 @@ achilles <- function (connectionDetails,
                                                            schemaDelim = schemaDelim,
                                                            cdmDatabaseSchema = cdmDatabaseSchema,
                                                            scratchDatabaseSchema = scratchDatabaseSchema,
-                                                           oracleTempSchema = scratchDatabaseSchema,
+                                                           oracleTempSchema = oracleTempSchema,
                                                            costColumn = procedureCostMappings[procedureCostMappings$OLD == analysisDetail["DISTRIBUTED_FIELD"][[1]], ]$CURRENT,
                                                            domainId = "Procedure",
                                                            domainTable = "procedure_occurrence", 
@@ -490,6 +493,7 @@ achilles <- function (connectionDetails,
                                scratchDatabaseSchema = scratchDatabaseSchema,
                                cdmDatabaseSchema = cdmDatabaseSchema,
                                resultsDatabaseSchema = resultsDatabaseSchema,
+                               oracleTempSchema = oracleTempSchema,
                                cdmVersion = cdmVersion,
                                tempAchillesPrefix = tempAchillesPrefix,
                                resultsTables = resultsTables,
@@ -680,141 +684,6 @@ achilles <- function (connectionDetails,
   class(achillesResults) <- "achillesResults"
   
   invisible(achillesResults)
-}
-
-#' (DEPRECATED) Create the concept hierarchy
-#' 
-#' @details 
-#' This function is no longer necessary for Atlas Data Sources, as its functionality is handled by WebAPI.
-#' 
-#' @param connectionDetails                An R object of type \code{connectionDetails} created using the function \code{createConnectionDetails} in the \code{DatabaseConnector} package.
-#' @param resultsDatabaseSchema		         Fully qualified name of database schema that we can write final results to. Default is cdmDatabaseSchema. 
-#'                                         On SQL Server, this should specifiy both the database and the schema, so for example, on SQL Server, 'cdm_results.dbo'.
-#' @param scratchDatabaseSchema            Fully qualified name of the database schema that will store all of the intermediate scratch tables, so for example, on SQL Server, 'cdm_scratch.dbo'. 
-#'                                         Must be accessible to/from the cdmDatabaseSchema and the resultsDatabaseSchema. Default is resultsDatabaseSchema. 
-#'                                         Making this "#" will run Achilles in single-threaded mode and use temporary tables instead of permanent tables.
-#' @param vocabDatabaseSchema		           String name of database schema that contains OMOP Vocabulary. Default is cdmDatabaseSchema. On SQL Server, this should specifiy both the database and the schema, so for example 'results.dbo'.
-#' @param outputFolder                     Path to store logs and SQL files
-#' @param numThreads                       (OPTIONAL, multi-threaded mode) The number of threads to use to run Achilles in parallel. Default is 1 thread.
-#' @param tempAchillesPrefix               (OPTIONAL, multi-threaded mode) The prefix to use for the scratch Achilles analyses tables. Default is "tmpach"
-#' @param sqlOnly                          TRUE = just generate SQL files, don't actually run, FALSE = run Achilles
-#' @param verboseMode                      Boolean to determine if the console will show all execution steps. Default = TRUE 
-#' 
-#' @export
-createConceptHierarchy <- function(connectionDetails, 
-                                   resultsDatabaseSchema,
-                                   scratchDatabaseSchema,
-                                   vocabDatabaseSchema,
-                                   outputFolder,
-                                   numThreads = 1,
-                                   tempAchillesPrefix = "tmpach",
-                                   sqlOnly = FALSE,
-                                   verboseMode = TRUE) {
-  
-  .Deprecated(msg = "'createConceptHierarchy' will be removed in the next version of Achilles. The concept_hierarchy table creation is now handled in Atlas.")
-  
-  # Log execution --------------------------------------------------------------------------------------------------------------------
-  
-  unlink(file.path(outputFolder, "log_conceptHierarchy.txt"))
-  if (verboseMode) {
-    appenders <- list(ParallelLogger::createConsoleAppender(),
-                      ParallelLogger::createFileAppender(layout = ParallelLogger::layoutParallel, 
-                                                         fileName = file.path(outputFolder, "log_conceptHierarchy.txt")))    
-  } else {
-    appenders <- list(ParallelLogger::createFileAppender(layout = ParallelLogger::layoutParallel, 
-                                                         fileName = file.path(outputFolder, "log_conceptHierarchy.txt")))
-  }
-  
-  logger <- ParallelLogger::createLogger(name = "conceptHierarchy",
-                                         threshold = "INFO",
-                                         appenders = appenders)
-  ParallelLogger::registerLogger(logger) 
-  
-  # Initialize thread and scratchDatabaseSchema settings ----------------------------------------------------------------
-  
-  schemaDelim <- "."
-  
-  if (numThreads == 1 || scratchDatabaseSchema == "#") {
-    numThreads <- 1
-    
-    if (.supportsTempTables(connectionDetails)) {
-      scratchDatabaseSchema <- "#"
-      schemaDelim <- "s_"
-    }
-  }
-  
-  hierarchySqlFiles <- list.files(path = file.path(system.file(package = "Achilles"), 
-                                                   "sql", "sql_server", "post_processing", "concept_hierarchies"), 
-                                  recursive = TRUE, 
-                                  full.names = FALSE, 
-                                  all.files = FALSE,
-                                  pattern = "\\.sql$")
-  
-  hierarchySqls <- lapply(hierarchySqlFiles, function(hierarchySqlFile) {
-    sql <- SqlRender::loadRenderTranslateSql(sqlFilename = file.path("post_processing", 
-                                                                     "concept_hierarchies", 
-                                                                     hierarchySqlFile),
-                                             packageName = "Achilles",
-                                             dbms = connectionDetails$dbms,
-                                             warnOnMissingParameters = FALSE,
-                                             scratchDatabaseSchema = scratchDatabaseSchema,
-                                             oracleTempSchema = scratchDatabaseSchema,
-                                             vocabDatabaseSchema = vocabDatabaseSchema,
-                                             schemaDelim = schemaDelim,
-                                             tempAchillesPrefix = tempAchillesPrefix)
-  })
-  
-  mergeSql <- SqlRender::loadRenderTranslateSql(sqlFilename = file.path("post_processing", 
-                                                                        "merge_concept_hierarchy.sql"),
-                                                packageName = "Achilles",
-                                                dbms = connectionDetails$dbms,
-                                                warnOnMissingParameters = FALSE,
-                                                resultsDatabaseSchema = resultsDatabaseSchema,
-                                                scratchDatabaseSchema = scratchDatabaseSchema,
-                                                oracleTempSchema = scratchDatabaseSchema,
-                                                schemaDelim = schemaDelim,
-                                                tempAchillesPrefix = tempAchillesPrefix)
-  
-  
-  if (!sqlOnly) {
-    ParallelLogger::logInfo("Executing Concept Hierarchy creation. This could take a while")
-    
-    if (numThreads == 1) {
-      connection <- DatabaseConnector::connect(connectionDetails = connectionDetails)
-      for (sql in hierarchySqls) {
-        DatabaseConnector::executeSql(connection = connection, sql = sql)
-      }
-      DatabaseConnector::executeSql(connection = connection, sql = mergeSql)
-      DatabaseConnector::disconnect(connection = connection)
-    } else {
-      cluster <- ParallelLogger::makeCluster(numberOfThreads = numThreads, singleThreadToMain = TRUE)
-      dummy <- ParallelLogger::clusterApply(cluster = cluster, 
-                                            x = hierarchySqls, 
-                                            function(sql) {
-                                              connection <- DatabaseConnector::connect(connectionDetails = connectionDetails)
-                                              DatabaseConnector::executeSql(connection = connection, sql = sql)
-                                              DatabaseConnector::disconnect(connection = connection)
-                                            })
-      ParallelLogger::stopCluster(cluster = cluster)
-      
-      connection <- DatabaseConnector::connect(connectionDetails = connectionDetails)
-      DatabaseConnector::executeSql(connection = connection, sql = mergeSql)
-      DatabaseConnector::disconnect(connection = connection)
-    }
-    
-    dropAllScratchTables(connectionDetails = connectionDetails, 
-                         scratchDatabaseSchema = scratchDatabaseSchema, 
-                         tempAchillesPrefix = tempAchillesPrefix, 
-                         numThreads = numThreads,
-                         tableTypes = c("concept_hierarchy"),
-                         outputFolder = outputFolder)
-    
-    ParallelLogger::logInfo(sprintf("Done. Concept Hierarchy table can now be found in %s", resultsDatabaseSchema))  
-  }
-  
-  ParallelLogger::unregisterLogger("conceptHierarchy")
-  
-  invisible(c(hierarchySqls, mergeSql))
 }
 
 
@@ -1176,6 +1045,7 @@ dropAllScratchTables <- function(connectionDetails,
                             scratchDatabaseSchema,
                             cdmDatabaseSchema,
                             resultsDatabaseSchema,
+                            oracleTempSchema,
                             cdmVersion,
                             tempAchillesPrefix, 
                             resultsTables,
@@ -1192,7 +1062,7 @@ dropAllScratchTables <- function(connectionDetails,
                                          resultsDatabaseSchema = resultsDatabaseSchema,
                                          schemaDelim = schemaDelim,
                                          tempAchillesPrefix = tempAchillesPrefix,
-                                         oracleTempSchema = scratchDatabaseSchema,
+                                         oracleTempSchema = oracleTempSchema,
                                          source_name = sourceName,
                                          achilles_version = packageVersion(pkg = "Achilles"),
                                          cdmVersion = cdmVersion,
@@ -1205,7 +1075,7 @@ dropAllScratchTables <- function(connectionDetails,
                                         connectionDetails,
                                         schemaDelim,
                                         scratchDatabaseSchema,
-                                        resultsDatabaseSchema, 
+                                        resultsDatabaseSchema,
                                         cdmVersion,
                                         tempAchillesPrefix,
                                         numThreads,
