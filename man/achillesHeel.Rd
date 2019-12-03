@@ -7,6 +7,7 @@
 achillesHeel(connectionDetails, cdmDatabaseSchema,
   resultsDatabaseSchema = cdmDatabaseSchema,
   scratchDatabaseSchema = resultsDatabaseSchema,
+  oracleTempSchema = scratchDatabaseSchema,
   vocabDatabaseSchema = cdmDatabaseSchema, cdmVersion = "5",
   numThreads = 1, tempHeelPrefix = "tmpheel",
   dropScratchTables = FALSE, ThresholdAgeWarning = 125,
@@ -23,6 +24,8 @@ achillesHeel(connectionDetails, cdmDatabaseSchema,
 so for example 'results.dbo'.}
 
 \item{scratchDatabaseSchema}{(OPTIONAL, multi-threaded mode) Name of a fully qualified schema that is accessible to/from the resultsDatabaseSchema, that can store all of the scratch tables. Default is resultsDatabaseSchema.}
+
+\item{oracleTempSchema}{For Oracle only: the name of the database schema where you want all temporary tables to be managed. Requires create/insert permissions to this database.}
 
 \item{vocabDatabaseSchema}{String name of database schema that contains OMOP Vocabulary. Default is cdmDatabaseSchema. On SQL Server, this should specifiy both the database and the schema, so for example 'results.dbo'.}
 
