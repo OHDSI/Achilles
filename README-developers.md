@@ -6,7 +6,7 @@ If you are interested in adding or modifying Achilles/Heel analyses, this is the
 
 2. All analysis queries must be optimized for MPP systems by including a hashing hint. Generally, this is person_id or subject_id, or whichever field offers a useful index. Please refer to the DatabaseConnector package for more information.
 
-3. Main Achilles analyses (pre-computed aggregated stats about the data source) are stored in inst/analyses, Heel analyses (data quality checks about those aggregated stats) are stored in *inst/sql/sql_server/heels*, and export to JSON scripts are stored in *inst/sql/sql_server/exports*. Any post-processing activities such as index building and concept hierarchy table creation are stored in *inst/sql/sql_server/post_processing*.
+3. Main Achilles analyses (pre-computed aggregated stats about the data source) are stored in inst/analyses, Heel analyses (data quality checks about those aggregated stats) are stored in *inst/sql/sql_server/heels*, and export to JSON scripts are stored in *inst/sql/sql_server/exports*. Any post-processing activities such as index building are stored in *inst/sql/sql_server/post_processing*.
 
 ## Achilles Main Analyses
 

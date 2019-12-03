@@ -52,16 +52,13 @@
 #' @param runHeel                          Boolean to determine if Achilles Heel data quality reporting will be produced based on the summary statistics.  Default = TRUE
 #' @param validateSchema                   Boolean to determine if CDM Schema Validation should be run. Default = FALSE
 #' @param runCostAnalysis                  Boolean to determine if cost analysis should be run. Note: only works on v5.1+ style cost tables.
-#' @param createIndices                    Boolean to determine if indices should be created on the resulting Achilles and concept_hierarchy table. Default= TRUE
+#' @param createIndices                    Boolean to determine if indices should be created on the resulting Achilles tables. Default= TRUE
 #' @param numThreads                       (OPTIONAL, multi-threaded mode) The number of threads to use to run Achilles in parallel. Default is 1 thread.
 #' @param tempAchillesPrefix               (OPTIONAL, multi-threaded mode) The prefix to use for the scratch Achilles analyses tables. Default is "tmpach"
 #' @param dropScratchTables                (OPTIONAL, multi-threaded mode) TRUE = drop the scratch tables (may take time depending on dbms), FALSE = leave them in place for later removal.
 #' @param sqlOnly                          Boolean to determine if Achilles should be fully executed. TRUE = just generate SQL files, don't actually run, FALSE = run Achilles
 #' @param outputFolder                     Path to store logs and SQL files
 #' @param verboseMode                      Boolean to determine if the console will show all execution steps. Default = TRUE
-#' @param conceptHierarchy                 (DEPRECATED) Boolean to determine if the concept_hierarchy result table should be created, for use by Atlas treemaps. Default is FALSE
-#'                                         Please note: this table creation only requires the Vocabulary, not the CDM itself. 
-#'                                         You could run this once for 1 Vocab version, and then copy the table to all CDMs using that Vocab.
 #' 
 #' @return                                 An object of type \code{achillesResults} containing details for connecting to the database containing the results 
 #' @examples                               \dontrun{
@@ -97,8 +94,7 @@ achilles <- function (connectionDetails,
                       dropScratchTables = TRUE,
                       sqlOnly = FALSE,
                       outputFolder = "output",
-                      verboseMode = TRUE,
-                      conceptHierarchy) {
+                      verboseMode = TRUE) {
   
   achillesSql <- c()
   
@@ -119,13 +115,6 @@ achilles <- function (connectionDetails,
                                          threshold = "INFO",
                                          appenders = appenders)
   ParallelLogger::registerLogger(logger) 
-  
-  # handle deprecated parameters -------------------------------------------------------------------------------------------------
-  
-  if (!missing(conceptHierarchy)) {
-    conceptHierarchyWarning <- "The conceptHierarchy parameter is deprecated, as the creation of this table is now handled in Atlas. However, you can still call the createConceptHierarchy function separately if needed."
-    ParallelLogger::logWarn(conceptHierarchyWarning)
-  }
   
   # Try to get CDM Version if not provided ----------------------------------------------------------------------------------------
   
@@ -313,7 +302,7 @@ achilles <- function (connectionDetails,
                          scratchDatabaseSchema = scratchDatabaseSchema,
                          tempAchillesPrefix = tempAchillesPrefix,
                          numThreads = numThreads,
-                         tableTypes = c("achilles", "concept_hierarchy"),
+                         tableTypes = c("achilles"),
                          outputFolder = outputFolder)
 
     ParallelLogger::logInfo(sprintf("Temporary Achilles tables removed from schema %s", scratchDatabaseSchema))
@@ -873,14 +862,14 @@ getAnalysisDetails <- function() {
 #' Drop all possible scratch tables
 #' 
 #' @details 
-#' Drop all possible Achilles, Heel, and Concept Hierarchy scratch tables
+#' Drop all possible Achilles and Heel scratch tables
 #' 
 #' @param connectionDetails                An R object of type \code{connectionDetails} created using the function \code{createConnectionDetails} in the \code{DatabaseConnector} package.
 #' @param scratchDatabaseSchema            string name of database schema that Achilles scratch tables were written to. 
 #' @param tempAchillesPrefix               The prefix to use for the "temporary" (but actually permanent) Achilles analyses tables. Default is "tmpach"
 #' @param tempHeelPrefix                   The prefix to use for the "temporary" (but actually permanent) Heel tables. Default is "tmpheel"
 #' @param numThreads                       The number of threads to use to run this function. Default is 1 thread.
-#' @param tableTypes                       The types of Achilles scratch tables to drop: achilles or heel or concept_hierarchy or all 3
+#' @param tableTypes                       The types of Achilles scratch tables to drop: achilles or heel or both
 #' @param outputFolder                     Path to store logs and SQL files
 #' @param verboseMode                      Boolean to determine if the console will show all execution steps. Default = TRUE  
 #' 
@@ -890,7 +879,7 @@ dropAllScratchTables <- function(connectionDetails,
                                  tempAchillesPrefix = "tmpach", 
                                  tempHeelPrefix = "tmpheel", 
                                  numThreads = 1,
-                                 tableTypes = c("achilles", "heel", "concept_hierarchy"),
+                                 tableTypes = c("achilles", "heel"),
                                  outputFolder,
                                  verboseMode = TRUE) {
   

@@ -36,13 +36,12 @@ The Achilles package consists of:
 
 1. The **achilles** function runs a set of SQL scripts to characterize the domains and concepts of the CDM. 
 2. The **achillesHeel** function uses the results of the achilles function to run a set of DQ scripts to evaluate the conformance and feasibility of your dataset.
-3. The **createConceptHierarchy** function creates a table that summarizes all of the OMOP Vocabulary concepts. This is only necessary if using Atlas Data Sources.
-4. The **createIndices** function creates table indices for the achilles tables, which can help improve query performance.
-5. The **validateSchema** function compares your CDM schema against the OMOP CDM specification.
-6. The **getAnalysisDetails** function provides descriptions about the full set of Achilles analyses.
-7. The **dropAllScratchTables** function is useful only for multi-threaded mode. It can clear any leftover staging tables.
-8. The **exportToJson** function can be used to export all Achilles results to JSON files, which is necessary for using AchillesWeb.
-9. The **addDataSource** function can point a data source's JSON files to the AchillesWeb application.
+3. The **createIndices** function creates table indices for the achilles tables, which can help improve query performance.
+4. The **validateSchema** function compares your CDM schema against the OMOP CDM specification.
+5. The **getAnalysisDetails** function provides descriptions about the full set of Achilles analyses.
+6. The **dropAllScratchTables** function is useful only for multi-threaded mode. It can clear any leftover staging tables.
+7. The **exportToJson** function can be used to export all Achilles results to JSON files, which is necessary for using AchillesWeb.
+8. The **addDataSource** function can point a data source's JSON files to the AchillesWeb application.
 
 The Achilles package should be run sequentially. That is, **achilles** should be run first to generate the achilles_results and achilles_results_dist tables, and then optionally, **achillesHeel** should be run next to generate the achilles_heel_results and achilles_results_derived tables.
 
@@ -138,13 +137,6 @@ To avoid patient identifiability, you can establish the minimum cell size that s
 
 The `dropScratchTables` parameter, if set to `TRUE`, will drop all staging tables created during the execution of **achilles** in multi-threaded mode.
 
-## Concept Hierarchy
-
-*See the Post-Processing section to read about how to run this step separately*
-
-*This table is only necessary if using Atlas Data Sources to consume Achilles results*
-
-The `conceptHierarchy` parameter, if set to `TRUE`, will result in the concpet_hierarchy table to be created in the results schema. 
 
 ## Create Indices
 
@@ -263,44 +255,6 @@ achillesHeel(connectionDetails = connectionDetails,
 
 This section describes the usage of standalone functions for post-processing that can be invoked if you did not use them in the **achilles** function call.
 
-## Creating the Concept Hierarchy: Single-Threaded Mode
-
-*This table is only necessary if using Atlas Data Sources to consume Achilles results*
-
-In single-threaded mode, there is no need to set a `scratchDatabaseSchema`, as temporary tables will be used.
-
-```{r tidy = FALSE, eval = FALSE}
-connectionDetails <- createConnectionDetails(dbms = "postgresql", 
-                                             server = "localhost/synpuf", 
-                                             user = "cdm_user", 
-                                             password = "cdm_password")
-
-createConceptHierarchy(connectionDetails = connectionDetails, 
-                       resultsDatabaseSchema = "results", 
-                       vocabDatabaseSchema = "vocab", 
-                       outputFolder = "output")
-```
-
-## Creating the Concept Hierarchy: Multi-Threaded Mode
-
-*This table is only necessary if using Atlas Data Sources to consume Achilles results*
-
-In multi-threaded mode, you need to specify `scratchDatabaseSchema` and use > 1 for `numThreads`. 
-
-```{r tidy = FALSE, eval = FALSE}
-connectionDetails <- createConnectionDetails(dbms = "postgresql", 
-                                             server = "localhost/synpuf", 
-                                             user = "cdm_user", 
-                                             password = "cdm_password")
-
-createConceptHierarchy(connectionDetails = connectionDetails, 
-                       resultsDatabaseSchema = "results", 
-                       vocabDatabaseSchema = "vocab", 
-                       outputFolder = "output", 
-                       scratchDatabaseSchema = "scratch", 
-                       numThreads = 3)
-```
-
 
 ## Creating Indices
 
@@ -324,7 +278,7 @@ createIndices(connectionDetails = connectionDetails,
 
 If the **achilles** or **achillesHeel** execution has errors, or if you did not enable this step in the call to these functions, use the `dropAllScratchTables` function.
 
-The `tableTypes` parameter can be used to specify which batch of staging tables to drop ("achilles", "heel", "concept_hierarchy"). The default value is to drop them all.
+The `tableTypes` parameter can be used to specify which batch of staging tables to drop ("achilles", "heel"). The default value is to drop them all.
 
 ```{r tidy = FALSE, eval = FALSE}
 connectionDetails <- createConnectionDetails(dbms = "postgresql", 
@@ -417,12 +371,6 @@ AchillesWeb relies upon a JSON file to point to CDM Achilles result JSON files.
 addDataSource(jsonFolderPath = "output", 
               dataSourcePath = "achillesWeb")
 ```
-
-## Using Atlas Data Sources
-
-If the Achilles results tables and the concept_hierarchy table are present in the results schema, you can point Atlas to this schema to have the results appear graphically in Atlas Data Sources.
-
-Please refer to [Atlas Data Sources](https://github.com/OHDSI/Atlas) for more information.
 
 
 # Acknowledgments

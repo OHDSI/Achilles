@@ -13,8 +13,7 @@ achilles(connectionDetails, cdmDatabaseSchema,
   cdmVersion = "5", runHeel = TRUE, validateSchema = FALSE,
   runCostAnalysis = FALSE, createIndices = TRUE, numThreads = 1,
   tempAchillesPrefix = "tmpach", dropScratchTables = TRUE,
-  sqlOnly = FALSE, outputFolder = "output", verboseMode = TRUE,
-  conceptHierarchy)
+  sqlOnly = FALSE, outputFolder = "output", verboseMode = TRUE)
 }
 \arguments{
 \item{connectionDetails}{An R object of type \code{connectionDetails} created using the function \code{createConnectionDetails} in the \code{DatabaseConnector} package.}
@@ -50,7 +49,7 @@ If not specified, all analyses will be executed. Use \code{\link{getAnalysisDeta
 
 \item{runCostAnalysis}{Boolean to determine if cost analysis should be run. Note: only works on v5.1+ style cost tables.}
 
-\item{createIndices}{Boolean to determine if indices should be created on the resulting Achilles and concept_hierarchy table. Default= TRUE}
+\item{createIndices}{Boolean to determine if indices should be created on the resulting Achilles tables. Default= TRUE}
 
 \item{numThreads}{(OPTIONAL, multi-threaded mode) The number of threads to use to run Achilles in parallel. Default is 1 thread.}
 
@@ -63,10 +62,6 @@ If not specified, all analyses will be executed. Use \code{\link{getAnalysisDeta
 \item{outputFolder}{Path to store logs and SQL files}
 
 \item{verboseMode}{Boolean to determine if the console will show all execution steps. Default = TRUE}
-
-\item{conceptHierarchy}{(DEPRECATED) Boolean to determine if the concept_hierarchy result table should be created, for use by Atlas treemaps. Default is FALSE
-Please note: this table creation only requires the Vocabulary, not the CDM itself. 
-You could run this once for 1 Vocab version, and then copy the table to all CDMs using that Vocab.}
 }
 \value{
 An object of type \code{achillesResults} containing details for connecting to the database containing the results
