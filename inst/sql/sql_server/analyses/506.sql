@@ -1,4 +1,4 @@
--- 506	Distribution of age by condition_concept_id
+-- 506	Distribution of age at death by gender
 
 
 --HINT DISTRIBUTE_ON_KEY(stratum_id)

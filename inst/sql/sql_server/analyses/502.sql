@@ -1,4 +1,4 @@
--- 502	Number of persons by condition occurrence start month
+-- 502	Number of persons by death month
 
 --HINT DISTRIBUTE_ON_KEY(stratum_1)
 WITH rawData AS (
