@@ -361,10 +361,8 @@ achillesHeel <- function(connectionDetails,
                                              schema = resultsDatabaseSchema,
                                              schemaDelim = ".",
                                              destination = "achilles_results_derived",
-                                             derivedSqls = SqlRender::translate(
-                                                sql = sprintf("select * from #serial_rd_%d", rdId),
-                                                targetDialect = connectionDetails$dbms, oracleTempSchema = oracleTempSchema)
-                                             )
+                                             derivedSqls = sprintf("select * from #serial_rd_%d", rdId))
+  
   
   sqlHr <- SqlRender::loadRenderTranslateSql(sqlFilename = "heels/merge_heel_results.sql", 
                                              packageName = "Achilles", 
@@ -374,10 +372,7 @@ achillesHeel <- function(connectionDetails,
                                              schema = resultsDatabaseSchema,
                                              schemaDelim = ".",
                                              destination = "achilles_heel_results",
-                                             resultSqls = SqlRender::translate(
-                                                sql = sprintf("select * from #serial_hr_%d", hrId),
-                                                targetDialect = connectionDetails$dbms, oracleTempSchema = oracleTempSchema)
-                                             )
+                                             resultSqls = sprintf("select * from #serial_hr_%d", hrId))
   
   finalSqls <- c(sqlRd, sqlHr)
   heelSql <- c(heelSql, finalSqls)
@@ -454,7 +449,6 @@ achillesHeel <- function(connectionDetails,
                                            oracleTempSchema = oracleTempSchema,
                                            schemaDelim = schemaDelim,
                                            tempHeelPrefix = tempHeelPrefix,
-                                           oracleTempSchema = scratchDatabaseSchema,
                                            heelName = gsub(pattern = ".sql", replacement = "", x = basename(heelFile)))
   
 }
