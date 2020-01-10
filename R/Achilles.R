@@ -555,6 +555,7 @@ achilles <- function (connectionDetails,
                                schemaDelim = schemaDelim,
                                scratchDatabaseSchema = scratchDatabaseSchema,
                                resultsDatabaseSchema = resultsDatabaseSchema,
+                               oracleTempSchema = oracleTempSchema,
                                cdmVersion = cdmVersion,
                                tempAchillesPrefix = tempAchillesPrefix,
                                numThreads = numThreads,
@@ -1065,6 +1066,7 @@ dropAllScratchTables <- function(connectionDetails,
                                         schemaDelim,
                                         scratchDatabaseSchema,
                                         resultsDatabaseSchema,
+                                        oracleTempSchema,
                                         cdmVersion,
                                         tempAchillesPrefix,
                                         numThreads,
@@ -1113,7 +1115,9 @@ dropAllScratchTables <- function(connectionDetails,
       analysisSql <- paste(c(analysisSql, benchmarkSql), collapse = " union all ")
       
     } 
-    SqlRender::translate(sql = analysisSql, targetDialect = connectionDetails$dbms)
+    SqlRender::translate(sql = analysisSql, 
+                         targetDialect = connectionDetails$dbms,
+                         oracleTempSchema = oracleTempSchema)
   })
   
   if (!sqlOnly & includeRawCost) {
@@ -1146,6 +1150,7 @@ dropAllScratchTables <- function(connectionDetails,
                                     warnOnMissingParameters = FALSE,
                                     createTable = createTable,
                                     resultsDatabaseSchema = resultsDatabaseSchema,
+                                    oracleTempSchema = oracleTempSchema,
                                     detailType = resultsTable$detailType,
                                     detailSqls = paste(detailSqls, collapse = " \nunion all\n "),
                                     fieldNames = paste(resultsTable$schema$FIELD_NAME, collapse = ", "),
