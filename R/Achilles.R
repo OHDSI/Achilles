@@ -208,7 +208,11 @@ achilles <- function (connectionDetails,
                       schema = read.csv(file = system.file("csv", "schemas", "schema_achilles_results_dist.csv", package = "Achilles"), 
                            header = TRUE),
                       analysisIds = analysisDetails[abs(analysisDetails$DISTRIBUTION) == 1, ]$ANALYSIS_ID))
-  
+
+  resultsConceptCountTable <- list(tablePrefix = tempAchillesPrefix,
+                        schema = read.csv(file = system.file("csv", "schemas", "schema_achilles_results_concept_count.csv", package = "Achilles"),
+                        header = TRUE))
+
   # Initialize thread and scratchDatabaseSchema settings and verify ParallelLogger installed ---------------------------
   
   schemaDelim <- "."
@@ -566,6 +570,15 @@ achilles <- function (connectionDetails,
   })
   
   achillesSql <- c(achillesSql, mergeSqls)
+
+  conceptCountSql <- SqlRender::loadRenderTranslateSql(sqlFilename = "analyses/create_result_concept_table.sql",
+                                                          packageName = "Achilles",
+                                                          dbms = connectionDetails$dbms,
+                                                          createTable = createTable,
+                                                          resultsDatabaseSchema = resultsDatabaseSchema,
+                                                          vocabDatabaseSchema = vocabDatabaseSchema,
+                                                          fieldNames = paste(resultsConceptCountTable$schema$FIELD_NAME, collapse = ", "))
+  achillesSql <- c(achillesSql, conceptCountSql)
 
   if (!sqlOnly) {
     
@@ -1188,9 +1201,17 @@ dropAllScratchTables <- function(connectionDetails,
                                 resultsDatabaseSchema = resultsDatabaseSchema,
                                 analysisIds = paste(resultIds, collapse = ","))
     sql <- SqlRender::translate(sql = sql, targetDialect = connectionDetails$dbms)
+
+    sql_count <- SqlRender::render(sql = "delete from @resultsDatabaseSchema.achilles_results_concept_count where analysis_id in (@analysisIds);",
+                                    resultsDatabaseSchema = resultsDatabaseSchema,
+                                    analysisIds = paste(resultIds, collapse = ","))
+    sql_count <- SqlRender::translate(sql = sql_count, targetDialect = connectionDetails$dbms)
+
+
     connection <- DatabaseConnector::connect(connectionDetails = connectionDetails)
     on.exit(DatabaseConnector::disconnect(connection = connection))
     DatabaseConnector::executeSql(connection = connection, sql = sql)
+    DatabaseConnector::executeSql(connection = connection, sql = sql_count)
   }
   
   if (length(distIds) > 0) {
