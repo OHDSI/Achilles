@@ -2,11 +2,11 @@
 
 If you are interested in adding or modifying Achilles/Heel analyses, this is the section for you. A few key design principles:
 
-1. All analyses are split into separate files. This allows us to parallelize them if possible by using the OhdsiRTools clusterApply function, which allows for the spawning of multiple threads to process multiple list items. In this case, we have a list of analysis file names to process, before merging all of the staging tables into the final permanent tables as the last step.
+1. All analyses are split into separate files. This allows us to parallelize them if possible by using the ParallelLogger clusterApply function, which allows for the spawning of multiple threads to process multiple list items. In this case, we have a list of analysis file names to process, before merging all of the staging tables into the final permanent tables as the last step.
 
 2. All analysis queries must be optimized for MPP systems by including a hashing hint. Generally, this is person_id or subject_id, or whichever field offers a useful index. Please refer to the DatabaseConnector package for more information.
 
-3. Main Achilles analyses (pre-computed aggregated stats about the data source) are stored in inst/analyses, Heel analyses (data quality checks about those aggregated stats) are stored in *inst/sql/sql_server/heels*, and export to JSON scripts are stored in *inst/sql/sql_server/exports*. Any post-processing activities such as index building and concept hierarchy table creation are stored in *inst/sql/sql_server/post_processing*.
+3. Main Achilles analyses (pre-computed aggregated stats about the data source) are stored in inst/analyses, Heel analyses (data quality checks about those aggregated stats) are stored in *inst/sql/sql_server/heels*, and export to JSON scripts are stored in *inst/sql/sql_server/exports*. Any post-processing activities such as index building are stored in *inst/sql/sql_server/post_processing*.
 
 ## Achilles Main Analyses
 

@@ -262,7 +262,7 @@ from (
   observation_concept_id,
   observation_date,
   {@cdmVersion == '5.3'}?{
-    observation_time,
+    observation_datetime,
   }
   value_as_number,
   value_as_string,

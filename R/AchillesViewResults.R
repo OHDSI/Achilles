@@ -1,6 +1,6 @@
 # @file AchillesViewResults
 #
-# Copyright 2018 Observational Health Data Sciences and Informatics
+# Copyright 2019 Observational Health Data Sciences and Informatics
 #
 # This file is part of Achilles
 # 
@@ -123,9 +123,9 @@ launchHeelResultsViewer <- function(connectionDetails,
 fetchAchillesHeelResults <- function(connectionDetails, 
                                      resultsDatabaseSchema) { 
   connection <- DatabaseConnector::connect(connectionDetails = connectionDetails)
-  sql <- SqlRender::renderSql(sql = "select * from @resultsDatabaseSchema.achilles_heel_results",
-                              resultsDatabaseSchema = resultsDatabaseSchema)$sql
-  sql <- SqlRender::translateSql(sql = sql, targetDialect = connectionDetails$dbms)$sql  
+  sql <- SqlRender::render(sql = "select * from @resultsDatabaseSchema.achilles_heel_results",
+                              resultsDatabaseSchema = resultsDatabaseSchema)
+  sql <- SqlRender::translate(sql = sql, targetDialect = connectionDetails$dbms)
   issues <- DatabaseConnector::querySql(connection = connection, sql = sql)
   DatabaseConnector::disconnect(connection = connection)
   
@@ -157,28 +157,34 @@ fetchAchillesAnalysisResults <- function (connectionDetails,
                                           analysisId) {
   
   analysisDetails <- getAnalysisDetails()
+  analysisDetails <- analysisDetails[analysisDetails$ANALYSIS_ID == analysisId,]
+  
   connection <- DatabaseConnector::connect(connectionDetails = connectionDetails)
+  on.exit(DatabaseConnector::disconnect(connection = connection))
   
-  if (analysisDetails$DISTRIBUTION[analysisDetails$ANALYSIS_ID == analysisId] == 0) {
-    sql <- "select * from @resultsDatabaseSchema.achilles_results where analysis_id = @analysisId"
-    sql <- SqlRender::renderSql(sql = sql,
-                                resultsDatabaseSchema = resultsDatabaseSchema,
-                                analysisId = analysisId)$sql
-    sql <- SqlRender::translateSql(sql = sql, targetDialect = connectionDetails$dbms)$sql
-    analysisResults <- DatabaseConnector::querySql(connection = connection, sql = sql)
-  } else {
-    sql <- "select * from @resultsDatabaseSchema.achilles_results_dist where analysis_id = @analysisId"
-    sql <- SqlRender::renderSql(sql = sql,
-                                resultsDatabaseSchema = resultsDatabaseSchema,
-                                analysisId = analysisId)$sql
-    sql <- SqlRender::translateSql(sql = sql, targetDialect = connectionDetails$dbms)$sql
-    analysisResults <- DatabaseConnector::querySql(connection = connection, sql = sql)
-  }
+  sql <- "select * from @resultsDatabaseSchema.achilles_results@dist where analysis_id = @analysisId;"
+  sql <- SqlRender::render(sql = sql,
+                           resultsDatabaseSchema = resultsDatabaseSchema,
+                           analysisId = analysisId,
+                           dist = ifelse(analysisDetails[1,]$DISTRIBUTION == 0, "", "_dist"))
+  sql <- SqlRender::translate(sql = sql, targetDialect = connectionDetails$dbms)
+  analysisResults <- DatabaseConnector::querySql(connection = connection, sql = sql)
   
-  DatabaseConnector::disconnect(connection = connection)
+  colnames(analysisResults) <- lapply(colnames(analysisResults), function(s) {
+    if (startsWith(x = s, prefix = "STRATUM")) {
+      strataName <- analysisDetails[sprintf("%s_NAME", s)][[1]] 
+      if (is.na(strataName) | strataName == "") {
+        s
+      } else {
+        strataName
+      }
+    } else {
+      s
+    }
+  })
   
   result <- list(analysisId = analysisId,
-                 analysisName = analysisDetails$ANALYSIS_NAME[analysisDetails$ANALYSIS_ID == analysisId],
+                 analysisName = analysisDetails[1,]$ANALYSIS_NAME,
                  analysisResults = analysisResults)
   
   class(result) <- "achillesAnalysisResults"

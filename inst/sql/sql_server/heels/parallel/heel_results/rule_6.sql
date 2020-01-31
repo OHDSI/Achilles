@@ -13,7 +13,7 @@ from
   	CAST(CONCAT('WARNING: ', cast(or1.analysis_id as VARCHAR(10)), '-', oa1.analysis_name, '; data with unmapped concepts') AS VARCHAR(255)) AS ACHILLES_HEEL_warning,
     6 as rule_id,
     cast(null as bigint) as record_count
-  FROM @resultsDatabaseSchema.ACHILLES_results or1
+  FROM @resultsDatabaseSchema.achilles_results or1
   INNER JOIN @resultsDatabaseSchema.ACHILLES_analysis oa1
   	ON or1.analysis_id = oa1.analysis_id
   WHERE or1.analysis_id IN (

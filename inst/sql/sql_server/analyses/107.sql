@@ -11,9 +11,9 @@ with rawData (age_decile, count_value) as
   		op.observation_period_start_date,
   		op.observation_period_end_date,
       ROW_NUMBER() over (PARTITION by op.person_id order by op.observation_period_start_date asc) as rn
-    from @cdmDatabaseSchema.OBSERVATION_PERIOD op
+    from @cdmDatabaseSchema.observation_period op
   ) op
-  JOIN @cdmDatabaseSchema.PERSON p on op.person_id = p.person_id
+  JOIN @cdmDatabaseSchema.person p on op.person_id = p.person_id
   where op.rn = 1
 ),
 overallStats (age_decile, avg_value, stdev_value, min_value, max_value, total) as
@@ -55,7 +55,7 @@ select 107 as analysis_id,
 	MIN(case when p.accumulated >= .25 * o.total then count_value else o.max_value end) as p25_value,
 	MIN(case when p.accumulated >= .75 * o.total then count_value else o.max_value end) as p75_value,
 	MIN(case when p.accumulated >= .90 * o.total then count_value else o.max_value end) as p90_value
-into #tempResults
+into #tempResults_107
 from priorStats p
 join overallStats o on p.age_decile = o.age_decile
 GROUP BY o.age_decile, o.total, o.min_value, o.max_value, o.avg_value, o.stdev_value
@@ -66,8 +66,8 @@ select analysis_id, age_decile as stratum_1,
 cast(null as varchar(255)) as stratum_2, cast(null as varchar(255)) as stratum_3, cast(null as varchar(255)) as stratum_4, cast(null as varchar(255)) as stratum_5,
 count_value, min_value, max_value, avg_value, stdev_value, median_value, p10_value, p25_value, p75_value, p90_value
 into @scratchDatabaseSchema@schemaDelim@tempAchillesPrefix_dist_107
-FROM #tempResults
+FROM #tempResults_107
 ;
 
-truncate table #tempResults;
-drop table #tempResults;
+truncate table #tempResults_107;
+drop table #tempResults_107;

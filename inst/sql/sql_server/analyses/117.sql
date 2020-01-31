@@ -15,7 +15,7 @@ join
   select distinct 
     YEAR(observation_period_start_date)*100 + MONTH(observation_period_start_date)  as obs_month
   from 
-    @cdmDatabaseSchema.OBSERVATION_PERIOD 
+    @cdmDatabaseSchema.observation_period
 ) t1 on YEAR(op1.observation_period_start_date)*100 + MONTH(op1.observation_period_start_date) <= t1.obs_month
 	and YEAR(op1.observation_period_end_date)*100 + MONTH(op1.observation_period_end_date) >= t1.obs_month
 group by t1.obs_month;

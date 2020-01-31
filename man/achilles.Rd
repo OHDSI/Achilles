@@ -7,11 +7,11 @@
 achilles(connectionDetails, cdmDatabaseSchema,
   resultsDatabaseSchema = cdmDatabaseSchema,
   scratchDatabaseSchema = resultsDatabaseSchema,
-  vocabDatabaseSchema = cdmDatabaseSchema, sourceName = "",
+  vocabDatabaseSchema = cdmDatabaseSchema,
+  oracleTempSchema = resultsDatabaseSchema, sourceName = "",
   analysisIds, createTable = TRUE, smallCellCount = 5,
   cdmVersion = "5", runHeel = TRUE, validateSchema = FALSE,
-  runCostAnalysis = FALSE, conceptHierarchy = FALSE,
-  createIndices = TRUE, numThreads = 1,
+  runCostAnalysis = FALSE, createIndices = TRUE, numThreads = 1,
   tempAchillesPrefix = "tmpach", dropScratchTables = TRUE,
   sqlOnly = FALSE, outputFolder = "output", verboseMode = TRUE)
 }
@@ -30,6 +30,8 @@ Making this "#" will run Achilles in single-threaded mode and use temporary tabl
 
 \item{vocabDatabaseSchema}{String name of database schema that contains OMOP Vocabulary. Default is cdmDatabaseSchema. On SQL Server, this should specifiy both the database and the schema, so for example 'results.dbo'.}
 
+\item{oracleTempSchema}{For Oracle only: the name of the database schema where you want all temporary tables to be managed. Requires create/insert permissions to this database.}
+
 \item{sourceName}{String name of the data source name. If blank, CDM_SOURCE table will be queried to try to obtain this.}
 
 \item{analysisIds}{(OPTIONAL) A vector containing the set of Achilles analysisIds for which results will be generated. 
@@ -47,11 +49,7 @@ If not specified, all analyses will be executed. Use \code{\link{getAnalysisDeta
 
 \item{runCostAnalysis}{Boolean to determine if cost analysis should be run. Note: only works on v5.1+ style cost tables.}
 
-\item{conceptHierarchy}{Boolean to determine if the concept_hierarchy result table should be created, for use by Atlas treemaps. Default is FALSE
-Please note: this table creation only requires the Vocabulary, not the CDM itself. 
-You could run this once for 1 Vocab version, and then copy the table to all CDMs using that Vocab.}
-
-\item{createIndices}{Boolean to determine if indices should be created on the resulting Achilles and concept_hierarchy table. Default= TRUE}
+\item{createIndices}{Boolean to determine if indices should be created on the resulting Achilles tables. Default= TRUE}
 
 \item{numThreads}{(OPTIONAL, multi-threaded mode) The number of threads to use to run Achilles in parallel. Default is 1 thread.}
 

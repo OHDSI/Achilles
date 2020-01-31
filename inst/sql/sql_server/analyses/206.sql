@@ -1,12 +1,12 @@
 -- 206	Distribution of age by visit_concept_id
 
 --HINT DISTRIBUTE_ON_KEY(stratum1_id)
-with rawData(stratum1_id, stratum2_id, count_value) as
+with rawData (stratum1_id, stratum2_id, count_value) as
 (
-  select vo1.visit_concept_id,
-  	p1.gender_concept_id,
+  select vo1.visit_concept_id AS stratum1_id,
+  	p1.gender_concept_id AS stratum2_id,
 		vo1.visit_start_year - p1.year_of_birth as count_value
-	from @cdmDatabaseSchema.PERSON p1
+	from @cdmDatabaseSchema.person p1
 	inner join 
   (
 		select person_id, visit_concept_id, min(year(visit_start_date)) as visit_start_year
@@ -52,7 +52,7 @@ select 206 as analysis_id,
 	MIN(case when p.accumulated >= .25 * o.total then count_value else o.max_value end) as p25_value,
 	MIN(case when p.accumulated >= .75 * o.total then count_value else o.max_value end) as p75_value,
 	MIN(case when p.accumulated >= .90 * o.total then count_value else o.max_value end) as p90_value
-into #tempResults
+into #tempResults_206
 from priorStats p
 join overallStats o on p.stratum1_id = o.stratum1_id and p.stratum2_id = o.stratum2_id 
 GROUP BY o.stratum1_id, o.stratum2_id, o.total, o.min_value, o.max_value, o.avg_value, o.stdev_value
@@ -63,8 +63,8 @@ select analysis_id, stratum1_id as stratum_1, stratum2_id as stratum_2,
 cast(null as varchar(255)) as stratum_3, cast(null as varchar(255)) as stratum_4, cast(null as varchar(255)) as stratum_5,
 count_value, min_value, max_value, avg_value, stdev_value, median_value, p10_value, p25_value, p75_value, p90_value
 into @scratchDatabaseSchema@schemaDelim@tempAchillesPrefix_dist_206
-from #tempResults
+from #tempResults_206
 ;
 
-truncate table #tempResults;
-drop table #tempResults;
+truncate table #tempResults_206;
+drop table #tempResults_206;

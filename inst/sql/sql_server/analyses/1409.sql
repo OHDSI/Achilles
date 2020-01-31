@@ -6,7 +6,7 @@
 select distinct 
   YEAR(payer_plan_period_start_date) as obs_year 
 INTO
-  #temp_dates
+  #temp_dates_1409
 from 
   @cdmDatabaseSchema.payer_plan_period
 ;
@@ -18,16 +18,16 @@ select 1409 as analysis_id,
 	COUNT_BIG(distinct p1.PERSON_ID) as count_value
 into @scratchDatabaseSchema@schemaDelim@tempAchillesPrefix_1409
 from
-	@cdmDatabaseSchema.PERSON p1
+	@cdmDatabaseSchema.person p1
 	inner join 
     @cdmDatabaseSchema.payer_plan_period ppp1
 	on p1.person_id = ppp1.person_id
 	,
-	#temp_dates t1 
+	#temp_dates_1409 t1 
 where year(ppp1.payer_plan_period_START_DATE) <= t1.obs_year
 	and year(ppp1.payer_plan_period_END_DATE) >= t1.obs_year
 group by t1.obs_year
 ;
 
-truncate table #temp_dates;
-drop table #temp_dates;
+truncate table #temp_dates_1409;
+drop table #temp_dates_1409;

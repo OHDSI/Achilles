@@ -6,7 +6,7 @@ select 118 as analysis_id,
 into @scratchDatabaseSchema@schemaDelim@tempAchillesPrefix_118
 from
   @cdmDatabaseSchema.observation_period op1
-  left join @cdmDatabaseSchema.PERSON p1
+  left join @cdmDatabaseSchema.person p1
   on p1.person_id = op1.person_id
 where p1.person_id is null
 ;

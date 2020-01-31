@@ -6,9 +6,9 @@ select 	concept_hierarchy.concept_id,
 	ar1.count_value as num_persons, 
 	1.0*ar1.count_value / denom.count_value as percent_persons,
 	1.0*ar2.count_value / ar1.count_value as records_per_person
-from (select cast(stratum_1 as int) stratum_1, count_value from @results_database_schema.ACHILLES_results where analysis_id = 1800 GROUP BY analysis_id, stratum_1, count_value) ar1
+from (select cast(stratum_1 as int) stratum_1, count_value from @results_database_schema.achilles_results where analysis_id = 1800 GROUP BY analysis_id, stratum_1, count_value) ar1
 	inner join
-	(select cast(stratum_1 as int) stratum_1, count_value from @results_database_schema.ACHILLES_results where analysis_id = 1801 GROUP BY analysis_id, stratum_1, count_value) ar2
+	(select cast(stratum_1 as int) stratum_1, count_value from @results_database_schema.achilles_results where analysis_id = 1801 GROUP BY analysis_id, stratum_1, count_value) ar2
 	on ar1.stratum_1 = ar2.stratum_1
 	inner join
 	(
@@ -26,5 +26,5 @@ from (select cast(stratum_1 as int) stratum_1, count_value from @results_databas
 		left join @vocab_database_schema.concept c3 on ca3.ANCESTOR_CONCEPT_ID = c3.concept_id
 		group by m.concept_id, m.concept_name
 	) concept_hierarchy on ar1.stratum_1 = concept_hierarchy.concept_id
-	, (select count_value from @results_database_schema.ACHILLES_results where analysis_id = 1) denom
+	, (select count_value from @results_database_schema.achilles_results where analysis_id = 1) denom
 order by ar1.count_value desc

@@ -72,5 +72,5 @@ exportToJson(
     connectionDetails, cdmDatabaseSchema=env_vars$ACHILLES_CDM_SCHEMA,
     resultsDatabaseSchema=env_vars$ACHILLES_RES_SCHEMA,
     vocabDatabaseSchema=env_vars$ACHILLES_VOCAB_SCHEMA,
-    outputPath=output_path, cdmVersion=env_vars$ACHILLES_CDM_VERSION
+    outputPath=output_path
 )

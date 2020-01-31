@@ -3,7 +3,7 @@
 --HINT DISTRIBUTE_ON_KEY(count_value)
 with rawData(person_id, count_value) as
 (
-  select person_id, COUNT_BIG(distinct condition_concept_id) as num_conditions
+  select person_id, COUNT_BIG(distinct condition_concept_id) as count_value
   from @cdmDatabaseSchema.condition_occurrence
 	group by person_id
 ),
@@ -42,7 +42,7 @@ select 403 as analysis_id,
 	MIN(case when p.accumulated >= .25 * o.total then count_value else o.max_value end) as p25_value,
 	MIN(case when p.accumulated >= .75 * o.total then count_value else o.max_value end) as p75_value,
 	MIN(case when p.accumulated >= .90 * o.total then count_value else o.max_value end) as p90_value
-into #tempResults
+into #tempResults_403
 from priorStats p
 CROSS JOIN overallStats o
 GROUP BY o.total, o.min_value, o.max_value, o.avg_value, o.stdev_value
@@ -53,8 +53,8 @@ select analysis_id,
 cast(null as varchar(255)) as stratum_1, cast(null as varchar(255)) as stratum_2, cast(null as varchar(255)) as stratum_3, cast(null as varchar(255)) as stratum_4, cast(null as varchar(255)) as stratum_5,
 count_value, min_value, max_value, avg_value, stdev_value, median_value, p10_value, p25_value, p75_value, p90_value
 into @scratchDatabaseSchema@schemaDelim@tempAchillesPrefix_dist_403
-from #tempResults
+from #tempResults_403
 ;
 
-truncate table #tempResults;
-drop table #tempResults;
+truncate table #tempResults_403;
+drop table #tempResults_403;

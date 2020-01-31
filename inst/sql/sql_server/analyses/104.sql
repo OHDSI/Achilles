@@ -4,8 +4,8 @@
 with rawData (gender_concept_id, age_value) as
 (
   select p.gender_concept_id, MIN(YEAR(observation_period_start_date)) - P.YEAR_OF_BIRTH as age_value
-	from @cdmDatabaseSchema.PERSON p
-	JOIN @cdmDatabaseSchema.OBSERVATION_PERIOD op on p.person_id = op.person_id
+	from @cdmDatabaseSchema.person p
+	JOIN @cdmDatabaseSchema.observation_period op on p.person_id = op.person_id
 	group by p.person_id,p.gender_concept_id, p.year_of_birth
 ),
 overallStats (gender_concept_id, avg_value, stdev_value, min_value, max_value, total) as
@@ -44,7 +44,7 @@ select 104 as analysis_id,
 	MIN(case when p.accumulated >= .25 * o.total then age_value end) as p25_value,
 	MIN(case when p.accumulated >= .75 * o.total then age_value end) as p75_value,
 	MIN(case when p.accumulated >= .90 * o.total then age_value end) as p90_value
-INTO #tempResults
+INTO #tempResults_104
 from ageStatsPrior p
 join overallStats o on p.gender_concept_id = o.gender_concept_id
 GROUP BY o.gender_concept_id, o.total, o.min_value, o.max_value, o.avg_value, o.stdev_value
@@ -55,8 +55,8 @@ select analysis_id, stratum_1,
 cast(null as varchar(255)) as stratum_2, cast(null as varchar(255)) as stratum_3, cast(null as varchar(255)) as stratum_4, cast(null as varchar(255)) as stratum_5,
 count_value, min_value, max_value, avg_value, stdev_value, median_value, p10_value, p25_value, p75_value, p90_value
 into @scratchDatabaseSchema@schemaDelim@tempAchillesPrefix_dist_104
-from #tempResults
+from #tempResults_104
 ;
 
-truncate table #tempResults;
-drop table #tempResults;
+truncate table #tempResults_104;
+drop table #tempResults_104;

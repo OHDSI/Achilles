@@ -18,7 +18,7 @@ from
   from
   (
     select count(*) as row_present  
-    from @resultsDatabaseSchema.ACHILLES_results 
+    from @resultsDatabaseSchema.achilles_results
     where analysis_id = 1800 and stratum_1 = '3025315'
   ) a
   where a.row_present = 0

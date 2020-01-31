@@ -1,30 +1,29 @@
 Package: Achilles
 Type: Package
 Title: Creates Descriptive Statistics Summary for an Entire OMOP CDM Instance
-Version: 1.6.3
-Date: 2018-10-05
+Version: 1.6.7
+Date: 2019-12-03
 Authors@R: c(
   person("Patrick", "Ryan", email = "ryan@ohdsi.org", role = c("aut", "cre")),
   person("Martijn", "Schuemie", email = "schuemie@ohdsi.org", role = c("aut")),
   person("Vojtech", "Huser", role = c("aut")),
   person("Chris", "Knoll", role = c("aut")),
-  person("Ajit", "Londhe", email = "alondhe2@its.jnj.com", role = c("aut")),
+  person("Ajit", "Londhe", email = "alondhe@amgen.com", role = c("aut")),
   person("Taha", "Abdul-Basser", role = c("aut")),
   person("Observational Health Data Science and Informatics", role = c("cph"))
   )
-Maintainer: Patrick Ryan <ryan@ohdsi.org>
+Maintainer: Ajit Londhe <alondhe@amgen.com>
 LazyData: true
 Description: Creates descriptive statistics summary for an entire OMOP CDM
-  instance. Since Aug 2016 only CDM v5 is actively being extended. Achilles
-  Heel component does data quality assesment.
+  instance. Since Aug 2016 only CDM v5 is actively being supported. CDM v6 
+  support is planned for Q3 2019. Achilles Heel component does data quality assesment.
 Depends:
-  SqlRender,
   DatabaseConnector (>= 2.0.0)
 Imports:
+  SqlRender (>= 1.6.0),
   dplyr,
   rjson,
-  ParallelLogger,
-  OhdsiRTools
+  ParallelLogger
 Suggests:
   testthat,
   R.utils,

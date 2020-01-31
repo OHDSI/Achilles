@@ -7,7 +7,7 @@ SELECT DISTINCT
   DATEFROMPARTS(YEAR(payer_plan_period_start_date), MONTH(payer_plan_period_start_date), 1) as obs_month_start,
   EOMONTH(payer_plan_period_start_date) as obs_month_end
 INTO
-  #temp_dates
+  #temp_dates_1410
 FROM 
   @cdmDatabaseSchema.payer_plan_period
 ;
@@ -20,16 +20,16 @@ select
 	COUNT_BIG(distinct p1.PERSON_ID) as count_value
 into @scratchDatabaseSchema@schemaDelim@tempAchillesPrefix_1410
 from
-	@cdmDatabaseSchema.PERSON p1
+	@cdmDatabaseSchema.person p1
 	inner join 
   @cdmDatabaseSchema.payer_plan_period ppp1
 	on p1.person_id = ppp1.person_id
 	,
-	#temp_dates
+	#temp_dates_1410
 where ppp1.payer_plan_period_START_DATE <= obs_month_start
 	and ppp1.payer_plan_period_END_DATE >= obs_month_end
 group by obs_month
 ;
 
-TRUNCATE TABLE #temp_dates;
-DROP TABLE #temp_dates;
+TRUNCATE TABLE #temp_dates_1410;
+DROP TABLE #temp_dates_1410;

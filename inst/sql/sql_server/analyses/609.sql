@@ -7,7 +7,7 @@ select 609 as analysis_id,
 into @scratchDatabaseSchema@schemaDelim@tempAchillesPrefix_609
 from
 	@cdmDatabaseSchema.procedure_occurrence po1
-	left join @cdmDatabaseSchema.PERSON p1
+	left join @cdmDatabaseSchema.person p1
 	on p1.person_id = po1.person_id
 where p1.person_id is null
 ;

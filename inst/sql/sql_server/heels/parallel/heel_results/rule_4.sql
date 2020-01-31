@@ -13,7 +13,7 @@ from
   	CAST(CONCAT('ERROR: ', cast(or1.analysis_id as VARCHAR(10)), '-', oa1.analysis_name, '; ', cast(COUNT_BIG(DISTINCT stratum_1) AS VARCHAR(19)), ' concepts in data are not in vocabulary') AS VARCHAR(255)) AS ACHILLES_HEEL_warning,
     4 as rule_id,
     COUNT_BIG(DISTINCT stratum_1) as record_count
-  FROM @resultsDatabaseSchema.ACHILLES_results or1
+  FROM @resultsDatabaseSchema.achilles_results or1
   INNER JOIN @resultsDatabaseSchema.ACHILLES_analysis oa1
   	ON or1.analysis_id = oa1.analysis_id
   LEFT JOIN @vocabDatabaseSchema.concept c1
