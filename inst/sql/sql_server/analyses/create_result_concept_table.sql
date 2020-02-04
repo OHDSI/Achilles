@@ -2,16 +2,8 @@
   IF OBJECT_ID('@resultsDatabaseSchema.achilles_result_concept_count', 'U') IS NOT NULL
     drop table @resultsDatabaseSchema.achilles_result_concept_count;
 }
-{!@createTable}?{
-  insert into @resultsDatabaseSchema.achilles_result_concept_count
-}
-select @fieldNames
-{@createTable}?{
-  into @resultsDatabaseSchema.achilles_result_concept_count
-}
-from
-(
-  WITH concepts AS (
+
+WITH concepts AS (
       SELECT
         CAST(ancestor_concept_id AS VARCHAR)   ancestor_id,
         CAST(descendant_concept_id AS VARCHAR) descendant_id
@@ -77,6 +69,16 @@ from
       */
   GROUP BY stratum_2
   )
+
+{!@createTable}?{
+  insert into @resultsDatabaseSchema.achilles_result_concept_count
+}
+select @fieldNames
+{@createTable}?{
+  into @resultsDatabaseSchema.achilles_result_concept_count
+}
+from
+(
   SELECT
     concepts.ancestor_id               concept_id,
     isnull(max(c1.agg_count_value), 0) record_count,
