@@ -586,7 +586,12 @@ achilles <- function (connectionDetails,
     
     if (numThreads == 1) {
       for (sql in mergeSqls) {
-        DatabaseConnector::executeSql(connection = connection, sql = sql)
+        tryCatch({
+          DatabaseConnector::executeSql(connection = connection, sql = sql)
+        }, error = function(e) {
+          ParallelLogger::logError(sprintf("Merging scratch Achilles tables [ERROR] (%s)",
+            e))
+        })
       }
     } else {
       cluster <- ParallelLogger::makeCluster(numberOfThreads = numThreads, singleThreadToMain = TRUE)
@@ -595,10 +600,23 @@ achilles <- function (connectionDetails,
                                          function(sql) {
                                            connection <- DatabaseConnector::connect(connectionDetails = connectionDetails)
                                            on.exit(DatabaseConnector::disconnect(connection = connection))
-                                           DatabaseConnector::executeSql(connection = connection, sql = sql)
+                                           tryCatch({
+                                             DatabaseConnector::executeSql(connection = connection, sql = sql)
+                                           }, error = function(e) {
+                                             ParallelLogger::logError(sprintf("Merging scratch Achilles tables (merging scratch Achilles tables) [ERROR] (%s)",
+                                                                                e))
+                                           })
                                          })
       ParallelLogger::stopCluster(cluster = cluster)
     }
+
+    ParallelLogger::logInfo("Creating concept count table")
+    tryCatch({
+        DatabaseConnector::executeSql(connection = connection, sql = conceptCountSql)
+    }, error = function(e) {
+        ParallelLogger::logError(sprintf("Creating concept count table [ERROR] (%s)",
+        e))
+    })
   }
   
   if (!sqlOnly) {
