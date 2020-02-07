@@ -59,7 +59,7 @@
 #' @param sqlOnly                          Boolean to determine if Achilles should be fully executed. TRUE = just generate SQL files, don't actually run, FALSE = run Achilles
 #' @param outputFolder                     Path to store logs and SQL files
 #' @param verboseMode                      Boolean to determine if the console will show all execution steps. Default = TRUE
-#' 
+#' @param optimizeAtlasCache               Boolean to determine if the atlas cache has to be optimized. Default = FALSE
 #' @return                                 An object of type \code{achillesResults} containing details for connecting to the database containing the results 
 #' @examples                               \dontrun{
 #'                                           connectionDetails <- createConnectionDetails(dbms="sql server", server="some_server")
@@ -94,7 +94,8 @@ achilles <- function (connectionDetails,
                       dropScratchTables = TRUE,
                       sqlOnly = FALSE,
                       outputFolder = "output",
-                      verboseMode = TRUE) {
+                      verboseMode = TRUE,
+                      optimizeAtlasCache = FALSE) {
   
   achillesSql <- c()
   
@@ -571,14 +572,16 @@ achilles <- function (connectionDetails,
   
   achillesSql <- c(achillesSql, mergeSqls)
 
-  conceptCountSql <- SqlRender::loadRenderTranslateSql(sqlFilename = "analyses/create_result_concept_table.sql",
-                                                          packageName = "Achilles",
-                                                          dbms = connectionDetails$dbms,
-                                                          createTable = createTable,
-                                                          resultsDatabaseSchema = resultsDatabaseSchema,
-                                                          vocabDatabaseSchema = vocabDatabaseSchema,
-                                                          fieldNames = paste(resultsConceptCountTable$schema$FIELD_NAME, collapse = ", "))
-  achillesSql <- c(achillesSql, conceptCountSql)
+  if (optimizeAtlasCache) {
+    conceptCountSql <- SqlRender::loadRenderTranslateSql(sqlFilename = "analyses/create_result_concept_table.sql",
+                                                            packageName = "Achilles",
+                                                            dbms = connectionDetails$dbms,
+                                                            createTable = createTable,
+                                                            resultsDatabaseSchema = resultsDatabaseSchema,
+                                                            vocabDatabaseSchema = vocabDatabaseSchema,
+                                                            fieldNames = paste(resultsConceptCountTable$schema$FIELD_NAME, collapse = ", "))
+    achillesSql <- c(achillesSql, conceptCountSql)
+  }
 
   if (!sqlOnly) {
     
@@ -610,13 +613,15 @@ achilles <- function (connectionDetails,
       ParallelLogger::stopCluster(cluster = cluster)
     }
 
-    ParallelLogger::logInfo("Creating concept count table")
-    tryCatch({
-        DatabaseConnector::executeSql(connection = connection, sql = conceptCountSql)
-    }, error = function(e) {
-        ParallelLogger::logError(sprintf("Creating concept count table [ERROR] (%s)",
-        e))
-    })
+    if (optimizeAtlasCache) {
+      ParallelLogger::logInfo("Creating concept count table")
+      tryCatch({
+          DatabaseConnector::executeSql(connection = connection, sql = conceptCountSql)
+      }, error = function(e) {
+          ParallelLogger::logError(sprintf("Creating concept count table [ERROR] (%s)",
+          e))
+      })
+    }
   }
   
   if (!sqlOnly) {
