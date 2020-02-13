@@ -39,7 +39,8 @@ for (dbType in dbTypes) {
                                dropScratchTables = TRUE,
                                validateSchema = FALSE, 
                                createTable = TRUE, 
-                               createIndices = FALSE))
+                               createIndices = FALSE,
+                               optimizeAtlasCache=TRUE))
         if (file.exists("errorReport.txt")) {
           writeLines(readChar("errorReport.txt", file.info("errorReport.txt")$size))
         }
