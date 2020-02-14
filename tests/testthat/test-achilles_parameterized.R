@@ -23,7 +23,7 @@ for (dbType in dbTypes) {
             sysPassword != "" &
             sysServer != "") {
           cdmDatabaseSchema <- Sys.getenv(sprintf("CDM5_%s_CDM_SCHEMA", toupper(dbType)))
-          resultsDatabaseSchema <- Sys.getenv("CDM5_%s_OHDSI_SCHEMA", toupper(dbType))
+          resultsDatabaseSchema <- Sys.getenv(sprintf("CDM5_%s_OHDSI_SCHEMA", toupper(dbType)))
         
           details <- createConnectionDetails(dbms = dbType,
                                              user = sysUser,
