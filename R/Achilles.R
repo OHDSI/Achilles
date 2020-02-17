@@ -616,10 +616,15 @@ achilles <- function (connectionDetails,
     if (optimizeAtlasCache) {
       ParallelLogger::logInfo("Creating concept count table")
       tryCatch({
+        if (numThreads == 1) {
           DatabaseConnector::executeSql(connection = connection, sql = conceptCountSql)
+        } else {
+          connection <- DatabaseConnector::connect(connectionDetails = connectionDetails)
+          DatabaseConnector::executeSql(connection = connection, sql = conceptCountSql)
+          DatabaseConnector::disconnect(connection = connection)
+        }
       }, error = function(e) {
-          ParallelLogger::logError(sprintf("Creating concept count table [ERROR] (%s)",
-          e))
+          ParallelLogger::logError(sprintf("Creating concept count table [ERROR] (%s)", e))
       })
     }
   }
