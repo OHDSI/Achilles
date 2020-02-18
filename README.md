@@ -128,6 +128,18 @@ Achilles is actively being developed for CDM v5.x only.
       cdmVersion = "5.3.0")
     ```
 
+1. To optimize Atlas cache, use the following command:
+
+    ```r
+    achillesHeel(connectionDetails, 
+      cdmDatabaseSchema = "cdm5_inst", 
+      resultsDatabaseSchema = "results", 
+      scratchDatabaseSchema = "scratch",
+      numThreads = 10, # multi-threaded mode
+      cdmVersion = "5.3.0"
+      optimizeAtlasCache = TRUE # creates additional table to store results for Atlas cache
+    ```
+
 1. Possible optional additional steps:
 
     - To see what errors were found (from within R), run:
