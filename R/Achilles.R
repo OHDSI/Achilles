@@ -210,10 +210,6 @@ achilles <- function (connectionDetails,
                            header = TRUE),
                       analysisIds = analysisDetails[abs(analysisDetails$DISTRIBUTION) == 1, ]$ANALYSIS_ID))
 
-  resultsConceptCountTable <- list(tablePrefix = tempAchillesPrefix,
-                        schema = read.csv(file = system.file("csv", "schemas", "schema_achilles_results_concept_count.csv", package = "Achilles"),
-                        header = TRUE))
-
   # Initialize thread and scratchDatabaseSchema settings and verify ParallelLogger installed ---------------------------
   
   schemaDelim <- "."
@@ -572,17 +568,6 @@ achilles <- function (connectionDetails,
   
   achillesSql <- c(achillesSql, mergeSqls)
 
-  if (optimizeAtlasCache) {
-    conceptCountSql <- SqlRender::loadRenderTranslateSql(sqlFilename = "analyses/create_result_concept_table.sql",
-                                                            packageName = "Achilles",
-                                                            dbms = connectionDetails$dbms,
-                                                            createTable = createTable,
-                                                            resultsDatabaseSchema = resultsDatabaseSchema,
-                                                            vocabDatabaseSchema = vocabDatabaseSchema,
-                                                            fieldNames = paste(resultsConceptCountTable$schema$FIELD_NAME, collapse = ", "))
-    achillesSql <- c(achillesSql, conceptCountSql)
-  }
-
   if (!sqlOnly) {
     
     ParallelLogger::logInfo("Merging scratch Achilles tables")
@@ -611,21 +596,6 @@ achilles <- function (connectionDetails,
                                            })
                                          })
       ParallelLogger::stopCluster(cluster = cluster)
-    }
-
-    if (optimizeAtlasCache) {
-      ParallelLogger::logInfo("Creating concept count table")
-      tryCatch({
-        if (numThreads == 1) {
-          DatabaseConnector::executeSql(connection = connection, sql = conceptCountSql)
-        } else {
-          connection <- DatabaseConnector::connect(connectionDetails = connectionDetails)
-          DatabaseConnector::executeSql(connection = connection, sql = conceptCountSql)
-          DatabaseConnector::disconnect(connection = connection)
-        }
-      }, error = function(e) {
-          ParallelLogger::logError(sprintf("Creating concept count table [ERROR] (%s)", e))
-      })
     }
   }
   
@@ -672,6 +642,19 @@ achilles <- function (connectionDetails,
                                 achillesTables = unique(achillesTables))
   }
   achillesSql <- c(achillesSql, indicesSql)
+
+  if (optimizeAtlasCache) {
+    optimizeAtlasCacheSql <- optimizeAtlasCache(connectionDetails = connectionDetails,
+                                                resultsDatabaseSchema = resultsDatabaseSchema,
+                                                vocabDatabaseSchema = vocabDatabaseSchema,
+                                                outputFolder = outputFolder,
+                                                sqlOnly = sqlOnly,
+                                                createTable = createTable,
+                                                verboseMode = verboseMode,
+                                                tempAchillesPrefix = tempAchillesPrefix)
+
+    achillesSql <- c(achillesSql, optimizeAtlasCacheSql)
+}
   
   # Run Heel? ---------------------------------------------------------------
   
@@ -1047,6 +1030,86 @@ dropAllScratchTables <- function(connectionDetails,
   ParallelLogger::unregisterLogger("dropAllScratchTables")
 }
 
+#' Optimize atlas cache
+#'
+#' @details
+#' Post-processing, optimize data for atlas cache in separate table to help performance.
+#'
+#' @param connectionDetails                An R object of type \code{connectionDetails} created using the function \code{createConnectionDetails} in the \code{DatabaseConnector} package.
+#' @param resultsDatabaseSchema		       Fully qualified name of database schema that we can write final results to. Default is cdmDatabaseSchema.
+#'                                         On SQL Server, this should specifiy both the database and the schema, so for example, on SQL Server, 'cdm_results.dbo'.
+#' @param vocabDatabaseSchema
+#' @param outputFolder                     Path to store logs and SQL files
+#' @param sqlOnly                          TRUE = just generate SQL files, don't actually run, FALSE = run Achilles
+#' @param createTable                      If true, new results tables will be created in the results schema. If not, the tables are assumed to already exist, and analysis results will be inserted (slower on MPP).
+#' @param verboseMode                      Boolean to determine if the console will show all execution steps. Default = TRUE
+#' @param tempAchillesPrefix               The prefix to use for the "temporary" (but actually permanent) Achilles analyses tables. Default is "tmpach"
+#'
+#' @export
+optimizeAtlasCache <- function(connectionDetails,
+                               resultsDatabaseSchema,
+                               vocabDatabaseSchema = resultsDatabaseSchema,
+                               outputFolder = "output",
+                               sqlOnly = FALSE,
+                               createTable = TRUE,
+                               verboseMode = TRUE,
+                               tempAchillesPrefix = "tmpach") {
+
+  # Log execution --------------------------------------------------------------------------------------------------------------------
+
+  unlink(file.path(outputFolder, "log_optimize_atlas_cache.txt"))
+  if (verboseMode) {
+    appenders <- list(ParallelLogger::createConsoleAppender(),
+                      ParallelLogger::createFileAppender(layout = ParallelLogger::layoutParallel,
+                                                         fileName = file.path(outputFolder, "log_optimize_atlas_cache.txt")))
+  } else {
+    appenders <- list(ParallelLogger::createFileAppender(layout = ParallelLogger::layoutParallel,
+                                                         fileName = file.path(outputFolder, "log_optimize_atlas_cache.txt")))
+  }
+  logger <- ParallelLogger::createLogger(name = "optimizeAtlasCache",
+                                         threshold = "INFO",
+                                         appenders = appenders)
+  ParallelLogger::registerLogger(logger)
+
+  if (!createTable) {
+    sql_count <- SqlRender::render(sql = "delete from @resultsDatabaseSchema.achilles_result_concept_count;",
+                                   resultsDatabaseSchema = resultsDatabaseSchema)
+    sql_count <- SqlRender::translate(sql = sql_count, targetDialect = connectionDetails$dbms)
+
+    connection <- DatabaseConnector::connect(connectionDetails = connectionDetails)
+    on.exit(DatabaseConnector::disconnect(connection = connection))
+    DatabaseConnector::executeSql(connection = connection, sql = sql_count)
+  }
+
+  resultsConceptCountTable <- list(tablePrefix = tempAchillesPrefix,
+                                   schema = read.csv(file = system.file("csv", "schemas", "schema_achilles_results_concept_count.csv",
+                                                     package = "Achilles"),
+                                   header = TRUE))
+  optimizeAtlasCacheSql <- SqlRender::loadRenderTranslateSql(sqlFilename = "analyses/create_result_concept_table.sql",
+                                                       packageName = "Achilles",
+                                                       dbms = connectionDetails$dbms,
+                                                       createTable = createTable,
+                                                       resultsDatabaseSchema = resultsDatabaseSchema,
+                                                       vocabDatabaseSchema = vocabDatabaseSchema,
+                                                       fieldNames = paste(resultsConceptCountTable$schema$FIELD_NAME, collapse = ", "))
+  ParallelLogger::logInfo("Optimizing atlas cache")
+  if (!sqlOnly) {
+    connection <- DatabaseConnector::connect(connectionDetails = connectionDetails)
+    on.exit(DatabaseConnector::disconnect(connection = connection))
+
+    tryCatch({
+      DatabaseConnector::executeSql(connection = connection, sql = optimizeAtlasCacheSql)
+      ParallelLogger::logInfo("Atlas cache was optimized")
+    }, error = function(e) {
+      ParallelLogger::logError(sprintf("Optimizing atlas cache [ERROR] (%s)", e))
+    })
+  }
+
+  ParallelLogger::unregisterLogger("optimizeAtlasCache")
+
+  invisible(optimizeAtlasCacheSql)
+}
+
 .getCdmVersion <- function(connectionDetails, 
                            cdmDatabaseSchema) {
   sql <- SqlRender::render(sql = "select cdm_version from @cdmDatabaseSchema.cdm_source",
@@ -1230,16 +1293,9 @@ dropAllScratchTables <- function(connectionDetails,
                                 analysisIds = paste(resultIds, collapse = ","))
     sql <- SqlRender::translate(sql = sql, targetDialect = connectionDetails$dbms)
 
-    sql_count <- SqlRender::render(sql = "delete from @resultsDatabaseSchema.achilles_results_concept_count where analysis_id in (@analysisIds);",
-                                    resultsDatabaseSchema = resultsDatabaseSchema,
-                                    analysisIds = paste(resultIds, collapse = ","))
-    sql_count <- SqlRender::translate(sql = sql_count, targetDialect = connectionDetails$dbms)
-
-
     connection <- DatabaseConnector::connect(connectionDetails = connectionDetails)
     on.exit(DatabaseConnector::disconnect(connection = connection))
     DatabaseConnector::executeSql(connection = connection, sql = sql)
-    DatabaseConnector::executeSql(connection = connection, sql = sql_count)
   }
   
   if (length(distIds) > 0) {

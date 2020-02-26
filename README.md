@@ -128,16 +128,26 @@ Achilles is actively being developed for CDM v5.x only.
       cdmVersion = "5.3.0")
     ```
 
-1. To optimize Atlas cache, use the following command:
+1. To optimize Atlas cache during achilles execution, use the following command:
 
     ```r
-    achillesHeel(connectionDetails, 
+    achilles(connectionDetails, 
       cdmDatabaseSchema = "cdm5_inst", 
-      resultsDatabaseSchema = "results", 
-      scratchDatabaseSchema = "scratch",
-      numThreads = 10, # multi-threaded mode
-      cdmVersion = "5.3.0"
-      optimizeAtlasCache = TRUE # creates additional table to store results for Atlas cache
+      resultsDatabaseSchema="results",
+      vocabDatabaseSchema = "vocab",
+      numThreads = 1,
+      sourceName = "My Source Name", 
+      cdmVersion = "5.3.0",
+      runHeel = TRUE,
+      optimizeAtlasCache = TRUE) # creates additional table to store results for Atlas cache
+    ```
+
+1. To run only optimization of Atlas cache, use the following command:
+
+    ```r
+    optimizeAtlasCache(connectionDetails,
+                       resultsDatabaseSchema="results",
+                       vocabDatabaseSchema = "dbo")     
     ```
 
 1. Possible optional additional steps:
