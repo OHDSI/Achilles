@@ -573,28 +573,28 @@ achilles <- function (connectionDetails,
     ParallelLogger::logInfo("Merging scratch Achilles tables")
     
     if (numThreads == 1) {
-      for (sql in mergeSqls) {
-        tryCatch({
+      tryCatch({
+        for (sql in mergeSqls) {
           DatabaseConnector::executeSql(connection = connection, sql = sql)
-        }, error = function(e) {
+        }
+      }, error = function(e) {
           ParallelLogger::logError(sprintf("Merging scratch Achilles tables [ERROR] (%s)",
             e))
-        })
-      }
+      })
     } else {
       cluster <- ParallelLogger::makeCluster(numberOfThreads = numThreads, singleThreadToMain = TRUE)
-      dummy <- ParallelLogger::clusterApply(cluster = cluster, 
-                                         x = mergeSqls, 
-                                         function(sql) {
-                                           connection <- DatabaseConnector::connect(connectionDetails = connectionDetails)
-                                           on.exit(DatabaseConnector::disconnect(connection = connection))
-                                           tryCatch({
-                                             DatabaseConnector::executeSql(connection = connection, sql = sql)
-                                           }, error = function(e) {
-                                             ParallelLogger::logError(sprintf("Merging scratch Achilles tables (merging scratch Achilles tables) [ERROR] (%s)",
-                                                                                e))
-                                           })
-                                         })
+      tryCatch({
+        dummy <- ParallelLogger::clusterApply(cluster = cluster,
+                                              x = mergeSqls,
+                                              function(sql) {
+                                                connection <- DatabaseConnector::connect(connectionDetails = connectionDetails)
+                                                on.exit(DatabaseConnector::disconnect(connection = connection))
+                                                DatabaseConnector::executeSql(connection = connection, sql = sql)
+                                              })
+      }, error = function(e) {
+        ParallelLogger::logError(sprintf("Merging scratch Achilles tables (merging scratch Achilles tables) [ERROR] (%s)",
+                                         e))
+      })
       ParallelLogger::stopCluster(cluster = cluster)
     }
   }
