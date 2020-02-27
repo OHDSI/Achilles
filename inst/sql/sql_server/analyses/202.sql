@@ -4,12 +4,17 @@
 WITH rawData AS (
   select
     vo1.visit_concept_id as stratum_1,
-    YEAR(visit_start_date)*100 + month(visit_start_date) as stratum_2,
-    COUNT_BIG(distinct PERSON_ID) as count_value
+    YEAR(vo1.visit_start_date)*100 + month(vo1.visit_start_date) as stratum_2,
+    COUNT_BIG(distinct vo1.PERSON_ID) as count_value
   from
-    @cdmDatabaseSchema.visit_occurrence vo1
+    @cdmDatabaseSchema.visit_occurrence vo1 inner join 
+  @cdmDatabaseSchema.observation_period op on vo1.person_id = op.person_id
+  -- only include events that occur during observation period
+  where vo1.visit_start_date <= op.observation_period_end_date and
+  isnull(vo1.visit_end_date,vo1.visit_start_date) >= op.observation_period_start_date
+  
   group by vo1.visit_concept_id,
-    YEAR(visit_start_date)*100 + month(visit_start_date)
+    YEAR(vo1.visit_start_date)*100 + month(vo1.visit_start_date)
 )
 SELECT
   202 as analysis_id,

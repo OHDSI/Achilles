@@ -8,7 +8,11 @@ with rawData(count_value) as
 	(
 		select de1.person_id, COUNT_BIG(distinct de1.drug_concept_id) as num_drugs
 		from
-		@cdmDatabaseSchema.drug_exposure de1
+		@cdmDatabaseSchema.drug_exposure de1 inner join 
+  @cdmDatabaseSchema.observation_period op on de1.person_id = op.person_id
+  -- only include events that occur during observation period
+  where de1.drug_exposure_start_date <= op.observation_period_end_date and
+  isnull(de1.drug_exposure_end_date,de1.drug_exposure_start_date) >= op.observation_period_start_date
 		group by de1.person_id
 	) t0
 ),
