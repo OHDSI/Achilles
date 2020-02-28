@@ -649,7 +649,6 @@ achilles <- function (connectionDetails,
                                                 vocabDatabaseSchema = vocabDatabaseSchema,
                                                 outputFolder = outputFolder,
                                                 sqlOnly = sqlOnly,
-                                                createTable = createTable,
                                                 verboseMode = verboseMode,
                                                 tempAchillesPrefix = tempAchillesPrefix)
 
@@ -1041,7 +1040,6 @@ dropAllScratchTables <- function(connectionDetails,
 #' @param vocabDatabaseSchema
 #' @param outputFolder                     Path to store logs and SQL files
 #' @param sqlOnly                          TRUE = just generate SQL files, don't actually run, FALSE = run Achilles
-#' @param createTable                      If true, new results tables will be created in the results schema. If not, the tables are assumed to already exist, and analysis results will be inserted (slower on MPP).
 #' @param verboseMode                      Boolean to determine if the console will show all execution steps. Default = TRUE
 #' @param tempAchillesPrefix               The prefix to use for the "temporary" (but actually permanent) Achilles analyses tables. Default is "tmpach"
 #'
@@ -1051,7 +1049,6 @@ optimizeAtlasCache <- function(connectionDetails,
                                vocabDatabaseSchema = resultsDatabaseSchema,
                                outputFolder = "output",
                                sqlOnly = FALSE,
-                               createTable = TRUE,
                                verboseMode = TRUE,
                                tempAchillesPrefix = "tmpach") {
 
@@ -1071,16 +1068,6 @@ optimizeAtlasCache <- function(connectionDetails,
                                          appenders = appenders)
   ParallelLogger::registerLogger(logger)
 
-  if (!createTable) {
-    sql_count <- SqlRender::render(sql = "delete from @resultsDatabaseSchema.achilles_result_concept_count;",
-                                   resultsDatabaseSchema = resultsDatabaseSchema)
-    sql_count <- SqlRender::translate(sql = sql_count, targetDialect = connectionDetails$dbms)
-
-    connection <- DatabaseConnector::connect(connectionDetails = connectionDetails)
-    on.exit(DatabaseConnector::disconnect(connection = connection))
-    DatabaseConnector::executeSql(connection = connection, sql = sql_count)
-  }
-
   resultsConceptCountTable <- list(tablePrefix = tempAchillesPrefix,
                                    schema = read.csv(file = system.file("csv", "schemas", "schema_achilles_results_concept_count.csv",
                                                      package = "Achilles"),
@@ -1088,20 +1075,19 @@ optimizeAtlasCache <- function(connectionDetails,
   optimizeAtlasCacheSql <- SqlRender::loadRenderTranslateSql(sqlFilename = "analyses/create_result_concept_table.sql",
                                                        packageName = "Achilles",
                                                        dbms = connectionDetails$dbms,
-                                                       createTable = createTable,
                                                        resultsDatabaseSchema = resultsDatabaseSchema,
                                                        vocabDatabaseSchema = vocabDatabaseSchema,
                                                        fieldNames = paste(resultsConceptCountTable$schema$FIELD_NAME, collapse = ", "))
-  ParallelLogger::logInfo("Optimizing atlas cache")
   if (!sqlOnly) {
     connection <- DatabaseConnector::connect(connectionDetails = connectionDetails)
-    on.exit(DatabaseConnector::disconnect(connection = connection))
-
     tryCatch({
+      ParallelLogger::logInfo("Optimizing atlas cache")
       DatabaseConnector::executeSql(connection = connection, sql = optimizeAtlasCacheSql)
       ParallelLogger::logInfo("Atlas cache was optimized")
     }, error = function(e) {
       ParallelLogger::logError(sprintf("Optimizing atlas cache [ERROR] (%s)", e))
+    }, finally = {
+      DatabaseConnector::disconnect(connection = connection)
     })
   }
 

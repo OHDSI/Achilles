@@ -1,7 +1,5 @@
-{@createTable}?{
-  IF OBJECT_ID('@resultsDatabaseSchema.achilles_result_concept_count', 'U') IS NOT NULL
-    drop table @resultsDatabaseSchema.achilles_result_concept_count;
-}
+IF OBJECT_ID('@resultsDatabaseSchema.achilles_result_concept_count', 'U') IS NOT NULL
+  drop table @resultsDatabaseSchema.achilles_result_concept_count;
 
 WITH concepts AS (
       SELECT
@@ -70,13 +68,8 @@ WITH concepts AS (
   GROUP BY stratum_2
   )
 
-{!@createTable}?{
-  insert into @resultsDatabaseSchema.achilles_result_concept_count
-}
 select @fieldNames
-{@createTable}?{
-  into @resultsDatabaseSchema.achilles_result_concept_count
-}
+into @resultsDatabaseSchema.achilles_result_concept_count
 from
 (
   SELECT
