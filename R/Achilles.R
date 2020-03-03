@@ -643,6 +643,8 @@ achilles <- function (connectionDetails,
   }
   achillesSql <- c(achillesSql, indicesSql)
 
+  # Optimize Atlas Cache -----------------------------------------------------------
+
   if (optimizeAtlasCache) {
     optimizeAtlasCacheSql <- optimizeAtlasCache(connectionDetails = connectionDetails,
                                                 resultsDatabaseSchema = resultsDatabaseSchema,
@@ -653,7 +655,7 @@ achilles <- function (connectionDetails,
                                                 tempAchillesPrefix = tempAchillesPrefix)
 
     achillesSql <- c(achillesSql, optimizeAtlasCacheSql)
-}
+  }
   
   # Run Heel? ---------------------------------------------------------------
   
@@ -1037,7 +1039,7 @@ dropAllScratchTables <- function(connectionDetails,
 #' @param connectionDetails                An R object of type \code{connectionDetails} created using the function \code{createConnectionDetails} in the \code{DatabaseConnector} package.
 #' @param resultsDatabaseSchema		       Fully qualified name of database schema that we can write final results to. Default is cdmDatabaseSchema.
 #'                                         On SQL Server, this should specifiy both the database and the schema, so for example, on SQL Server, 'cdm_results.dbo'.
-#' @param vocabDatabaseSchema
+#' @param vocabDatabaseSchema              String name of database schema that contains OMOP Vocabulary. Default is cdmDatabaseSchema. On SQL Server, this should specifiy both the database and the schema, so for example 'results.dbo'.
 #' @param outputFolder                     Path to store logs and SQL files
 #' @param sqlOnly                          TRUE = just generate SQL files, don't actually run, FALSE = run Achilles
 #' @param verboseMode                      Boolean to determine if the console will show all execution steps. Default = TRUE
@@ -1052,6 +1054,9 @@ optimizeAtlasCache <- function(connectionDetails,
                                verboseMode = TRUE,
                                tempAchillesPrefix = "tmpach") {
 
+  if (!dir.exists(outputFolder)) {
+    dir.create(path = outputFolder, recursive = TRUE)
+  }
   # Log execution --------------------------------------------------------------------------------------------------------------------
 
   unlink(file.path(outputFolder, "log_optimize_atlas_cache.txt"))
