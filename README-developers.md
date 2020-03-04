@@ -12,6 +12,8 @@ If you are interested in adding or modifying Achilles/Heel analyses, this is the
 
 * **inst/csv/schemas/schema_achilles_results.csv**: This file defines the schema for the main summary results.
 
+* **inst/csv/schemas/schema_achilles_results_concept_count.csv**: This file defines the schema for the optimized Atlas cache.
+
 * **inst/csv/schemas/schema_achilles_results_dist.csv**: This file defines the schema for the main distributed results.
 
 * **inst/csv/achilles/achilles_analysis_details.csv**: This file outlines all of the main Achilles analyses, identified by analysis_id and analysis_name.

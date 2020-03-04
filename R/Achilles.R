@@ -59,7 +59,7 @@
 #' @param sqlOnly                          Boolean to determine if Achilles should be fully executed. TRUE = just generate SQL files, don't actually run, FALSE = run Achilles
 #' @param outputFolder                     Path to store logs and SQL files
 #' @param verboseMode                      Boolean to determine if the console will show all execution steps. Default = TRUE
-#' 
+#' @param optimizeAtlasCache               Boolean to determine if the atlas cache has to be optimized. Default = FALSE
 #' @return                                 An object of type \code{achillesResults} containing details for connecting to the database containing the results 
 #' @examples                               \dontrun{
 #'                                           connectionDetails <- createConnectionDetails(dbms="sql server", server="some_server")
@@ -94,7 +94,8 @@ achilles <- function (connectionDetails,
                       dropScratchTables = TRUE,
                       sqlOnly = FALSE,
                       outputFolder = "output",
-                      verboseMode = TRUE) {
+                      verboseMode = TRUE,
+                      optimizeAtlasCache = FALSE) {
   
   achillesSql <- c()
   
@@ -208,7 +209,7 @@ achilles <- function (connectionDetails,
                       schema = read.csv(file = system.file("csv", "schemas", "schema_achilles_results_dist.csv", package = "Achilles"), 
                            header = TRUE),
                       analysisIds = analysisDetails[abs(analysisDetails$DISTRIBUTION) == 1, ]$ANALYSIS_ID))
-  
+
   # Initialize thread and scratchDatabaseSchema settings and verify ParallelLogger installed ---------------------------
   
   schemaDelim <- "."
@@ -572,18 +573,28 @@ achilles <- function (connectionDetails,
     ParallelLogger::logInfo("Merging scratch Achilles tables")
     
     if (numThreads == 1) {
-      for (sql in mergeSqls) {
-        DatabaseConnector::executeSql(connection = connection, sql = sql)
-      }
+      tryCatch({
+        for (sql in mergeSqls) {
+          DatabaseConnector::executeSql(connection = connection, sql = sql)
+        }
+      }, error = function(e) {
+          ParallelLogger::logError(sprintf("Merging scratch Achilles tables [ERROR] (%s)",
+            e))
+      })
     } else {
       cluster <- ParallelLogger::makeCluster(numberOfThreads = numThreads, singleThreadToMain = TRUE)
-      dummy <- ParallelLogger::clusterApply(cluster = cluster, 
-                                         x = mergeSqls, 
-                                         function(sql) {
-                                           connection <- DatabaseConnector::connect(connectionDetails = connectionDetails)
-                                           on.exit(DatabaseConnector::disconnect(connection = connection))
-                                           DatabaseConnector::executeSql(connection = connection, sql = sql)
-                                         })
+      tryCatch({
+        dummy <- ParallelLogger::clusterApply(cluster = cluster,
+                                              x = mergeSqls,
+                                              function(sql) {
+                                                connection <- DatabaseConnector::connect(connectionDetails = connectionDetails)
+                                                on.exit(DatabaseConnector::disconnect(connection = connection))
+                                                DatabaseConnector::executeSql(connection = connection, sql = sql)
+                                              })
+      }, error = function(e) {
+        ParallelLogger::logError(sprintf("Merging scratch Achilles tables (merging scratch Achilles tables) [ERROR] (%s)",
+                                         e))
+      })
       ParallelLogger::stopCluster(cluster = cluster)
     }
   }
@@ -631,6 +642,20 @@ achilles <- function (connectionDetails,
                                 achillesTables = unique(achillesTables))
   }
   achillesSql <- c(achillesSql, indicesSql)
+
+  # Optimize Atlas Cache -----------------------------------------------------------
+
+  if (optimizeAtlasCache) {
+    optimizeAtlasCacheSql <- optimizeAtlasCache(connectionDetails = connectionDetails,
+                                                resultsDatabaseSchema = resultsDatabaseSchema,
+                                                vocabDatabaseSchema = vocabDatabaseSchema,
+                                                outputFolder = outputFolder,
+                                                sqlOnly = sqlOnly,
+                                                verboseMode = verboseMode,
+                                                tempAchillesPrefix = tempAchillesPrefix)
+
+    achillesSql <- c(achillesSql, optimizeAtlasCacheSql)
+  }
   
   # Run Heel? ---------------------------------------------------------------
   
@@ -1006,6 +1031,76 @@ dropAllScratchTables <- function(connectionDetails,
   ParallelLogger::unregisterLogger("dropAllScratchTables")
 }
 
+#' Optimize atlas cache
+#'
+#' @details
+#' Post-processing, optimize data for atlas cache in separate table to help performance.
+#'
+#' @param connectionDetails                An R object of type \code{connectionDetails} created using the function \code{createConnectionDetails} in the \code{DatabaseConnector} package.
+#' @param resultsDatabaseSchema		       Fully qualified name of database schema that we can write final results to. Default is cdmDatabaseSchema.
+#'                                         On SQL Server, this should specifiy both the database and the schema, so for example, on SQL Server, 'cdm_results.dbo'.
+#' @param vocabDatabaseSchema              String name of database schema that contains OMOP Vocabulary. Default is cdmDatabaseSchema. On SQL Server, this should specifiy both the database and the schema, so for example 'results.dbo'.
+#' @param outputFolder                     Path to store logs and SQL files
+#' @param sqlOnly                          TRUE = just generate SQL files, don't actually run, FALSE = run Achilles
+#' @param verboseMode                      Boolean to determine if the console will show all execution steps. Default = TRUE
+#' @param tempAchillesPrefix               The prefix to use for the "temporary" (but actually permanent) Achilles analyses tables. Default is "tmpach"
+#'
+#' @export
+optimizeAtlasCache <- function(connectionDetails,
+                               resultsDatabaseSchema,
+                               vocabDatabaseSchema = resultsDatabaseSchema,
+                               outputFolder = "output",
+                               sqlOnly = FALSE,
+                               verboseMode = TRUE,
+                               tempAchillesPrefix = "tmpach") {
+
+  if (!dir.exists(outputFolder)) {
+    dir.create(path = outputFolder, recursive = TRUE)
+  }
+  # Log execution --------------------------------------------------------------------------------------------------------------------
+
+  unlink(file.path(outputFolder, "log_optimize_atlas_cache.txt"))
+  if (verboseMode) {
+    appenders <- list(ParallelLogger::createConsoleAppender(),
+                      ParallelLogger::createFileAppender(layout = ParallelLogger::layoutParallel,
+                                                         fileName = file.path(outputFolder, "log_optimize_atlas_cache.txt")))
+  } else {
+    appenders <- list(ParallelLogger::createFileAppender(layout = ParallelLogger::layoutParallel,
+                                                         fileName = file.path(outputFolder, "log_optimize_atlas_cache.txt")))
+  }
+  logger <- ParallelLogger::createLogger(name = "optimizeAtlasCache",
+                                         threshold = "INFO",
+                                         appenders = appenders)
+  ParallelLogger::registerLogger(logger)
+
+  resultsConceptCountTable <- list(tablePrefix = tempAchillesPrefix,
+                                   schema = read.csv(file = system.file("csv", "schemas", "schema_achilles_results_concept_count.csv",
+                                                     package = "Achilles"),
+                                   header = TRUE))
+  optimizeAtlasCacheSql <- SqlRender::loadRenderTranslateSql(sqlFilename = "analyses/create_result_concept_table.sql",
+                                                       packageName = "Achilles",
+                                                       dbms = connectionDetails$dbms,
+                                                       resultsDatabaseSchema = resultsDatabaseSchema,
+                                                       vocabDatabaseSchema = vocabDatabaseSchema,
+                                                       fieldNames = paste(resultsConceptCountTable$schema$FIELD_NAME, collapse = ", "))
+  if (!sqlOnly) {
+    connection <- DatabaseConnector::connect(connectionDetails = connectionDetails)
+    tryCatch({
+      ParallelLogger::logInfo("Optimizing atlas cache")
+      DatabaseConnector::executeSql(connection = connection, sql = optimizeAtlasCacheSql)
+      ParallelLogger::logInfo("Atlas cache was optimized")
+    }, error = function(e) {
+      ParallelLogger::logError(sprintf("Optimizing atlas cache [ERROR] (%s)", e))
+    }, finally = {
+      DatabaseConnector::disconnect(connection = connection)
+    })
+  }
+
+  ParallelLogger::unregisterLogger("optimizeAtlasCache")
+
+  invisible(optimizeAtlasCacheSql)
+}
+
 .getCdmVersion <- function(connectionDetails, 
                            cdmDatabaseSchema) {
   sql <- SqlRender::render(sql = "select cdm_version from @cdmDatabaseSchema.cdm_source",
@@ -1188,6 +1283,7 @@ dropAllScratchTables <- function(connectionDetails,
                                 resultsDatabaseSchema = resultsDatabaseSchema,
                                 analysisIds = paste(resultIds, collapse = ","))
     sql <- SqlRender::translate(sql = sql, targetDialect = connectionDetails$dbms)
+
     connection <- DatabaseConnector::connect(connectionDetails = connectionDetails)
     on.exit(DatabaseConnector::disconnect(connection = connection))
     DatabaseConnector::executeSql(connection = connection, sql = sql)
