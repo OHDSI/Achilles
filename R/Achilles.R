@@ -1210,9 +1210,7 @@ optimizeAtlasCache <- function(connectionDetails,
       analysisSql <- paste(c(analysisSql, benchmarkSql), collapse = " union all ")
       
     } 
-    SqlRender::translate(sql = analysisSql, 
-                         targetDialect = connectionDetails$dbms,
-                         oracleTempSchema = oracleTempSchema)
+    analysisSql
   })
   
   if (!sqlOnly & includeRawCost) {
@@ -1235,7 +1233,6 @@ optimizeAtlasCache <- function(connectionDetails,
       SqlRender::render(sql = "select @benchmarkSelect", benchmarkSelect = paste(benchmarkSelects, collapse = ", "))
     })
     benchmarkSql <- paste(benchmarkSqls, collapse = " union all ")
-    benchmarkSql <- SqlRender::translate(sql = benchmarkSql, targetDialect = connectionDetails$dbms)
     detailSqls <- c(detailSqls, benchmarkSql)
   }
   

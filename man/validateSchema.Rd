@@ -4,9 +4,16 @@
 \alias{validateSchema}
 \title{Validate the CDM schema}
 \usage{
-validateSchema(connectionDetails, cdmDatabaseSchema,
-  resultsDatabaseSchema = cdmDatabaseSchema, cdmVersion, runCostAnalysis,
-  outputFolder, sqlOnly = FALSE, verboseMode = TRUE)
+validateSchema(
+  connectionDetails,
+  cdmDatabaseSchema,
+  resultsDatabaseSchema = cdmDatabaseSchema,
+  cdmVersion,
+  runCostAnalysis,
+  outputFolder,
+  sqlOnly = FALSE,
+  verboseMode = TRUE
+)
 }
 \arguments{
 \item{connectionDetails}{An R object of type \code{connectionDetails} created using the function \code{createConnectionDetails} in the \code{DatabaseConnector} package.}

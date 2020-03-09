@@ -4,11 +4,17 @@
 \alias{launchHeelResultsViewer}
 \title{Launch the Achilles Heel Shiny app}
 \usage{
-launchHeelResultsViewer(connectionDetails, cdmDatabaseSchema,
-  resultsDatabaseSchema, scratchDatabaseSchema = resultsDatabaseSchema,
+launchHeelResultsViewer(
+  connectionDetails,
+  cdmDatabaseSchema,
+  resultsDatabaseSchema,
+  scratchDatabaseSchema = resultsDatabaseSchema,
   vocabDatabaseSchema = cdmDatabaseSchema,
-  tempAchillesPrefix = "tmpach", tempHeelPrefix = "tmpheel",
-  numThreads = 1, outputFolder)
+  tempAchillesPrefix = "tmpach",
+  tempHeelPrefix = "tmpheel",
+  numThreads = 1,
+  outputFolder
+)
 }
 \arguments{
 \item{connectionDetails}{An R object of type \code{connectionDetails} created using the function \code{createConnectionDetails} in the \code{DatabaseConnector} package.}

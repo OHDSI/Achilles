@@ -4,8 +4,11 @@
 \alias{fetchAchillesAnalysisResults}
 \title{fetchAchillesAnalysisResults}
 \usage{
-fetchAchillesAnalysisResults(connectionDetails, resultsDatabaseSchema,
-  analysisId)
+fetchAchillesAnalysisResults(
+  connectionDetails,
+  resultsDatabaseSchema,
+  analysisId
+)
 }
 \arguments{
 \item{connectionDetails}{An R object of type \code{connectionDetails} created using the function \code{createConnectionDetails} in the \code{DatabaseConnector} package.}

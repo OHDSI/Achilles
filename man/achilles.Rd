@@ -4,16 +4,30 @@
 \alias{achilles}
 \title{The main Achilles analyses (for v5.x)}
 \usage{
-achilles(connectionDetails, cdmDatabaseSchema,
+achilles(
+  connectionDetails,
+  cdmDatabaseSchema,
   resultsDatabaseSchema = cdmDatabaseSchema,
   scratchDatabaseSchema = resultsDatabaseSchema,
   vocabDatabaseSchema = cdmDatabaseSchema,
-  oracleTempSchema = resultsDatabaseSchema, sourceName = "",
-  analysisIds, createTable = TRUE, smallCellCount = 5,
-  cdmVersion = "5", runHeel = TRUE, validateSchema = FALSE,
-  runCostAnalysis = FALSE, createIndices = TRUE, numThreads = 1,
-  tempAchillesPrefix = "tmpach", dropScratchTables = TRUE,
-  sqlOnly = FALSE, outputFolder = "output", verboseMode = TRUE)
+  oracleTempSchema = resultsDatabaseSchema,
+  sourceName = "",
+  analysisIds,
+  createTable = TRUE,
+  smallCellCount = 5,
+  cdmVersion = "5",
+  runHeel = TRUE,
+  validateSchema = FALSE,
+  runCostAnalysis = FALSE,
+  createIndices = TRUE,
+  numThreads = 1,
+  tempAchillesPrefix = "tmpach",
+  dropScratchTables = TRUE,
+  sqlOnly = FALSE,
+  outputFolder = "output",
+  verboseMode = TRUE,
+  optimizeAtlasCache = FALSE
+)
 }
 \arguments{
 \item{connectionDetails}{An R object of type \code{connectionDetails} created using the function \code{createConnectionDetails} in the \code{DatabaseConnector} package.}
@@ -62,6 +76,8 @@ If not specified, all analyses will be executed. Use \code{\link{getAnalysisDeta
 \item{outputFolder}{Path to store logs and SQL files}
 
 \item{verboseMode}{Boolean to determine if the console will show all execution steps. Default = TRUE}
+
+\item{optimizeAtlasCache}{Boolean to determine if the atlas cache has to be optimized. Default = FALSE}
 }
 \value{
 An object of type \code{achillesResults} containing details for connecting to the database containing the results

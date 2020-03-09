@@ -37,5 +37,5 @@ Suggests:
 VignetteBuilder: knitr
 License: Apache License
 Roxygen: list(wrap = FALSE)
-RoxygenNote: 6.1.1
+RoxygenNote: 7.0.2
 Encoding: UTF-8

@@ -4,10 +4,16 @@
 \alias{dropAllScratchTables}
 \title{Drop all possible scratch tables}
 \usage{
-dropAllScratchTables(connectionDetails, scratchDatabaseSchema,
-  tempAchillesPrefix = "tmpach", tempHeelPrefix = "tmpheel",
-  numThreads = 1, tableTypes = c("achilles", "heel"), outputFolder,
-  verboseMode = TRUE)
+dropAllScratchTables(
+  connectionDetails,
+  scratchDatabaseSchema,
+  tempAchillesPrefix = "tmpach",
+  tempHeelPrefix = "tmpheel",
+  numThreads = 1,
+  tableTypes = c("achilles", "heel"),
+  outputFolder,
+  verboseMode = TRUE
+)
 }
 \arguments{
 \item{connectionDetails}{An R object of type \code{connectionDetails} created using the function \code{createConnectionDetails} in the \code{DatabaseConnector} package.}

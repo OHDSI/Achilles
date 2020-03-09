@@ -4,9 +4,15 @@
 \alias{exportToJson}
 \title{exportToJson}
 \usage{
-exportToJson(connectionDetails, cdmDatabaseSchema, resultsDatabaseSchema,
-  outputPath = getwd(), reports = getAllReports(),
-  vocabDatabaseSchema = cdmDatabaseSchema, compressIntoOneFile = FALSE)
+exportToJson(
+  connectionDetails,
+  cdmDatabaseSchema,
+  resultsDatabaseSchema,
+  outputPath = getwd(),
+  reports = getAllReports(),
+  vocabDatabaseSchema = cdmDatabaseSchema,
+  compressIntoOneFile = FALSE
+)
 }
 \arguments{
 \item{connectionDetails}{An R object of type ConnectionDetail (details for the function that contains server info, database type, optionally username/password, port)}

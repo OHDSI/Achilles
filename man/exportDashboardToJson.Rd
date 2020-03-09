@@ -4,9 +4,13 @@
 \alias{exportDashboardToJson}
 \title{exportDashboardToJson}
 \usage{
-exportDashboardToJson(connectionDetails, cdmDatabaseSchema,
-  resultsDatabaseSchema, outputPath = getwd(),
-  vocabDatabaseSchema = cdmDatabaseSchema)
+exportDashboardToJson(
+  connectionDetails,
+  cdmDatabaseSchema,
+  resultsDatabaseSchema,
+  outputPath = getwd(),
+  vocabDatabaseSchema = cdmDatabaseSchema
+)
 }
 \arguments{
 \item{connectionDetails}{An R object of type ConnectionDetail (details for the function that contains server info, database type, optionally username/password, port)}
