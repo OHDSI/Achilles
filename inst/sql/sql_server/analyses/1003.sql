@@ -4,7 +4,11 @@
 with rawData(count_value) as
 (
   select COUNT_BIG(distinct ce1.condition_concept_id) as count_value
-	from @cdmDatabaseSchema.condition_era ce1
+	from @cdmDatabaseSchema.condition_era ce1 inner join 
+  @cdmDatabaseSchema.observation_period op on ce1.person_id = op.person_id
+  -- only include events that occur during observation period
+  where ce1.condition_era_start_date <= op.observation_period_end_date and
+  isnull(ce1.condition_era_end_date,ce1.condition_era_start_date) >= op.observation_period_start_date
 	group by ce1.person_id
 ),
 overallStats (avg_value, stdev_value, min_value, max_value, total) as

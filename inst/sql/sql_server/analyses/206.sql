@@ -9,9 +9,15 @@ with rawData (stratum1_id, stratum2_id, count_value) as
 	from @cdmDatabaseSchema.person p1
 	inner join 
   (
-		select person_id, visit_concept_id, min(year(visit_start_date)) as visit_start_year
-		from @cdmDatabaseSchema.visit_occurrence
-		group by person_id, visit_concept_id
+		select vo.person_id, vo.visit_concept_id, min(year(vo.visit_start_date)) as visit_start_year
+		from @cdmDatabaseSchema.visit_occurrence vo
+		inner join 
+  @cdmDatabaseSchema.observation_period op on vo.person_id = op.person_id
+  -- only include events that occur during observation period
+  where vo.visit_start_date <= op.observation_period_end_date and
+  isnull(vo.visit_end_date,vo.visit_start_date) >= op.observation_period_start_date
+  
+		group by vo.person_id, vo.visit_concept_id
 	) vo1 on p1.person_id = vo1.person_id
 ),
 overallStats (stratum1_id, stratum2_id, avg_value, stdev_value, min_value, max_value, total) as

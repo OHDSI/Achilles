@@ -1,10 +1,15 @@
 -- 211	Distribution of length of stay by visit_concept_id
+-- restrict to visits inside observation period
 
 --HINT DISTRIBUTE_ON_KEY(stratum_id) 
 with rawData(stratum_id, count_value) as
 (
   select visit_concept_id AS stratum_id, datediff(dd,visit_start_date,visit_end_date) as count_value
-  from @cdmDatabaseSchema.visit_occurrence
+  from @cdmDatabaseSchema.visit_occurrence vo inner join 
+  @cdmDatabaseSchema.observation_period op on vo.person_id = op.person_id
+  -- only include events that occur during observation period
+  where vo.visit_start_date >= op.observation_period_start_date and
+  isnull(vo.visit_end_date,vo.visit_start_date) <= op.observation_period_end_date
 ),
 overallStats (stratum_id, avg_value, stdev_value, min_value, max_value, total) as
 (

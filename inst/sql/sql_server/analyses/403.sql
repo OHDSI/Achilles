@@ -3,9 +3,13 @@
 --HINT DISTRIBUTE_ON_KEY(count_value)
 with rawData(person_id, count_value) as
 (
-  select person_id, COUNT_BIG(distinct condition_concept_id) as count_value
-  from @cdmDatabaseSchema.condition_occurrence
-	group by person_id
+  select co.person_id, COUNT_BIG(distinct co.condition_concept_id) as count_value
+  from @cdmDatabaseSchema.condition_occurrence co inner join 
+  @cdmDatabaseSchema.observation_period op on co.person_id = op.person_id
+  -- only include events that occur during observation period
+  where co.condition_start_date <= op.observation_period_end_date and
+  isnull(co.condition_end_date,co.condition_start_date) >= op.observation_period_start_date
+	group by co.person_id
 ),
 overallStats (avg_value, stdev_value, min_value, max_value, total) as
 (
