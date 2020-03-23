@@ -7,13 +7,12 @@ with rawData(count_value) as
   from
 	(
   	select o1.person_id, COUNT_BIG(distinct o1.observation_concept_id) as num_observations
-  	from
-  	@cdmDatabaseSchema.observation o1 inner join 
-  @cdmDatabaseSchema.observation_period op on o1.person_id = op.person_id
-  -- only include events that occur during observation period
-  where o1.observation_date <= op.observation_period_end_date and
-  isnull(o1.observation_date,o1.observation_date) >= op.observation_period_start_date
-  	group by o1.person_id
+  	from @cdmDatabaseSchema.observation o1 inner join @cdmDatabaseSchema.observation_period op 
+  	  on o1.person_id = op.person_id
+    -- only include events that occur during observation period
+    where o1.observation_date <= op.observation_period_end_date and
+      o1.observation_date >= op.observation_period_start_date
+    group by o1.person_id
 	) t0
 ),
 overallStats (avg_value, stdev_value, min_value, max_value, total) as

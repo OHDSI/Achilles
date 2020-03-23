@@ -10,8 +10,7 @@ WITH rawData AS (
   @cdmDatabaseSchema.observation_period op on d1.person_id = op.person_id
   -- only include events that occur during observation period
   where d1.death_date <= op.observation_period_end_date and
-  isnull(d1.death_date,d1.death_date) >= op.observation_period_start_date
-  
+    d1.death_date >= op.observation_period_start_date
   group by YEAR(d1.death_date)*100 + month(d1.death_date)
 )
 SELECT
