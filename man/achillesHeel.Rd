@@ -4,16 +4,24 @@
 \alias{achillesHeel}
 \title{Execution of data quality rules (for v5 and above)}
 \usage{
-achillesHeel(connectionDetails, cdmDatabaseSchema,
+achillesHeel(
+  connectionDetails,
+  cdmDatabaseSchema,
   resultsDatabaseSchema = cdmDatabaseSchema,
   scratchDatabaseSchema = resultsDatabaseSchema,
   oracleTempSchema = scratchDatabaseSchema,
-  vocabDatabaseSchema = cdmDatabaseSchema, cdmVersion = "5",
-  numThreads = 1, tempHeelPrefix = "tmpheel",
-  dropScratchTables = FALSE, ThresholdAgeWarning = 125,
+  vocabDatabaseSchema = cdmDatabaseSchema,
+  cdmVersion = "5",
+  numThreads = 1,
+  tempHeelPrefix = "tmpheel",
+  dropScratchTables = FALSE,
+  ThresholdAgeWarning = 125,
   ThresholdOutpatientVisitPerc = 0.43,
-  ThresholdMinimalPtMeasDxRx = 20.5, outputFolder, sqlOnly = FALSE,
-  verboseMode = TRUE)
+  ThresholdMinimalPtMeasDxRx = 20.5,
+  outputFolder,
+  sqlOnly = FALSE,
+  verboseMode = TRUE
+)
 }
 \arguments{
 \item{connectionDetails}{An R object of type \code{connectionDetails} created using the function \code{createConnectionDetails} in the \code{DatabaseConnector} package.}

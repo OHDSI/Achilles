@@ -4,9 +4,13 @@
 \alias{exportDrugEraToJson}
 \title{exportDrugEraToJson}
 \usage{
-exportDrugEraToJson(connectionDetails, cdmDatabaseSchema,
-  resultsDatabaseSchema, outputPath = getwd(),
-  vocabDatabaseSchema = cdmDatabaseSchema)
+exportDrugEraToJson(
+  connectionDetails,
+  cdmDatabaseSchema,
+  resultsDatabaseSchema,
+  outputPath = getwd(),
+  vocabDatabaseSchema = cdmDatabaseSchema
+)
 }
 \arguments{
 \item{connectionDetails}{An R object of type ConnectionDetail (details for the function that contains server info, database type, optionally username/password, port)}

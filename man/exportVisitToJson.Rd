@@ -4,9 +4,13 @@
 \alias{exportVisitToJson}
 \title{exportVisitToJson}
 \usage{
-exportVisitToJson(connectionDetails, cdmDatabaseSchema,
-  resultsDatabaseSchema, outputPath = getwd(),
-  vocabDatabaseSchema = cdmDatabaseSchema)
+exportVisitToJson(
+  connectionDetails,
+  cdmDatabaseSchema,
+  resultsDatabaseSchema,
+  outputPath = getwd(),
+  vocabDatabaseSchema = cdmDatabaseSchema
+)
 }
 \arguments{
 \item{connectionDetails}{An R object of type ConnectionDetail (details for the function that contains server info, database type, optionally username/password, port)}
