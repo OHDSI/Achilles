@@ -20,15 +20,13 @@ inner join
           case when (concept_name like 'Inpatient%' or concept_name like 'Outpatient%' ) and (concept_name like '%primary%' or concept_name like '%1st position%') then 1
           when (concept_name like 'Inpatient%' or concept_name like 'Outpatient%' ) and (concept_name not like '%primary%' and concept_name not like '%1st position%') then 2
           else 0 end as concept_group_id,
-    case when concept_name like 'Inpatient%' then 'Claim- Inpatient: '
+          
+   concat(case when concept_name like 'Inpatient%' then 'Claim- Inpatient: '
           when concept_name like 'Outpatient%' then 'Claim- Outpatient: '
-          else concept_name end  
-          +
-          ''
-          +
+          else concept_name end, '',
           case when (concept_name like 'Inpatient%' or concept_name like 'Outpatient%' ) and (concept_name like '%primary%' or concept_name like '%1st position%') then 'Primary diagnosis'
           when (concept_name like 'Inpatient%' or concept_name like 'Outpatient%' ) and (concept_name not like '%primary%' and concept_name not like '%1st position%') then 'Secondary diagnosis'
-          else '' end as concept_group_name
+          else '' end) as concept_group_name
   from @vocab_database_schema.concept
   where lower(concept_class_id) = 'condition type' 
 ) c2 on ar1.stratum_2 = c2.concept_id
