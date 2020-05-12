@@ -23,7 +23,8 @@ Imports:
   SqlRender (>= 1.6.0),
   dplyr,
   rjson,
-  ParallelLogger
+  ParallelLogger,
+  readr
 Suggests:
   testthat,
   R.utils,
@@ -37,5 +38,5 @@ Suggests:
 VignetteBuilder: knitr
 License: Apache License
 Roxygen: list(wrap = FALSE)
-RoxygenNote: 7.0.2
+RoxygenNote: 7.1.0
 Encoding: UTF-8
