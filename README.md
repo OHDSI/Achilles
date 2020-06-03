@@ -113,8 +113,7 @@ Achilles is actively being developed for CDM v5.x only.
       cdmDatabaseSchema = "cdm5_inst", 
       resultsDatabaseSchema = "results", 
       outputPath = "c:/myPath/AchillesExport", 
-      cdmVersion = "5.3.0",
-      compressIntoOneFile = TRUE # creates gzipped file of all JSON files)
+      compressIntoOneFile = TRUE) # creates gzipped file of all JSON files
     ```
 
 1. To run only Achilles Heel (component of Achilles), use the following command:
