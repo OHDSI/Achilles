@@ -5,7 +5,7 @@
 SELECT DISTINCT 
   YEAR(observation_period_start_date) AS obs_year,
   DATEFROMPARTS(YEAR(observation_period_start_date), 1, 1) AS obs_year_start,
-  DATEFROMPARTS(YEAR(observation_period_start_date), 12, 31) AS obs_year_end
+  DATETIMEFROMPARTS(YEAR(observation_period_start_date), 12, 31, 23, 59, 59, 999) AS obs_year_end
 INTO
   #temp_dates_109
 FROM @cdmDatabaseSchema.observation_period
