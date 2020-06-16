@@ -27,8 +27,8 @@ from
   			1020
   			)
   WHERE (
-  		CAST(ar1.stratum_1 AS INT) + 1 = CAST(ar2.stratum_1 AS INT)
-  		OR CAST(ar1.stratum_1 AS INT) + 89 = CAST(ar2.stratum_1 AS INT)
+  		CAST(ar1.stratum_1 AS INT DEFAULT 0 ON CONVERSION ERROR) + 1 = CAST(ar2.stratum_1 AS INT DEFAULT 0 ON CONVERSION ERROR)
+  		OR CAST(ar1.stratum_1 AS INT DEFAULT 0 ON CONVERSION ERROR) + 89 = CAST(ar2.stratum_1 AS INT DEFAULT 0 ON CONVERSION ERROR)
   		)
   	AND 1.0 * abs(ar2.count_value - ar1.count_value) / ar1.count_value > 1
   	AND ar1.count_value > 10
