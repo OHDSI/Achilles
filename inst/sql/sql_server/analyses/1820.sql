@@ -1,4 +1,4 @@
--- 1820	Number of observation records by condition occurrence start month
+-- 1820	Number of measurement records  by measurement start month
 
 --HINT DISTRIBUTE_ON_KEY(stratum_1)
 WITH rawData AS (
