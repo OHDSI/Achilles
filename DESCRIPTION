@@ -23,7 +23,8 @@ Imports:
   SqlRender (>= 1.6.0),
   dplyr,
   rjson,
-  ParallelLogger
+  ParallelLogger,
+  readr
 Suggests:
   testthat,
   R.utils,

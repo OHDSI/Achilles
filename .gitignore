@@ -38,3 +38,6 @@ rsconnect/
 output/
 
 *.log
+
+# R environment settings file
+.Renviron
