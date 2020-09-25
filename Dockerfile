@@ -1,15 +1,15 @@
 # A Docker container to run the OHDSI/Achilles analysis tool
-FROM ubuntu:trusty
+FROM ubuntu:xenial
 
-MAINTAINER Aaron Browne <brownea@email.chop.edu>
+MAINTAINER Taha Abdul-Basser <ta2471@cumc.columbia.edu>
 
 # Install java, R and required packages and clean up.
-RUN echo deb http://ppa.launchpad.net/marutter/rrutter/ubuntu trusty main >> /etc/apt/sources.list && \
-    echo deb http://ppa.launchpad.net/marutter/c2d4u/ubuntu trusty main >> /etc/apt/sources.list && \
+RUN echo deb http://ppa.launchpad.net/marutter/rrutter4.0/ubuntu xenial main >> /etc/apt/sources.list && \
+    echo deb http://ppa.launchpad.net/c2d4u.team/c2d4u4.0+/ubuntu xenial main >> /etc/apt/sources.list && \
     apt-key adv --keyserver keyserver.ubuntu.com --recv-keys C9A7585B49D51698710F3A115E25F516B04C661B && \
     sed 's#http://.*archive\.ubuntu\.com/ubuntu/#mirror://mirrors.ubuntu.com/mirrors.txt#g' -i /etc/apt/sources.list && \
     apt-get update && \
-    DEBIAN_FRONTEND=noninteractive apt-get install -y \
+    DEBIAN_FRONTEND=noninteractive apt-get install -y --allow-unauthenticated \
       r-base \
       r-cran-devtools \
       r-cran-httr \
@@ -21,7 +21,8 @@ RUN echo deb http://ppa.launchpad.net/marutter/rrutter/ubuntu trusty main >> /et
       r-cran-urltools \
       libxml2-dev \
       littler \
-      openjdk-7-jdk \
+      locales \
+      openjdk-8-jdk \
     && rm -rf /var/lib/apt/lists/* \
     && R CMD javareconf
 
