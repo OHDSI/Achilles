@@ -104,7 +104,7 @@ Achilles is actively being developed for CDM v5.x only.
 
     Execution of all Achilles pre-computations may take a long time, particularly in single-threaded mode and with COST analyses enabled. See <extras/notes.md> file to find out how some analyses can be excluded to make the execution faster (excluding cost pre-computations) 
       
-    Currently `"sql server"`, `"pdw"`, `"oracle"`, `"postgresql"`, `"redshift"`, `"mysql"`, `"impala"`, and `"bigquery"` are supported as `dbms`. `cdmVersion` can be *ONLY* 5.x (please look at prior commit history for v4 support).
+    The SQL platforms supported by [DatabaseConnector](https://github.com/OHDSI/DatabaseConnector) and [SqlRender](https://github.com/OHDSI/SqlRender) are the **only** ones supported here in Achilles as `dbms`. `cdmVersion` can be *ONLY* 5.x (please look at prior commit history for v4 support).
 
 1. To use [AchillesWeb](https://github.com/OHDSI/AchillesWeb) to explore the Achilles statistics, you must first export the statistics to a folder JSON files, which can optionally be compressed into one gzipped file for easier transportability.
 
@@ -113,8 +113,7 @@ Achilles is actively being developed for CDM v5.x only.
       cdmDatabaseSchema = "cdm5_inst", 
       resultsDatabaseSchema = "results", 
       outputPath = "c:/myPath/AchillesExport", 
-      cdmVersion = "5.3.0",
-      compressIntoOneFile = TRUE # creates gzipped file of all JSON files)
+      compressIntoOneFile = TRUE) # creates gzipped file of all JSON files
     ```
 
 1. To run only Achilles Heel (component of Achilles), use the following command:

@@ -43,7 +43,7 @@ RUN R -e "install.packages( \
 ) "
 
 # Install Achilles requirements that need to be installed from source
-RUN echo 'options(repos=structure(c(CRAN="http://cran.cnr.berkeley.edu/")))' > /root/.Rprofile && \
+RUN echo 'options(repos=structure(c(CRAN="https://cloud.r-project.org/")))' > /root/.Rprofile && \
     /usr/share/doc/littler/examples/install.r remotes && \
     /usr/share/doc/littler/examples/install.r docopt && \
     /usr/share/doc/littler/examples/install.r openxlsx && \
