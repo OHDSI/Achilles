@@ -56,6 +56,7 @@ RUN echo 'options(repos=structure(c(CRAN="https://cloud.r-project.org/")))' > /r
     /usr/share/doc/littler/examples/install.r snow && \
     /usr/share/doc/littler/examples/install.r mailR && \
     /usr/share/doc/littler/examples/install.r dplyr && \
+    /usr/share/doc/littler/examples/install.r readr && \
     /usr/share/doc/littler/examples/installGithub.r \
       OHDSI/SqlRender \
       OHDSI/DatabaseConnectorJars \
