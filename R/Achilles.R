@@ -97,7 +97,7 @@ achilles <- function (connectionDetails,
                       verboseMode = TRUE,
                       optimizeAtlasCache = FALSE) {
   
-  total_start <- Sys.time()
+  totalStart <- Sys.time()
   achillesSql <- c()
   
   # Log execution -----------------------------------------------------------------------------------------------------------------
@@ -701,8 +701,8 @@ achilles <- function (connectionDetails,
   
   invisible(achillesResults)
   
-  total_delta <- Sys.time() - total_start
-  ParallelLogger::logInfo(sprintf("[Total Runtime] %f %s", total_delta, attr(total_delta, "units")))  
+  totalDelta <- Sys.time() - totalStart
+  ParallelLogger::logInfo(sprintf("[Total Runtime] %f %s", totalDelta, attr(totalDelta, "units")))  
 }
 
 
