@@ -1,5 +1,7 @@
 ACHILLES_SOURCE=<source_name>
 ACHILLES_DB_URI=<db_uri>
+ACHILLES_DB_PASSWORD=<db_password>
+ACHILLES_DB_USERBAME=<db_username>
 ACHILLES_CDM_SCHEMA=<cdm_schema>
 ACHILLES_VOCAB_SCHEMA=<vocab_schema>
 ACHILLES_RES_SCHEMA=<results_schema>
