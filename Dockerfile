@@ -48,23 +48,24 @@ RUN R -e "install.packages( \
 
 # Install Achilles requirements that need to be installed from source
 RUN echo 'options(repos=structure(c(CRAN="https://cloud.r-project.org/")))' > /root/.Rprofile && \
-  /usr/share/doc/littler/examples/install.r remotes && \
-  /usr/share/doc/littler/examples/install.r docopt && \
-  /usr/share/doc/littler/examples/install.r openxlsx && \
-  /usr/share/doc/littler/examples/install.r httr && \
-  /usr/share/doc/littler/examples/install.r rjson && \
-  /usr/share/doc/littler/examples/install.r R.oo && \
-  /usr/share/doc/littler/examples/install.r formatR && \
-  /usr/share/doc/littler/examples/install.r R.utils && \
-  /usr/share/doc/littler/examples/install.r snow && \
-  /usr/share/doc/littler/examples/install.r mailR && \
-  /usr/share/doc/littler/examples/install.r dplyr && \
-  /usr/share/doc/littler/examples/installGithub.r \
-  OHDSI/SqlRender \
-  OHDSI/DatabaseConnectorJars \
-  OHDSI/DatabaseConnector \
-  OHDSI/ParallelLogger \
-  && rm -rf /tmp/downloaded_packages/ /tmp/*.rds
+    /usr/share/doc/littler/examples/install.r remotes && \
+    /usr/share/doc/littler/examples/install.r docopt && \
+    /usr/share/doc/littler/examples/install.r openxlsx && \
+    /usr/share/doc/littler/examples/install.r httr && \
+    /usr/share/doc/littler/examples/install.r rjson && \
+    /usr/share/doc/littler/examples/install.r R.oo && \
+    /usr/share/doc/littler/examples/install.r formatR && \
+    /usr/share/doc/littler/examples/install.r R.utils && \
+    /usr/share/doc/littler/examples/install.r snow && \
+    /usr/share/doc/littler/examples/install.r mailR && \
+    /usr/share/doc/littler/examples/install.r dplyr && \
+    /usr/share/doc/littler/examples/install.r readr && \
+    /usr/share/doc/littler/examples/installGithub.r \
+      OHDSI/SqlRender \
+      OHDSI/DatabaseConnectorJars \
+      OHDSI/DatabaseConnector \
+      OHDSI/ParallelLogger \
+    && rm -rf /tmp/downloaded_packages/ /tmp/*.rds
 
 # Configure workspace
 WORKDIR /opt/app
