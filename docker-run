@@ -28,13 +28,13 @@ dir.create(output_path, showWarnings=FALSE, recursive=TRUE, mode="0755")
 # Parse DB URI into pieces.
 db_conf <- parse_url(env_vars$ACHILLES_DB_URI)
 
-# Some connection packages need the database on the server argument.
-server <- paste(db_conf$hostname, db_conf$path, sep="/")
+# The scheme for SQL Server will be "sqlserver" while the connectionDetails expect "sql server"
+dbms <- sub("sqlserver", "sql server", db_conf$scheme)
 
 # Create connection details using DatabaseConnector utility.
 connectionDetails <- createConnectionDetails(
-    dbms=db_conf$scheme, user=db_conf$username, password=db_conf$password,
-    server=server, port=db_conf$port
+    dbms=dbms, user=db_conf$username, password=db_conf$password,
+    server=db_conf$hostname, port=db_conf$port, extraSettings=db_conf$query$extraSettings
 )
 
 args <- commandArgs(trailingOnly = TRUE)
