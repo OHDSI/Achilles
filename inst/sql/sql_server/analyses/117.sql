@@ -18,7 +18,4 @@ left join @cdmDatabaseSchema.observation_period op1
 on year(op1.observation_period_start_date)*100 + month(op1.observation_period_start_date) <= t1.obs_month
 and year(op1.observation_period_end_date)*100 + month(op1.observation_period_end_date) >= t1.obs_month
 group by t1.obs_month
-having COALESCE(COUNT_BIG(distinct op1.PERSON_ID),0) > 0;on_period_end_date)*100 + MONTH(op1.observation_period_end_date) >= t1.obs_month
-group by t1.obs_month;
-
-
+having COALESCE(COUNT_BIG(distinct op1.PERSON_ID),0) > 0;
