@@ -1,9 +1,6 @@
 generateAresMeasurementReports <- function(connectionDetails,cdmDatabaseSchema, resultsDatabaseSchema, outputPath, vocabDatabaseSchema = cdmDatabaseSchema)
 {
   writeLines("Generating Measurement reports")
-  measurementsFolder <- file.path(outputPath,"measurements")
-  dir.create(measurementsFolder,showWarnings = F)
-  
   queryPrevalenceByGenderAgeYear <- SqlRender::loadRenderTranslateSql(sqlFilename = "export/measurement/sqlPrevalenceByGenderAgeYear.sql",
                                                                       packageName = "Achilles",
                                                                       dbms = connectionDetails$dbms,
@@ -123,7 +120,7 @@ generateAresMeasurementReports <- function(connectionDetails,cdmDatabaseSchema, 
     report$UPPER_LIMIT_DISTRIBUTION <- dataUpperLimitDistribution[dataUpperLimitDistribution$CONCEPT_ID == concept_id,c(2,3,4,5,6,7,8,9)]
     report$VALUES_RELATIVE_TO_NORM <- dataValuesRelativeToNorm[dataValuesRelativeToNorm$MEASUREMENT_CONCEPT_ID == concept_id,c(4,5)]
     
-    filename <- paste(outputPath, "/measurements/measurement_" , concept_id , ".json", sep='')  
+    filename <- paste(outputPath, "/concepts/concept_" , concept_id , ".json", sep='')  
     write(jsonlite::toJSON(report),filename)  
   }
   
@@ -133,9 +130,6 @@ generateAresMeasurementReports <- function(connectionDetails,cdmDatabaseSchema, 
 generateAresConditionReports <- function(connectionDetails,cdmDatabaseSchema, resultsDatabaseSchema, outputPath, vocabDatabaseSchema = cdmDatabaseSchema)
 {
   writeLines("Generating condition reports")
-  conditionsFolder <- file.path(outputPath,"conditions")
-  dir.create(conditionsFolder,showWarnings = F)
-  
   queryPrevalenceByGenderAgeYear <- SqlRender::loadRenderTranslateSql(sqlFilename = "export/condition/sqlPrevalenceByGenderAgeYear.sql",
                                                                       packageName = "Achilles",
                                                                       dbms = connectionDetails$dbms,
@@ -181,12 +175,14 @@ generateAresConditionReports <- function(connectionDetails,cdmDatabaseSchema, re
 
   buildConditionReport <- function(concept_id) {
     report <- {}
+    report$CONCEPT_ID = concept_id
+    report$CONCEPT_NAME = dataPrevalenceByMonth[dataPrevalenceByMonth$CONCEPT_ID == concept_id,2][[1]]
     report$PREVALENCE_BY_GENDER_AGE_YEAR <- dataPrevalenceByGenderAgeYear[dataPrevalenceByGenderAgeYear$CONCEPT_ID == concept_id,c(3,4,5,6)]    
     report$PREVALENCE_BY_MONTH <- dataPrevalenceByMonth[dataPrevalenceByMonth$CONCEPT_ID == concept_id,c(3,4)]
     report$CONDITIONS_BY_TYPE <- dataConditionsByType[dataConditionsByType$CONDITION_CONCEPT_ID == concept_id,c(4,5)]
     report$AGE_AT_FIRST_DIAGNOSIS <- dataAgeAtFirstDiagnosis[dataAgeAtFirstDiagnosis$CONCEPT_ID == concept_id,c(2,3,4,5,6,7,8,9)]
     
-    filename <- paste(outputPath, "/conditions/condition_" , concept_id , ".json", sep='')  
+    filename <- paste(outputPath, "/concepts/concept_" , concept_id , ".json", sep='')  
     write(jsonlite::toJSON(report),filename)  
   }
   
@@ -329,6 +325,9 @@ exportAres <- function(connectionDetails,cdmDatabaseSchema, resultsDatabaseSchem
   data.table::fwrite(dataProcedures, file=paste0(sourceOutputPath, "/procedure-domain-summary.csv"))   
   
   # concept level reporting
+  conceptsFolder <- file.path(sourceOutputPath,"concepts")
+  dir.create(conceptsFolder,showWarnings = F)
+  
   generateAresMeasurementReports(connectionDetails,cdmDatabaseSchema,resultsDatabaseSchema, sourceOutputPath)
   generateAresConditionReports(connectionDetails,cdmDatabaseSchema,resultsDatabaseSchema, sourceOutputPath)  
 }
