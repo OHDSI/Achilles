@@ -1,4 +1,4 @@
-generateAresMeasurementReports <- function(connectionDetails,cdmDatabaseSchema, resultsDatabaseSchema, outputPath, vocabDatabaseSchema = cdmDatabaseSchema)
+generateAresMeasurementReports <- function(connectionDetails, cdmDatabaseSchema, resultsDatabaseSchema, vocabDatabaseSchema, outputPath)
 {
   writeLines("Generating Measurement reports")
   queryPrevalenceByGenderAgeYear <- SqlRender::loadRenderTranslateSql(sqlFilename = "export/measurement/sqlPrevalenceByGenderAgeYear.sql",
@@ -127,7 +127,7 @@ generateAresMeasurementReports <- function(connectionDetails,cdmDatabaseSchema, 
   x <- lapply(uniqueConcepts, buildMeasurementReport)  
 }
 
-generateAresConditionReports <- function(connectionDetails,cdmDatabaseSchema, resultsDatabaseSchema, outputPath, vocabDatabaseSchema = cdmDatabaseSchema)
+generateAresConditionReports <- function(connectionDetails,cdmDatabaseSchema, resultsDatabaseSchema, vocabDatabaseSchema, outputPath)
 {
   writeLines("Generating condition reports")
   queryPrevalenceByGenderAgeYear <- SqlRender::loadRenderTranslateSql(sqlFilename = "export/condition/sqlPrevalenceByGenderAgeYear.sql",
@@ -212,7 +212,7 @@ generateAresConditionReports <- function(connectionDetails,cdmDatabaseSchema, re
 #'   exportToJson(connectionDetails, cdmDatabaseSchema="cdm4_sim", outputPath="your/output/path")
 #' }
 #' @export
-exportAres <- function(connectionDetails,cdmDatabaseSchema, resultsDatabaseSchema, outputPath, vocabDatabaseSchema = cdmDatabaseSchema)
+exportAres <- function(connectionDetails, cdmDatabaseSchema, resultsDatabaseSchema, vocabDatabaseSchema, outputPath)
 {
   conn <- DatabaseConnector::connect(connectionDetails)
   
@@ -328,6 +328,6 @@ exportAres <- function(connectionDetails,cdmDatabaseSchema, resultsDatabaseSchem
   conceptsFolder <- file.path(sourceOutputPath,"concepts")
   dir.create(conceptsFolder,showWarnings = F)
   
-  generateAresMeasurementReports(connectionDetails,cdmDatabaseSchema,resultsDatabaseSchema, sourceOutputPath)
-  generateAresConditionReports(connectionDetails,cdmDatabaseSchema,resultsDatabaseSchema, sourceOutputPath)  
+  generateAresMeasurementReports(connectionDetails, cdmDatabaseSchema, resultsDatabaseSchema, vocabDatabaseSchema, sourceOutputPath)
+  generateAresConditionReports(connectionDetails, cdmDatabaseSchema, resultsDatabaseSchema, vocabDatabaseSchema, sourceOutputPath)  
 }
