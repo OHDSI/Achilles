@@ -2,10 +2,10 @@
 
 --HINT DISTRIBUTE_ON_KEY(stratum_1)
 -- generating date key sequences in a cross-dialect compatible fashion
-with century as (select '19' num union select '20'), 
-tens as (select '0' num union select '1' union select '2' union select '3' union select '4' union select '5' union select '6' union select '7' union select '8' union select '9'),
-ones as (select '0' num union select '1' union select '2' union select '3' union select '4' union select '5' union select '6' union select '7' union select '8' union select '9'),
-months as (select '01' as num union select '02' union select '03' union select '04' union select '05' union select '06' union select '07' union select '08' union select '09' union select '10' union select '11' union select '12'),
+with century as (select '19' num union select '20' num), 
+tens as (select '0' num union select '1' num union select '2' num union select '3' num union select '4' num union select '5' num union select '6' num union select '7' num union select '8' num union select '9' num),
+ones as (select '0' num union select '1' num union select '2' num union select '3' num union select '4' num union select '5' num union select '6' num union select '7' num union select '8' num union select '9' num),
+months as (select '01' as num union select '02' num union select '03' num union select '04' num union select '05' num union select '06' num union select '07' num union select '08' num union select '09' num union select '10' num union select '11' num union select '12' num),
 date_keys as (select cast(concat(century.num, tens.num, ones.num,months.num) as int) obs_month from century cross join tens cross join ones cross join months)
 SELECT
   117 as analysis_id,  
