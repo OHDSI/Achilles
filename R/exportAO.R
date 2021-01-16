@@ -194,6 +194,10 @@ generateAOConditionReports <- function(connectionDetails,cdmDatabaseSchema, resu
 #' @description
 #' \code{exportAO} Exports Achilles statistics - alpha option
 #'
+#' @details
+#' Creates export files 
+#' 
+#' 
 #' @param connectionDetails             An R object of type ConnectionDetail (details for the function that contains server info, database type, optionally username/password, port)
 #' @param cdmDatabaseSchema             Name of the database schema that contains the OMOP CDM.
 #' @param resultsDatabaseSchema     		Name of the database schema that contains the Achilles analysis files. Default is cdmDatabaseSchema
@@ -219,7 +223,7 @@ exportAO <- function(connectionDetails, cdmDatabaseSchema, resultsDatabaseSchema
   metadata <- DatabaseConnector::querySql(conn, sql)
   sourceOutputPath <- file.path(outputPath, metadata$CDM_SOURCE_ABBREVIATION,format(metadata$CDM_RELEASE_DATE, "%Y%m%d"))
   dir.create(sourceOutputPath,showWarnings = F,recursive=T)
-  print(paste0("processing ao export to ", sourceOutputPath))
+  print(paste0("processing AO export to ", sourceOutputPath))
   
   # data density - totals
   renderedSql <- SqlRender::loadRenderTranslateSql(sqlFilename = "export/datadensity/totalrecords.sql",
