@@ -19,6 +19,7 @@
 # @author Observational Health Data Sciences and Informatics
 # @author Martijn Schuemie
 # @author Patrick Ryan
+# @author Frank DeFalco
 # @author Vojtech Huser
 # @author Chris Knoll
 # @author Ajit Londhe
