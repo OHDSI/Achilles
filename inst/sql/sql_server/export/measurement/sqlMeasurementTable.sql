@@ -11,7 +11,7 @@ from
 	inner join
 	(
 		select concept_id, concept_name
-		from @cdm_database_schema.concept
+		from @vocab_database_schema.concept
 		where domain_id = 'Measurement'
 	) concept
 	on concept.concept_id = ar1.stratum_1 and concept.concept_id = ar2.stratum_1,
