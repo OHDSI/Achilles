@@ -103,7 +103,8 @@ generateAOMeasurementReports <- function(connectionDetails, cdmDatabaseSchema, r
   dataFrequencyDistribution <- DatabaseConnector::querySql(conn,queryFrequencyDistribution)
   
   uniqueConcepts <- unique(dataPrevalenceByMonth$CONCEPT_ID)
-
+  print(paste0("processing " , length(uniqueConcepts), " measurements"))
+  
   buildMeasurementReport <- function(concept_id) {
     report <- {}
     report$CONCEPT_ID = concept_id
@@ -172,7 +173,8 @@ generateAOConditionReports <- function(connectionDetails,cdmDatabaseSchema, resu
   dataConditionsByType <- DatabaseConnector::querySql(conn,queryConditionsByType)    
   dataAgeAtFirstDiagnosis <- DatabaseConnector::querySql(conn,queryAgeAtFirstDiagnosis)      
   uniqueConcepts <- unique(dataPrevalenceByMonth$CONCEPT_ID)
-
+  print(paste0("processing " , length(uniqueConcepts), " conditions"))
+  
   buildConditionReport <- function(concept_id) {
     report <- {}
     report$CONCEPT_ID = concept_id
@@ -310,6 +312,23 @@ exportAO <- function(connectionDetails, cdmDatabaseSchema, resultsDatabaseSchema
   dataMeasurements$RECORDS_PER_PERSON <- format(round(dataMeasurements$RECORDS_PER_PERSON,1),nsmall=1)
   data.table::fwrite(dataMeasurements, file=paste0(sourceOutputPath, "/measurement-domain-summary.csv"))   
   
+  # domain summary - visits
+  queryVisits <- SqlRender::loadRenderTranslateSql(sqlFilename = "export/visit/sqlVisitTreemap.sql",
+                                                         packageName = "Achilles",
+                                                         dbms = connectionDetails$dbms,
+                                                         warnOnMissingParameters = FALSE,
+                                                         cdm_database_schema = cdmDatabaseSchema,
+                                                         results_database_schema = resultsDatabaseSchema,
+                                                         vocab_database_schema = vocabDatabaseSchema
+  )  
+  dataVisits <- DatabaseConnector::querySql(conn,queryVisits)   
+  dataVisits$CONCEPT_PATH
+  dataVisits$PERCENT_PERSONS <- format(round(dataVisits$PERCENT_PERSONS,2), nsmall=2)
+  dataVisits$RECORDS_PER_PERSON <- format(round(dataVisits$RECORDS_PER_PERSON,1),nsmall=1)
+  names(dataVisits)[names(dataVisits) == 'CONCEPT_PATH'] <- 'CONCEPT_NAME'
+  
+  data.table::fwrite(dataVisits, file=paste0(sourceOutputPath, "/visit-domain-summary.csv"))   
+  
   # domain summary - procedures
   queryProcedures <- SqlRender::loadRenderTranslateSql(sqlFilename = "export/procedure/sqlProcedureTable.sql",
                                                          packageName = "Achilles",
@@ -323,6 +342,18 @@ exportAO <- function(connectionDetails, cdmDatabaseSchema, resultsDatabaseSchema
   dataProcedures$PERCENT_PERSONS <- format(round(dataProcedures$PERCENT_PERSONS,2), nsmall=2)
   dataProcedures$RECORDS_PER_PERSON <- format(round(dataProcedures$RECORDS_PER_PERSON,1),nsmall=1)
   data.table::fwrite(dataProcedures, file=paste0(sourceOutputPath, "/procedure-domain-summary.csv"))   
+  
+  # quality - completeness
+  queryCompleteness <- SqlRender::loadRenderTranslateSql(sqlFilename = "export/quality/sqlCompletenessTable.sql",
+                                                       packageName = "Achilles",
+                                                       dbms = connectionDetails$dbms,
+                                                       warnOnMissingParameters = FALSE,
+                                                       results_database_schema = resultsDatabaseSchema
+  )  
+  dataCompleteness <- DatabaseConnector::querySql(conn,queryCompleteness)   
+  data.table::fwrite(dataCompleteness, file=paste0(sourceOutputPath, "/quality-completeness.csv"))   
+  
+  
   
   # concept level reporting
   conceptsFolder <- file.path(sourceOutputPath,"concepts")
