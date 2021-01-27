@@ -146,7 +146,8 @@ exportToJson <- function (connectionDetails,
   
   if (("META" %in% reports))
   {
-    generateDomainMetaReport(conn, connectionDetails$dbms, cdmDatabaseSchema, resultsDatabaseSchema, outputPath, vocabDatabaseSchema)
+    generateMetadataReport(conn, connectionDetails$dbms, cdmDatabaseSchema, resultsDatabaseSchema, outputPath, vocabDatabaseSchema)
+    generateCdmSourceReport(conn, connectionDetails$dbms, cdmDatabaseSchema, resultsDatabaseSchema, outputPath, vocabDatabaseSchema)
   }
   
   if ( ("MEASUREMENT" %in% reports))
@@ -668,26 +669,49 @@ generateAchillesPerformanceReport <- function(conn, dbms, cdmDatabaseSchema, res
   write(jsonOutput, file=paste(outputPath, "/achillesperformance.json", sep=""))  
 }
 
-generateDomainMetaReport <- function(conn, dbms, cdmDatabaseSchema, resultsDatabaseSchema, outputPath, vocabDatabaseSchema = cdmDatabaseSchema) {
-  writeLines("Generating domain meta report")
+generateMetadataReport <- function(conn, dbms, cdmDatabaseSchema, resultsDatabaseSchema, outputPath, vocabDatabaseSchema = cdmDatabaseSchema) {
+  writeLines("Generating metadata report")
   output <- {}
   
-  queryDomainMeta <- SqlRender::loadRenderTranslateSql(sqlFilename = "export/domainmeta/sqlDomainMeta.sql",
+  queryMetadata <- SqlRender::loadRenderTranslateSql(sqlFilename = "export/metadata/sqlMetadata.sql",
                                             packageName = "Achilles",
                                             dbms = dbms,
                                             warnOnMissingParameters = FALSE,
                                             cdm_database_schema = cdmDatabaseSchema
   )  
   
-  if ("CDM_DOMAIN_META" %in% DatabaseConnector::getTableNames(connection = conn, databaseSchema = cdmDatabaseSchema))
+  if ("METADATA" %in% DatabaseConnector::getTableNames(connection = conn, databaseSchema = cdmDatabaseSchema))
   {
-    output$MESSAGES <- DatabaseConnector::querySql(conn, queryDomainMeta) 
+    output$MESSAGES <- DatabaseConnector::querySql(conn, queryMetadata) 
     jsonOutput = rjson::toJSON(output)
-    write(jsonOutput, file=paste(outputPath, "/domainmeta.json", sep=""))  
+    write(jsonOutput, file=paste(outputPath, "/metadata.json", sep=""))  
   }
   else
   {
-    writeLines("No CDM_DOMAIN_META table found, skipping export")  
+    writeLines("No METADATA table found, skipping export")  
+  }
+}
+
+generateCdmSourceReport <- function(conn, dbms, cdmDatabaseSchema, resultsDatabaseSchema, outputPath, vocabDatabaseSchema = cdmDatabaseSchema) {
+  writeLines("Generating cdm source report")
+  output <- {}
+  
+  queryCdmSource <- SqlRender::loadRenderTranslateSql(sqlFilename = "export/metadata/sqlCdmSource.sql",
+                                                     packageName = "Achilles",
+                                                     dbms = dbms,
+                                                     warnOnMissingParameters = FALSE,
+                                                     cdm_database_schema = cdmDatabaseSchema
+  )  
+  
+  if ("CDM_SOURCE" %in% DatabaseConnector::getTableNames(connection = conn, databaseSchema = cdmDatabaseSchema))
+  {
+    output$MESSAGES <- DatabaseConnector::querySql(conn, queryCdmSource) 
+    jsonOutput = rjson::toJSON(output)
+    write(jsonOutput, file=paste(outputPath, "/cdm_source.json", sep=""))  
+  }
+  else
+  {
+    writeLines("No CDM_SOURCE table found, skipping export")  
   }
 }
 
