@@ -226,7 +226,7 @@ ANALYSIS_ID,DISTRIBUTION,COST,DISTRIBUTED_FIELD,ANALYSIS_NAME,STRATUM_1_NAME,STR
 1825,0,0,,Number of measurement records by measurement_source_concept_id,measurement_source_concept_id,,,,
 1824,0,0,,Number of co-occurring measurement measurement_concept_id pairs,measurement_concept_id,measurement_concept_id,ranking,,
 1891,0,0,,Percentage of total persons that have at least x measurements,measurement_concept_id,measurement_person,,,
-1900,0,0,,"Source values mapped to concept_id 0 by table, by source_value",table_name,source_value,,,
+1900,0,0,,"Source values mapped to concept_id 0 by table, by column, by source_value",table_name,column_name,source_value,,
 2000,0,0,,Number of patients with at least 1 Dx and 1 Rx,,,,,
 2001,0,0,,Number of patients with at least 1 Dx and 1 Proc,,,,,
 2002,0,0,,"Number of patients with at least 1 Meas, 1 Dx and 1 Rx",,,,,
