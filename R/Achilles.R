@@ -506,7 +506,7 @@ achilles <- function (connectionDetails,
         ParallelLogger::logInfo(sprintf("Analysis %d (%s) -- START", mainSql$analysisId, 
                                         analysisDetails$ANALYSIS_NAME[analysisDetails$ANALYSIS_ID == mainSql$analysisId]))
         tryCatch({
-          DatabaseConnector::executeSql(connection = connection, sql = mainSql$sql)
+          DatabaseConnector::executeSql(connection = connection, sql = mainSql$sql, errorReportFile = file.path(getwd(), paste0("achillesError_",mainSql$analysisId,".txt")))
           delta <- Sys.time() - start
           ParallelLogger::logInfo(sprintf("[Main Analysis] [COMPLETE] %d (%f %s)", 
                                           as.integer(mainSql$analysisId), 
@@ -528,7 +528,7 @@ achilles <- function (connectionDetails,
                                                                            as.integer(mainSql$analysisId), 
                                                                            analysisDetails$ANALYSIS_NAME[analysisDetails$ANALYSIS_ID == mainSql$analysisId]))
                                            tryCatch({
-                                             DatabaseConnector::executeSql(connection = connection, sql = mainSql$sql)
+                                             DatabaseConnector::executeSql(connection = connection, sql = mainSql$sql, errorReportFile = file.path(getwd(), paste0("achillesError_",mainSql$analysisId,".txt")))
                                              delta <- Sys.time() - start
                                              ParallelLogger::logInfo(sprintf("[Main Analysis] [COMPLETE] %d (%f %s)", 
                                                                              as.integer(mainSql$analysisId), 
