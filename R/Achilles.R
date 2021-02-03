@@ -286,10 +286,10 @@ achilles <- function (connectionDetails,
     if (!sqlOnly) {
       if (numThreads == 1) { 
         # connection is already alive
-        DatabaseConnector::executeSql(connection = connection, sql = sql)
+        DatabaseConnector::executeSql(connection = connection, sql = sql, errorReportFile = file.path(getwd(), "achillesErrorCreateAnalysis.txt"))
       } else {
         connection <- DatabaseConnector::connect(connectionDetails = connectionDetails)
-        DatabaseConnector::executeSql(connection = connection, sql = sql)
+        DatabaseConnector::executeSql(connection = connection, sql = sql, errorReportFile = file.path(getwd(), "achillesErrorCreateAnalysis.txt"))
         DatabaseConnector::disconnect(connection = connection)
       }
     }
@@ -359,7 +359,7 @@ achilles <- function (connectionDetails,
           start <- Sys.time()
           ParallelLogger::logInfo(sprintf("[Raw Cost] [START] %s", 
                                           rawCostSql$analysisId))
-          DatabaseConnector::executeSql(connection = connection, sql = rawCostSql$sql)
+          DatabaseConnector::executeSql(connection = connection, sql = rawCostSql$sql, errorReportFile = file.path(getwd(), paste0("achillesError_",rawCostSql$analysisId,".txt")))
           delta <- Sys.time() - start
           ParallelLogger::logInfo(sprintf("[Raw Cost] [COMPLETE] %s (%f %s)", 
                                           rawCostSql$analysisId, 
@@ -376,7 +376,7 @@ achilles <- function (connectionDetails,
                                                ParallelLogger::logInfo(sprintf("[Raw Cost] [START] %s", rawCostSql$analysisId))
                                                connection <- DatabaseConnector::connect(connectionDetails = connectionDetails)
                                                on.exit(DatabaseConnector::disconnect(connection = connection))
-                                               DatabaseConnector::executeSql(connection = connection, sql = rawCostSql$sql)
+                                               DatabaseConnector::executeSql(connection = connection, sql = rawCostSql$sql, errorReportFile = file.path(getwd(), paste0("achillesError_",rawCostSql$analysisId,".txt")))
                                                delta <- Sys.time() - start
                                                ParallelLogger::logInfo(sprintf("[Raw Cost] [COMPLETE] %s (%f %s)", 
                                                                                rawCostSql$analysisId, 
@@ -440,7 +440,7 @@ achilles <- function (connectionDetails,
           start <- Sys.time()
           ParallelLogger::logInfo(sprintf("[Cost Analysis] [START] %d", 
                                           as.integer(distCostAnalysisSql$analysisId)))
-          DatabaseConnector::executeSql(connection = connection, sql = distCostAnalysisSql$sql)
+          DatabaseConnector::executeSql(connection = connection, sql = distCostAnalysisSql$sql, errorReportFile = file.path(getwd(), paste0("achillesError_",distCostAnalysisSql$analysisId,".txt")))
           delta <- Sys.time() - start
           ParallelLogger::logInfo(sprintf("[Cost Analysis] [COMPLETE] %d (%f %s)", 
                                           as.integer(distCostAnalysisSql$analysisId), 
@@ -458,7 +458,7 @@ achilles <- function (connectionDetails,
                                                                              as.integer(distCostAnalysisSql$analysisId)))
                                              connection <- DatabaseConnector::connect(connectionDetails = connectionDetails)
                                              on.exit(DatabaseConnector::disconnect(connection = connection))
-                                             DatabaseConnector::executeSql(connection = connection, sql = distCostAnalysisSql$sql)
+                                             DatabaseConnector::executeSql(connection = connection, sql = distCostAnalysisSql$sql,errorReportFile = file.path(getwd(), paste0("achillesError_",distCostAnalysisSql$analysisId,".txt")))
                                              delta <- Sys.time() - start
                                              ParallelLogger::logInfo(sprintf("[Cost Analysis] [COMPLETE] %d (%f %s)", 
                                                                              as.integer(distCostAnalysisSql$analysisId), 
@@ -506,7 +506,7 @@ achilles <- function (connectionDetails,
         ParallelLogger::logInfo(sprintf("Analysis %d (%s) -- START", mainSql$analysisId, 
                                         analysisDetails$ANALYSIS_NAME[analysisDetails$ANALYSIS_ID == mainSql$analysisId]))
         tryCatch({
-          DatabaseConnector::executeSql(connection = connection, sql = mainSql$sql)
+          DatabaseConnector::executeSql(connection = connection, sql = mainSql$sql, errorReportFile = file.path(getwd(), paste0("achillesError_",mainSql$analysisId,".txt")))
           delta <- Sys.time() - start
           ParallelLogger::logInfo(sprintf("[Main Analysis] [COMPLETE] %d (%f %s)", 
                                           as.integer(mainSql$analysisId), 
@@ -528,7 +528,7 @@ achilles <- function (connectionDetails,
                                                                            as.integer(mainSql$analysisId), 
                                                                            analysisDetails$ANALYSIS_NAME[analysisDetails$ANALYSIS_ID == mainSql$analysisId]))
                                            tryCatch({
-                                             DatabaseConnector::executeSql(connection = connection, sql = mainSql$sql)
+                                             DatabaseConnector::executeSql(connection = connection, sql = mainSql$sql, errorReportFile = file.path(getwd(), paste0("achillesError_",mainSql$analysisId,".txt")))
                                              delta <- Sys.time() - start
                                              ParallelLogger::logInfo(sprintf("[Main Analysis] [COMPLETE] %d (%f %s)", 
                                                                              as.integer(mainSql$analysisId), 
