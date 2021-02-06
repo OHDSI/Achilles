@@ -64,7 +64,7 @@ ANALYSIS_ID,DISTRIBUTION,COST,DISTRIBUTED_FIELD,ANALYSIS_NAME,STRATUM_1_NAME,STR
 413,0,0,,Number of condition occurrence records with invalid visit_id,,,,,
 420,0,0,,Number of condition occurrence records by condition occurrence start month,calendar month,,,,
 425,0,0,,Number of condition_occurrence records by condition_source_concept_id,condition_source_concept_id,,,,
-424,0,0,,Number of co-occurring condition_occurrence condition_concept_id pairs,condition_concept_id,condition_concept_id,ranking,,
+424,0,0,,Number of distinct people with co-occurring condition_occurrence condition_concept_id pairs,condition_concept_id,condition_concept_id,ranking,num_people,num_cases
 500,0,0,,"Number of persons with death, by cause_concept_id",cause_concept_id,,,,
 501,0,0,,"Number of records of death, by cause_concept_id",cause_concept_id,,,,
 502,0,0,,Number of persons by death month,calendar month,,,,
@@ -92,7 +92,7 @@ ANALYSIS_ID,DISTRIBUTION,COST,DISTRIBUTED_FIELD,ANALYSIS_NAME,STRATUM_1_NAME,STR
 613,0,0,,Number of procedure occurrence records with invalid visit_id,,,,,
 620,0,0,,Number of procedure occurrence records  by procedure occurrence start month,calendar month,,,,
 625,0,0,,Number of procedure_occurrence records by procedure_source_concept_id,procedure_source_concept_id,,,,
-624,0,0,,Number of co-occurring procedure_occurrence procedure_concept_id pairs,procedure_concept_id,procedure_concept_id,ranking,,
+624,0,0,,Number of distinct people with co-occurring procedure_occurrence procedure_concept_id pairs,procedure_concept_id,procedure_concept_id,ranking,num_people,num_cases
 691,0,0,,Percentage of total persons that have at least x procedures,procedure_concept_id,procedure_person,,,
 700,0,0,,"Number of persons with at least one drug exposure, by drug_concept_id",drug_concept_id,,,,
 701,0,0,,"Number of drug exposure records, by drug_concept_id",drug_concept_id,,,,
@@ -111,7 +111,7 @@ ANALYSIS_ID,DISTRIBUTION,COST,DISTRIBUTED_FIELD,ANALYSIS_NAME,STRATUM_1_NAME,STR
 717,1,0,,Distribution of quantity by drug_concept_id,drug_concept_id,,,,
 720,0,0,,Number of drug exposure records  by drug exposure start month,calendar month,,,,
 725,0,0,,Number of drug_exposure records by drug_source_concept_id,drug_source_concept_id,,,,
-724,0,0,,Number of co-occurring drug_exposure drug_concept_id pairs,drug_concept_id,drug_concept_id,ranking,,
+724,0,0,,Number of distinct people with co-occurring drug_exposure drug_concept_id pairs,drug_concept_id,drug_concept_id,ranking,num_people,num_cases
 791,0,0,,Percentage of total persons that have at least x drug exposures,drug_concept_id,drug_person,,,
 800,0,0,,"Number of persons with at least one observation occurrence, by observation_concept_id",observation_concept_id,,,,
 801,0,0,,"Number of observation occurrence records, by observation_concept_id",observation_concept_id,,,,
@@ -133,7 +133,7 @@ ANALYSIS_ID,DISTRIBUTION,COST,DISTRIBUTED_FIELD,ANALYSIS_NAME,STRATUM_1_NAME,STR
 826,0,0,,Number of observation records by value_as_concept_id,value_as_concept_id,,,,
 827,0,0,,Number of observation records by unit_concept_id,unit_as_concept_id,,,,
 825,0,0,,Number of observation records by observation_source_concept_id,observation_source_concept_id,,,,
-824,0,0,,Number of co-occurring observation observation_concept_id pairs,observation_concept_id,observation_concept_id,ranking,,
+824,0,0,,Number of distinct people with co-occurring observation observation_concept_id pairs,observation_concept_id,observation_concept_id,ranking,num_people,num_cases
 891,0,0,,Percentage of total persons that have at least x observations,observation_concept_id,observation_person,,,
 900,0,0,,"Number of persons with at least one drug era, by drug_concept_id",drug_concept_id,,,,
 901,0,0,,"Number of drug era records, by drug_concept_id",drug_concept_id,,,,
@@ -224,7 +224,7 @@ ANALYSIS_ID,DISTRIBUTION,COST,DISTRIBUTED_FIELD,ANALYSIS_NAME,STRATUM_1_NAME,STR
 1826,0,0,,Number of measurement records by value_as_concept_id,value_as_concept_id,,,,
 1827,0,0,,Number of measurement records by unit_concept_id,unit_as_concept_id,,,,
 1825,0,0,,Number of measurement records by measurement_source_concept_id,measurement_source_concept_id,,,,
-1824,0,0,,Number of co-occurring measurement measurement_concept_id pairs,measurement_concept_id,measurement_concept_id,ranking,,
+1824,0,0,,Number of distinct people with co-occurring measurement measurement_concept_id pairs,measurement_concept_id,measurement_concept_id,ranking,num_people,num_cases
 1891,0,0,,Percentage of total persons that have at least x measurements,measurement_concept_id,measurement_person,,,
 1900,0,0,,"Source values mapped to concept_id 0 by table, by column, by source_value",table_name,column_name,source_value,,
 2000,0,0,,Number of patients with at least 1 Dx and 1 Rx,,,,,
