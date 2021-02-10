@@ -38,5 +38,3 @@ select 424 as analysis_id,
   from ranks 
  where ranking <= 10
 ;
-
-
