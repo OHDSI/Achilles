@@ -1,7 +1,7 @@
 select 	concept_hierarchy.concept_id,
 	concat(isNull(concept_hierarchy.level4_concept_name,'NA'), 
-	'||', isNull(concept_hierarchy.level3_concept_name,'NA') 
-	'||', isNull(concept_hierarchy.level2_concept_name,'NA') 
+	'||', isNull(concept_hierarchy.level3_concept_name,'NA'), 
+	'||', isNull(concept_hierarchy.level2_concept_name,'NA'), 
 	'||', isNull(concept_hierarchy.proc_concept_name,'NA')) as concept_path,
 	ar1.count_value as num_persons, 
 	1.0*ar1.count_value / denom.count_value as percent_persons,
