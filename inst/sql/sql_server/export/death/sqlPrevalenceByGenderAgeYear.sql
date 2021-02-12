@@ -1,4 +1,6 @@
-select cast(num.stratum_3 * 10 as varchar) + '-' + cast( ( (num.stratum_3 + 1) * 10 ) - 1 as varchar) as trellis_name, --age decile
+select concat(cast(num.stratum_3 * 10 as varchar), 
+  '-', 
+  cast( ( (num.stratum_3 + 1) * 10 ) - 1 as varchar)) as trellis_name, --age decile
 	c2.concept_name as series_name,  --gender
 	num.stratum_1 as x_calendar_year,   -- calendar year, note, there could be blanks
 	ROUND(1000*(1.0*num.count_value/denom.count_value),5) as y_prevalence_1000pp  --prevalence, per 1000 persons
