@@ -37,11 +37,10 @@ The Achilles package consists of:
 1. The **achilles** function runs a set of SQL scripts to characterize the domains and concepts of the CDM. 
 2. The **achillesHeel** function uses the results of the achilles function to run a set of DQ scripts to evaluate the conformance and feasibility of your dataset.
 3. The **createIndices** function creates table indices for the achilles tables, which can help improve query performance.
-4. The **validateSchema** function compares your CDM schema against the OMOP CDM specification.
-5. The **getAnalysisDetails** function provides descriptions about the full set of Achilles analyses.
-6. The **dropAllScratchTables** function is useful only for multi-threaded mode. It can clear any leftover staging tables.
-7. The **exportToJson** function can be used to export all Achilles results to JSON files, which is necessary for using AchillesWeb.
-8. The **addDataSource** function can point a data source's JSON files to the AchillesWeb application.
+4. The **getAnalysisDetails** function provides descriptions about the full set of Achilles analyses.
+5. The **dropAllScratchTables** function is useful only for multi-threaded mode. It can clear any leftover staging tables.
+6. The **exportToJson** function can be used to export all Achilles results to JSON files, which is necessary for using AchillesWeb.
+7. The **addDataSource** function can point a data source's JSON files to the AchillesWeb application.
 
 The Achilles package should be run sequentially. That is, **achilles** should be run first to generate the achilles_results and achilles_results_dist tables, and then optionally, **achillesHeel** should be run next to generate the achilles_heel_results and achilles_results_derived tables.
 
@@ -81,29 +80,9 @@ Further, while multiple threads can help performance in MPP platforms, there can
 
 In the multi-threaded mode, all scripts produce permanent staging tables, whereas in the single-threaded mode, the scripts produce temporary staging tables. In both, the staging tables are merged to produce the final Achilles tables.
 
-### Validate your CDM schema
-
-Before you run **achilles**, it may be useful to verify that your CDM schema conforms to the OMOP CDM specification. This can quickly identify issues with your CDM ahead of time. Refer to the [Common Data Model repo](https://github.com/OHDSI/CommonDataModel) to identify which version of the CDM you intend to validate against.
-
-```{r tidy = FALSE, eval = FALSE}
-connectionDetails <- createConnectionDetails(dbms = "postgresql", 
-                                             server = "localhost/synpuf", 
-                                             user = "cdm_user", 
-                                             password = "cdm_password")
-
-validateSchema(connectionDetails = connectionDetails, 
-               cdmDatabaseSchema = "cdm", 
-               resultsDatabaseSchema = "results", 
-               cdmVersion = 5.3, 
-               runCostAnalysis = TRUE, 
-               outputFolder = "output", 
-               sqlOnly = FALSE)
-```
-
 # Achilles Parameters (Both Modes)
 
 The following sub-sections describe the optional parameters in **achilles** that can be configured, regardless of whether you run the function in single- or multi-threaded mode.
-
 
 ## Staging Table Prefix
 

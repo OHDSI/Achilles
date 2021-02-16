@@ -16,8 +16,7 @@ achilles(
   createTable = TRUE,
   smallCellCount = 5,
   cdmVersion = "5",
-  runHeel = TRUE,
-  validateSchema = FALSE,
+  runHeel = FALSE,
   runCostAnalysis = FALSE,
   createIndices = TRUE,
   numThreads = 1,
@@ -26,7 +25,8 @@ achilles(
   sqlOnly = FALSE,
   outputFolder = "output",
   verboseMode = TRUE,
-  optimizeAtlasCache = FALSE
+  optimizeAtlasCache = FALSE,
+  defaultAnalysesOnly = TRUE
 )
 }
 \arguments{
@@ -59,8 +59,6 @@ If not specified, all analyses will be executed. Use \code{\link{getAnalysisDeta
 
 \item{runHeel}{Boolean to determine if Achilles Heel data quality reporting will be produced based on the summary statistics.  Default = TRUE}
 
-\item{validateSchema}{Boolean to determine if CDM Schema Validation should be run. Default = FALSE}
-
 \item{runCostAnalysis}{Boolean to determine if cost analysis should be run. Note: only works on v5.1+ style cost tables.}
 
 \item{createIndices}{Boolean to determine if indices should be created on the resulting Achilles tables. Default= TRUE}
@@ -78,6 +76,8 @@ If not specified, all analyses will be executed. Use \code{\link{getAnalysisDeta
 \item{verboseMode}{Boolean to determine if the console will show all execution steps. Default = TRUE}
 
 \item{optimizeAtlasCache}{Boolean to determine if the atlas cache has to be optimized. Default = FALSE}
+
+\item{defaultAnalysesOnly}{Boolean to determine if only default analyses should be run. Including non-default analyses is substantially more resource intensive.  Default = TRUE}
 }
 \value{
 An object of type \code{achillesResults} containing details for connecting to the database containing the results
