@@ -61,6 +61,7 @@
 #' @param outputFolder                     Path to store logs and SQL files
 #' @param verboseMode                      Boolean to determine if the console will show all execution steps. Default = TRUE
 #' @param optimizeAtlasCache               Boolean to determine if the atlas cache has to be optimized. Default = FALSE
+#' @param defaultAnalysesOnly              Boolean to determine if only default analyses should be run. Including non-default analyses is substantially more resource intensive.  Default = TRUE
 #' @return                                 An object of type \code{achillesResults} containing details for connecting to the database containing the results 
 #' @examples                               \dontrun{
 #'                                           connectionDetails <- createConnectionDetails(dbms="sql server", server="some_server")
@@ -96,7 +97,8 @@ achilles <- function (connectionDetails,
                       sqlOnly = FALSE,
                       outputFolder = "output",
                       verboseMode = TRUE,
-                      optimizeAtlasCache = FALSE) {
+                      optimizeAtlasCache = FALSE,
+					  defaultAnalysesOnly = TRUE) {
   
   totalStart <- Sys.time()
   achillesSql <- c()
@@ -171,7 +173,11 @@ achilles <- function (connectionDetails,
   }
   
   if (!runCostAnalysis) {
-    analysisDetails <- analysisDetails[analysisDetails$COST == 0, ]
+    if (defaultAnalysesOnly)
+      # Exclude non-default analyses, such as the expensive co-occurrence queries
+	  analysisDetails <- analysisDetails[analysisDetails$COST == 0 & analysisDetails$DEFAULT == 1, ]
+    else
+	  analysisDetails <- analysisDetails[analysisDetails$COST == 0, ]
   }
   
   # Check if cohort table is present ---------------------------------------------------------------------------------------------
@@ -950,10 +956,16 @@ dropAllScratchTables <- function(connectionDetails,
     
     analysisDetails <- getAnalysisDetails()
     
-    resultsTables <- lapply(analysisDetails$ANALYSIS_ID[analysisDetails$DISTRIBUTION <= 0], function(id) {
-      sprintf("%s_%d", tempAchillesPrefix, id)
-    })
-    
+	if (defaultAnalysesOnly) {
+	    resultsTables <- lapply(analysisDetails$ANALYSIS_ID[analysisDetails$DISTRIBUTION <= 0 & analysisDetails$DEFAULT == 1], function(id) {
+          sprintf("%s_%d", tempAchillesPrefix, id)
+        })
+	} else {
+	    resultsTables <- lapply(analysisDetails$ANALYSIS_ID[analysisDetails$DISTRIBUTION <= 0], function(id) {
+          sprintf("%s_%d", tempAchillesPrefix, id)
+        })
+	}
+	
     resultsDistTables <- lapply(analysisDetails$ANALYSIS_ID[abs(analysisDetails$DISTRIBUTION) == 1], function(id) {
       sprintf("%s_dist_%d", tempAchillesPrefix, id)
     })

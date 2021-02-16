@@ -26,7 +26,8 @@ achilles(
   sqlOnly = FALSE,
   outputFolder = "output",
   verboseMode = TRUE,
-  optimizeAtlasCache = FALSE
+  optimizeAtlasCache = FALSE,
+  defaultAnalysesOnly = TRUE
 )
 }
 \arguments{
@@ -78,6 +79,8 @@ If not specified, all analyses will be executed. Use \code{\link{getAnalysisDeta
 \item{verboseMode}{Boolean to determine if the console will show all execution steps. Default = TRUE}
 
 \item{optimizeAtlasCache}{Boolean to determine if the atlas cache has to be optimized. Default = FALSE}
+
+\item{defaultAnalysesOnly}{Boolean to determine if only default analyses should be run. Including non-default analyses is substantially more resource intensive.  Default = TRUE}
 }
 \value{
 An object of type \code{achillesResults} containing details for connecting to the database containing the results
