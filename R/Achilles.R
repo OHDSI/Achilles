@@ -51,7 +51,6 @@
 #' @param smallCellCount                   To avoid patient identifiability, cells with small counts (<= smallCellCount) are deleted. Set to NULL if you don't want any deletions.
 #' @param cdmVersion                       Define the OMOP CDM version used:  currently supports v5 and above. Use major release number or minor number only (e.g. 5, 5.3)
 #' @param runHeel                          Boolean to determine if Achilles Heel data quality reporting will be produced based on the summary statistics.  Default = TRUE
-#' @param validateSchema                   Boolean to determine if CDM Schema Validation should be run. Default = FALSE
 #' @param runCostAnalysis                  Boolean to determine if cost analysis should be run. Note: only works on v5.1+ style cost tables.
 #' @param createIndices                    Boolean to determine if indices should be created on the resulting Achilles tables. Default= TRUE
 #' @param numThreads                       (OPTIONAL, multi-threaded mode) The number of threads to use to run Achilles in parallel. Default is 1 thread.
@@ -87,8 +86,7 @@ achilles <- function (connectionDetails,
                       createTable = TRUE,
                       smallCellCount = 5, 
                       cdmVersion = "5", 
-                      runHeel = TRUE,
-                      validateSchema = FALSE,
+                      runHeel = FALSE,
                       runCostAnalysis = FALSE,
                       createIndices = TRUE,
                       numThreads = 1,
@@ -140,18 +138,6 @@ achilles <- function (connectionDetails,
   
   if (!dir.exists(outputFolder)) {
     dir.create(path = outputFolder, recursive = TRUE)
-  }
-  
-  # (optional) Validate CDM schema --------------------------------------------------------------------------------------------------
-  
-  if (validateSchema) {
-    validateSchema(connectionDetails = connectionDetails, 
-                   cdmDatabaseSchema = cdmDatabaseSchema, 
-                   resultsDatabaseSchema = resultsDatabaseSchema,
-                   runCostAnalysis = runCostAnalysis, 
-                   cdmVersion = cdmVersion, 
-                   outputFolder = outputFolder, 
-                   sqlOnly = sqlOnly)
   }
   
   # Get source name if none provided ----------------------------------------------------------------------------------------------
@@ -800,80 +786,6 @@ createIndices <- function(connectionDetails,
   ParallelLogger::unregisterLogger("createIndices")
   
   invisible(c(dropIndicesSql, indicesSql))
-}
-
-
-
-#' Validate the CDM schema
-#' 
-#' @details 
-#' Runs a validation script to ensure the CDM is valid based on v5.x
-#' 
-#' @param connectionDetails                An R object of type \code{connectionDetails} created using the function \code{createConnectionDetails} in the \code{DatabaseConnector} package.
-#' @param cdmDatabaseSchema    	           string name of database schema that contains OMOP CDM. On SQL Server, this should specifiy both the database and the schema, so for example 'cdm_instance.dbo'.
-#' @param resultsDatabaseSchema		         Fully qualified name of database schema that the cohort table is written to. Default is cdmDatabaseSchema. 
-#'                                         On SQL Server, this should specifiy both the database and the schema, so for example, on SQL Server, 'cdm_results.dbo'.
-#' @param cdmVersion                       Define the OMOP CDM version used:  currently supports v5 and above. Use major release number or minor number only (e.g. 5, 5.3)
-#' @param runCostAnalysis                  Boolean to determine if cost analysis should be run. Note: only works on CDM v5 and v5.1.0+ style cost tables.
-#' @param outputFolder                     Path to store logs and SQL files
-#' @param sqlOnly                          TRUE = just generate SQL files, don't actually run, FALSE = run Achilles
-#' @param verboseMode                      Boolean to determine if the console will show all execution steps. Default = TRUE  
-#' 
-#' @export
-validateSchema <- function(connectionDetails,
-                           cdmDatabaseSchema,
-                           resultsDatabaseSchema = cdmDatabaseSchema,
-                           cdmVersion,
-                           runCostAnalysis,
-                           outputFolder,
-                           sqlOnly = FALSE,
-                           verboseMode = TRUE) {
-  
-  # Log execution --------------------------------------------------------------------------------------------------------------------
-  
-  unlink(file.path(outputFolder, "log_validateSchema.txt"))
-  if (verboseMode) {
-    appenders <- list(ParallelLogger::createConsoleAppender(),
-                      ParallelLogger::createFileAppender(layout = ParallelLogger::layoutParallel, 
-                                                         fileName = file.path(outputFolder, "log_validateSchema.txt")))    
-  } else {
-    appenders <- list(ParallelLogger::createFileAppender(layout = ParallelLogger::layoutParallel, 
-                                                         fileName = file.path(outputFolder, "log_validateSchema.txt")))
-  }
-  logger <- ParallelLogger::createLogger(name = "validateSchema",
-                                         threshold = "INFO",
-                                         appenders = appenders)
-  ParallelLogger::registerLogger(logger) 
-  
-  majorVersions <- lapply(c("5", "5.1", "5.2", "5.3"), function(majorVersion) {
-    if (compareVersion(a = as.character(cdmVersion), b = majorVersion) >= 0) {
-      majorVersion
-    } else {
-      0
-    }
-  })
-  
-  cdmVersion <- max(unlist(majorVersions))
-
-  sql <- SqlRender::loadRenderTranslateSql(sqlFilename = "validate_schema.sql", 
-                                           packageName = "Achilles", 
-                                           dbms = connectionDetails$dbms,
-                                           warnOnMissingParameters = FALSE,
-                                           cdmDatabaseSchema = cdmDatabaseSchema,
-                                           resultsDatabaseSchema = resultsDatabaseSchema,
-                                           runCostAnalysis = runCostAnalysis,
-                                           cdmVersion = cdmVersion)
-  if (sqlOnly) {
-    SqlRender::writeSql(sql = sql, targetFile = file.path(outputFolder, "ValidateSchema.sql")) 
-  } else {
-    connection <- DatabaseConnector::connect(connectionDetails = connectionDetails)
-    tables <- DatabaseConnector::querySql(connection = connection, sql = sql)
-    ParallelLogger::logInfo("CDM Schema is valid")
-    DatabaseConnector::disconnect(connection = connection)
-  }
-  
-  ParallelLogger::unregisterLogger("validateSchema")
-  invisible(sql)
 }
 
 #' Get all analysis details
