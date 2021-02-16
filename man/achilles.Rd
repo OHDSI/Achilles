@@ -16,8 +16,7 @@ achilles(
   createTable = TRUE,
   smallCellCount = 5,
   cdmVersion = "5",
-  runHeel = TRUE,
-  validateSchema = FALSE,
+  runHeel = FALSE,
   runCostAnalysis = FALSE,
   createIndices = TRUE,
   numThreads = 1,
@@ -58,8 +57,6 @@ If not specified, all analyses will be executed. Use \code{\link{getAnalysisDeta
 \item{cdmVersion}{Define the OMOP CDM version used:  currently supports v5 and above. Use major release number or minor number only (e.g. 5, 5.3)}
 
 \item{runHeel}{Boolean to determine if Achilles Heel data quality reporting will be produced based on the summary statistics.  Default = TRUE}
-
-\item{validateSchema}{Boolean to determine if CDM Schema Validation should be run. Default = FALSE}
 
 \item{runCostAnalysis}{Boolean to determine if cost analysis should be run. Note: only works on v5.1+ style cost tables.}
 

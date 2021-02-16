@@ -1,6 +1,0 @@
-achilles:
-    build: .
-    env_file:
-        - env_vars
-    volumes:
-        - <data output directory>:/opt/app/output:rw
