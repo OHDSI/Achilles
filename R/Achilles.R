@@ -211,7 +211,7 @@ achilles <- function (connectionDetails,
   if (numThreads == 1 || scratchDatabaseSchema == "#") {
     numThreads <- 1
 
-    if (.supportsTempTables(connectionDetails)) {
+    if (.supportsTempTables(connectionDetails) && connectionDetails$dbms != "oracle") {
         scratchDatabaseSchema <- "#"
         schemaDelim <- "s_"
     }
@@ -298,7 +298,8 @@ achilles <- function (connectionDetails,
                          tempAchillesPrefix = tempAchillesPrefix,
                          numThreads = numThreads,
                          tableTypes = c("achilles"),
-                         outputFolder = outputFolder)
+                         outputFolder = outputFolder,
+						 defaultAnalysesOnly = defaultAnalysesOnly)
 
     ParallelLogger::logInfo(sprintf("Temporary Achilles tables removed from schema %s", scratchDatabaseSchema))
   }
@@ -599,9 +600,39 @@ achilles <- function (connectionDetails,
   
   # Clean up scratch tables -----------------------------------------------
   
-  if (numThreads == 1 & .supportsTempTables(connectionDetails)) {
-    # Dropping the connection removes the temporary scratch tables if running in serial
-    DatabaseConnector::disconnect(connection = connection)
+  if (numThreads == 1 && .supportsTempTables(connectionDetails)) {
+  
+	if (connectionDetails$dbms == "oracle") {
+	    ParallelLogger::logInfo(sprintf("Dropping scratch Achilles tables from schema %s", scratchDatabaseSchema))   
+		# Oracle TEMP tables are created as persistent tables and are given randomly generated string 
+		# prefixes preceding tempAchillesPrefix, therefore, they need their own code to drop the scratch tables.
+	  
+		allTables <- DatabaseConnector::getTableNames(connection,scratchDatabaseSchema)
+	
+		tablesToDrop <- c(allTables[which(grepl(tempAchillesPrefix,allTables,fixed = TRUE))],
+						  allTables[which(grepl(tolower(tempAchillesPrefix),allTables,fixed = TRUE))],
+						  allTables[which(grepl(toupper(tempAchillesPrefix),allTables,fixed = TRUE))])
+
+		dropSqls <- lapply(tablesToDrop, function(scratchTable) {
+			sql <- SqlRender::render(
+				"IF OBJECT_ID('@scratchDatabaseSchema@schemaDelim@scratchTable', 'U') IS NOT NULL DROP TABLE @scratchDatabaseSchema@schemaDelim@scratchTable;\n", 
+				scratchDatabaseSchema = scratchDatabaseSchema,
+				schemaDelim           = schemaDelim,
+				scratchTable          = scratchTable)
+		    sql <- SqlRender::translate(sql = sql, targetDialect = connectionDetails$dbms)
+		})
+		
+		dropSqls <- unlist(dropSqls)	
+        for (k in 1:length(dropSqls)) {
+          DatabaseConnector::executeSql(connection,dropSqls[k])
+        }
+		ParallelLogger::logInfo(sprintf("Temporary Achilles tables removed from schema %s", scratchDatabaseSchema))
+
+	} else {
+      # For non-Oracle dbms, dropping the connection removes the temporary scratch tables if running in serial
+      DatabaseConnector::disconnect(connection = connection)
+	}
+	
   } else if (dropScratchTables & !sqlOnly) {
     # Drop the scratch tables
     ParallelLogger::logInfo(sprintf("Dropping scratch Achilles tables from schema %s", scratchDatabaseSchema))
@@ -611,7 +642,8 @@ achilles <- function (connectionDetails,
                          tempAchillesPrefix = tempAchillesPrefix, 
                          numThreads = numThreads,
                          tableTypes = c("achilles"),
-                         outputFolder = outputFolder)
+                         outputFolder = outputFolder,
+						 defaultAnalysesOnly = defaultAnalysesOnly)
     
     ParallelLogger::logInfo(sprintf("Temporary Achilles tables removed from schema %s", scratchDatabaseSchema))
   }
@@ -821,6 +853,7 @@ getAnalysisDetails <- function() {
 #' @param tableTypes                       The types of Achilles scratch tables to drop: achilles or heel or both
 #' @param outputFolder                     Path to store logs and SQL files
 #' @param verboseMode                      Boolean to determine if the console will show all execution steps. Default = TRUE  
+#' @param defaultAnalysesOnly              Boolean to determine if only default analyses should be run. Including non-default analyses is substantially more resource intensive.  Default = TRUE
 #' 
 #' @export
 dropAllScratchTables <- function(connectionDetails, 
@@ -830,8 +863,10 @@ dropAllScratchTables <- function(connectionDetails,
                                  numThreads = 1,
                                  tableTypes = c("achilles", "heel"),
                                  outputFolder,
-                                 verboseMode = TRUE) {
+                                 verboseMode = TRUE,
+								 defaultAnalysesOnly = TRUE) {
   
+
   # Log execution --------------------------------------------------------------------------------------------------------------------
   
   unlink(file.path(outputFolder, "log_dropScratchTables.txt"))
@@ -847,16 +882,15 @@ dropAllScratchTables <- function(connectionDetails,
                                          threshold = "INFO",
                                          appenders = appenders)
   ParallelLogger::registerLogger(logger) 
-  
-  
+
   # Initialize thread and scratchDatabaseSchema settings ----------------------------------------------------------------
-  
+
   schemaDelim <- "."
-  
+      
   if (numThreads == 1 || scratchDatabaseSchema == "#") {
     numThreads <- 1
 
-    if (.supportsTempTables(connectionDetails)) {
+    if (.supportsTempTables(connectionDetails) && connectionDetails$dbms != "oracle") {
       scratchDatabaseSchema <- "#"
       schemaDelim <- "s_"
     }
