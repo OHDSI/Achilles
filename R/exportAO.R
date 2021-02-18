@@ -320,7 +320,7 @@ generateAOMeasurementReports <- function(connectionDetails, dataMeasurements, cd
   x <- lapply(uniqueConcepts, buildMeasurementReport)  
 }
 
-generateAODrugEraReports <- function(connectionDetails, cdmDatabaseSchema, resultsDatabaseSchema, vocabDatabaseSchema, outputPath) {
+generateAODrugEraReports <- function(connectionDetails, dataDrugEra, cdmDatabaseSchema, resultsDatabaseSchema, vocabDatabaseSchema, outputPath) {
   writeLines("Generating drug era reports")
 
   queryAgeAtFirstExposure <- SqlRender::loadRenderTranslateSql(sqlFilename = "export/drugera/sqlAgeAtFirstExposure.sql",
