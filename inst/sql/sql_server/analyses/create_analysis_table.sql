@@ -13,6 +13,8 @@ select
 	stratum_2_name,
 	stratum_3_name,
 	stratum_4_name,
-	stratum_5_name
+	stratum_5_name,
+	is_default,
+	category
 into @resultsDatabaseSchema.ACHILLES_analysis
 from cte_analyses;
