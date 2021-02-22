@@ -53,7 +53,7 @@ If not specified, all analyses will be executed. Use \code{\link{getAnalysisDeta
 
 \item{createTable}{If true, new results tables will be created in the results schema. If not, the tables are assumed to already exist, and analysis results will be inserted (slower on MPP).}
 
-\item{smallCellCount}{To avoid patient identifiability, cells with small counts (<= smallCellCount) are deleted. Set to NULL if you don't want any deletions.}
+\item{smallCellCount}{To avoid patient identification, cells with small counts (<= smallCellCount) are deleted. Set to 0 for complete summary without small cell count restrictions.}
 
 \item{cdmVersion}{Define the OMOP CDM version used:  currently supports v5 and above. Use major release number or minor number only (e.g. 5, 5.3)}
 
