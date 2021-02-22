@@ -9,5 +9,5 @@ inner join
 (
 	select count_value from @results_database_schema.achilles_results where analysis_id = 1
 ) denom
-group by ar1.stratum_1*30, denom.count_value
+group by ar1.stratum_1, denom.count_value
 order by ar1.stratum_1*30 asc
