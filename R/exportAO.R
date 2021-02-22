@@ -604,7 +604,7 @@ exportAO <- function(
   sql <- SqlRender::translate(sql = sql, targetDialect = connectionDetails$dbms)
   metadata <- DatabaseConnector::querySql(conn, sql)
   sourceKey <- gsub(" ","_",metadata$CDM_SOURCE_ABBREVIATION)
-  releaseDateKey <- format(metadata$CDM_RELEASE_DATE, "%Y%m%d")
+  releaseDateKey <- format(lubridate::ymd(metadata$CDM_RELEASE_DATE), "%Y%m%d")
   sourceOutputPath <- file.path(outputPath, sourceKey, releaseDateKey)
   dir.create(sourceOutputPath,showWarnings = F,recursive=T)
   print(paste0("processing AO export to ", sourceOutputPath))
