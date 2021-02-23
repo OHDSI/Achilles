@@ -27,9 +27,14 @@
 
 # When adding a new report, append it to inst/csv/export/all_reports.csv
 
-getAllReports <- function() {
-  read.csv(file = system.file("csv", "export", "all_reports.csv", package = "Achilles"), 
+getAllReports <- function(includeHeel = FALSE) {
+  reports <- read.csv(file = system.file("csv", "export", "all_reports.csv", package = "Achilles"), 
                        stringsAsFactors = FALSE, header = TRUE)$REPORT
+  if (!includeHeel) {
+    reports <- reports[-which(reports == "HEEL")]
+  }
+  
+  return (reports)
 }
 
 initOutputPath <- function (outputPath){
