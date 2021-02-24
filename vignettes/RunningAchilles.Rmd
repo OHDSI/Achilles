@@ -106,7 +106,7 @@ By default, the **achilles** function does not run analyses on the COST table(s)
 
 ## Small Cell Count
 
-To avoid patient identifiability, you can establish the minimum cell size that should be kept in the Achilles tables. Cells with small counts (less than or equal to the value of the `smallCellCount` parameter) are deleted. By default, this is set to 5. However, set to NULL if you don't want any deletions.
+To avoid patient identification, you can establish the minimum cell size that should be kept in the Achilles tables. Cells with small counts (less than or equal to the value of the `smallCellCount` parameter) are deleted. By default, this is set to 5. Set to 0 for complete summary without small cell count restrictions.
 
 ## Drop Scratch Tables
 

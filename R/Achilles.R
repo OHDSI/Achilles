@@ -48,7 +48,7 @@
 #' @param analysisIds		                   (OPTIONAL) A vector containing the set of Achilles analysisIds for which results will be generated. 
 #'                                         If not specified, all analyses will be executed. Use \code{\link{getAnalysisDetails}} to get a list of all Achilles analyses and their Ids.
 #' @param createTable                      If true, new results tables will be created in the results schema. If not, the tables are assumed to already exist, and analysis results will be inserted (slower on MPP).
-#' @param smallCellCount                   To avoid patient identifiability, cells with small counts (<= smallCellCount) are deleted. Set to NULL if you don't want any deletions.
+#' @param smallCellCount                   To avoid patient identification, cells with small counts (<= smallCellCount) are deleted. Set to 0 for complete summary without small cell count restrictions.
 #' @param cdmVersion                       Define the OMOP CDM version used:  currently supports v5 and above. Use major release number or minor number only (e.g. 5, 5.3)
 #' @param runHeel                          Boolean to determine if Achilles Heel data quality reporting will be produced based on the summary statistics.  Default = TRUE
 #' @param runCostAnalysis                  Boolean to determine if cost analysis should be run. Note: only works on v5.1+ style cost tables.
@@ -75,28 +75,30 @@
 #'                                             outputFolder = "output")
 #'                                         }
 #' @export
-achilles <- function (connectionDetails, 
-                      cdmDatabaseSchema,
-                      resultsDatabaseSchema = cdmDatabaseSchema, 
-                      scratchDatabaseSchema = resultsDatabaseSchema,
-                      vocabDatabaseSchema = cdmDatabaseSchema,
-                      oracleTempSchema = resultsDatabaseSchema,
-                      sourceName = "", 
-                      analysisIds, 
-                      createTable = TRUE,
-                      smallCellCount = 5, 
-                      cdmVersion = "5", 
-                      runHeel = FALSE,
-                      runCostAnalysis = FALSE,
-                      createIndices = TRUE,
-                      numThreads = 1,
-                      tempAchillesPrefix = "tmpach",
-                      dropScratchTables = TRUE,
-                      sqlOnly = FALSE,
-                      outputFolder = "output",
-                      verboseMode = TRUE,
-                      optimizeAtlasCache = FALSE,
-					  defaultAnalysesOnly = TRUE) {
+achilles <- function (
+  connectionDetails, 
+  cdmDatabaseSchema,
+  resultsDatabaseSchema = cdmDatabaseSchema, 
+  scratchDatabaseSchema = resultsDatabaseSchema,
+  vocabDatabaseSchema = cdmDatabaseSchema,
+  oracleTempSchema = resultsDatabaseSchema,
+  sourceName = "", 
+  analysisIds, 
+  createTable = TRUE,
+  smallCellCount = 5, 
+  cdmVersion = "5", 
+  runHeel = FALSE,
+  runCostAnalysis = FALSE,
+  createIndices = TRUE,
+  numThreads = 1,
+  tempAchillesPrefix = "tmpach",
+  dropScratchTables = TRUE,
+  sqlOnly = FALSE,
+  outputFolder = "output",
+  verboseMode = TRUE,
+  optimizeAtlasCache = FALSE,
+	defaultAnalysesOnly = TRUE
+) {
   
   totalStart <- Sys.time()
   achillesSql <- c()
@@ -161,7 +163,7 @@ achilles <- function (connectionDetails,
   if (!runCostAnalysis) {
     if (defaultAnalysesOnly)
       # Exclude non-default analyses, such as the expensive co-occurrence queries
-	  analysisDetails <- analysisDetails[analysisDetails$COST == 0 & analysisDetails$DEFAULT == 1, ]
+	  analysisDetails <- analysisDetails[analysisDetails$COST == 0 & analysisDetails$IS_DEFAULT == 1, ]
     else
 	  analysisDetails <- analysisDetails[analysisDetails$COST == 0, ]
   }
@@ -256,14 +258,16 @@ achilles <- function (connectionDetails,
       SqlRender::render("select @analysisId as analysis_id, '@analysisName' as analysis_name,
                            '@stratum1Name' as stratum_1_name, '@stratum2Name' as stratum_2_name,
                            '@stratum3Name' as stratum_3_name, '@stratum4Name' as stratum_4_name,
-                           '@stratum5Name' as stratum_5_name", 
-                           analysisId = analysisDetail["ANALYSIS_ID"],
-                           analysisName = analysisDetail["ANALYSIS_NAME"],
-                           stratum1Name = analysisDetail["STRATUM_1_NAME"],
-                           stratum2Name = analysisDetail["STRATUM_2_NAME"],
-                           stratum3Name = analysisDetail["STRATUM_3_NAME"],
-                           stratum4Name = analysisDetail["STRATUM_4_NAME"],
-                           stratum5Name = analysisDetail["STRATUM_5_NAME"])
+                           '@stratum5Name' as stratum_5_name, '@isDefault' as is_default, '@category' as category", 
+                          analysisId = analysisDetail["ANALYSIS_ID"],
+                          analysisName = analysisDetail["ANALYSIS_NAME"],
+                          stratum1Name = analysisDetail["STRATUM_1_NAME"],
+                          stratum2Name = analysisDetail["STRATUM_2_NAME"],
+                          stratum3Name = analysisDetail["STRATUM_3_NAME"],
+                          stratum4Name = analysisDetail["STRATUM_4_NAME"],
+                          stratum5Name = analysisDetail["STRATUM_5_NAME"],
+                          isDefault = analysisDetail["IS_DEFAULT"],
+                          category = analysisDetail["CATEGORY"])
     })  
     
     sql <- SqlRender::loadRenderTranslateSql(sqlFilename = "analyses/create_analysis_table.sql", 
@@ -903,7 +907,7 @@ dropAllScratchTables <- function(connectionDetails,
     analysisDetails <- getAnalysisDetails()
     
 	if (defaultAnalysesOnly) {
-	    resultsTables <- lapply(analysisDetails$ANALYSIS_ID[analysisDetails$DISTRIBUTION <= 0 & analysisDetails$DEFAULT == 1], function(id) {
+	    resultsTables <- lapply(analysisDetails$ANALYSIS_ID[analysisDetails$DISTRIBUTION <= 0 & analysisDetails$IS_DEFAULT == 1], function(id) {
           sprintf("%s_%d", tempAchillesPrefix, id)
         })
 	} else {
