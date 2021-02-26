@@ -2,22 +2,33 @@
 
 --HINT DISTRIBUTE_ON_KEY(stratum_1)
 WITH rawData AS (
-  select
-    ce1.condition_concept_id as stratum_1,
-    YEAR(condition_era_start_date)*100 + month(condition_era_start_date) as stratum_2,
-    COUNT_BIG(distinct PERSON_ID) as count_value
-  from
-  @cdmDatabaseSchema.condition_era ce1
-  group by ce1.condition_concept_id,
-    YEAR(condition_era_start_date)*100 + month(condition_era_start_date)
+SELECT 
+	ce.condition_concept_id AS stratum_1,
+	YEAR(ce.condition_era_start_date) * 100 + MONTH(ce.condition_era_start_date) AS stratum_2,
+	COUNT_BIG(DISTINCT ce.person_id) AS count_value
+FROM 
+	@cdmDatabaseSchema.condition_era ce
+JOIN 
+	@cdmDatabaseSchema.observation_period op 
+ON 
+	ce.person_id = op.person_id
+AND 
+	ce.condition_era_start_date >= op.observation_period_start_date
+AND 
+	ce.condition_era_start_date <= op.observation_period_end_date	
+GROUP BY 
+	ce.condition_concept_id,
+	YEAR(ce.condition_era_start_date) * 100 + MONTH(ce.condition_era_start_date)
 )
 SELECT
   1002 as analysis_id,
-  CAST(stratum_1 AS VARCHAR(255)) as stratum_1,
-  cast(stratum_2 as varchar(255)) as stratum_2,
-  cast(null as varchar(255)) as stratum_3,
-  cast(null as varchar(255)) as stratum_4,
-  cast(null as varchar(255)) as stratum_5,
+  CAST(stratum_1 AS VARCHAR(255)) AS stratum_1,
+  CAST(stratum_2 AS VARCHAR(255)) AS stratum_2,
+  CAST(NULL AS VARCHAR(255)) AS stratum_3,
+  CAST(NULL AS VARCHAR(255)) AS stratum_4,
+  CAST(NULL AS VARCHAR(255)) AS stratum_5,
   count_value
-into @scratchDatabaseSchema@schemaDelim@tempAchillesPrefix_1002
-FROM rawData;
+INTO 
+	@scratchDatabaseSchema@schemaDelim@tempAchillesPrefix_1002
+FROM 
+	rawData;

@@ -1,4 +1,4 @@
--- 2200	Number of persons with at least one device exposure , by device_concept_id
+-- 2200	Number of persons with at least one note , by note_type_concept_id
 
 --HINT DISTRIBUTE_ON_KEY(stratum_1)
 select 2200 as analysis_id, 

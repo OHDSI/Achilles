@@ -1,17 +1,35 @@
 -- 706	Distribution of age by drug_concept_id
 
 --HINT DISTRIBUTE_ON_KEY(subject_id)
-select de1.drug_concept_id as subject_id,
-  p1.gender_concept_id,
-	de1.drug_start_year - p1.year_of_birth as count_value
-INTO #rawData_706
-from @cdmDatabaseSchema.person p1
-inner join
-(
-	select person_id, drug_concept_id, min(year(drug_exposure_start_date)) as drug_start_year
-	from @cdmDatabaseSchema.drug_exposure
-	group by person_id, drug_concept_id
-) de1 on p1.person_id = de1.person_id
+SELECT 
+	de.drug_concept_id AS subject_id,
+	p.gender_concept_id,
+	de.drug_start_year - p.year_of_birth AS count_value
+INTO 
+	#rawData_706
+FROM 
+	@cdmDatabaseSchema.person p
+JOIN (
+	SELECT 
+		de.person_id,
+		de.drug_concept_id,
+		MIN(YEAR(de.drug_exposure_start_date)) AS drug_start_year
+	FROM 
+		@cdmDatabaseSchema.drug_exposure de
+	JOIN 
+		@cdmDatabaseSchema.observation_period op 
+	ON 
+		de.person_id = op.person_id
+	AND 
+		de.drug_exposure_start_date >= op.observation_period_start_date
+	AND 
+		de.drug_exposure_start_date <= op.observation_period_end_date
+	GROUP BY 
+		de.person_id,
+		de.drug_concept_id
+	) de 
+ON 
+	p.person_id = de.person_id
 ;
 
 --HINT DISTRIBUTE_ON_KEY(stratum1_id)

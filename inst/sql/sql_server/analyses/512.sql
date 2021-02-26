@@ -1,17 +1,30 @@
 -- 512	Distribution of time from death to last drug
 
 --HINT DISTRIBUTE_ON_KEY(count_value)
-with rawData(count_value) as
-(
-  select datediff(dd,d1.death_date, t0.max_date) as count_value
-  from @cdmDatabaseSchema.death d1
-  inner join
-	(
-		select person_id, max(drug_exposure_start_date) as max_date
-		from @cdmDatabaseSchema.drug_exposure
-		group by person_id
-	) t0
-	on d1.person_id = t0.person_id
+WITH rawData(count_value) AS (
+SELECT 
+	DATEDIFF(dd, d.death_date, de.max_date) AS count_value
+FROM 
+	@cdmDatabaseSchema.death d
+JOIN (
+	SELECT 
+		de.person_id,
+		MAX(de.drug_exposure_start_date) AS max_date
+	FROM 
+		@cdmDatabaseSchema.drug_exposure de
+	JOIN 
+		@cdmDatabaseSchema.observation_period op 
+	ON 
+		de.person_id = op.person_id
+	AND 
+		de.drug_exposure_start_date >= op.observation_period_start_date
+	AND 
+		de.drug_exposure_start_date <= op.observation_period_end_date	
+	GROUP BY 
+		de.person_id
+	) de
+ON 
+	d.person_id = de.person_id
 ),
 overallStats (avg_value, stdev_value, min_value, max_value, total) as
 (

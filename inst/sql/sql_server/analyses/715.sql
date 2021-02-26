@@ -1,12 +1,22 @@
 -- 715	Distribution of days_supply by drug_concept_id
 
 --HINT DISTRIBUTE_ON_KEY(stratum_id)
-with rawData(stratum_id, count_value) as
-(
-  select drug_concept_id AS stratum_id,
-		days_supply as count_value
-	from @cdmDatabaseSchema.drug_exposure 
-	where days_supply is not null
+WITH rawData(stratum_id, count_value) AS (
+SELECT 
+	de.drug_concept_id AS stratum_id,
+	de.days_supply AS count_value
+FROM 
+	@cdmDatabaseSchema.drug_exposure de
+JOIN 
+	@cdmDatabaseSchema.observation_period op 
+ON 
+	de.person_id = op.person_id
+AND 
+	de.drug_exposure_start_date >= op.observation_period_start_date
+AND 
+	de.drug_exposure_start_date <= op.observation_period_end_date
+WHERE 
+	de.days_supply IS NOT NULL
 ),
 overallStats (stratum_id, avg_value, stdev_value, min_value, max_value, total) as
 (
