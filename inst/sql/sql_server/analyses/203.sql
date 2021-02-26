@@ -3,9 +3,21 @@
 --HINT DISTRIBUTE_ON_KEY(count_value)
 with rawData(person_id, count_value) as
 (
-    select vo1.person_id, COUNT_BIG(distinct vo1.visit_concept_id) as count_value
-		from @cdmDatabaseSchema.visit_occurrence vo1
-		group by vo1.person_id
+SELECT 
+	vo.person_id,
+	COUNT_BIG(DISTINCT vo.visit_concept_id) AS count_value
+FROM 
+	@cdmDatabaseSchema.visit_occurrence vo
+JOIN 
+	@cdmDatabaseSchema.observation_period op 
+ON 
+	vo.person_id = op.person_id
+AND 
+	vo.visit_start_date >= op.observation_period_start_date
+AND 
+	vo.visit_start_date <= op.observation_period_end_date
+GROUP BY 
+	vo.person_id
 ),
 overallStats (avg_value, stdev_value, min_value, max_value, total) as
 (

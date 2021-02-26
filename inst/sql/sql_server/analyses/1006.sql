@@ -1,17 +1,35 @@
 -- 1006	Distribution of age by condition_concept_id
 
 --HINT DISTRIBUTE_ON_KEY(subject_id)
-select ce.condition_concept_id as subject_id,
-  p1.gender_concept_id,
-  ce.condition_start_year - p1.year_of_birth as count_value
-INTO #rawData_1006
-from @cdmDatabaseSchema.person p1
-inner join
-(
-  select person_id, condition_concept_id, min(year(condition_era_start_date)) as condition_start_year
-  from @cdmDatabaseSchema.condition_era
-  group by person_id, condition_concept_id
-) ce on p1.person_id = ce.person_id
+SELECT 
+	ce.condition_concept_id AS subject_id,
+	p.gender_concept_id,
+	ce.condition_start_year - p.year_of_birth AS count_value
+INTO 
+	#rawData_1006
+FROM 
+	@cdmDatabaseSchema.person p
+JOIN (
+	SELECT 
+		ce.person_id,
+		ce.condition_concept_id,
+		MIN(YEAR(ce.condition_era_start_date)) AS condition_start_year
+	FROM 
+		@cdmDatabaseSchema.condition_era ce
+	JOIN 
+		@cdmDatabaseSchema.observation_period op 
+	ON 
+		ce.person_id = op.person_id
+	AND 
+		ce.condition_era_start_date >= op.observation_period_start_date
+	AND 
+		ce.condition_era_start_date <= op.observation_period_end_date			
+	GROUP BY 
+		ce.person_id,
+		ce.condition_concept_id
+	) ce 
+ON 
+	p.person_id = ce.person_id
 ;
 
 --HINT DISTRIBUTE_ON_KEY(stratum1_id)

@@ -1,16 +1,45 @@
 -- 2001	patients with at least 1 Dx and 1 Proc
 
 
-select 2001 as analysis_id,  
-	cast(null as varchar(255)) as stratum_1, cast(null as varchar(255)) as stratum_2, cast(null as varchar(255)) as stratum_3, cast(null as varchar(255)) as stratum_4, cast(null as varchar(255)) as stratum_5,
---gender_concept_id as stratum_1, COUNT_BIG(distinct person_id) as count_value
-        CAST(a.cnt AS BIGINT) AS count_value
-	into @scratchDatabaseSchema@schemaDelim@tempAchillesPrefix_2001
-    FROM (
-                select COUNT_BIG(*) cnt from (
-                    select distinct person_id from @cdmDatabaseSchema.condition_occurrence
-                    intersect
-                    select distinct person_id from @cdmDatabaseSchema.procedure_occurrence
-                ) b
-         ) a
-         ;
+SELECT 
+	2001 AS analysis_id,
+	CAST(NULL AS VARCHAR(255)) AS stratum_1,
+	CAST(NULL AS VARCHAR(255)) AS stratum_2,
+	CAST(NULL AS VARCHAR(255)) AS stratum_3,
+	CAST(NULL AS VARCHAR(255)) AS stratum_4,
+	CAST(NULL AS VARCHAR(255)) AS stratum_5,
+	CAST(a.cnt AS BIGINT) AS count_value
+INTO 
+	@scratchDatabaseSchema@schemaDelim@tempAchillesPrefix_2001
+FROM (
+SELECT COUNT_BIG(*) cnt
+FROM (
+	SELECT 
+		DISTINCT co.person_id
+	FROM 
+		@cdmDatabaseSchema.condition_occurrence co
+	JOIN 
+		@cdmDatabaseSchema.observation_period op 
+	ON 
+		co.person_id = op.person_id
+	AND 
+		co.condition_start_date >= op.observation_period_start_date
+	AND 
+		co.condition_start_date <= op.observation_period_end_date		
+
+	INTERSECT
+	
+	SELECT 
+		DISTINCT po.person_id
+	FROM 
+		@cdmDatabaseSchema.procedure_occurrence po
+	JOIN 
+		@cdmDatabaseSchema.observation_period op 
+	ON 
+		po.person_id = op.person_id
+	AND 
+		po.procedure_date >= op.observation_period_start_date
+	AND 
+		po.procedure_date <= op.observation_period_end_date		
+	) b
+) a;

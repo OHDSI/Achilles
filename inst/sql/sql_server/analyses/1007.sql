@@ -1,11 +1,21 @@
 -- 1007	Distribution of condition era length, by condition_concept_id
 
 --HINT DISTRIBUTE_ON_KEY(stratum_1)
-with rawData(stratum1_id, count_value) as
+WITH rawData(stratum1_id, count_value) AS
 (
-  select condition_concept_id as stratum1_id,
-    datediff(dd,condition_era_start_date, condition_era_end_date) as count_value
-  from  @cdmDatabaseSchema.condition_era ce1
+SELECT 
+	ce.condition_concept_id AS stratum1_id,
+	DATEDIFF(dd, ce.condition_era_start_date, ce.condition_era_end_date) AS count_value
+FROM 
+	@cdmDatabaseSchema.condition_era ce
+JOIN 
+	@cdmDatabaseSchema.observation_period op 
+ON 
+	ce.person_id = op.person_id
+AND 
+	ce.condition_era_start_date >= op.observation_period_start_date
+AND 
+	ce.condition_era_start_date <= op.observation_period_end_date	
 ),
 overallStats (stratum1_id, avg_value, stdev_value, min_value, max_value, total) as
 (

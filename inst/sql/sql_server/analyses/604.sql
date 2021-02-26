@@ -2,28 +2,41 @@
 
 --HINT DISTRIBUTE_ON_KEY(stratum_1)
 WITH rawData AS (
-  select
-    po1.procedure_concept_id as stratum_1,
-    YEAR(procedure_date) as stratum_2,
-    p1.gender_concept_id as stratum_3,
-    floor((year(procedure_date) - p1.year_of_birth)/10) as stratum_4,
-    COUNT_BIG(distinct p1.PERSON_ID) as count_value
-  from @cdmDatabaseSchema.person p1
-  inner join
-  @cdmDatabaseSchema.procedure_occurrence po1
-  on p1.person_id = po1.person_id
-  group by po1.procedure_concept_id,
-    YEAR(procedure_date),
-    p1.gender_concept_id,
-    floor((year(procedure_date) - p1.year_of_birth)/10)
+SELECT 
+	po.procedure_concept_id AS stratum_1,
+	YEAR(po.procedure_date) AS stratum_2,
+	p.gender_concept_id AS stratum_3,
+	FLOOR((YEAR(po.procedure_date) - p.year_of_birth) / 10) AS stratum_4,
+	COUNT_BIG(DISTINCT p.person_id) AS count_value
+FROM 
+	@cdmDatabaseSchema.person p
+JOIN 
+	@cdmDatabaseSchema.procedure_occurrence po 
+ON 
+	p.person_id = po.person_id
+JOIN 
+	@cdmDatabaseSchema.observation_period op 
+ON 
+	po.person_id = op.person_id
+AND 
+	po.procedure_date >= op.observation_period_start_date
+AND 
+	po.procedure_date <= op.observation_period_end_date
+GROUP BY 
+	po.procedure_concept_id,
+	YEAR(po.procedure_date),
+	p.gender_concept_id,
+	FLOOR((YEAR(po.procedure_date) - p.year_of_birth) / 10)
 )
 SELECT
-  604 as analysis_id,
-  CAST(stratum_1 AS VARCHAR(255)) as stratum_1,
-  cast(stratum_2 as varchar(255)) as stratum_2,
-  cast(stratum_3 as varchar(255)) as stratum_3,
-  cast(stratum_4 as varchar(255)) as stratum_4,
-  cast(null as varchar(255)) as stratum_5,
-  count_value
-into @scratchDatabaseSchema@schemaDelim@tempAchillesPrefix_604
-FROM rawData;
+	604 AS analysis_id,
+	CAST(stratum_1 AS VARCHAR(255)) AS stratum_1,
+	CAST(stratum_2 AS VARCHAR(255)) AS stratum_2,
+	CAST(stratum_3 AS VARCHAR(255)) AS stratum_3,
+	CAST(stratum_4 AS VARCHAR(255)) AS stratum_4,
+	CAST(NULL AS VARCHAR(255)) AS stratum_5,
+	count_value
+INTO 
+	@scratchDatabaseSchema@schemaDelim@tempAchillesPrefix_604
+FROM 
+	rawData;

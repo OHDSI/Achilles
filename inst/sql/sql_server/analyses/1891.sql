@@ -1,22 +1,35 @@
 -- 1891	Number of total persons that have at least x measurements
 
 --HINT DISTRIBUTE_ON_KEY(stratum_1)
-select 1891 as analysis_id,   
-	CAST(measurement_concept_id as varchar(255)) as stratum_1,
-	CAST(meas_cnt as varchar(255)) as stratum_2,
-	cast(null as varchar(255)) as stratum_3,
-	cast(null as varchar(255)) as stratum_4,
-	cast(null as varchar(255)) as stratum_5,
-	sum(count(person_id)) over (partition by measurement_concept_id order by meas_cnt desc) as count_value
-into @scratchDatabaseSchema@schemaDelim@tempAchillesPrefix_1891
-from 
-(
-  select
-  m.measurement_concept_id,
-  count(m.measurement_id) as meas_cnt,
-  m.person_id
-  from @cdmDatabaseSchema.measurement m
-  group by m.person_id, m.measurement_concept_id
-) cnt_q
-group by cnt_q.measurement_concept_id, cnt_q.meas_cnt
-;
+SELECT 
+	1891 AS analysis_id,
+	CAST(m.measurement_concept_id AS VARCHAR(255)) AS stratum_1,
+	CAST(m.meas_cnt AS VARCHAR(255)) AS stratum_2,
+	CAST(NULL AS VARCHAR(255)) AS stratum_3,
+	CAST(NULL AS VARCHAR(255)) AS stratum_4,
+	CAST(NULL AS VARCHAR(255)) AS stratum_5,
+	SUM(COUNT(m.person_id)) OVER (PARTITION BY m.measurement_concept_id ORDER BY m.meas_cnt DESC) AS count_value
+INTO 
+	@scratchDatabaseSchema@schemaDelim@tempAchillesPrefix_1891
+FROM (
+	SELECT 
+		m.measurement_concept_id,
+		COUNT(m.measurement_id) AS meas_cnt,
+		m.person_id
+	FROM 
+		@cdmDatabaseSchema.measurement m
+	JOIN 
+		@cdmDatabaseSchema.observation_period op 
+	ON 
+		m.person_id = op.person_id
+	AND 
+		m.measurement_date >= op.observation_period_start_date
+	AND 
+		m.measurement_date <= op.observation_period_end_date		
+	GROUP BY 
+		m.person_id,
+		m.measurement_concept_id
+	) m
+GROUP BY 
+	m.measurement_concept_id,
+	m.meas_cnt;
