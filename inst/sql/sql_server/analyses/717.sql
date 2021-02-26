@@ -1,12 +1,22 @@
 -- 717	Distribution of quantity by drug_concept_id
 
 --HINT DISTRIBUTE_ON_KEY(stratum_id)
-with rawData(stratum_id, count_value) as
-(
-  select drug_concept_id AS stratum_id,
-    CAST(quantity AS FLOAT) as count_value
-  from @cdmDatabaseSchema.drug_exposure 
-	where quantity is not null
+WITH rawData(stratum_id, count_value) AS (
+SELECT 
+	de.drug_concept_id AS stratum_id,
+	CAST(de.quantity AS FLOAT) AS count_value
+FROM 
+	@cdmDatabaseSchema.drug_exposure de
+JOIN 
+	@cdmDatabaseSchema.observation_period op 
+ON 
+	de.person_id = op.person_id
+AND 
+	de.drug_exposure_start_date >= op.observation_period_start_date
+AND 
+	de.drug_exposure_start_date <= op.observation_period_end_date
+WHERE 
+	de.quantity IS NOT NULL
 ),
 overallStats (stratum_id, avg_value, stdev_value, min_value, max_value, total) as
 (

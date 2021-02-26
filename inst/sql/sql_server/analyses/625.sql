@@ -1,14 +1,25 @@
 -- 625	Number of procedure_occurrence records, by procedure_source_concept_id
 
 --HINT DISTRIBUTE_ON_KEY(stratum_1)
-select 625 as analysis_id,
-       cast(procedure_source_concept_id AS varchar(255)) AS stratum_1,
-       cast(null AS varchar(255)) AS stratum_2,
-       cast(null as varchar(255)) as stratum_3,
-       cast(null as varchar(255)) as stratum_4,
-       cast(null as varchar(255)) as stratum_5,
-       count_big(*) AS count_value
-  into @scratchDatabaseSchema@schemaDelim@tempAchillesPrefix_625 
-  from @cdmDatabaseSchema.procedure_occurrence
- group by procedure_source_concept_id;
-
+SELECT 
+	625 AS analysis_id,
+	CAST(po.procedure_source_concept_id AS VARCHAR(255)) AS stratum_1,
+	CAST(NULL AS VARCHAR(255)) AS stratum_2,
+	CAST(NULL AS VARCHAR(255)) AS stratum_3,
+	CAST(NULL AS VARCHAR(255)) AS stratum_4,
+	CAST(NULL AS VARCHAR(255)) AS stratum_5,
+	COUNT_BIG(*) AS count_value
+INTO 
+	@scratchDatabaseSchema@schemaDelim@tempAchillesPrefix_625
+FROM 
+	@cdmDatabaseSchema.procedure_occurrence po
+JOIN 
+	@cdmDatabaseSchema.observation_period op 
+ON 
+	po.person_id = op.person_id
+AND 
+	po.procedure_date >= op.observation_period_start_date
+AND 
+	po.procedure_date <= op.observation_period_end_date
+GROUP BY 
+	po.procedure_source_concept_id;

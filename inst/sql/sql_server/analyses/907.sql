@@ -1,11 +1,21 @@
 -- 907	Distribution of drug era length, by drug_concept_id
 
 --HINT DISTRIBUTE_ON_KEY(stratum_1)
-with rawData(stratum1_id, count_value) as
+WITH rawData(stratum1_id, count_value) AS
 (
-  select drug_concept_id as stratum1_id,
-    datediff(dd,drug_era_start_date, drug_era_end_date) as count_value
-  from  @cdmDatabaseSchema.drug_era de1
+SELECT 
+	de.drug_concept_id AS stratum1_id,
+	DATEDIFF(dd, de.drug_era_start_date, de.drug_era_end_date) AS count_value
+FROM 
+	@cdmDatabaseSchema.drug_era de
+JOIN 
+	@cdmDatabaseSchema.observation_period op 
+ON 
+	de.person_id = op.person_id
+AND 
+	de.drug_era_start_date >= op.observation_period_start_date
+AND 
+	de.drug_era_start_date <= op.observation_period_end_date
 ),
 overallStats (stratum1_id, avg_value, stdev_value, min_value, max_value, total) as
 (

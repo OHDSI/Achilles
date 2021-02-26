@@ -1,22 +1,36 @@
 -- 791	Number of total persons that have at least x drug exposures
 
 --HINT DISTRIBUTE_ON_KEY(stratum_1)
-select 791 as analysis_id,   
-	CAST(drug_concept_id as varchar(255)) as stratum_1,
-	CAST(drg_cnt as varchar(255)) as stratum_2,
-	cast(null as varchar(255)) as stratum_3,
-	cast(null as varchar(255)) as stratum_4,
-	cast(null as varchar(255)) as stratum_5,
-	sum(count(person_id)) over (partition by drug_concept_id order by drg_cnt desc) as count_value
-into @scratchDatabaseSchema@schemaDelim@tempAchillesPrefix_791
-from 
-(
-  select
-  d.drug_concept_id,
-  count(d.drug_exposure_id) as drg_cnt,
-  d.person_id
-  from @cdmDatabaseSchema.drug_exposure d
-  group by d.person_id, d.drug_concept_id
-) cnt_q
-group by cnt_q.drug_concept_id, cnt_q.drg_cnt
+SELECT 
+	791 AS analysis_id,
+	CAST(de.drug_concept_id AS VARCHAR(255)) AS stratum_1,
+	CAST(de.drg_cnt AS VARCHAR(255)) AS stratum_2,
+	CAST(NULL AS VARCHAR(255)) AS stratum_3,
+	CAST(NULL AS VARCHAR(255)) AS stratum_4,
+	CAST(NULL AS VARCHAR(255)) AS stratum_5,
+	SUM(COUNT(de.person_id)) OVER (PARTITION BY de.drug_concept_id ORDER BY de.drg_cnt DESC) AS count_value
+INTO 
+	@scratchDatabaseSchema@schemaDelim@tempAchillesPrefix_791
+FROM (
+	SELECT 
+		de.drug_concept_id,
+		COUNT(de.drug_exposure_id) AS drg_cnt,
+		de.person_id
+	FROM 
+		@cdmDatabaseSchema.drug_exposure de
+	JOIN 
+		@cdmDatabaseSchema.observation_period op 
+	ON 
+		de.person_id = op.person_id
+	AND 
+		de.drug_exposure_start_date >= op.observation_period_start_date
+	AND 
+		de.drug_exposure_start_date <= op.observation_period_end_date
+	GROUP BY 
+		de.person_id,
+		de.drug_concept_id
+	) de
+GROUP BY 
+	de.drug_concept_id, 
+	de.drg_cnt
 ;

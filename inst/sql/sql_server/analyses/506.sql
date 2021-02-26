@@ -2,17 +2,32 @@
 
 
 --HINT DISTRIBUTE_ON_KEY(stratum_id)
-with rawData(stratum_id, count_value) as
+WITH rawData(stratum_id, count_value) AS
 (
-  select p1.gender_concept_id AS stratum_id,
-    d1.death_year - p1.year_of_birth as count_value
-  from @cdmDatabaseSchema.person p1
-  inner join
-  (select person_id, min(year(death_date)) as death_year
-  from @cdmDatabaseSchema.death
-  group by person_id
-  ) d1
-  on p1.person_id = d1.person_id
+SELECT 
+	p.gender_concept_id AS stratum_id,
+	d.death_year - p.year_of_birth AS count_value
+FROM 
+	@cdmDatabaseSchema.person p
+JOIN (
+	SELECT 
+		d.person_id,
+		MIN(YEAR(d.death_date)) AS death_year
+	FROM 
+		@cdmDatabaseSchema.death d
+	JOIN 
+		@cdmDatabaseSchema.observation_period op 
+	ON 
+		d.person_id = op.person_id
+	AND 
+		d.death_date >= op.observation_period_start_date
+	AND 
+		d.death_date <= op.observation_period_end_date	
+	GROUP BY 
+		d.person_id
+  ) d
+ON 
+	p.person_id = d.person_id
 ),
 overallStats (stratum_id, avg_value, stdev_value, min_value, max_value, total) as
 (

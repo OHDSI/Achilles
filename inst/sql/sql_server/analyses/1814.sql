@@ -1,12 +1,27 @@
 -- 1814	Number of measurement records with no value (numeric or concept)
 
 
-select 1814 as analysis_id,
-	cast(null as varchar(255)) as stratum_1, cast(null as varchar(255)) as stratum_2, cast(null as varchar(255)) as stratum_3, cast(null as varchar(255)) as stratum_4, cast(null as varchar(255)) as stratum_5,
-	COUNT_BIG(m.PERSON_ID) as count_value
-into @scratchDatabaseSchema@schemaDelim@tempAchillesPrefix_1814
-from
+SELECT 
+	1814 AS analysis_id,
+	CAST(NULL AS VARCHAR(255)) AS stratum_1,
+	CAST(NULL AS VARCHAR(255)) AS stratum_2,
+	CAST(NULL AS VARCHAR(255)) AS stratum_3,
+	CAST(NULL AS VARCHAR(255)) AS stratum_4,
+	CAST(NULL AS VARCHAR(255)) AS stratum_5,
+	COUNT_BIG(m.person_id) AS count_value
+INTO 
+	@scratchDatabaseSchema@schemaDelim@tempAchillesPrefix_1814
+FROM 
 	@cdmDatabaseSchema.measurement m
-where m.value_as_number is null
-	and m.value_as_concept_id is null
-;
+JOIN 
+	@cdmDatabaseSchema.observation_period op 
+ON 
+	m.person_id = op.person_id
+AND 
+	m.measurement_date >= op.observation_period_start_date
+AND 
+	m.measurement_date <= op.observation_period_end_date		
+WHERE 
+	m.value_as_number IS NULL
+AND 
+	m.value_as_concept_id IS NULL;

@@ -1,39 +1,72 @@
 
 --HINT DISTRIBUTE_ON_KEY(stratum1_id)
-select subject_id as stratum1_id,
-  unit_concept_id as stratum2_id,
-  CAST(avg(1.0 * count_value) AS FLOAT) as avg_value,
-  CAST(stdev(count_value) AS FLOAT) as stdev_value,
-  min(count_value) as min_value,
-  max(count_value) as max_value,
-  count_big(*) as total
-  into #overallStats_815
-  FROM 
-  (
-    select observation_concept_id as subject_id, 
-  	unit_concept_id,
-  	CAST(value_as_number AS FLOAT) as count_value
-    from @cdmDatabaseSchema.observation o1
-    where o1.unit_concept_id is not null
-  	  and o1.value_as_number is not null
-  ) A
-	group by subject_id, unit_concept_id
-;
+SELECT 
+	o.subject_id AS stratum1_id,
+	o.unit_concept_id AS stratum2_id,
+	CAST(AVG(1.0 * o.count_value) AS FLOAT) AS avg_value,
+	CAST(STDEV(count_value) AS FLOAT) AS stdev_value,
+	MIN(o.count_value) AS min_value,
+	MAX(o.count_value) AS max_value,
+	COUNT_BIG(*) AS total
+INTO 
+	#overallStats_815
+FROM (
+	SELECT 
+		o.observation_concept_id AS subject_id,
+		o.unit_concept_id,
+		CAST(o.value_as_number AS FLOAT) AS count_value
+	FROM 
+		@cdmDatabaseSchema.observation o
+	JOIN 
+		@cdmDatabaseSchema.observation_period op 
+	ON 
+		o.person_id = op.person_id
+	AND 
+		o.observation_date >= op.observation_period_start_date
+	AND 
+		o.observation_date <= op.observation_period_end_date
+	WHERE 
+		o.unit_concept_id IS NOT NULL
+	AND 
+		o.value_as_number IS NOT NULL
+	) o
+GROUP BY 
+	o.subject_id,
+	o.unit_concept_id;
 
 --HINT DISTRIBUTE_ON_KEY(stratum1_id)
-select subject_id as stratum1_id, unit_concept_id as stratum2_id, count_value, count_big(*) as total, row_number() over (partition by subject_id, unit_concept_id order by count_value) as rn
-into #statsView_815
-FROM 
-(
-  select observation_concept_id as subject_id, 
-	unit_concept_id,
-	CAST(value_as_number AS FLOAT) as count_value
-  from @cdmDatabaseSchema.observation o1
-  where o1.unit_concept_id is not null
-	  and o1.value_as_number is not null
-) A
-group by subject_id, unit_concept_id, count_value
-;
+SELECT 
+	o.subject_id AS stratum1_id,
+	o.unit_concept_id AS stratum2_id,
+	o.count_value,
+	COUNT_BIG(*) AS total,
+	ROW_NUMBER() OVER (PARTITION BY o.subject_id,o.unit_concept_id ORDER BY o.count_value) AS rn
+INTO 
+	#statsView_815
+FROM (
+	SELECT 
+		o.observation_concept_id AS subject_id,
+		o.unit_concept_id,
+		CAST(o.value_as_number AS FLOAT) AS count_value
+	FROM 
+		@cdmDatabaseSchema.observation o
+	JOIN 
+		@cdmDatabaseSchema.observation_period op 
+	ON 
+		o.person_id = op.person_id
+	AND 
+		o.observation_date >= op.observation_period_start_date
+	AND 
+		o.observation_date <= op.observation_period_end_date
+	WHERE 
+		o.unit_concept_id IS NOT NULL
+	AND 
+		o.value_as_number IS NOT NULL
+	) o
+GROUP BY 
+	o.subject_id,
+	o.unit_concept_id,
+	o.count_value;
 
 --HINT DISTRIBUTE_ON_KEY(stratum1_id)
 with priorStats (stratum1_id, stratum2_id, count_value, total, accumulated) as

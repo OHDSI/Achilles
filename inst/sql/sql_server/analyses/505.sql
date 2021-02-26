@@ -1,12 +1,25 @@
 -- 505	Number of death records, by death_type_concept_id
 
 --HINT DISTRIBUTE_ON_KEY(stratum_1)
-select 505 as analysis_id, 
-	CAST(death_type_concept_id AS VARCHAR(255)) as stratum_1,
-	cast(null as varchar(255)) as stratum_2, cast(null as varchar(255)) as stratum_3, cast(null as varchar(255)) as stratum_4, cast(null as varchar(255)) as stratum_5,
-	COUNT_BIG(PERSON_ID) as count_value
-into @scratchDatabaseSchema@schemaDelim@tempAchillesPrefix_505
-from
-	@cdmDatabaseSchema.death d1
-group by death_type_concept_id
-;
+SELECT 
+	505 AS analysis_id,
+	CAST(d.death_type_concept_id AS VARCHAR(255)) AS stratum_1,
+	CAST(NULL AS VARCHAR(255)) AS stratum_2,
+	CAST(NULL AS VARCHAR(255)) AS stratum_3,
+	CAST(NULL AS VARCHAR(255)) AS stratum_4,
+	CAST(NULL AS VARCHAR(255)) AS stratum_5,
+	COUNT_BIG(d.person_id) AS count_value
+INTO 
+	@scratchDatabaseSchema@schemaDelim@tempAchillesPrefix_505
+FROM 
+	@cdmDatabaseSchema.death d
+JOIN 
+	@cdmDatabaseSchema.observation_period op 
+ON 
+	d.person_id = op.person_id
+AND 
+	d.death_date >= op.observation_period_start_date
+AND 
+	d.death_date <= op.observation_period_end_date	
+GROUP BY 
+	d.death_type_concept_id;
