@@ -11,8 +11,8 @@ FROM
 	@cdmDatabaseSchema.person p
 JOIN (
 	SELECT 
-		m.person_id,
-		m.device_concept_id,
+		d.person_id,
+		d.device_concept_id,
 		MIN(YEAR(m.device_exposure_start_date)) AS device_exposure_start_year
 	FROM 
 		@cdmDatabaseSchema.device_exposure d
@@ -25,8 +25,8 @@ JOIN (
 	AND 
 		d.device_exposure_start_date <= op.observation_period_end_date		
 	GROUP BY 
-		m.person_id,
-		m.device_concept_id
+		d.person_id,
+		d.device_concept_id
 	) o
 ON 
 	p.person_id = o.person_id
