@@ -9,20 +9,19 @@ SELECT
 FROM
 	@cdmDatabaseSchema.visit_detail vd 
 JOIN 
-	@cdmDatabaseSchema.observation_period op on vd.person_id = op.person_id
--- only include events that occur during observation period
-WHERE 
-	op.observation_period_start_date <= vd.visit_detail_start_date 
+	@cdmDatabaseSchema.observation_period op 
+ON 
+	vd.person_id = op.person_id
+AND	
+	vd.visit_detail_start_date >= op.observation_period_start_date  
 AND 
-	vd.visit_detail_start_date <= COALESCE(vd.visit_detail_end_date,vd.visit_detail_start_date) 
-AND
-	COALESCE(vd.visit_detail_end_date,vd.visit_detail_start_date) <= op.observation_period_end_date
+	vd.visit_detail_start_date <= op.observation_period_end_date
 GROUP BY 
 	vd.visit_detail_concept_id,
 	YEAR(vd.visit_detail_start_date)*100 + MONTH(vd.visit_detail_start_date)
 )
 SELECT
-	1302 as analysis_id,
+	1302 AS analysis_id,
 	CAST(stratum_1 AS VARCHAR(255)) AS stratum_1,
 	CAST(stratum_2 AS VARCHAR(255)) AS stratum_2,
 	CAST(NULL AS VARCHAR(255)) AS stratum_3,
@@ -31,4 +30,5 @@ SELECT
 	count_value
 INTO 
 	@scratchDatabaseSchema@schemaDelim@tempAchillesPrefix_1302
-FROM rawData;
+FROM 
+	rawData;

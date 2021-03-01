@@ -13,12 +13,12 @@ INTO
 FROM 
 	@cdmDatabaseSchema.visit_detail vd
 LEFT JOIN 
-	@cdmDatabaseSchema.observation_period op1 
+	@cdmDatabaseSchema.observation_period op
 ON 
-	op1.person_id = vd.person_id
+	op.person_id = vd.person_id
 AND 
-	vd.visit_detail_start_date >= op1.observation_period_start_date
+	vd.visit_detail_start_date >= op.observation_period_start_date
 AND 
-	vd.visit_detail_start_date <= op1.observation_period_end_date
+	vd.visit_detail_start_date <= op.observation_period_end_date
 WHERE 
-	op1.person_id IS NULL;
+	op.person_id IS NULL;

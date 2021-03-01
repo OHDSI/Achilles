@@ -13,7 +13,9 @@ INTO
 FROM 
 	@cdmDatabaseSchema.visit_detail vd
 LEFT JOIN 
-	@cdmDatabaseSchema.care_site cs ON vd.care_site_id = cs.care_site_id
+	@cdmDatabaseSchema.care_site cs 
+ON 
+	vd.care_site_id = cs.care_site_id
 WHERE 
 	vd.care_site_id IS NOT NULL 
 AND 

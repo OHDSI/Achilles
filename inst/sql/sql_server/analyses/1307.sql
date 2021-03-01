@@ -7,12 +7,14 @@ SELECT
 	CAST(NULL AS VARCHAR(255)) AS stratum_3,
 	CAST(NULL AS VARCHAR(255)) AS stratum_4,
 	CAST(NULL AS VARCHAR(255)) AS stratum_5,
-	COUNT_BIG(person_id) AS count_value
+	COUNT_BIG(vd.person_id) AS count_value
 INTO 
 	@scratchDatabaseSchema@schemaDelim@tempAchillesPrefix_1307
 FROM 
 	@cdmDatabaseSchema.visit_detail vd
 LEFT JOIN 
-	@cdmDatabaseSchema.person p1 ON p1.person_id = vd.person_id
+	@cdmDatabaseSchema.person p 
+ON 
+	p.person_id = vd.person_id
 WHERE 
-	p1.person_id IS NULL;
+	p.person_id IS NULL;

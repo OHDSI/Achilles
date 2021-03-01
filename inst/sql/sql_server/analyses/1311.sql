@@ -2,22 +2,21 @@
 -- restrict to visits inside observation period
 
 --HINT DISTRIBUTE_ON_KEY(stratum_id) 
-with rawData(stratum_id, count_value) AS
+WITH rawData(stratum_id, count_value) AS
 (
 SELECT 
-	visit_detail_concept_id AS stratum_id,
-	DATEDIFF(dd, visit_detail_start_date, visit_detail_END_date) AS count_value
+	vd.visit_detail_concept_id AS stratum_id,
+	DATEDIFF(dd, vd.visit_detail_start_date, vd.visit_detail_END_date) AS count_value
 FROM 
 	@cdmDatabaseSchema.visit_detail vd
 JOIN 
-	@cdmDatabaseSchema.observation_period op ON vd.person_id = op.person_id
--- only include events that occur during observation period
-WHERE 
-	op.observation_period_start_date <= vd.visit_detail_start_date 
+	@cdmDatabaseSchema.observation_period op 
+ON 
+	vd.person_id = op.person_id
+AND	
+	vd.visit_detail_start_date >= op.observation_period_start_date  
 AND 
-	vd.visit_detail_start_date <= COALESCE(vd.visit_detail_END_date,vd.visit_detail_start_date) 
-AND
-	COALESCE(vd.visit_detail_END_date,vd.visit_detail_start_date) <= op.observation_period_END_date
+	vd.visit_detail_start_date <= op.observation_period_end_date
 ),
 overallStats (stratum_id, avg_value, stdev_value, min_value, max_value, total) AS
 (

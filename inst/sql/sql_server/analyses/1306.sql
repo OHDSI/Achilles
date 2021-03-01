@@ -7,7 +7,8 @@ SELECT
 	vd.visit_detail_concept_id AS stratum1_id,
 	p.gender_concept_id AS stratum2_id,
 	vd.visit_detail_start_year - p.year_of_birth AS count_value
-FROM @cdmDatabaseSchema.person p
+FROM 
+	@cdmDatabaseSchema.person p
 JOIN (
 	SELECT 
 		vd.person_id,
@@ -16,18 +17,19 @@ JOIN (
 	FROM 
 		@cdmDatabaseSchema.visit_detail vd
 	JOIN 
-		@cdmDatabaseSchema.observation_period op ON vd.person_id = op.person_id
-	-- only include events that occur during observation period
-	WHERE 
-		op.observation_period_start_date <= vd.visit_detail_start_date 
+		@cdmDatabaseSchema.observation_period op 
+	ON 
+		vd.person_id = op.person_id
+	AND	
+		vd.visit_detail_start_date >= op.observation_period_start_date  
 	AND 
-		vd.visit_detail_start_date <= COALESCE(vd.visit_detail_end_date,vd.visit_detail_start_date) 
-	AND
-		COALESCE(vd.visit_detail_end_date,vd.visit_detail_start_date) <= op.observation_period_end_date
+		vd.visit_detail_start_date <= op.observation_period_end_date
 	GROUP BY 
 		vd.person_id,
 		vd.visit_detail_concept_id
-) vd ON p1.person_id = vo1.person_id
+	) vd 
+ON 
+	p.person_id = vd.person_id
 ),
 overallStats (stratum1_id, stratum2_id, avg_value, stdev_value, min_value, max_value, total) AS
 (
@@ -129,8 +131,10 @@ SELECT
 	p25_value,
 	p75_value,
 	p90_value
-INTO @scratchDatabaseSchema@schemaDelim@tempAchillesPrefix_dist_1306
-FROM #tempResults_1306
+INTO 
+	@scratchDatabaseSchema@schemaDelim@tempAchillesPrefix_dist_1306
+FROM 
+	#tempResults_1306
 ;
 
 TRUNCATE TABLE #tempResults_1306;
