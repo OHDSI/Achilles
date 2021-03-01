@@ -13,7 +13,7 @@ JOIN (
 	SELECT 
 		d.person_id,
 		d.device_concept_id,
-		MIN(YEAR(m.device_exposure_start_date)) AS device_exposure_start_year
+		MIN(YEAR(d.device_exposure_start_date)) AS device_exposure_start_year
 	FROM 
 		@cdmDatabaseSchema.device_exposure d
 	JOIN 
