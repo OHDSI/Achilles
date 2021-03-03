@@ -35,18 +35,11 @@ It is a best practice for all OHDSI sites to run Achilles on their CDM datasets 
 The Achilles package consists of:
 
 1. The **achilles** function runs a set of SQL scripts to characterize the domains and concepts of the CDM. 
-2. The **achillesHeel** function uses the results of the achilles function to run a set of DQ scripts to evaluate the conformance and feasibility of your dataset.
-3. The **createIndices** function creates table indices for the achilles tables, which can help improve query performance.
-4. The **getAnalysisDetails** function provides descriptions about the full set of Achilles analyses.
-5. The **dropAllScratchTables** function is useful only for multi-threaded mode. It can clear any leftover staging tables.
-6. The **exportToJson** function can be used to export all Achilles results to JSON files, which is necessary for using AchillesWeb.
-7. The **addDataSource** function can point a data source's JSON files to the AchillesWeb application.
-
-The Achilles package should be run sequentially. That is, **achilles** should be run first to generate the achilles_results and achilles_results_dist tables, and then optionally, **achillesHeel** should be run next to generate the achilles_heel_results and achilles_results_derived tables.
-
-```{r echo = FALSE}
-knitr::include_graphics(path = "../inst/doc/achilles_flowchart.png")
-```
+2. The **createIndices** function creates table indices for the achilles tables, which can help improve query performance.
+3. The **getAnalysisDetails** function provides descriptions about the full set of Achilles analyses.
+4. The **dropAllScratchTables** function is useful only for multi-threaded mode. It can clear any leftover staging tables.
+5. The **exportToJson** function can be used to export all Achilles results to JSON files, which is necessary for using AchillesWeb.
+6. The **addDataSource** function can point a data source's JSON files to the AchillesWeb application.
 
 ## SQL Only Mode
 
@@ -54,15 +47,7 @@ In most Achilles functions, you can specify `sqlOnly = TRUE` in order to produce
 
 ## Logging
 
-File and console logging is enabled across most Achilles functions. The status of each step is logged into files in the `outputFolder`. You can review the files in a common text editor, or use the Shiny Application from the `ParallelLogger` package to view them more interactively.
-
-```{r tidy = FALSE, eval = FALSE}
-ParallelLogger::launchLogViewer(logFileName = "output/log_achilles.txt")
-```
-
-```{r echo = FALSE}
-knitr::include_graphics(path = "../inst/doc/logging_screenshot.png")
-```
+File and console logging is enabled across most Achilles functions. The status of each step is logged into files in the `outputFolder`. You can review the files in a common text editor.
 
 ## Verbose Mode
 
@@ -255,7 +240,7 @@ createIndices(connectionDetails = connectionDetails,
 
 ## Dropping All Staging Tables (Multi-threaded only)
 
-If the **achilles** or **achillesHeel** execution has errors, or if you did not enable this step in the call to these functions, use the `dropAllScratchTables` function.
+If the **achilles** execution has errors, or if you did not enable this step in the call to these functions, use the `dropAllScratchTables` function.
 
 The `tableTypes` parameter can be used to specify which batch of staging tables to drop ("achilles", "heel"). The default value is to drop them all.
 
@@ -267,53 +252,6 @@ connectionDetails <- createConnectionDetails(dbms = "postgresql",
 
 dropAllScratchTables(connectionDetails = connectionDetails, 
                      scratchDatabaseSchema = "scratch", numThreads = 5)
-```
-
-# Examining the Heel Results
-
-To view the Heel results, you can use the fetchAchillesHeelResults() function or the launchHeelResultsViewer() function. The former produces an R data frame that you can then export to various formats. The latter launches a Shiny application that renders the results in an easy to consume HTML file that can be viewed in your internet browser.
-
-Heel Results are warnings split into 3 categories: 
-
-* **ERROR**: Something is probably not right with the way you transformed your native dataset into the CDM dataset. Review the error message and the associated Achilles analysis Id and Heel rule Id to investigate further. Use the **getAnalysisDetails** function to identify the Achilles analysis, and use the **fetchAchillesAnalysisResults** function to view the exact results of that analysis. Additionally, the **launchHeelResultsViewer** function launches a Shiny Application that can directly provide you with the associated SQL scripts.
-* **WARNING**: Something *may* be an issue with the domain or concept associated with the Achilles analysis Id or Heel rule Id. However, not all datasets are the same; Achilles Heel tries to compare yours to a gold-standard dataset, so it is very likely you will encounter some WARNINGs. Feel free to ignore these WARNINGs if they are acceptable deviations from the gold-standard, but it is good practice to document these deviations for other researchers' knowledge.
-* **NOTIFICATION**: These messages simply tell you how your dataset's content compares to practical thresholds on things like age, concept counts, death events, and visit types. These thresholds are not necessarily gold-standard, just values that are thought to be reasonable expected minimums or maximums. Feel free to ignore these NOTIFICATIONs if the expected values do not make sense with your particular dataset.
-
-## Fetch a data frame with the Heel Results
-
-Once **achillesHeel** is run, you can fetch the results into a data frame for further consumption into whichever format you like using the **fetchAchillesHeelResults** function.
-
-```{r tidy = FALSE, eval = FALSE}
-connectionDetails <- createConnectionDetails(dbms = "postgresql", 
-                                             server = "localhost/synpuf", 
-                                             user = "cdm_user", 
-                                             password = "cdm_password")
-
-fetchAchillesHeelResults(connectionDetails = connectionDetails, 
-                         resultsDatabaseSchema = "results")
-```
-
-## View Heel Results in Interactive Shiny Application
-
-The Heel Results Shiny Application can be useful in interacting with the Heel Results. The Heel warnings are color-coded based on severity ("ERROR", "WARNING", "NOTIFICATION"), and are searchable. You can also click on a row to see the associated Analysis and Heel SQL scripts to try to debug the root cause. Results can be downloaded to CSV using the "Download Heel Results" button.
-
-```{r echo = FALSE}
-knitr::include_graphics(path = "../inst/doc/shinyHeel_screenshot.png")
-```
-
-When calling **launchHeelResultsViewer**, use the same parameters you used to execute **achilles** and **achillesHeel**. The Shiny app will use the parameters to render and translate the associated SQL scripts so that you can copy and run them separately to debug issues.
-
-```{r tidy = FALSE, eval = FALSE}
-connectionDetails <- DatabaseConnector::createConnectionDetails(dbms = "postgresql", 
-                                                                server = "localhost/synpuf", 
-                                                                user = "cdm_user", 
-                                                                password = "cdm_password")
-launchHeelResultsViewer(connectionDetails = connectionDetails, 
-                        cdmDatabaseSchema = "cdm", 
-                        resultsDatabaseSchema = "results", 
-                        scratchDatabaseSchema = "scratch",
-                        outputFolder = "output", 
-                        numThreads = 5)
 ```
 
 ## Using AchillesWeb

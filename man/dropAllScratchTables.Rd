@@ -17,23 +17,33 @@ dropAllScratchTables(
 )
 }
 \arguments{
-\item{connectionDetails}{An R object of type \code{connectionDetails} created using the function \code{createConnectionDetails} in the \code{DatabaseConnector} package.}
+\item{connectionDetails}{An R object of type \code{connectionDetails} created using the
+function \code{createConnectionDetails} in the
+\code{DatabaseConnector} package.}
 
-\item{scratchDatabaseSchema}{string name of database schema that Achilles scratch tables were written to.}
+\item{scratchDatabaseSchema}{string name of database schema that Achilles scratch tables were
+written to.}
 
-\item{tempAchillesPrefix}{The prefix to use for the "temporary" (but actually permanent) Achilles analyses tables. Default is "tmpach"}
+\item{tempAchillesPrefix}{The prefix to use for the "temporary" (but actually permanent)
+Achilles analyses tables. Default is "tmpach"}
 
-\item{tempHeelPrefix}{The prefix to use for the "temporary" (but actually permanent) Heel tables. Default is "tmpheel"}
+\item{tempHeelPrefix}{The prefix to use for the "temporary" (but actually permanent) Heel
+tables. Default is "tmpheel"}
 
-\item{numThreads}{The number of threads to use to run this function. Default is 1 thread.}
+\item{numThreads}{The number of threads to use to run this function. Default is 1
+thread.}
 
-\item{tableTypes}{The types of Achilles scratch tables to drop: achilles or heel or both}
+\item{tableTypes}{The types of Achilles scratch tables to drop: achilles or heel or
+both}
 
 \item{outputFolder}{Path to store logs and SQL files}
 
-\item{verboseMode}{Boolean to determine if the console will show all execution steps. Default = TRUE}
+\item{verboseMode}{Boolean to determine if the console will show all execution steps.
+Default = TRUE}
 
-\item{defaultAnalysesOnly}{Boolean to determine if only default analyses should be run. Including non-default analyses is substantially more resource intensive.  Default = TRUE}
+\item{defaultAnalysesOnly}{Boolean to determine if only default analyses should be run.
+Including non-default analyses is substantially more resource
+intensive.  Default = TRUE}
 }
 \description{
 Drop all possible scratch tables

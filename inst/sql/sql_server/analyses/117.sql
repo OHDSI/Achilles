@@ -14,8 +14,11 @@ SELECT
 	COALESCE(COUNT_BIG(distinct op1.PERSON_ID),0) as count_value
 into @scratchDatabaseSchema@schemaDelim@tempAchillesPrefix_117	
 FROM date_keys t1
-left join @cdmDatabaseSchema.observation_period op1
-on year(op1.observation_period_start_date)*100 + month(op1.observation_period_start_date) <= t1.obs_month
-and year(op1.observation_period_end_date)*100 + month(op1.observation_period_end_date) >= t1.obs_month
+left join
+  (select t2.obs_month, op2.*
+    from @cdmDatabaseSchema.observation_period op2, date_keys t2
+    where year(op2.observation_period_start_date)*100 + month(op2.observation_period_start_date) <= t2.obs_month
+    and year(op2.observation_period_end_date)*100 + month(op2.observation_period_end_date) >= t2.obs_month
+  ) op1 on op1.obs_month = t1.obs_month
 group by t1.obs_month
 having COALESCE(COUNT_BIG(distinct op1.PERSON_ID),0) > 0;

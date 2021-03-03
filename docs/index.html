@@ -6,21 +6,20 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Creates Descriptive Statistics Summary for an Entire OMOP CDM Instance • Achilles</title>
-<!-- jquery --><script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js" integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8=" crossorigin="anonymous"></script><!-- Bootstrap --><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha256-916EbMg70RQy9LHiGkXzG8hSg9EdNy97GazNG/aiY1w=" crossorigin="anonymous">
-<script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha256-U5ZEeKfGNOja007MMD3YBI0A3OSZOQbeG6z2f2Y0hu8=" crossorigin="anonymous"></script><!-- Font Awesome icons --><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.7.1/css/all.min.css" integrity="sha256-nAmazAk6vS34Xqo0BSrTb+abbtFlgsFK7NKSi6o7Y78=" crossorigin="anonymous">
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.7.1/css/v4-shims.min.css" integrity="sha256-6qHlizsOWFskGlwVOKuns+D1nB6ssZrHQrNj1wGplHc=" crossorigin="anonymous">
-<!-- clipboard.js --><script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.4/clipboard.min.js" integrity="sha256-FiZwavyI2V6+EXO1U+xzLG3IKldpiTFf3153ea9zikQ=" crossorigin="anonymous"></script><!-- headroom.js --><script src="https://cdnjs.cloudflare.com/ajax/libs/headroom/0.9.4/headroom.min.js" integrity="sha256-DJFC1kqIhelURkuza0AvYal5RxMtpzLjFhsnVIeuk+U=" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/headroom/0.9.4/jQuery.headroom.min.js" integrity="sha256-ZX/yNShbjqsohH1k95liqY9Gd8uOiE1S4vZc+9KQ1K4=" crossorigin="anonymous"></script><!-- pkgdown --><link href="pkgdown.css" rel="stylesheet">
+<!-- jquery --><script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.4.1/jquery.min.js" integrity="sha256-CSXorXvZcTkaix6Yvo6HppcZGetbYMGWSFlBw8HfCJo=" crossorigin="anonymous"></script><!-- Bootstrap --><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.4.1/css/bootstrap.min.css" integrity="sha256-bZLfwXAP04zRMK2BjiO8iu9pf4FbLqX6zitd+tIvLhE=" crossorigin="anonymous">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.4.1/js/bootstrap.min.js" integrity="sha256-nuL8/2cJ5NDSSwnKD8VqreErSWHtnEP9E7AySL+1ev4=" crossorigin="anonymous"></script><!-- bootstrap-toc --><link rel="stylesheet" href="bootstrap-toc.css">
+<script src="bootstrap-toc.js"></script><!-- Font Awesome icons --><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.12.1/css/all.min.css" integrity="sha256-mmgLkCYLUQbXn0B1SRqzHar6dCnv9oZFPEC1g1cwlkk=" crossorigin="anonymous">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.12.1/css/v4-shims.min.css" integrity="sha256-wZjR52fzng1pJHwx4aV2AO3yyTOXrcDW7jBpJtTwVxw=" crossorigin="anonymous">
+<!-- clipboard.js --><script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.6/clipboard.min.js" integrity="sha256-inc5kl9MA1hkeYUt+EC3BhlIgyp/2jDIyBLS6k3UxPI=" crossorigin="anonymous"></script><!-- headroom.js --><script src="https://cdnjs.cloudflare.com/ajax/libs/headroom/0.11.0/headroom.min.js" integrity="sha256-AsUX4SJE1+yuDu5+mAVzJbuYNPHj/WroHuZ8Ir/CkE0=" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/headroom/0.11.0/jQuery.headroom.min.js" integrity="sha256-ZX/yNShbjqsohH1k95liqY9Gd8uOiE1S4vZc+9KQ1K4=" crossorigin="anonymous"></script><!-- pkgdown --><link href="pkgdown.css" rel="stylesheet">
 <script src="pkgdown.js"></script><meta property="og:title" content="Creates Descriptive Statistics Summary for an Entire OMOP CDM Instance">
 <meta property="og:description" content="Creates descriptive statistics summary for an entire OMOP CDM
-  instance. Since Aug 2016 only CDM v5 is actively being supported. CDM v6 
-  support is planned for Q3 2019. Achilles Heel component does data quality assesment.">
-<meta name="twitter:card" content="summary">
+  instance. Currently supports CDM 5.3.">
 <!-- mathjax --><script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js" integrity="sha256-nvJJv9wWKEm88qvoQl9ekL2J+k/RWIsaSScxxlsrv8k=" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/config/TeX-AMS-MML_HTMLorMML.js" integrity="sha256-84DKXVJXs0/F8OTMzX4UR909+jtl4G7SPypPavF+GfA=" crossorigin="anonymous"></script><!--[if lt IE 9]>
 <script src="https://oss.maxcdn.com/html5shiv/3.7.3/html5shiv.min.js"></script>
 <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
 <![endif]-->
 </head>
-<body>
+<body data-spy="scroll" data-target="#toc">
     <div class="container template-home">
       <header><div class="navbar navbar-default navbar-fixed-top" role="navigation">
   <div class="container">
@@ -41,7 +40,7 @@
       <ul class="nav navbar-nav">
 <li>
   <a href="index.html">
-    <span class="fas fa fas fa-home fa-lg"></span>
+    <span class="fas fa-home fa-lg"></span>
      
   </a>
 </li>
@@ -99,16 +98,17 @@
 <li><p>This package makes use of rJava. Make sure that you have Java installed. If you don’t have Java already installed on your computer (on most computers it already is installed), go to <a href="https://java.com">java.com</a> to get the latest version. If you are having trouble with rJava, <a href="https://stackoverflow.com/questions/7019912/using-the-rjava-package-on-win7-64-bit-with-r">this Stack Overflow post</a> may assist you when you begin troubleshooting.</p></li>
 <li>
 <p>In R, use the following commands to install Achilles.</p>
-<div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb1-1" title="1"><span class="cf">if</span> (<span class="op">!</span><span class="kw"><a href="https://rdrr.io/r/base/library.html">require</a></span>(<span class="st">"devtools"</span>)) <span class="kw"><a href="https://rdrr.io/r/utils/install.packages.html">install.packages</a></span>(<span class="st">"devtools"</span>)</a>
-<a class="sourceLine" id="cb1-2" title="2"></a>
-<a class="sourceLine" id="cb1-3" title="3"><span class="co"># To install the master branch</span></a>
-<a class="sourceLine" id="cb1-4" title="4">devtools<span class="op">::</span><span class="kw"><a href="https://rdrr.io/pkg/devtools/man/remote-reexports.html">install_github</a></span>(<span class="st">"OHDSI/Achilles"</span>)</a>
-<a class="sourceLine" id="cb1-5" title="5"></a>
-<a class="sourceLine" id="cb1-6" title="6"><span class="co"># To install latest release (if master branch contains a bug for you)</span></a>
-<a class="sourceLine" id="cb1-7" title="7"><span class="co"># devtools::install_github("OHDSI/Achilles@*release")  </span></a>
-<a class="sourceLine" id="cb1-8" title="8"></a>
-<a class="sourceLine" id="cb1-9" title="9"><span class="co"># To avoid Java 32 vs 64 issues </span></a>
-<a class="sourceLine" id="cb1-10" title="10"><span class="co"># devtools::install_github("OHDSI/Achilles", args="--no-multiarch")  </span></a></code></pre></div>
+<div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="kw">if</span> <span class="op">(</span><span class="op">!</span><span class="kw"><a href="https://rdrr.io/r/base/library.html">require</a></span><span class="op">(</span><span class="st"><a href="https://devtools.r-lib.org/">"devtools"</a></span><span class="op">)</span><span class="op">)</span> <span class="fu"><a href="https://rdrr.io/r/utils/install.packages.html">install.packages</a></span><span class="op">(</span><span class="st">"devtools"</span><span class="op">)</span>
+
+<span class="co"># To install the master branch</span>
+<span class="fu">devtools</span><span class="fu">::</span><span class="fu"><a href="https://devtools.r-lib.org//reference/remote-reexports.html">install_github</a></span><span class="op">(</span><span class="st">"OHDSI/Achilles"</span><span class="op">)</span>
+
+<span class="co"># To install latest release (if master branch contains a bug for you)</span>
+<span class="co"># devtools::install_github("OHDSI/Achilles@*release")  </span>
+
+<span class="co"># To avoid Java 32 vs 64 issues </span>
+<span class="co"># devtools::install_github("OHDSI/Achilles", args="--no-multiarch")  </span></code></pre></div>
 </li>
 <li>
 <p>To run the Achilles analysis, first determine if you’d like to run the function in multi-threaded mode or in single-threaded mode. Use <code>runCostAnalysis = FALSE</code> to save on execution time, as cost analyses tend to run long.</p>
@@ -117,69 +117,94 @@
 <p><strong>In single-threaded mode</strong></p>
 <p>The analyses are run in one SQL session and all intermediate results are written to temp tables before finally being combined into the final results tables. Temp tables are dropped once the package is finished running. Single-threaded mode can be invoked by either setting <code>numThreads = 1</code> or <code>scratchDatabaseSchema = "#"</code>.</p>
 <p>Use the following commands in R:</p>
-<div class="sourceCode" id="cb2"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb2-1" title="1"><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span>(Achilles)</a>
-<a class="sourceLine" id="cb2-2" title="2">connectionDetails &lt;-<span class="st"> </span><span class="kw">createConnectionDetails</span>(</a>
-<a class="sourceLine" id="cb2-3" title="3">  <span class="dt">dbms=</span><span class="st">"redshift"</span>, </a>
-<a class="sourceLine" id="cb2-4" title="4">  <span class="dt">server=</span><span class="st">"server.com"</span>, </a>
-<a class="sourceLine" id="cb2-5" title="5">  <span class="dt">user=</span><span class="st">"secret"</span>, </a>
-<a class="sourceLine" id="cb2-6" title="6">  <span class="dt">password=</span><span class="st">'secret'</span>, </a>
-<a class="sourceLine" id="cb2-7" title="7">  <span class="dt">port=</span><span class="st">"5439"</span>)</a></code></pre></div>
+<div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va">Achilles</span><span class="op">)</span>
+<span class="va">connectionDetails</span> <span class="op">&lt;-</span> <span class="fu">createConnectionDetails</span><span class="op">(</span>
+  dbms<span class="op">=</span><span class="st">"redshift"</span>, 
+  server<span class="op">=</span><span class="st">"server.com"</span>, 
+  user<span class="op">=</span><span class="st">"secret"</span>, 
+  password<span class="op">=</span><span class="st">'secret'</span>, 
+  port<span class="op">=</span><span class="st">"5439"</span><span class="op">)</span></code></pre></div>
 <p><strong>Single-threaded mode</strong></p>
-<div class="sourceCode" id="cb3"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb3-1" title="1"><span class="kw"><a href="reference/achilles.html">achilles</a></span>(connectionDetails, </a>
-<a class="sourceLine" id="cb3-2" title="2">  <span class="dt">cdmDatabaseSchema =</span> <span class="st">"cdm5_inst"</span>, </a>
-<a class="sourceLine" id="cb3-3" title="3">  <span class="dt">resultsDatabaseSchema=</span><span class="st">"results"</span>,</a>
-<a class="sourceLine" id="cb3-4" title="4">  <span class="dt">vocabDatabaseSchema =</span> <span class="st">"vocab"</span>,</a>
-<a class="sourceLine" id="cb3-5" title="5">  <span class="dt">numThreads =</span> <span class="dv">1</span>,</a>
-<a class="sourceLine" id="cb3-6" title="6">  <span class="dt">sourceName =</span> <span class="st">"My Source Name"</span>, </a>
-<a class="sourceLine" id="cb3-7" title="7">  <span class="dt">cdmVersion =</span> <span class="st">"5.3.0"</span>,</a>
-<a class="sourceLine" id="cb3-8" title="8">  <span class="dt">runHeel =</span> <span class="ot">TRUE</span>,</a>
-<a class="sourceLine" id="cb3-9" title="9">  <span class="dt">runCostAnalysis =</span> <span class="ot">TRUE</span>)</a></code></pre></div>
+<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="fu"><a href="reference/achilles.html">achilles</a></span><span class="op">(</span><span class="va">connectionDetails</span>, 
+  cdmDatabaseSchema <span class="op">=</span> <span class="st">"cdm5_inst"</span>, 
+  resultsDatabaseSchema<span class="op">=</span><span class="st">"results"</span>,
+  vocabDatabaseSchema <span class="op">=</span> <span class="st">"vocab"</span>,
+  numThreads <span class="op">=</span> <span class="fl">1</span>,
+  sourceName <span class="op">=</span> <span class="st">"My Source Name"</span>, 
+  cdmVersion <span class="op">=</span> <span class="st">"5.3.0"</span>,
+  runHeel <span class="op">=</span> <span class="cn">TRUE</span>,
+  runCostAnalysis <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></code></pre></div>
 <p><strong>Multi-threaded mode</strong></p>
-<div class="sourceCode" id="cb4"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb4-1" title="1"><span class="kw"><a href="reference/achilles.html">achilles</a></span>(connectionDetails, </a>
-<a class="sourceLine" id="cb4-2" title="2">  <span class="dt">cdmDatabaseSchema =</span> <span class="st">"cdm5_inst"</span>, </a>
-<a class="sourceLine" id="cb4-3" title="3">  <span class="dt">resultsDatabaseSchema =</span> <span class="st">"results"</span>,</a>
-<a class="sourceLine" id="cb4-4" title="4">  <span class="dt">scratchDatabaseSchema =</span> <span class="st">"scratch"</span>,</a>
-<a class="sourceLine" id="cb4-5" title="5">  <span class="dt">vocabDatabaseSchema =</span> <span class="st">"vocab"</span>,</a>
-<a class="sourceLine" id="cb4-6" title="6">  <span class="dt">numThreads =</span> <span class="dv">10</span>,</a>
-<a class="sourceLine" id="cb4-7" title="7">  <span class="dt">sourceName =</span> <span class="st">"My Source Name"</span>, </a>
-<a class="sourceLine" id="cb4-8" title="8">  <span class="dt">cdmVersion =</span> <span class="st">"5.3.0"</span>,</a>
-<a class="sourceLine" id="cb4-9" title="9">  <span class="dt">runHeel =</span> <span class="ot">TRUE</span>,</a>
-<a class="sourceLine" id="cb4-10" title="10">  <span class="dt">runCostAnalysis =</span> <span class="ot">TRUE</span>)</a></code></pre></div>
+<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="fu"><a href="reference/achilles.html">achilles</a></span><span class="op">(</span><span class="va">connectionDetails</span>, 
+  cdmDatabaseSchema <span class="op">=</span> <span class="st">"cdm5_inst"</span>, 
+  resultsDatabaseSchema <span class="op">=</span> <span class="st">"results"</span>,
+  scratchDatabaseSchema <span class="op">=</span> <span class="st">"scratch"</span>,
+  vocabDatabaseSchema <span class="op">=</span> <span class="st">"vocab"</span>,
+  numThreads <span class="op">=</span> <span class="fl">10</span>,
+  sourceName <span class="op">=</span> <span class="st">"My Source Name"</span>, 
+  cdmVersion <span class="op">=</span> <span class="st">"5.3.0"</span>,
+  runHeel <span class="op">=</span> <span class="cn">TRUE</span>,
+  runCostAnalysis <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></code></pre></div>
 <p>The <code>"cdm5_inst"</code> cdmDatabaseSchema parameter, <code>"results"</code> resultsDatabaseSchema parameter, and <code>"scratch"</code> scratchDatabaseSchema parameter are the fully qualified names of the schemas holding the CDM data, targeted for result writing, and holding the intermediate scratch tables, respectively. See the <a href="https://github.com/OHDSI/DatabaseConnector">DatabaseConnector</a> package for details on settings the connection details for your database, for example by typing</p>
-<div class="sourceCode" id="cb5"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb5-1" title="1">?createConnectionDetails</a></code></pre></div>
+<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="op">?</span><span class="va">createConnectionDetails</span></code></pre></div>
 <p>Execution of all Achilles pre-computations may take a long time, particularly in single-threaded mode and with COST analyses enabled. See &lt;extras/notes.md&gt; file to find out how some analyses can be excluded to make the execution faster (excluding cost pre-computations)</p>
-<p>Currently <code>"sql server"</code>, <code>"pdw"</code>, <code>"oracle"</code>, <code>"postgresql"</code>, <code>"redshift"</code>, <code>"mysql"</code>, <code>"impala"</code>, and <code>"bigquery"</code> are supported as <code>dbms</code>. <code>cdmVersion</code> can be <em>ONLY</em> 5.x (please look at prior commit history for v4 support).</p>
+<p>The SQL platforms supported by <a href="https://github.com/OHDSI/DatabaseConnector">DatabaseConnector</a> and <a href="https://github.com/OHDSI/SqlRender">SqlRender</a> are the <strong>only</strong> ones supported here in Achilles as <code>dbms</code>. <code>cdmVersion</code> can be <em>ONLY</em> 5.x (please look at prior commit history for v4 support).</p>
 </li>
 <li>
 <p>To use <a href="https://github.com/OHDSI/AchillesWeb">AchillesWeb</a> to explore the Achilles statistics, you must first export the statistics to a folder JSON files, which can optionally be compressed into one gzipped file for easier transportability.</p>
-<div class="sourceCode" id="cb6"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb6-1" title="1"><span class="kw"><a href="reference/exportToJson.html">exportToJson</a></span>(connectionDetails, </a>
-<a class="sourceLine" id="cb6-2" title="2">  <span class="dt">cdmDatabaseSchema =</span> <span class="st">"cdm5_inst"</span>, </a>
-<a class="sourceLine" id="cb6-3" title="3">  <span class="dt">resultsDatabaseSchema =</span> <span class="st">"results"</span>, </a>
-<a class="sourceLine" id="cb6-4" title="4">  <span class="dt">outputPath =</span> <span class="st">"c:/myPath/AchillesExport"</span>, </a>
-<a class="sourceLine" id="cb6-5" title="5">  <span class="dt">cdmVersion =</span> <span class="st">"5.3.0"</span>,</a>
-<a class="sourceLine" id="cb6-6" title="6">  <span class="dt">compressIntoOneFile =</span> <span class="ot">TRUE</span> <span class="co"># creates gzipped file of all JSON files)</span></a></code></pre></div>
+<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="fu"><a href="reference/exportToJson.html">exportToJson</a></span><span class="op">(</span><span class="va">connectionDetails</span>, 
+  cdmDatabaseSchema <span class="op">=</span> <span class="st">"cdm5_inst"</span>, 
+  resultsDatabaseSchema <span class="op">=</span> <span class="st">"results"</span>, 
+  outputPath <span class="op">=</span> <span class="st">"c:/myPath/AchillesExport"</span>, 
+  compressIntoOneFile <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span> <span class="co"># creates gzipped file of all JSON files</span></code></pre></div>
 </li>
 <li>
 <p>To run only Achilles Heel (component of Achilles), use the following command:</p>
-<div class="sourceCode" id="cb7"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb7-1" title="1"><span class="kw"><a href="reference/achillesHeel.html">achillesHeel</a></span>(connectionDetails, </a>
-<a class="sourceLine" id="cb7-2" title="2">  <span class="dt">cdmDatabaseSchema =</span> <span class="st">"cdm5_inst"</span>, </a>
-<a class="sourceLine" id="cb7-3" title="3">  <span class="dt">resultsDatabaseSchema =</span> <span class="st">"results"</span>, </a>
-<a class="sourceLine" id="cb7-4" title="4">  <span class="dt">scratchDatabaseSchema =</span> <span class="st">"scratch"</span>,</a>
-<a class="sourceLine" id="cb7-5" title="5">  <span class="dt">numThreads =</span> <span class="dv">10</span>, <span class="co"># multi-threaded mode</span></a>
-<a class="sourceLine" id="cb7-6" title="6">  <span class="dt">cdmVersion =</span> <span class="st">"5.3.0"</span>)</a></code></pre></div>
+<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="fu"><a href="reference/achillesHeel.html">achillesHeel</a></span><span class="op">(</span><span class="va">connectionDetails</span>, 
+  cdmDatabaseSchema <span class="op">=</span> <span class="st">"cdm5_inst"</span>, 
+  resultsDatabaseSchema <span class="op">=</span> <span class="st">"results"</span>, 
+  scratchDatabaseSchema <span class="op">=</span> <span class="st">"scratch"</span>,
+  numThreads <span class="op">=</span> <span class="fl">10</span>, <span class="co"># multi-threaded mode</span>
+  cdmVersion <span class="op">=</span> <span class="st">"5.3.0"</span><span class="op">)</span></code></pre></div>
+</li>
+<li>
+<p>To optimize Atlas cache during achilles execution, use the following command:</p>
+<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="fu"><a href="reference/achilles.html">achilles</a></span><span class="op">(</span><span class="va">connectionDetails</span>, 
+  cdmDatabaseSchema <span class="op">=</span> <span class="st">"cdm5_inst"</span>, 
+  resultsDatabaseSchema<span class="op">=</span><span class="st">"results"</span>,
+  vocabDatabaseSchema <span class="op">=</span> <span class="st">"vocab"</span>,
+  numThreads <span class="op">=</span> <span class="fl">1</span>,
+  sourceName <span class="op">=</span> <span class="st">"My Source Name"</span>, 
+  cdmVersion <span class="op">=</span> <span class="st">"5.3.0"</span>,
+  runHeel <span class="op">=</span> <span class="cn">TRUE</span>,
+  optimizeAtlasCache <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span> <span class="co"># creates additional table to store results for Atlas cache</span></code></pre></div>
+</li>
+<li>
+<p>To run only optimization of Atlas cache, use the following command:</p>
+<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="fu"><a href="reference/optimizeAtlasCache.html">optimizeAtlasCache</a></span><span class="op">(</span><span class="va">connectionDetails</span>,
+                   resultsDatabaseSchema<span class="op">=</span><span class="st">"results"</span>,
+                   vocabDatabaseSchema <span class="op">=</span> <span class="st">"dbo"</span><span class="op">)</span>     </code></pre></div>
 </li>
 <li>
 <p>Possible optional additional steps:</p>
 <ul>
-<li>To see what errors were found (from within R), run: <code>r   fetchAchillesHeelResults(connectionDetails,resultsDatabaseSchema)</code>
+<li>To see what errors were found (from within R), run: <code>r      fetchAchillesHeelResults(connectionDetails,resultsDatabaseSchema)</code>
 </li>
-<li>To see a particular analysis, run: <code>r   fetchAchillesAnalysisResults(connectionDetails,resultsDatabaseSchema,analysisId = 2)</code>
+<li>To see a particular analysis, run: <code>r      fetchAchillesAnalysisResults(connectionDetails,resultsDatabaseSchema,analysisId = 2)</code>
 </li>
 <li>To join data tables with some lookup (overview files), obtain those using commands below:</li>
 <li>To get description of analyses, run <code><a href="reference/getAnalysisDetails.html">getAnalysisDetails()</a></code>.</li>
-<li>To get description of derived measures, run: <code>r   read.csv(system.file("csv","derived_analysis_details",package="Achilles"),as.is=T)</code>
+<li>To get description of derived measures, run: <code>r      read.csv(system.file("csv","derived_analysis_details",package="Achilles"),as.is=T)</code>
 </li>
-<li>Similarly, for overview of rules, run: <code>r   read.csv(system.file("csv","achilles_rule.csv",package="Achilles"),as.is=T)</code>
+<li>Similarly, for overview of rules, run: <code>r      read.csv(system.file("csv","achilles_rule.csv",package="Achilles"),as.is=T)</code>
 </li>
 <li>Also see <a href="extras/notes.html">notes.md</a> for more information (in the extras folder).</li>
 </ul>
@@ -204,17 +229,17 @@
 <li><p>Run Achilles in the background with <code>docker-compose run -d achilles</code>.</p></li>
 </ol>
 <p>Alternatively, you can run it with one long command line, like in the following example:</p>
-<div class="sourceCode" id="cb8"><pre class="sourceCode bash"><code class="sourceCode bash"><a class="sourceLine" id="cb8-1" title="1"><span class="ex">docker</span> run \</a>
-<a class="sourceLine" id="cb8-2" title="2">  --rm \</a>
-<a class="sourceLine" id="cb8-3" title="3">  --net=host \</a>
-<a class="sourceLine" id="cb8-4" title="4">  -v <span class="st">"</span><span class="va">$(</span><span class="bu">pwd</span><span class="va">)</span><span class="st">"</span>/output:/opt/app/output \</a>
-<a class="sourceLine" id="cb8-5" title="5">  -e ACHILLES_SOURCE=DEFAULT \</a>
-<a class="sourceLine" id="cb8-6" title="6">  -e ACHILLES_DB_URI=postgresql://webapi:webapi@localhost:5432/ohdsi \</a>
-<a class="sourceLine" id="cb8-7" title="7">  -e ACHILLES_CDM_SCHEMA=cdm5 \</a>
-<a class="sourceLine" id="cb8-8" title="8">  -e ACHILLES_VOCAB_SCHEMA=cdm5 \</a>
-<a class="sourceLine" id="cb8-9" title="9">  -e ACHILLES_RES_SCHEMA=webapi \</a>
-<a class="sourceLine" id="cb8-10" title="10">  -e ACHILLES_CDM_VERSION=5 \</a>
-<a class="sourceLine" id="cb8-11" title="11">  <span class="op">&lt;</span>image name<span class="op">&gt;</span></a></code></pre></div>
+<div class="sourceCode" id="cb10"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="ex">docker</span> run <span class="dt">\</span></span>
+<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a>  <span class="at">--rm</span> <span class="dt">\</span></span>
+<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">--net</span><span class="op">=</span>host <span class="dt">\</span></span>
+<span id="cb10-4"><a href="#cb10-4" aria-hidden="true" tabindex="-1"></a>  <span class="at">-v</span> <span class="st">"</span><span class="va">$(</span><span class="bu">pwd</span><span class="va">)</span><span class="st">"</span>/output:/opt/app/output <span class="dt">\</span></span>
+<span id="cb10-5"><a href="#cb10-5" aria-hidden="true" tabindex="-1"></a>  <span class="at">-e</span> ACHILLES_SOURCE=DEFAULT <span class="dt">\</span></span>
+<span id="cb10-6"><a href="#cb10-6" aria-hidden="true" tabindex="-1"></a>  <span class="at">-e</span> ACHILLES_DB_URI=postgresql://webapi:webapi@localhost:5432/ohdsi <span class="dt">\</span></span>
+<span id="cb10-7"><a href="#cb10-7" aria-hidden="true" tabindex="-1"></a>  <span class="at">-e</span> ACHILLES_CDM_SCHEMA=cdm5 <span class="dt">\</span></span>
+<span id="cb10-8"><a href="#cb10-8" aria-hidden="true" tabindex="-1"></a>  <span class="at">-e</span> ACHILLES_VOCAB_SCHEMA=cdm5 <span class="dt">\</span></span>
+<span id="cb10-9"><a href="#cb10-9" aria-hidden="true" tabindex="-1"></a>  <span class="at">-e</span> ACHILLES_RES_SCHEMA=webapi <span class="dt">\</span></span>
+<span id="cb10-10"><a href="#cb10-10" aria-hidden="true" tabindex="-1"></a>  <span class="at">-e</span> ACHILLES_CDM_VERSION=5 <span class="dt">\</span></span>
+<span id="cb10-11"><a href="#cb10-11" aria-hidden="true" tabindex="-1"></a>  <span class="op">&lt;</span>image name<span class="op">&gt;</span></span></code></pre></div>
 </div>
 <div id="license" class="section level2">
 <h2 class="hasAnchor">
@@ -248,7 +273,7 @@
 </div>
   </div>
 
-  <div class="col-md-3 hidden-xs hidden-sm" id="sidebar">
+  <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">
     <div class="license">
 <h2>License</h2>
 <ul class="list-unstyled">
@@ -258,7 +283,8 @@
 <div class="developers">
 <h2>Developers</h2>
 <ul class="list-unstyled">
-<li>Patrick Ryan <br><small class="roles"> Author, maintainer </small>  </li>
+<li>Frank DeFalco <br><small class="roles"> Author, maintainer </small>  </li>
+<li>Patrick Ryan <br><small class="roles"> Author </small>  </li>
 <li>Martijn Schuemie <br><small class="roles"> Author </small>  </li>
 <li>Vojtech Huser <br><small class="roles"> Author </small>  </li>
 <li>Chris Knoll <br><small class="roles"> Author </small>  </li>
@@ -280,11 +306,11 @@
 
 
       <footer><div class="copyright">
-  <p>Developed by Patrick Ryan, Martijn Schuemie, Vojtech Huser, Chris Knoll, Ajit Londhe, Taha Abdul-Basser.</p>
+  <p>Developed by Frank DeFalco, Patrick Ryan, Martijn Schuemie, Vojtech Huser, Chris Knoll, Ajit Londhe, Taha Abdul-Basser.</p>
 </div>
 
 <div class="pkgdown">
-  <p>Site built with <a href="https://pkgdown.r-lib.org/">pkgdown</a> 1.4.1.</p>
+  <p>Site built with <a href="https://pkgdown.r-lib.org/">pkgdown</a> 1.6.1.</p>
 </div>
 
       </footer>
