@@ -14,18 +14,25 @@ createIndices(
 )
 }
 \arguments{
-\item{connectionDetails}{An R object of type \code{connectionDetails} created using the function \code{createConnectionDetails} in the \code{DatabaseConnector} package.}
+\item{connectionDetails}{An R object of type \code{connectionDetails} created using the
+function \code{createConnectionDetails} in the
+\code{DatabaseConnector} package.}
 
-\item{resultsDatabaseSchema}{Fully qualified name of database schema that we can write final results to. Default is cdmDatabaseSchema. 
-On SQL Server, this should specifiy both the database and the schema, so for example, on SQL Server, 'cdm_results.dbo'.}
+\item{resultsDatabaseSchema}{Fully qualified name of database schema that we can write final
+results to. Default is cdmDatabaseSchema. On SQL Server, this should
+specifiy both the database and the schema, so for example, on SQL
+Server, 'cdm_results.dbo'.}
 
 \item{outputFolder}{Path to store logs and SQL files}
 
-\item{sqlOnly}{TRUE = just generate SQL files, don't actually run, FALSE = run Achilles}
+\item{sqlOnly}{TRUE = just generate SQL files, don't actually run, FALSE = run
+Achilles}
 
-\item{verboseMode}{Boolean to determine if the console will show all execution steps. Default = TRUE}
+\item{verboseMode}{Boolean to determine if the console will show all execution steps.
+Default = TRUE}
 
-\item{achillesTables}{Which achilles tables should be indexed? Default is both achilles_results and achilles_results_dist.}
+\item{achillesTables}{Which achilles tables should be indexed? Default is both
+achilles_results and achilles_results_dist.}
 }
 \description{
 Create indicies

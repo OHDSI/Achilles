@@ -6,15 +6,6 @@ knitr::opts_chunk$set(
   error = FALSE,
   tidy = FALSE)
 
-## ----echo = FALSE-------------------------------------------------------------
-knitr::include_graphics(path = "../inst/doc/achilles_flowchart.png")
-
-## ----tidy = FALSE, eval = FALSE-----------------------------------------------
-#  ParallelLogger::launchLogViewer(logFileName = "output/log_achilles.txt")
-
-## ----echo = FALSE-------------------------------------------------------------
-knitr::include_graphics(path = "../inst/doc/logging_screenshot.png")
-
 ## ----tidy = FALSE, eval = FALSE-----------------------------------------------
 #  connectionDetails <- createConnectionDetails(dbms = "postgresql",
 #                                               server = "localhost/synpuf",
@@ -93,30 +84,6 @@ knitr::include_graphics(path = "../inst/doc/logging_screenshot.png")
 #  
 #  dropAllScratchTables(connectionDetails = connectionDetails,
 #                       scratchDatabaseSchema = "scratch", numThreads = 5)
-
-## ----tidy = FALSE, eval = FALSE-----------------------------------------------
-#  connectionDetails <- createConnectionDetails(dbms = "postgresql",
-#                                               server = "localhost/synpuf",
-#                                               user = "cdm_user",
-#                                               password = "cdm_password")
-#  
-#  fetchAchillesHeelResults(connectionDetails = connectionDetails,
-#                           resultsDatabaseSchema = "results")
-
-## ----echo = FALSE-------------------------------------------------------------
-knitr::include_graphics(path = "../inst/doc/shinyHeel_screenshot.png")
-
-## ----tidy = FALSE, eval = FALSE-----------------------------------------------
-#  connectionDetails <- DatabaseConnector::createConnectionDetails(dbms = "postgresql",
-#                                                                  server = "localhost/synpuf",
-#                                                                  user = "cdm_user",
-#                                                                  password = "cdm_password")
-#  launchHeelResultsViewer(connectionDetails = connectionDetails,
-#                          cdmDatabaseSchema = "cdm",
-#                          resultsDatabaseSchema = "results",
-#                          scratchDatabaseSchema = "scratch",
-#                          outputFolder = "output",
-#                          numThreads = 5)
 
 ## ----tidy = FALSE, eval = FALSE-----------------------------------------------
 #  connectionDetails <- createConnectionDetails(dbms = "postgresql",

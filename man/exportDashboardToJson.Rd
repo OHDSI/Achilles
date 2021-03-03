@@ -13,15 +13,21 @@ exportDashboardToJson(
 )
 }
 \arguments{
-\item{connectionDetails}{An R object of type ConnectionDetail (details for the function that contains server info, database type, optionally username/password, port)}
+\item{connectionDetails}{An R object of type ConnectionDetail (details for the function
+that contains server info, database type, optionally
+username/password, port)}
 
 \item{cdmDatabaseSchema}{Name of the database schema that contains the vocabulary files}
 
-\item{resultsDatabaseSchema}{Name of the database schema that contains the Achilles analysis files. Default is cdmDatabaseSchema}
+\item{resultsDatabaseSchema}{Name of the database schema that contains the Achilles analysis
+files. Default is cdmDatabaseSchema}
 
-\item{outputPath}{A folder location to save the JSON files. Default is current working folder}
+\item{outputPath}{folder location to save the JSON files. Default is current
+working folder}
 
-\item{vocabDatabaseSchema}{string name of database schema that contains OMOP Vocabulary. Default is cdmDatabaseSchema. On SQL Server, this should specifiy both the database and the schema, so for example 'results.dbo'.}
+\item{vocabDatabaseSchema}{name of database schema that contains OMOP Vocabulary. Default is
+cdmDatabaseSchema. On SQL Server, this should specifiy both the
+database and the schema, so for example 'results.dbo'.}
 }
 \value{
 none
@@ -30,12 +36,16 @@ none
 \code{exportDashboardToJson} Exports Achilles Dashboard report into a JSON form for reports.
 }
 \details{
-Creates individual files for Dashboard report found in Achilles.Web. NOTE: This function reads the results
-from the other exports and aggregates them into a single file. If other reports are not genreated, this function will fail.
+Creates individual files for Dashboard report found in Achilles.Web. NOTE: This function reads the
+results from the other exports and aggregates them into a single file. If other reports are not
+genreated, this function will fail.
 }
 \examples{
 \dontrun{
-  connectionDetails <- DatabaseConnector::createConnectionDetails(dbms="sql server", server="yourserver")
-  exportDashboardToJson(connectionDetails, cdmDatabaseSchema="cdm4_sim", outputPath="your/output/path")
+connectionDetails <- DatabaseConnector::createConnectionDetails(dbms = "sql server",
+                                                                server = "yourserver")
+exportDashboardToJson(connectionDetails,
+                      cdmDatabaseSchema = "cdm4_sim",
+                      outputPath = "your/output/path")
 }
 }

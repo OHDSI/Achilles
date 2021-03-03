@@ -13,28 +13,38 @@ exportObservationPeriodToJson(
 )
 }
 \arguments{
-\item{connectionDetails}{An R object of type ConnectionDetail (details for the function that contains server info, database type, optionally username/password, port)}
+\item{connectionDetails}{An R object of type ConnectionDetail (details for the function
+that contains server info, database type, optionally
+username/password, port)}
 
 \item{cdmDatabaseSchema}{Name of the database schema that contains the vocabulary files}
 
-\item{resultsDatabaseSchema}{Name of the database schema that contains the Achilles analysis files. Default is cdmDatabaseSchema}
+\item{resultsDatabaseSchema}{Name of the database schema that contains the Achilles analysis
+files. Default is cdmDatabaseSchema}
 
-\item{outputPath}{A folder location to save the JSON files. Default is current working folder}
+\item{outputPath}{folder location to save the JSON files. Default is current
+working folder}
 
-\item{vocabDatabaseSchema}{string name of database schema that contains OMOP Vocabulary. Default is cdmDatabaseSchema. On SQL Server, this should specifiy both the database and the schema, so for example 'results.dbo'.}
+\item{vocabDatabaseSchema}{name of database schema that contains OMOP Vocabulary. Default is
+cdmDatabaseSchema. On SQL Server, this should specifiy both the
+database and the schema, so for example 'results.dbo'.}
 }
 \value{
 none
 }
 \description{
-\code{exportObservationPeriodToJson} Exports Achilles Observation Period report into a JSON form for reports.
+\code{exportObservationPeriodToJson} Exports Achilles Observation Period report into a JSON form
+for reports.
 }
 \details{
 Creates individual files for Observation Period report found in Achilles.Web
 }
 \examples{
 \dontrun{
-  connectionDetails <- DatabaseConnector::createConnectionDetails(dbms="sql server", server="yourserver")
-  exportObservationPeriodToJson(connectionDetails, cdmDatabaseSchema="cdm4_sim", outputPath="your/output/path")
+connectionDetails <- DatabaseConnector::createConnectionDetails(dbms = "sql server",
+                                                                server = "yourserver")
+exportObservationPeriodToJson(connectionDetails,
+                              cdmDatabaseSchema = "cdm4_sim",
+                              outputPath = "your/output/path")
 }
 }

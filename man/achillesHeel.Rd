@@ -24,38 +24,61 @@ achillesHeel(
 )
 }
 \arguments{
-\item{connectionDetails}{An R object of type \code{connectionDetails} created using the function \code{createConnectionDetails} in the \code{DatabaseConnector} package.}
+\item{connectionDetails}{An R object of type \code{connectionDetails} created using the
+function \code{createConnectionDetails} in the
+\code{DatabaseConnector} package.}
 
-\item{cdmDatabaseSchema}{string name of database schema that contains OMOP CDM. On SQL Server, this should specifiy both the database and the schema, so for example 'cdm_instance.dbo'.}
+\item{cdmDatabaseSchema}{string name of database schema that contains OMOP CDM. On SQL
+Server, this should specifiy both the database and the schema,
+so for example 'cdm_instance.dbo'.}
 
-\item{resultsDatabaseSchema}{string name of database schema that we can write final results to. Default is cdmDatabaseSchema. On SQL Server, this should specifiy both the database and the schema, 
-so for example 'results.dbo'.}
+\item{resultsDatabaseSchema}{string name of database schema that we can write final results
+to. Default is cdmDatabaseSchema. On SQL Server, this should
+specifiy both the database and the schema, so for example
+'results.dbo'.}
 
-\item{scratchDatabaseSchema}{(OPTIONAL, multi-threaded mode) Name of a fully qualified schema that is accessible to/from the resultsDatabaseSchema, that can store all of the scratch tables. Default is resultsDatabaseSchema.}
+\item{scratchDatabaseSchema}{(OPTIONAL, multi-threaded mode) Name of a fully qualified
+schema that is accessible to/from the resultsDatabaseSchema,
+that can store all of the scratch tables. Default is
+resultsDatabaseSchema.}
 
-\item{oracleTempSchema}{For Oracle only: the name of the database schema where you want all temporary tables to be managed. Requires create/insert permissions to this database.}
+\item{oracleTempSchema}{For Oracle only: the name of the database schema where you
+want all temporary tables to be managed. Requires
+create/insert permissions to this database.}
 
-\item{vocabDatabaseSchema}{String name of database schema that contains OMOP Vocabulary. Default is cdmDatabaseSchema. On SQL Server, this should specifiy both the database and the schema, so for example 'results.dbo'.}
+\item{vocabDatabaseSchema}{String name of database schema that contains OMOP Vocabulary.
+Default is cdmDatabaseSchema. On SQL Server, this should
+specifiy both the database and the schema, so for example
+'results.dbo'.}
 
-\item{cdmVersion}{Define the OMOP CDM version used:  currently supports v5 and above.  Default = "5".}
+\item{cdmVersion}{Define the OMOP CDM version used: currently supports v5 and
+above.  Default = "5".}
 
-\item{numThreads}{(OPTIONAL, multi-threaded mode) The number of threads to use to run Achilles in parallel. Default is 1 thread.}
+\item{numThreads}{(OPTIONAL, multi-threaded mode) The number of threads to use
+to run Achilles in parallel. Default is 1 thread.}
 
-\item{tempHeelPrefix}{(OPTIONAL, multi-threaded mode) The prefix to use for the "temporary" (but actually permanent) Heel tables. Default is "tmpheel"}
+\item{tempHeelPrefix}{(OPTIONAL, multi-threaded mode) The prefix to use for the
+"temporary" (but actually permanent) Heel tables. Default is
+"tmpheel"}
 
-\item{dropScratchTables}{(OPTIONAL, multi-threaded mode) TRUE = drop the scratch tables (may take time depending on dbms), FALSE = leave them in place}
+\item{dropScratchTables}{(OPTIONAL, multi-threaded mode) TRUE = drop the scratch tables
+(may take time depending on dbms), FALSE = leave them in place}
 
 \item{ThresholdAgeWarning}{The maximum age to allow in Heel}
 
 \item{ThresholdOutpatientVisitPerc}{The maximum percentage of outpatient visits among all visits}
 
-\item{ThresholdMinimalPtMeasDxRx}{The minimum percentage of patients with at least 1 Measurement, 1 Dx, and 1 Rx}
+\item{ThresholdMinimalPtMeasDxRx}{The minimum percentage of patients with at least 1
+Measurement, 1 Dx, and 1 Rx}
 
 \item{outputFolder}{Path to store logs and SQL files}
 
-\item{sqlOnly}{Boolean to determine if Heel should be fully executed. TRUE = just generate SQL files, don't actually run, FALSE = run Achilles Heel}
+\item{sqlOnly}{Boolean to determine if Heel should be fully executed. TRUE =
+just generate SQL files, don't actually run, FALSE = run
+Achilles Heel}
 
-\item{verboseMode}{Boolean to determine if the console will show all execution steps. Default = TRUE}
+\item{verboseMode}{Boolean to determine if the console will show all execution
+steps. Default = TRUE}
 }
 \value{
 The full Heel SQL code
@@ -64,18 +87,19 @@ The full Heel SQL code
 \code{achillesHeel} executes data quality rules (or checks) on pre-computed analyses (or measures).
 }
 \details{
-\code{achillesHeel} contains number of rules (authored in SQL) that are executed against achilles results tables.
+\code{achillesHeel} contains number of rules (authored in SQL) that are executed against achilles
+results tables.
 }
 \examples{
 \dontrun{
-  connectionDetails <- createConnectionDetails(dbms="sql server", server="some_server")
-  achillesHeel <- achillesHeel(connectionDetails = connectionDetails, 
-                               cdmDatabaseSchema = "cdm", 
-                               resultsDatabaseSchema = "results", 
-                               scratchDatabaseSchema = "scratch",
-                               vocabDatabaseSchema = "vocab",
-                               cdmVersion = "5.3.0",
-                               numThreads = 10,
-                               outputFolder = "output")
+connectionDetails <- createConnectionDetails(dbms = "sql server", server = "some_server")
+achillesHeel <- achillesHeel(connectionDetails = connectionDetails,
+                             cdmDatabaseSchema = "cdm",
+                             resultsDatabaseSchema = "results",
+                             scratchDatabaseSchema = "scratch",
+                             vocabDatabaseSchema = "vocab",
+                             cdmVersion = "5.3.0",
+                             numThreads = 10,
+                             outputFolder = "output")
 }
 }

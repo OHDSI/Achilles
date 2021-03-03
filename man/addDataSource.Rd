@@ -20,19 +20,22 @@ none
 \code{addDataSource} adds a data source to the datasource.json file used by AchillesWeb.
 }
 \details{
-Used to update the datasources file with the reference to a specified datasource.
-This makes the new datasource findable for OHDSI tools.
-If the datasources file exists, the data source will be added to the file.
-If the datasources file does not exist, a new file wil be initialized with the specified data source.
+Used to update the datasources file with the reference to a specified datasource. This makes the
+new datasource findable for OHDSI tools. If the datasources file exists, the data source will be
+added to the file. If the datasources file does not exist, a new file wil be initialized with the
+specified data source.
 }
 \examples{
-                           \dontrun{
-                                        jsonFolderPath <- "your/output/path"
-                                        dataSourcesFilePath <- "/path/to/datasources.json"
-                                        dataSourceName <- "My New CDM"
-                                        connectionDetails <- DatabaseConnector::createConnectionDetails(dbms="sql server", server="yourserver")
-                                        exportToJson(connectionDetails, cdmDatabaseSchema="cdm5", resultsDatabaseSchema = "results", 
-                                                     outputPath=jsonFolderPath)
-                                        addDataSource(jsonFolderPath, dataSourcesFilePath, dataSourceName)
-                                     }
+\dontrun{
+jsonFolderPath <- "your/output/path"
+dataSourcesFilePath <- "/path/to/datasources.json"
+dataSourceName <- "My New CDM"
+connectionDetails <- DatabaseConnector::createConnectionDetails(dbms = "sql server",
+                                                                server = "yourserver")
+exportToJson(connectionDetails,
+             cdmDatabaseSchema = "cdm5",
+             resultsDatabaseSchema = "results",
+             outputPath = jsonFolderPath)
+addDataSource(jsonFolderPath, dataSourcesFilePath, dataSourceName)
+}
 }
