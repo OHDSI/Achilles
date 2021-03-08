@@ -307,6 +307,21 @@ exportToJson <- function(connectionDetails,
                          outputPath,
                          vocabDatabaseSchema)
   }
+  
+    if ("VISIT_DETAIL" %in% reports) {  
+	generateVisitDetailTreemap(conn, 
+							   connectionDetails$dbms, 
+							   cdmDatabaseSchema, 
+							   resultsDatabaseSchema, 
+							   outputPath, 
+							   vocabDatabaseSchema)
+    generateVisitDetailReports(conn, 
+							   connectionDetails$dbms, 
+							   cdmDatabaseSchema, 
+							   resultsDatabaseSchema, 
+							   outputPath, 
+							   vocabDatabaseSchema)
+  }
 
   if ("PERFORMANCE" %in% reports) {
     generateAchillesPerformanceReport(conn,
@@ -1042,6 +1057,53 @@ exportVisitToJson <- function(connectionDetails,
 
 
 #' @title
+#' exportVisitDetailToJson
+#'
+#' @description
+#' \code{exportVisitDetailToJson} Exports Achilles VISIT_DETAIL report into a JSON form for reports.
+#'
+#' @details
+#' Creates individual files for VISIT_DETAIL report found in Achilles.Web
+#'
+#'
+#' @param connectionDetails           An R object of type ConnectionDetail (details for the function
+#'                                    that contains server info, database type, optionally
+#'                                    username/password, port)
+#' @param cdmDatabaseSchema           Name of the database schema that contains the vocabulary files
+#' @param resultsDatabaseSchema       Name of the database schema that contains the Achilles analysis
+#'                                    files. Default is cdmDatabaseSchema
+#' @param outputPath                  folder location to save the JSON files. Default is current
+#'                                    working folder
+#' @param vocabDatabaseSchema   name of database schema that contains OMOP Vocabulary. Default is
+#'                                    cdmDatabaseSchema. On SQL Server, this should specifiy both the
+#'                                    database and the schema, so for example 'results.dbo'.
+#'
+#' @return
+#' none
+#' @examples
+#' \dontrun{
+#' connectionDetails <- DatabaseConnector::createConnectionDetails(dbms = "sql server",
+#'                                                                 server = "yourserver")
+#' exportVisitDetailToJson(connectionDetails,
+#'                   cdmDatabaseSchema = "cdm4_sim",
+#'                   outputPath = "your/output/path")
+#' }
+#' @export
+exportVisitDetailToJson <- function(connectionDetails,
+                                    cdmDatabaseSchema,
+                                    resultsDatabaseSchema,
+                                    outputPath = getwd(),
+                                    vocabDatabaseSchema = cdmDatabaseSchema) {
+  exportToJson(connectionDetails,
+               cdmDatabaseSchema,
+               resultsDatabaseSchema,
+               outputPath,
+               reports = c("VISIT_DETAIL"),
+               vocabDatabaseSchema)
+}
+
+
+#' @title exportPerformanceToJson
 #' exportPerformanceToJson
 #'
 #' @description
@@ -2863,3 +2925,124 @@ generateDeathReports <- function(conn,
   write(jsonOutput, file = paste(outputPath, "/death.json", sep = ""))
   close(progressBar)
 }
+
+generateVisitDetailTreemap <- function(conn, 
+                                       dbms, 
+									   cdmDatabaseSchema, 
+									   resultsDatabaseSchema, 
+									   outputPath, 
+									   vocabDatabaseSchema = cdmDatabaseSchema) {
+  writeLines("Generating visit_detail treemap")
+  progressBar <- utils::txtProgressBar(max=1,style=3)
+  progress = 0
+  
+  queryVisitDetailTreemap <- SqlRender::loadRenderTranslateSql(sqlFilename = "export/visitdetail/sqlVisitDetailTreemap.sql",
+                                              packageName = "Achilles",
+                                              dbms = dbms,
+                                              warnOnMissingParameters = FALSE,
+                                              cdm_database_schema = cdmDatabaseSchema,
+                                              results_database_schema = resultsDatabaseSchema,
+                                              vocab_database_schema = vocabDatabaseSchema)
+  
+  dataVisitDetailTreemap <- DatabaseConnector::querySql(conn,queryVisitDetailTreemap) 
+  
+  write(rjson::toJSON(dataVisitDetailTreemap,method="C"),paste(outputPath, "/visitdetail_treemap.json", sep=''))
+  progress = progress + 1
+  utils::setTxtProgressBar(progressBar, progress)
+  
+  close(progressBar)  
+}
+
+generateVisitDetailReports <- function(conn, 
+                                       dbms, 
+									   cdmDatabaseSchema, 
+									   resultsDatabaseSchema, 
+									   outputPath, 
+									   vocabDatabaseSchema = cdmDatabaseSchema) {
+  writeLines("Generating visit_detail reports")
+  
+  treemapFile <- file.path(outputPath,"visitdetail_treemap.json")
+  if (!file.exists(treemapFile)){
+    writeLines(paste("Warning: treemap file",treemapFile,"does not exist. Skipping detail report generation."))
+    return()
+  }
+  
+  treemapData <- rjson::fromJSON(file = treemapFile)
+  uniqueConcepts <- unique(treemapData$CONCEPT_ID)
+  totalCount <- length(uniqueConcepts)
+  
+  visitdetailFolder <- file.path(outputPath,"visitdetail")
+  if (file.exists(visitdetailFolder)){
+    writeLines(paste("Warning: folder ",visitdetailFolder," already exists"))
+  } else {
+    dir.create(paste(visitdetailFolder,"/",sep=""))
+    
+  }
+  
+  progressBar <- utils::txtProgressBar(style=3)
+  progress = 0
+  
+  queryPrevalenceByGenderAgeYear <- SqlRender::loadRenderTranslateSql(sqlFilename = "export/visitdetail/sqlPrevalenceByGenderAgeYear.sql",
+                                                           packageName = "Achilles",
+                                                           dbms = dbms,
+                                                           warnOnMissingParameters = FALSE,
+                                                           cdm_database_schema = cdmDatabaseSchema,
+                                                           results_database_schema = resultsDatabaseSchema,
+                                                           vocab_database_schema = vocabDatabaseSchema
+  )
+  
+  queryPrevalenceByMonth <- SqlRender::loadRenderTranslateSql(sqlFilename = "export/visitdetail/sqlPrevalenceByMonth.sql",
+                                                   packageName = "Achilles",
+                                                   dbms = dbms,
+                                                   warnOnMissingParameters = FALSE,
+                                                   cdm_database_schema = cdmDatabaseSchema,
+                                                   results_database_schema = resultsDatabaseSchema,
+                                                   vocab_database_schema = vocabDatabaseSchema
+  )
+  
+  queryVisitDetailDurationByType <- SqlRender::loadRenderTranslateSql(sqlFilename = "export/visitdetail/sqlVisitDetailDurationByType.sql",
+                                                     packageName = "Achilles",
+                                                     dbms = dbms,
+                                                     warnOnMissingParameters = FALSE,
+                                                     cdm_database_schema = cdmDatabaseSchema,
+                                                     results_database_schema = resultsDatabaseSchema,
+                                                     vocab_database_schema = vocabDatabaseSchema
+  )
+  
+  queryAgeAtFirstOccurrence <- SqlRender::loadRenderTranslateSql(sqlFilename = "export/visitdetail/sqlAgeAtFirstOccurrence.sql",
+                                                      packageName = "Achilles",
+                                                      dbms = dbms,
+                                                      warnOnMissingParameters = FALSE,
+                                                      cdm_database_schema = cdmDatabaseSchema,
+                                                      results_database_schema = resultsDatabaseSchema,
+                                                      vocab_database_schema = vocabDatabaseSchema
+  )
+  
+  dataPrevalenceByGenderAgeYear <- DatabaseConnector::querySql(conn,queryPrevalenceByGenderAgeYear) 
+  dataPrevalenceByMonth <- DatabaseConnector::querySql(conn,queryPrevalenceByMonth)  
+  dataVisitDetailDurationByType <- DatabaseConnector::querySql(conn,queryVisitDetailDurationByType)    
+  dataAgeAtFirstOccurrence <- DatabaseConnector::querySql(conn,queryAgeAtFirstOccurrence)    
+  
+  buildVisitDetailReport <- function(concept_id) {
+    report <- {}
+    report$PREVALENCE_BY_GENDER_AGE_YEAR <- dataPrevalenceByGenderAgeYear[dataPrevalenceByGenderAgeYear$CONCEPT_ID == concept_id,c(3,4,5,6)]    
+    report$PREVALENCE_BY_MONTH <- dataPrevalenceByMonth[dataPrevalenceByMonth$CONCEPT_ID == concept_id,c(3,4)]
+    report$VISIT_DETAIL_DURATION_BY_TYPE <- dataVisitDetailDurationByType[dataVisitDetailDurationByType$CONCEPT_ID == concept_id,c(2,3,4,5,6,7,8,9)]
+    report$AGE_AT_FIRST_OCCURRENCE <- dataAgeAtFirstOccurrence[dataAgeAtFirstOccurrence$CONCEPT_ID == concept_id,c(2,3,4,5,6,7,8,9)]
+    filename <- paste(outputPath, "/visitdetail/visitdetail_" , concept_id , ".json", sep='')  
+    
+    write(rjson::toJSON(report,method="C"),filename)  
+    
+    #Update progressbar:
+    env <- parent.env(environment())
+    curVal <- get("progress", envir = env)
+    assign("progress", curVal +1 ,envir= env)
+    utils::setTxtProgressBar(get("progressBar", envir= env), (curVal + 1) / get("totalCount", envir= env))
+  }
+  
+  dummy <- lapply(uniqueConcepts, buildVisitDetailReport)  
+  
+  utils::setTxtProgressBar(progressBar, 1)
+  close(progressBar)  
+}
+
