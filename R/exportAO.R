@@ -452,7 +452,7 @@ generateAOMetadataReport <- function(connectionDetails, cdmDatabaseSchema, outpu
       cdm_database_schema = cdmDatabaseSchema
     )      
     dataMetadata <- DatabaseConnector::querySql(conn, queryMetadata) 
-    data.table::fwrite(dataMetadata, file=paste0(sourceOutputPath, "/metadata.csv"))   
+    data.table::fwrite(dataMetadata, file=paste0(outputPath, "/metadata.csv"))   
   }
 }
 
@@ -545,7 +545,7 @@ generateAOCdmSourceReport <- function(connectionDetails, cdmDatabaseSchema, outp
     )  
     
     dataCdmSource <- DatabaseConnector::querySql(conn, queryCdmSource) 
-    data.table::fwrite(dataCdmSource, file=paste0(sourceOutputPath, "/cdmsource.csv"))
+    data.table::fwrite(dataCdmSource, file=paste0(outputPath, "/cdmsource.csv"))
   }
 }
 
@@ -856,6 +856,80 @@ generateAODrugReports <- function(connectionDetails, dataDrugs, cdmDatabaseSchem
   x <- lapply(uniqueConcepts, buildDrugReport)  
 }
 
+generateAODeviceReports <- function(connectionDetails, dataDevices, cdmDatabaseSchema, resultsDatabaseSchema, vocabDatabaseSchema, outputPath) 
+{
+  writeLines("Generating device exposure reports")
+  
+  queryAgeAtFirstExposure <- SqlRender::loadRenderTranslateSql(
+    sqlFilename = "export/device/sqlAgeAtFirstExposure.sql",
+    packageName = "Achilles",
+    dbms = connectionDetails$dbms,
+    results_database_schema = resultsDatabaseSchema,
+    vocab_database_schema = vocabDatabaseSchema
+  )
+
+  queryDevicesByType <- SqlRender::loadRenderTranslateSql(
+    sqlFilename = "export/device/sqlDevicesByType.sql",
+    packageName = "Achilles",
+    dbms = connectionDetails$dbms,
+    results_database_schema = resultsDatabaseSchema,
+    vocab_database_schema = vocabDatabaseSchema
+  )
+  
+  queryPrevalenceByGenderAgeYear <- SqlRender::loadRenderTranslateSql(
+    sqlFilename = "export/device/sqlPrevalenceByGenderAgeYear.sql",
+    packageName = "Achilles",
+    dbms = connectionDetails$dbms,
+    results_database_schema = resultsDatabaseSchema,
+    vocab_database_schema = vocabDatabaseSchema
+  )
+  
+  queryPrevalenceByMonth <- SqlRender::loadRenderTranslateSql(
+    sqlFilename = "export/device/sqlPrevalenceByMonth.sql",
+    packageName = "Achilles",
+    dbms = connectionDetails$dbms,
+    results_database_schema = resultsDatabaseSchema,
+    vocab_database_schema = vocabDatabaseSchema
+  )
+  
+  queryDeviceFrequencyDistribution <- SqlRender::loadRenderTranslateSql(
+    sqlFilename = "export/device/sqlFrequencyDistribution.sql", 
+    packageName = "Achilles",
+    dbms = connectionDetails$dbms,
+    results_database_schema = resultsDatabaseSchema,
+    vocab_database_schema = vocabDatabaseSchema
+  )
+
+  conn <- DatabaseConnector::connect(connectionDetails)  
+  dataAgeAtFirstExposure <- DatabaseConnector::querySql(conn,queryAgeAtFirstExposure) 
+  dataDevicesByType <- DatabaseConnector::querySql(conn,queryDevicesByType) 
+  dataPrevalenceByGenderAgeYear <- DatabaseConnector::querySql(conn,queryPrevalenceByGenderAgeYear) 
+  dataPrevalenceByMonth <- DatabaseConnector::querySql(conn,queryPrevalenceByMonth)
+  dataDeviceFrequencyDistribution <- DatabaseConnector::querySql(conn,queryDeviceFrequencyDistribution)
+  
+  uniqueConcepts <- unique(dataDevices$CONCEPT_ID)
+  buildDeviceReport <- function(concept_id) {
+    summaryRecord <- dataDevices[dataDevices$CONCEPT_ID==concept_id,]
+    report <- {}
+    report$CONCEPT_ID <- concept_id
+    report$CDM_TABLE_NAME <- "DEVICE_EXPOSURE"
+    report$CONCEPT_NAME <- summaryRecord$CONCEPT_NAME
+    report$NUM_PERSONS <- summaryRecord$NUM_PERSONS
+    report$PERCENT_PERSONS <-summaryRecord$PERCENT_PERSONS
+    report$RECORDS_PER_PERSON <- summaryRecord$RECORDS_PER_PERSON    
+    report$AGE_AT_FIRST_EXPOSURE <- dataAgeAtFirstExposure[dataAgeAtFirstExposure$CONCEPT_ID == concept_id,c(2,3,4,5,6,7,8,9)]
+    report$DEVICES_BY_TYPE <- dataDevicesByType[dataDevicesByType$CONCEPT_ID == concept_id, c(3,4)]
+    report$PREVALENCE_BY_GENDER_AGE_YEAR <- dataPrevalenceByGenderAgeYear[dataPrevalenceByGenderAgeYear$CONCEPT_ID == concept_id,c(3,4,5,6)]  
+    report$PREVALENCE_BY_MONTH <- dataPrevalenceByMonth[dataPrevalenceByMonth$CONCEPT_ID == concept_id,c(3,4)]
+    report$DEVICE_FREQUENCY_DISTRIBUTION <- dataDeviceFrequencyDistribution[dataDeviceFrequencyDistribution$CONCEPT_ID == concept_id,c(3,4)]
+
+    filename <- paste(outputPath, "/concepts/concept_" , concept_id , ".json", sep='')  
+    write(jsonlite::toJSON(report),filename)  
+  }
+  
+  x <- lapply(uniqueConcepts, buildDeviceReport)  
+}
+
 generateAOConditionReports <- function(connectionDetails, dataConditions, cdmDatabaseSchema, resultsDatabaseSchema, vocabDatabaseSchema, outputPath) 
 {
   writeLines("Generating condition reports")
@@ -1138,6 +1212,20 @@ exportAO <- function(
     dataProcedures$PERCENT_PERSONS <- format(round(dataProcedures$PERCENT_PERSONS,4), nsmall=4)
     dataProcedures$RECORDS_PER_PERSON <- format(round(dataProcedures$RECORDS_PER_PERSON,1),nsmall=1)
     data.table::fwrite(dataProcedures, file=paste0(sourceOutputPath, "/domain-summary-procedure_occurrence.csv"))   
+    
+    # domain summary - devices
+    queryDevices <- SqlRender::loadRenderTranslateSql(
+      sqlFilename = "export/device/sqlDeviceTable.sql",
+      packageName = "Achilles",
+      dbms = connectionDetails$dbms,
+      results_database_schema = resultsDatabaseSchema,
+      vocab_database_schema = vocabDatabaseSchema
+    )
+    dataDevices <- DatabaseConnector::querySql(conn,queryDevices)   
+    dataDevices$PERCENT_PERSONS <- format(round(dataDevices$PERCENT_PERSONS,4), nsmall=4)
+    dataDevices$RECORDS_PER_PERSON <- format(round(dataDevices$RECORDS_PER_PERSON,1),nsmall=1)
+    data.table::fwrite(dataDevices, file=paste0(sourceOutputPath, "/domain-summary-device_exposure.csv"))    
+    
   }
   
   if (length(reports) == 0  || (length(reports) > 0 && "quality" %in% reports)) {
@@ -1164,6 +1252,7 @@ exportAO <- function(
     generateAOMeasurementReports(connectionDetails, dataMeasurements, cdmDatabaseSchema, resultsDatabaseSchema, vocabDatabaseSchema, sourceOutputPath)
     generateAOConditionReports(connectionDetails, dataConditions, cdmDatabaseSchema, resultsDatabaseSchema, vocabDatabaseSchema, sourceOutputPath)
     generateAODrugReports(connectionDetails, dataDrugs, cdmDatabaseSchema, resultsDatabaseSchema, vocabDatabaseSchema, sourceOutputPath)
+    generateAODeviceReports(connectionDetails, dataDevices, cdmDatabaseSchema, resultsDatabaseSchema, vocabDatabaseSchema, sourceOutputPath)    
     generateAODrugEraReports(connectionDetails, dataDrugEra, cdmDatabaseSchema, resultsDatabaseSchema, vocabDatabaseSchema, sourceOutputPath)
     generateAOProcedureReports(connectionDetails, dataProcedures, cdmDatabaseSchema, resultsDatabaseSchema, vocabDatabaseSchema, sourceOutputPath)
     generateAOObservationReports(connectionDetails, dataObservations, cdmDatabaseSchema, resultsDatabaseSchema, vocabDatabaseSchema, sourceOutputPath)    
