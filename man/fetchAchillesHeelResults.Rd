@@ -7,25 +7,31 @@
 fetchAchillesHeelResults(connectionDetails, resultsDatabaseSchema)
 }
 \arguments{
-\item{connectionDetails}{An R object of type \code{connectionDetails} created using the function \code{createConnectionDetails} in the \code{DatabaseConnector} package.}
+\item{connectionDetails}{An R object of type \code{connectionDetails} created using the
+function \code{createConnectionDetails} in the
+\code{DatabaseConnector} package.}
 
-\item{resultsDatabaseSchema}{Fully qualified name of database schema that we can fetch final results from.
-On SQL Server, this should specifiy both the database and the schema, so for example, on SQL Server, 'cdm_results.dbo'.}
+\item{resultsDatabaseSchema}{Fully qualified name of database schema that we can fetch final
+results from. On SQL Server, this should specifiy both the database
+and the schema, so for example, on SQL Server, 'cdm_results.dbo'.}
 }
 \value{
 A table listing all identified issues
 }
 \description{
-\code{fetchAchillesHeelResults} retrieves the AchillesHeel results for the AChilles analysis to identify potential data quality issues.
+\code{fetchAchillesHeelResults} retrieves the AchillesHeel results for the AChilles analysis to
+identify potential data quality issues.
 }
 \details{
-AchillesHeel is a part of the Achilles analysis aimed at identifying potential data quality issues. It will list errors (things
-that should really be fixed) and warnings (things that should at least be investigated).
+AchillesHeel is a part of the Achilles analysis aimed at identifying potential data quality issues.
+It will list errors (things that should really be fixed) and warnings (things that should at least
+be investigated).
 }
 \examples{
-                              \dontrun{
-                                           connectionDetails <- DatabaseConnector::createConnectionDetails(dbms="sql server", server="myserver")
-                                           achillesResults <- achilles(connectionDetails, "cdm5_sim", "scratch", "TestDB")
-                                           fetchAchillesHeelResults(connectionDetails, "scratch")
-                                        }
+\dontrun{
+connectionDetails <- DatabaseConnector::createConnectionDetails(dbms = "sql server",
+                                                                server = "myserver")
+achillesResults <- achilles(connectionDetails, "cdm5_sim", "scratch", "TestDB")
+fetchAchillesHeelResults(connectionDetails, "scratch")
+}
 }

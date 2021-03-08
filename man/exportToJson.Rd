@@ -15,23 +15,31 @@ exportToJson(
 )
 }
 \arguments{
-\item{connectionDetails}{An R object of type ConnectionDetail (details for the function that contains server info, database type, optionally username/password, port)}
+\item{connectionDetails}{An R object of type ConnectionDetail (details for the function that
+contains server info, database type, optionally username/password,
+port)}
 
 \item{cdmDatabaseSchema}{Name of the database schema that contains the OMOP CDM.}
 
-\item{resultsDatabaseSchema}{Name of the database schema that contains the Achilles analysis files. Default is cdmDatabaseSchema}
+\item{resultsDatabaseSchema}{Name of the database schema that contains the Achilles analysis
+files. Default is cdmDatabaseSchema}
 
-\item{outputPath}{A folder location to save the JSON files. Default is current working folder}
+\item{outputPath}{A folder location to save the JSON files. Default is current working
+folder}
 
-\item{reports}{A character vector listing the set of reports to generate. Default is all reports.}
+\item{reports}{A character vector listing the set of reports to generate. Default is
+all reports.}
 
-\item{vocabDatabaseSchema}{string name of database schema that contains OMOP Vocabulary. Default is cdmDatabaseSchema. On SQL Server, this should specifiy both the database and the schema, so for example 'results.dbo'.}
+\item{vocabDatabaseSchema}{string name of database schema that contains OMOP Vocabulary. Default
+is cdmDatabaseSchema. On SQL Server, this should specifiy both the
+database and the schema, so for example 'results.dbo'.}
 
-\item{compressIntoOneFile}{Boolean indicating if the JSON files should be compressed into one zip file. 
-                                     Please note that in Windows, the zip application must be stored in the system environment, 
-                                     e.g. Sys.setenv("R_ZIPCMD", "some_path_to_zip"). 
-                                     Due to recursion, the actual Achilles files and folders will be embedded in any parent directories that the source folder has.
-
+\item{compressIntoOneFile}{Boolean indicating if the JSON files should be compressed into one
+                               zip file. Please note that in Windows, the zip application must be
+                               stored in the system environment, e.g. Sys.setenv("R_ZIPCMD",
+                               "some_path_to_zip"). Due to recursion, the actual Achilles files and
+                               folders will be embedded in any parent directories that the source
+                               folder has.
 See \code{showReportTypes} for a list of all report types}
 }
 \value{
@@ -45,7 +53,8 @@ Creates individual files for each report found in Achilles.Web
 }
 \examples{
 \dontrun{
-  connectionDetails <- DatabaseConnector::createConnectionDetails(dbms="sql server", server="yourserver")
-  exportToJson(connectionDetails, cdmDatabaseSchema="cdm4_sim", outputPath="your/output/path")
+connectionDetails <- DatabaseConnector::createConnectionDetails(dbms = "sql server",
+                                                                server = "yourserver")
+exportToJson(connectionDetails, cdmDatabaseSchema = "cdm4_sim", outputPath = "your/output/path")
 }
 }

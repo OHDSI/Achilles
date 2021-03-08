@@ -25,7 +25,7 @@ from (select cast(stratum_1 as int) stratum_1, count_value from @results_databas
 			@vocab_database_schema.concept c2
 			where
 			c2.domain_id = 'Drug'
-			and c2.concept_class_id = 'Ingredient'
+			and c2.concept_class_id in ('Ingredient','CVX')
 		) rxnorm
 		left join
 			(select c1.concept_id as rxnorm_ingredient_concept_id, max(c2.concept_id) as atc5_concept_id

@@ -1,12 +1,25 @@
 -- 1800	Number of persons with at least one measurement occurrence, by measurement_concept_id
 
 --HINT DISTRIBUTE_ON_KEY(stratum_1)
-select 1800 as analysis_id, 
-	CAST(m.measurement_CONCEPT_ID AS VARCHAR(255)) as stratum_1,
-	cast(null as varchar(255)) as stratum_2, cast(null as varchar(255)) as stratum_3, cast(null as varchar(255)) as stratum_4, cast(null as varchar(255)) as stratum_5,
-	COUNT_BIG(distinct m.PERSON_ID) as count_value
-into @scratchDatabaseSchema@schemaDelim@tempAchillesPrefix_1800
-from
+SELECT 
+	1800 AS analysis_id,
+	CAST(m.measurement_concept_id AS VARCHAR(255)) AS stratum_1,
+	CAST(NULL AS VARCHAR(255)) AS stratum_2,
+	CAST(NULL AS VARCHAR(255)) AS stratum_3,
+	CAST(NULL AS VARCHAR(255)) AS stratum_4,
+	CAST(NULL AS VARCHAR(255)) AS stratum_5,
+	COUNT_BIG(DISTINCT m.person_id) AS count_value
+INTO 
+	@scratchDatabaseSchema@schemaDelim@tempAchillesPrefix_1800
+FROM 
 	@cdmDatabaseSchema.measurement m
-group by m.measurement_CONCEPT_ID
-;
+JOIN 
+	@cdmDatabaseSchema.observation_period op 
+ON 
+	m.person_id = op.person_id
+AND 
+	m.measurement_date >= op.observation_period_start_date
+AND 
+	m.measurement_date <= op.observation_period_end_date	
+GROUP BY 
+	m.measurement_concept_id;

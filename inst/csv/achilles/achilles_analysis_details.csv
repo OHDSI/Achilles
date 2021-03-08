@@ -252,6 +252,8 @@ ANALYSIS_ID,DISTRIBUTION,COST,DISTRIBUTED_FIELD,ANALYSIS_NAME,STRATUM_1_NAME,STR
 2102,0,0,,"Number of persons by device records  start month, by device_concept_id",device_concept_id,calendar month,,,,1,Device Exposure
 2104,0,0,,"Number of persons with at least one device exposure, by device_concept_id by calendar year by gender by age decile",device_concept_id,calendar year,gender_concept_id,age decile,,1,Device Exposure
 2105,0,0,,"Number of device exposure records, by device_concept_id by device_type_concept_id",device_concept_id,device_type_concept_id,,,,1,Device Exposure
+2106,1,0,,Distribution of age by device_concept_id,device_concept_id,gender_concept_id,,,,1,Device Exposure
 2125,0,0,,Number of device_exposure records by device_source_concept_id,device_source_concept_id,,,,,1,Device Exposure
+2191,0,0,,Percentage of total persons that have at least x device exposures,device_concept_id,device_person,,,,1,Device Exposure
 2200,0,0,,Number of persons with at least one note by  note_type_concept_id,note_type_concept_id,,,,,1,Note
 2201,0,0,,"Number of note records, by note_type_concept_id",note_type_concept_id,,,,,1,Note

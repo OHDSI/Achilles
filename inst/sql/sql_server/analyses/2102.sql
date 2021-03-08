@@ -2,22 +2,33 @@
 
 --HINT DISTRIBUTE_ON_KEY(stratum_1)
 WITH rawData AS (
-  select
-    m.device_CONCEPT_ID as stratum_1,
-    YEAR(device_exposure_start_date)*100 + month(device_exposure_start_date) as stratum_2,
-    COUNT_BIG(distinct PERSON_ID) as count_value
-  from
-    @cdmDatabaseSchema.device_exposure m
-  group by m.device_CONCEPT_ID,
-    YEAR(device_exposure_start_date)*100 + month(device_exposure_start_date)
+SELECT 
+	de.device_concept_id AS stratum_1,
+	YEAR(de.device_exposure_start_date) * 100 + MONTH(de.device_exposure_start_date) AS stratum_2,
+	COUNT_BIG(DISTINCT de.person_id) AS count_value
+FROM 
+	@cdmDatabaseSchema.device_exposure de
+JOIN 
+	@cdmDatabaseSchema.observation_period op 
+ON 
+	de.person_id = op.person_id
+AND 
+	de.device_exposure_start_date >= op.observation_period_start_date
+AND 
+	de.device_exposure_start_date <= op.observation_period_end_date		
+GROUP BY 
+	de.device_concept_id,
+	YEAR(de.device_exposure_start_date) * 100 + MONTH(de.device_exposure_start_date)
 )
 SELECT
-  2102 as analysis_id,
-  CAST(stratum_1 AS VARCHAR(255)) as stratum_1,
-  cast(stratum_2 as varchar(255)) as stratum_2,
-  cast(null as varchar(255)) as stratum_3,
-  cast(null as varchar(255)) as stratum_4,
-  cast(null as varchar(255)) as stratum_5,
+  2102 AS analysis_id,
+  CAST(stratum_1 AS VARCHAR(255)) AS stratum_1,
+  CAST(stratum_2 AS VARCHAR(255)) AS stratum_2,
+  CAST(NULL AS VARCHAR(255)) AS stratum_3,
+  CAST(NULL AS VARCHAR(255)) AS stratum_4,
+  CAST(NULL AS VARCHAR(255)) AS stratum_5,
   count_value
-into @scratchDatabaseSchema@schemaDelim@tempAchillesPrefix_2102
-FROM rawData;
+INTO 
+	@scratchDatabaseSchema@schemaDelim@tempAchillesPrefix_2102
+FROM 
+	rawData;

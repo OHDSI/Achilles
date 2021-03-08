@@ -2,22 +2,33 @@
 
 --HINT DISTRIBUTE_ON_KEY(stratum_1)
 WITH rawData AS (
-  select
-    po1.procedure_concept_id as stratum_1,
-    YEAR(procedure_date)*100 + month(procedure_date) as stratum_2,
-    COUNT_BIG(distinct PERSON_ID) as count_value
-  from
-  @cdmDatabaseSchema.procedure_occurrence po1
-  group by po1.procedure_concept_id,
-    YEAR(procedure_date)*100 + month(procedure_date)
+SELECT 
+	po.procedure_concept_id AS stratum_1,
+	YEAR(po.procedure_date) * 100 + MONTH(po.procedure_date) AS stratum_2,
+	COUNT_BIG(DISTINCT po.person_id) AS count_value
+FROM 
+	@cdmDatabaseSchema.procedure_occurrence po
+JOIN 
+	@cdmDatabaseSchema.observation_period op 
+ON 
+	po.person_id = op.person_id
+AND 
+	po.procedure_date >= op.observation_period_start_date
+AND 
+	po.procedure_date <= op.observation_period_end_date
+GROUP BY 
+	po.procedure_concept_id,
+	YEAR(po.procedure_date) * 100 + MONTH(po.procedure_date)
 )
 SELECT
-  602 as analysis_id,
-  CAST(stratum_1 AS VARCHAR(255)) as stratum_1,
-  cast(stratum_2 as varchar(255)) as stratum_2,
-  cast(null as varchar(255)) as stratum_3,
-  cast(null as varchar(255)) as stratum_4,
-  cast(null as varchar(255)) as stratum_5,
+  602 AS analysis_id,
+  CAST(stratum_1 AS VARCHAR(255)) AS stratum_1,
+  CAST(stratum_2 AS varchar(255)) AS stratum_2,
+  CAST(NULL AS VARCHAR(255)) AS stratum_3,
+  CAST(NULL AS VARCHAR(255)) AS stratum_4,
+  CAST(NULL AS VARCHAR(255)) AS stratum_5,
   count_value
-into @scratchDatabaseSchema@schemaDelim@tempAchillesPrefix_602
-FROM rawData;
+INTO 
+	@scratchDatabaseSchema@schemaDelim@tempAchillesPrefix_602
+FROM 
+	rawData;

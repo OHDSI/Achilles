@@ -1,4 +1,4 @@
--- 2201	Number of device exposure  records, by device_concept_id
+-- 2201	Number of note records, by note_type_concept_id
 
 --HINT DISTRIBUTE_ON_KEY(stratum_1)
 select 2201 as analysis_id, 

@@ -1,17 +1,30 @@
 -- 514	Distribution of time from death to last procedure
 
 --HINT DISTRIBUTE_ON_KEY(count_value)
-with rawData(count_value) as
-(
-  select datediff(dd,d1.death_date, t0.max_date) as count_value
-  from @cdmDatabaseSchema.death d1
-	inner join
-	(
-		select person_id, max(procedure_date) as max_date
-		from @cdmDatabaseSchema.procedure_occurrence
-		group by person_id
-	) t0
-	on d1.person_id = t0.person_id
+WITH rawData(count_value) AS (
+SELECT 
+	DATEDIFF(dd, d.death_date, po.max_date) AS count_value
+FROM 
+	@cdmDatabaseSchema.death d
+JOIN (
+	SELECT 
+		po.person_id,
+		MAX(po.procedure_date) AS max_date
+	FROM 
+		@cdmDatabaseSchema.procedure_occurrence po
+	JOIN 
+		@cdmDatabaseSchema.observation_period op 
+	ON 
+		po.person_id = op.person_id
+	AND 
+		po.procedure_date >= op.observation_period_start_date
+	AND 
+		po.procedure_date <= op.observation_period_end_date	
+	GROUP BY 
+		po.person_id
+	) po
+ON 
+	d.person_id = po.person_id
 ),
 overallStats (avg_value, stdev_value, min_value, max_value, total) as
 (

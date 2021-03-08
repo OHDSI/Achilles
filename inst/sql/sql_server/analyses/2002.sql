@@ -1,18 +1,60 @@
 -- 2002	patients with at least 1 Mes and 1 Dx and 1 Rx
 
 
-select 2002 as analysis_id,  
-	cast(null as varchar(255)) as stratum_1, cast(null as varchar(255)) as stratum_2, cast(null as varchar(255)) as stratum_3, cast(null as varchar(255)) as stratum_4, cast(null as varchar(255)) as stratum_5,
---gender_concept_id as stratum_1, COUNT_BIG(distinct person_id) as count_value
-        CAST(a.cnt AS BIGINT) AS count_value
-	into @scratchDatabaseSchema@schemaDelim@tempAchillesPrefix_2002
-    FROM (
-                select COUNT_BIG(*) cnt from (
-                    select distinct person_id from @cdmDatabaseSchema.measurement
-                    intersect
-                    select distinct person_id from @cdmDatabaseSchema.condition_occurrence
-                    intersect
-                    select distinct person_id from @cdmDatabaseSchema.drug_exposure
-                ) b
-         ) a
-         ;
+SELECT 
+	2002 AS analysis_id,
+	CAST(NULL AS VARCHAR(255)) AS stratum_1,
+	CAST(NULL AS VARCHAR(255)) AS stratum_2,
+	CAST(NULL AS VARCHAR(255)) AS stratum_3,
+	CAST(NULL AS VARCHAR(255)) AS stratum_4,
+	CAST(NULL AS VARCHAR(255)) AS stratum_5,
+	CAST(a.cnt AS BIGINT) AS count_value
+INTO 
+	@scratchDatabaseSchema@schemaDelim@tempAchillesPrefix_2002
+FROM (
+SELECT COUNT_BIG(*) cnt
+FROM (
+	SELECT 
+		DISTINCT m.person_id
+	FROM 
+		@cdmDatabaseSchema.measurement m
+	JOIN 
+		@cdmDatabaseSchema.observation_period op 
+	ON 
+		m.person_id = op.person_id
+	AND 
+		m.measurement_date >= op.observation_period_start_date
+	AND 
+		m.measurement_date <= op.observation_period_end_date		
+
+	INTERSECT
+
+	SELECT 
+		DISTINCT co.person_id
+	FROM 
+		@cdmDatabaseSchema.condition_occurrence co
+	JOIN 
+		@cdmDatabaseSchema.observation_period op 
+	ON 
+		co.person_id = op.person_id
+	AND 
+		co.condition_start_date >= op.observation_period_start_date
+	AND 
+		co.condition_start_date <= op.observation_period_end_date		
+
+	INTERSECT
+
+	SELECT 
+		DISTINCT de.person_id
+	FROM 
+		@cdmDatabaseSchema.drug_exposure de
+	JOIN 
+		@cdmDatabaseSchema.observation_period op 
+	ON 
+		de.person_id = op.person_id
+	AND 
+		de.drug_exposure_start_date >= op.observation_period_start_date
+	AND 
+		de.drug_exposure_start_date <= op.observation_period_end_date		
+	) b
+) a;

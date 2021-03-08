@@ -1,19 +1,22 @@
 -- 803	Number of distinct observation occurrence concepts per person
 
 --HINT DISTRIBUTE_ON_KEY(count_value)
-with rawData(count_value) as
+WITH rawData(count_value) AS
 (
-  select num_observations as count_value
-  from
-	(
-  	select o1.person_id, COUNT_BIG(distinct o1.observation_concept_id) as num_observations
-  	from @cdmDatabaseSchema.observation o1 inner join @cdmDatabaseSchema.observation_period op 
-  	  on o1.person_id = op.person_id
-    -- only include events that occur during observation period
-    where o1.observation_date <= op.observation_period_end_date and
-      o1.observation_date >= op.observation_period_start_date
-    group by o1.person_id
-	) t0
+SELECT 
+	COUNT_BIG(DISTINCT o.observation_concept_id) AS count_value
+FROM 
+	@cdmDatabaseSchema.observation o
+JOIN 
+	@cdmDatabaseSchema.observation_period op 
+ON 
+	o.person_id = op.person_id
+AND 
+	o.observation_date >= op.observation_period_start_date
+AND 
+	o.observation_date <= op.observation_period_end_date
+GROUP BY 
+	o.person_id
 ),
 overallStats (avg_value, stdev_value, min_value, max_value, total) as
 (
