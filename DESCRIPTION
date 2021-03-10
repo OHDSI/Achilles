@@ -11,6 +11,7 @@ Authors@R: c(
   person("Chris", "Knoll", role = c("aut")),
   person("Ajit", "Londhe", email = "alondhe@amgen.com", role = c("aut")),
   person("Taha", "Abdul-Basser", role = c("aut")),
+  person("Anthony", "Molinaro", role = c("aut")),
   person("Observational Health Data Science and Informatics", role = c("cph"))
   )
 Maintainer: Frank J DeFalco <fdefalco@ohdsi.org>
@@ -26,7 +27,8 @@ Imports:
   jsonlite,
   ParallelLogger,
   readr,
-  shiny
+  shiny,
+  Castor
 Suggests:
   R.utils,
   DT,
@@ -34,6 +36,8 @@ Suggests:
   tidyr,
   knitr, 
   rmarkdown
+Remotes:
+  OHDSI/Castor
 VignetteBuilder: knitr
 License: Apache License
 Roxygen: list()
