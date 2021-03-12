@@ -89,6 +89,7 @@
 #'  outputFolder          = "output/CompleteTemporalChar.csv")
 #' }
 #'
+#'@import dplyr
 #'@export
 
 performTemporalCharacterization <- function(
@@ -105,11 +106,22 @@ performTemporalCharacterization <- function(
 	
 	# Pull temporal data from Achilles and get list of unique concept_ids
 	temporalData <- Achilles::getTemporalData(connectionDetails,cdmDatabaseSchema,resultsDatabaseSchema,analysisIds,conceptId)
+	
+	if (nrow(temporalData) == 0) {
+		stop("CANNOT PERFORM TEMPORAL CHARACTERIZATION: NO ACHILLES DATA FOUND")
+	}
+	
 	allConceptIds <- unique(temporalData$CONCEPT_ID)
-	
-	# Create the output file header
-	write("DB_NAME,CDM_TABLE_NAME,CONCEPT_ID,CONCEPT_NAME,SEASONALITY_SCORE,IS_STATIONARY",outputFile)
-	
+		
+	rowData <- data.frame(
+		DB_NAME           = character(),
+		CDM_TABLE_NAME    = character(),
+		CONCEPT_ID        = numeric(),
+		CONCEPT_NAME      = character(),
+		SEASONALITY_SCORE = numeric(),
+		IS_STATIONARY     = logical(),
+		stringsAsFactors  = FALSE )
+		
 	# Loop through temporal data, perform temporal characterization, and write out results
 	for (conceptId in allConceptIds) {
 		tempData <- temporalData[temporalData$CONCEPT_ID == conceptId,]
@@ -119,14 +131,14 @@ performTemporalCharacterization <- function(
 		if (length(tempData.ts) >= minMonths) {
 			tempData.ts.ss <- Castor::getSeasonalityScore(tempData.ts)
 			tempData.ts.is <- Castor::isStationary(tempData.ts)
-			rowData <- paste0(
-						tempData$DB_NAME[1],",",
-						tempData$CDM_TABLE_NAME[1],",",
-						tempData$CONCEPT_ID[1],",",
-						'"',tempData$CONCEPT_NAME[1],'"',",",
-						tempData.ts.ss,",",
-						tempData.ts.is)
-			write(rowData,outputFile,append = TRUE)
+			rowData[nrow(rowData)+1,] <- c( tempData$DB_NAME[1],
+											tempData$CDM_TABLE_NAME[1],
+											tempData$CONCEPT_ID[1],
+											tempData$CONCEPT_NAME[1],
+											tempData.ts.ss,
+											tempData.ts.is )
 		}
 	}
+	write.csv(rowData,outputFile,row.names = FALSE)
+	invisible(rowData)
 }
