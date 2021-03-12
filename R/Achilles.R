@@ -205,25 +205,20 @@ achilles <- function(connectionDetails,
   costIds <- analysisDetails$ANALYSIS_ID[analysisDetails$COST == 1]
   
   if (!missing(analysisIds)) {
-    analysisDetails <-
-      analysisDetails[analysisDetails$ANALYSIS_ID %in% analysisIds,]
+    # If specific analysis_ids are given, run only those
+    analysisDetails <- analysisDetails[analysisDetails$ANALYSIS_ID %in% analysisIds,]
+  } else if (defaultAnalysesOnly) {
+    # If specific analyses are not given, determine whether or not to run
+	# only default analyses
+    analysisDetails <- analysisDetails[analysisDetails$IS_DEFAULT == 1,]
+  }  
+  
+  # If COST analyses are not to be run, remove them from the list of analyses 
+  # if they are present
+  if (!runCostAnalysis && any(analysisDetails$ANALYSIS_ID %in% costIds)) {
+    analysisDetails <- analysisDetails[-which(analysisDetails$ANALYSIS_ID %in% costIds),]
+  }
     
-    # determine if cost analysis ids have been selected
-    runCostAnalysis <- any(analysisIds %in% costIds)
-  }
-  
-  if (!runCostAnalysis) {
-    if (defaultAnalysesOnly) {
-      # Exclude non-default analyses, such as the expensive co-occurrence queries
-      analysisDetails <-
-        analysisDetails[analysisDetails$COST == 0 &
-                          analysisDetails$IS_DEFAULT ==
-                          1,]
-    } else {
-      analysisDetails <- analysisDetails[analysisDetails$COST == 0,]
-    }
-  }
-  
   # Check if cohort table is present
   # ---------------------------------------------------------------------------------------------
   
