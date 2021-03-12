@@ -213,8 +213,9 @@ achilles <- function(connectionDetails,
     analysisDetails <- analysisDetails[analysisDetails$IS_DEFAULT == 1,]
   }  
   
-  # Determine whether or not to include COST analyses
-  if (!runCostAnalysis) {
+  # If COST analyses are not to be run, remove them from the list of analyses 
+  # if they are present
+  if (!runCostAnalysis && any(analysisDetails$ANALYSIS_ID %in% costIds)) {
     analysisDetails <- analysisDetails[-which(analysisDetails$ANALYSIS_ID %in% costIds),]
   }
     
