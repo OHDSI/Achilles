@@ -65,6 +65,9 @@ ANALYSIS_ID,DISTRIBUTION,COST,DISTRIBUTED_FIELD,ANALYSIS_NAME,STRATUM_1_NAME,STR
 420,0,0,,Number of condition occurrence records by condition occurrence start month,calendar month,,,,,1,Condition Occurrence
 425,0,0,,Number of condition_occurrence records by condition_source_concept_id,condition_source_concept_id,,,,,1,Condition Occurrence
 424,0,0,,Number of distinct people with co-occurring condition_occurrence condition_concept_id pairs,condition_concept_id,condition_concept_id,ranking,num_people,num_cases,0,Condition Occurrence
+430,0,0,,Number of condition occurrence records inside valid observation period,,,,,,1,Condition Occurrence
+431,0,0,,Proportion of people with at least one condition_occurrence record outside a valid observation period,Proportion,Number of observation period violators,Number of people in condition_occurrence,,,1,Condition Occurrence
+432,0,0,,Proportion of condition_occurrence records with an observation period violation,Proportion,Number of observation period violations,Number of condition_occurrence records,,,1,Condition Occurrence
 500,0,0,,"Number of persons with death, by cause_concept_id",cause_concept_id,,,,,1,Death
 501,0,0,,"Number of records of death, by cause_concept_id",cause_concept_id,,,,,1,Death
 502,0,0,,Number of persons by death month,calendar month,,,,,1,Death
