@@ -1,12 +1,12 @@
--- 432	Proportion of condition_occurrence records with an observation period violation
+-- 432	Proportion of condition_occurrence records outside a valid observation period
 --
--- stratum_1:   Proportion
--- stratum_2:   Number of observation period violations (numerator)
+-- stratum_1:   Proportion to 6 decimal places
+-- stratum_2:   Number of condition_occurrence records outside a valid observation period (numerator)
 -- stratum_3:   Number of condition_occurrence records (denominator)
--- count_value: Flag (0 or 1) indicating whether any violations exist
+-- count_value: Flag (0 or 1) indicating whether any such records exist
 --
 
-WITH op_violations AS (
+WITH op_outside AS (
 SELECT 
 	COUNT_BIG(*) AS record_count
 FROM 
@@ -14,7 +14,7 @@ FROM
 LEFT JOIN 
 	@cdmDatabaseSchema.observation_period op 
 ON 
-	op.person_id = co.person_id
+	co.person_id = op.person_id
 AND 
 	co.condition_start_date >= op.observation_period_start_date
 AND 
@@ -29,16 +29,16 @@ FROM
 )
 SELECT 
 	432 AS analysis_id,
-	CAST(1.0*opv.record_count/cot.record_count AS VARCHAR(255)) AS stratum_1, 
-	CAST(opv.record_count AS VARCHAR(255)) AS stratum_2,
-	CAST(cot.record_count AS VARCHAR(255)) AS stratum_3,
+	CAST(CAST(1.0*op.record_count/co.record_count AS NUMERIC(7,6)) AS VARCHAR(255)) AS stratum_1, 
+	CAST(op.record_count AS VARCHAR(255)) AS stratum_2,
+	CAST(co.record_count AS VARCHAR(255)) AS stratum_3,
 	CAST(NULL AS VARCHAR(255)) AS stratum_4,
 	CAST(NULL AS VARCHAR(255)) AS stratum_5,
-	SIGN(opv.record_count) AS count_value
+	SIGN(op.record_count) AS count_value
 INTO 
 	@scratchDatabaseSchema@schemaDelim@tempAchillesPrefix_432
 FROM 
-	op_violations opv
+	op_outside op
 CROSS JOIN 
-	co_total cot
+	co_total co
 ;

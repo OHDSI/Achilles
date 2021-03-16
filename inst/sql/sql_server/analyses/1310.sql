@@ -1,4 +1,4 @@
--- 1310	Number of visit detail records with invalid care_site_id
+-- 1310	Number of visit_detail records outside a valid observation period
 
 SELECT 
 	1310 AS analysis_id,
@@ -7,16 +7,19 @@ SELECT
 	CAST(NULL AS VARCHAR(255)) AS stratum_3,
 	CAST(NULL AS VARCHAR(255)) AS stratum_4,
 	CAST(NULL AS VARCHAR(255)) AS stratum_5,
-	COUNT_BIG(vd.person_id) AS count_value
+	COUNT_BIG(*) AS count_value
 INTO 
 	@scratchDatabaseSchema@schemaDelim@tempAchillesPrefix_1310
 FROM 
 	@cdmDatabaseSchema.visit_detail vd
 LEFT JOIN 
-	@cdmDatabaseSchema.care_site cs 
+	@cdmDatabaseSchema.observation_period op
 ON 
-	vd.care_site_id = cs.care_site_id
-WHERE 
-	vd.care_site_id IS NOT NULL 
+	op.person_id = vd.person_id
 AND 
-	cs.care_site_id IS NULL;
+	vd.visit_detail_start_date >= op.observation_period_start_date
+AND 
+	vd.visit_detail_start_date <= op.observation_period_end_date
+WHERE 
+	op.person_id IS NULL
+;
