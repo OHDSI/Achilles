@@ -9,7 +9,7 @@ Authors@R: c(
   person("Martijn", "Schuemie", email = "schuemie@ohdsi.org", role = c("aut")),
   person("Vojtech", "Huser", role = c("aut")),
   person("Chris", "Knoll", role = c("aut")),
-  person("Ajit", "Londhe", email = "alondhe@amgen.com", role = c("aut")),
+  person("Ajit", "Londhe", email = "londhe@ohdsi.org", role = c("aut")),
   person("Taha", "Abdul-Basser", role = c("aut")),
   person("Anthony", "Molinaro", role = c("aut")),
   person("Observational Health Data Science and Informatics", role = c("cph"))
