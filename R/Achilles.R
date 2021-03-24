@@ -1618,14 +1618,12 @@ optimizeAtlasCache <- function(connectionDetails,
              
              if (!sqlOnly) {
                # obtain the runTime for this analysis
-               runTime <-
-                 .getAchillesResultBenchmark(analysisId, outputFolder)
-               
+               runTime <- .getAchillesResultBenchmark(analysisId, outputFolder)
+			   
                benchmarkSelects <-
                  lapply(resultsTable$schema$FIELD_NAME, function(c) {
                    if (tolower(c) == "analysis_id") {
-                     sprintf("%d as analysis_id",
-                             .getBenchmarkOffset() + as.integer(analysisId))
+                     sprintf("%d as analysis_id",.getBenchmarkOffset() + as.integer(analysisId))
                    } else if (tolower(c) == "stratum_1") {
                      sprintf("'%s' as stratum_1", runTime)
                    } else if (tolower(c) == "count_value") {
@@ -1774,7 +1772,7 @@ optimizeAtlasCache <- function(connectionDetails,
   
   logs <- logs[logs$analysisId == analysisId,]
   if (nrow(logs) == 1) {
-    logs[1,]$runTime
+	paste0(round(as.numeric(strsplit(logs[1,]$runTime," ")[[1]][1]),2)," secs")
   } else {
     "ERROR: check log files"
   }
