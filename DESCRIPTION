@@ -21,14 +21,14 @@ Description: Creates descriptive statistics summary for an entire OMOP CDM
 Depends:
   DatabaseConnector (>= 2.0.0)
 Imports:
-  SqlRender (>= 1.6.0),
-  dplyr,
-  rjson,
-  jsonlite,
-  ParallelLogger,
-  readr,
-  shiny,
-  Castor
+    SqlRender (>= 1.6.0),
+    dplyr,
+    rjson,
+    jsonlite,
+    ParallelLogger,
+    readr,
+    shiny,
+    Castor
 Suggests:
   R.utils,
   DT,
