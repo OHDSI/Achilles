@@ -37,15 +37,18 @@ ANALYSIS_ID,DISTRIBUTION,COST,DISTRIBUTED_FIELD,ANALYSIS_NAME,STRATUM_1_NAME,STR
 204,0,0,,"Number of persons with at least one visit occurrence, by visit_concept_id by calendar year by gender by age decile",visit_concept_id,calendar year,gender_concept_id,age decile,,1,Visit Occurrence
 206,1,0,,Distribution of age by visit_concept_id,visit_concept_id,gender_concept_id,,,,1,Visit Occurrence
 207,0,0,,Number of visit records with invalid person_id,,,,,,1,Visit Occurrence
-208,0,0,,Number of visit records outside valid observation period,,,,,,1,Visit Occurrence
-209,0,0,,Number of visit records with end date < start date,,,,,,1,Visit Occurrence
-210,0,0,,Number of visit records with invalid care_site_id,,,,,,1,Visit Occurrence
-211,1,0,,Distribution of length of stay by visit_concept_id,visit_concept_id,,,,,1,Visit Occurrence
+209,0,0,,Number of visit records with invalid care_site_id,,,,,,1,Visit Occurrence
+210,0,0,,Number of visit_occurrence records outside a valid observation period,,,,,,1,Observation Period
+211,0,0,,Number of visit records with end date < start date,,,,,,1,Visit Occurrence
 212,0,0,,"Number of persons with at least one visit occurrence, by calendar year by gender by age decile",calendar year,gender_concept_id,age decile,,,1,Visit Occurrence
+213,1,0,,Distribution of length of stay by visit_concept_id,visit_concept_id,,,,,1,Visit Occurrence
 220,0,0,,Number of visit occurrence records by visit occurrence start month,calendar month,,,,,1,Visit Occurrence
 221,0,0,,Number of persons by visit start year,calendar year,,,,,1,Visit Occurrence
 225,0,0,,Number of visit_occurrence records by visit_source_concept_id,visit_source_concept_id,,,,,1,Visit Occurrence
 226,0,0,,Number of records by domain by visit_concept_id,visit_source_concept_id,cdm_table_name,,,,1,Visit Occurrence
+230,0,0,,Number of visit_occurrence records inside valid observation period,,,,,,1,Observation Period
+231,0,0,,Proportion of people with at least one visit_occurrence record outside a valid observation period,Proportion,Number of people with a visit_occurrence record outside a valid observation period,Number of people in visit_occurrence,,,1,Observation Period
+232,0,0,,Proportion of visit_occurrence records outside a valid observation period,Proportion,Number of visit_occurrence records outside a valid observation period,Number of visit_occurrence records,,,1,Observation Period
 300,0,0,,Number of providers,,,,,,1,Provider
 301,0,0,,Number of providers by specialty concept_id,specialty_concept_id,,,,,1,Provider
 302,0,0,,Number of providers with invalid care site id,,,,,,1,Provider
@@ -58,13 +61,16 @@ ANALYSIS_ID,DISTRIBUTION,COST,DISTRIBUTED_FIELD,ANALYSIS_NAME,STRATUM_1_NAME,STR
 405,0,0,,"Number of condition occurrence records, by condition_concept_id by condition_type_concept_id",condition_concept_id,condition_type_concept_id,,,,1,Condition Occurrence
 406,1,0,,Distribution of age by condition_concept_id,condition_concept_id,gender_concept_id,,,,1,Condition Occurrence
 409,0,0,,Number of condition occurrence records with invalid person_id,,,,,,1,Condition Occurrence
-410,0,0,,Number of condition occurrence records outside valid observation period,,,,,,1,Condition Occurrence
+410,0,0,,Number of condition occurrence records outside valid observation period,,,,,,1,Observation Period
 411,0,0,,Number of condition occurrence records with end date < start date,,,,,,1,Condition Occurrence
 412,0,0,,Number of condition occurrence records with invalid provider_id,,,,,,1,Condition Occurrence
 413,0,0,,Number of condition occurrence records with invalid visit_id,,,,,,1,Condition Occurrence
 420,0,0,,Number of condition occurrence records by condition occurrence start month,calendar month,,,,,1,Condition Occurrence
 425,0,0,,Number of condition_occurrence records by condition_source_concept_id,condition_source_concept_id,,,,,1,Condition Occurrence
 424,0,0,,Number of distinct people with co-occurring condition_occurrence condition_concept_id pairs,condition_concept_id,condition_concept_id,ranking,num_people,num_cases,0,Condition Occurrence
+430,0,0,,Number of condition_occurrence records inside a valid observation period,,,,,,1,Observation Period
+431,0,0,,Proportion of people with at least one condition_occurrence record outside a valid observation period,Proportion,Number of people with a condition_occurrence record outside a valid observation period,Number of people in condition_occurrence,,,1,Observation Period
+432,0,0,,Proportion of condition_occurrence records outside a valid observation period,Proportion,Number of condition_occurrence records outside a valid observation period,Number of condition_occurrence records,,,1,Observation Period
 500,0,0,,"Number of persons with death, by cause_concept_id",cause_concept_id,,,,,1,Death
 501,0,0,,"Number of records of death, by cause_concept_id",cause_concept_id,,,,,1,Death
 502,0,0,,Number of persons by death month,calendar month,,,,,1,Death
@@ -72,13 +78,16 @@ ANALYSIS_ID,DISTRIBUTION,COST,DISTRIBUTED_FIELD,ANALYSIS_NAME,STRATUM_1_NAME,STR
 505,0,0,,"Number of death records, by death_type_concept_id",death_type_concept_id,,,,,1,Death
 506,1,0,,Distribution of age at death by gender,gender_concept_id,,,,,1,Death
 509,0,0,,Number of death records with invalid person_id,,,,,,1,Death
-510,0,0,,Number of death records outside valid observation period,,,,,,1,Death
+510,0,0,,Number of death records outside valid observation period,,,,,,1,Observation Period
 511,1,0,,Distribution of time from death to last condition,,,,,,1,Death
 512,1,0,,Distribution of time from death to last drug,,,,,,1,Death
 513,1,0,,Distribution of time from death to last visit,,,,,,1,Death
 514,1,0,,Distribution of time from death to last procedure,,,,,,1,Death
 515,1,0,,Distribution of time from death to last observation,,,,,,1,Death
 525,0,0,,Number of death records by cause_source_concept_id,cause_source_concept_id,,,,,1,Death
+530,0,0,,Number of death records inside a valid observation period,,,,,,1,Observation Period
+531,0,0,,Proportion of people with at least one death record outside a valid observation period,Proportion,Number of people with a death record outside a valid observation period,Number of people in death,,,1,Observation Period
+532,0,0,,Proportion of death records that occur outside a valid observation period,Proportion,Number of records in death outside a valid observation period,Number of death records,,,1,Observation Period
 600,0,0,,"Number of persons with at least one procedure occurrence, by procedure_concept_id",procedure_concept_id,,,,,1,Procedure Occurrence
 601,0,0,,"Number of procedure occurrence records, by procedure_concept_id",procedure_concept_id,,,,,1,Procedure Occurrence
 602,0,0,,"Number of persons by procedure occurrence start month, by procedure_concept_id",procedure_concept_id,calendar month,,,,1,Procedure Occurrence
@@ -87,12 +96,15 @@ ANALYSIS_ID,DISTRIBUTION,COST,DISTRIBUTED_FIELD,ANALYSIS_NAME,STRATUM_1_NAME,STR
 605,0,0,,"Number of procedure occurrence records, by procedure_concept_id by procedure_type_concept_id",procedure_concept_id,procedure_type_concept_id,,,,1,Procedure Occurrence
 606,1,0,,Distribution of age by procedure_concept_id,procedure_concept_id,gender_concept_id,,,,1,Procedure Occurrence
 609,0,0,,Number of procedure occurrence records with invalid person_id,,,,,,1,Procedure Occurrence
-610,0,0,,Number of procedure occurrence records outside valid observation period,,,,,,1,Procedure Occurrence
+610,0,0,,Number of procedure occurrence records outside valid observation period,,,,,,1,Observation Period
 612,0,0,,Number of procedure occurrence records with invalid provider_id,,,,,,1,Procedure Occurrence
 613,0,0,,Number of procedure occurrence records with invalid visit_id,,,,,,1,Procedure Occurrence
 620,0,0,,Number of procedure occurrence records  by procedure occurrence start month,calendar month,,,,,1,Procedure Occurrence
 625,0,0,,Number of procedure_occurrence records by procedure_source_concept_id,procedure_source_concept_id,,,,,1,Procedure Occurrence
 624,0,0,,Number of distinct people with co-occurring procedure_occurrence procedure_concept_id pairs,procedure_concept_id,procedure_concept_id,ranking,num_people,num_cases,0,Procedure Occurrence
+630,0,0,,Number of procedure_occurrence records inside a valid observation period,,,,,,1,Observation Period
+631,0,0,,Proportion of people with at least one procedure_occurrence record outside a valid observation period,Proportion,Number of people with a procedure_occurrence record outside a valid observation period,Number of people in procedure_occurrence,,,1,Observation Period
+632,0,0,,Proportion of procedure_occurrence records outside a valid observation period,Proportion,Number of records in procedure_occurrence outside a valid observation period,Number of procedure_occurrence records,,,1,Observation Period
 691,0,0,,Percentage of total persons that have at least x procedures,procedure_concept_id,procedure_person,,,,1,Procedure Occurrence
 700,0,0,,"Number of persons with at least one drug exposure, by drug_concept_id",drug_concept_id,,,,,1,Drug Exposure
 701,0,0,,"Number of drug exposure records, by drug_concept_id",drug_concept_id,,,,,1,Drug Exposure
@@ -102,7 +114,7 @@ ANALYSIS_ID,DISTRIBUTION,COST,DISTRIBUTED_FIELD,ANALYSIS_NAME,STRATUM_1_NAME,STR
 705,0,0,,"Number of drug exposure records, by drug_concept_id by drug_type_concept_id",drug_concept_id,drug_type_concept_id,,,,1,Drug Exposure
 706,1,0,,Distribution of age by drug_concept_id,drug_concept_id,gender_concept_id,,,,1,Drug Exposure
 709,0,0,,Number of drug exposure records with invalid person_id,,,,,,1,Drug Exposure
-710,0,0,,Number of drug exposure records outside valid observation period,,,,,,1,Drug Exposure
+710,0,0,,Number of drug exposure records outside valid observation period,,,,,,1,Observation Period
 711,0,0,,Number of drug exposure records with end date < start date,,,,,,1,Drug Exposure
 712,0,0,,Number of drug exposure records with invalid provider_id,,,,,,1,Drug Exposure
 713,0,0,,Number of drug exposure records with invalid visit_id,,,,,,1,Drug Exposure
@@ -112,6 +124,9 @@ ANALYSIS_ID,DISTRIBUTION,COST,DISTRIBUTED_FIELD,ANALYSIS_NAME,STRATUM_1_NAME,STR
 720,0,0,,Number of drug exposure records  by drug exposure start month,calendar month,,,,,1,Drug Exposure
 725,0,0,,Number of drug_exposure records by drug_source_concept_id,drug_source_concept_id,,,,,1,Drug Exposure
 724,0,0,,Number of distinct people with co-occurring drug_exposure drug_concept_id pairs,drug_concept_id,drug_concept_id,ranking,num_people,num_cases,0,Drug Exposure
+730,0,0,,Number of drug_exposure records inside a valid observation period,,,,,,1,Observation Period
+731,0,0,,Proportion of people with at least one drug_exposure record outside a valid observation period,Proportion,Number of people with a drug_exposure record outside a valid observation period,Number of people in drug_exposure,,,1,Observation Period
+732,0,0,,Proportion of drug_exposure records outside a valid observation period,Proportion,Number of records in drug_exposure outside a valid observation period,Number of drug_exposure records,,,1,Observation Period
 791,0,0,,Percentage of total persons that have at least x drug exposures,drug_concept_id,drug_person,,,,1,Drug Exposure
 800,0,0,,"Number of persons with at least one observation occurrence, by observation_concept_id",observation_concept_id,,,,,1,Observation
 801,0,0,,"Number of observation occurrence records, by observation_concept_id",observation_concept_id,,,,,1,Observation
@@ -122,7 +137,7 @@ ANALYSIS_ID,DISTRIBUTION,COST,DISTRIBUTED_FIELD,ANALYSIS_NAME,STRATUM_1_NAME,STR
 806,1,0,,Distribution of age by observation_concept_id,observation_concept_id,gender_concept_id,,,,1,Observation
 807,0,0,,"Number of observation occurrence records, by observation_concept_id and unit_concept_id",observation_concept_id,unit_concept_id,,,,1,Observation
 809,0,0,,Number of observation records with invalid person_id,,,,,,1,Observation
-810,0,0,,Number of observation records outside valid observation period,,,,,,1,Observation
+810,0,0,,Number of observation records outside valid observation period,,,,,,1,Observation Period
 812,0,0,,Number of observation records with invalid provider_id,,,,,,1,Observation
 813,0,0,,Number of observation records with invalid visit_id,,,,,,1,Observation
 814,0,0,,"Number of observation records with no value (numeric, string, or concept)",,,,,,1,Observation
@@ -130,10 +145,13 @@ ANALYSIS_ID,DISTRIBUTION,COST,DISTRIBUTED_FIELD,ANALYSIS_NAME,STRATUM_1_NAME,STR
 820,0,0,,Number of observation records  by observation start month,calendar month,,,,,1,Observation
 822,0,0,,"Number of observation records, by observation_concept_id and value_as_concept_id",observation_concept_id,value_as_concept_id,,,,1,Observation
 823,0,0,,"Number of observation records, by observation_concept_id and qualifier_concept_id",observation_concept_id,qualifier_concept_id,,,,1,Observation
+824,0,0,,Number of distinct people with co-occurring observation observation_concept_id pairs,observation_concept_id,observation_concept_id,ranking,num_people,num_cases,0,Observation
+825,0,0,,Number of observation records by observation_source_concept_id,observation_source_concept_id,,,,,1,Observation
 826,0,0,,Number of observation records by value_as_concept_id,value_as_concept_id,,,,,1,Observation
 827,0,0,,Number of observation records by unit_concept_id,unit_as_concept_id,,,,,1,Observation
-825,0,0,,Number of observation records by observation_source_concept_id,observation_source_concept_id,,,,,1,Observation
-824,0,0,,Number of distinct people with co-occurring observation observation_concept_id pairs,observation_concept_id,observation_concept_id,ranking,num_people,num_cases,0,Observation
+830,0,0,,Number of observation records inside a valid observation period,,,,,,1,Observation Period
+831,0,0,,Proportion of people with at least one observation record outside a valid observation period,Proportion,Number of people with a observation record outside a valid observation period,Number of people in observation,,,1,Observation Period
+832,0,0,,Proportion of observation records outside a valid observation period,Proportion,Number of records in observation outside a valid observation period,Number of observation records,,,1,Observation Period
 891,0,0,,Percentage of total persons that have at least x observations,observation_concept_id,observation_person,,,,1,Observation
 900,0,0,,"Number of persons with at least one drug era, by drug_concept_id",drug_concept_id,,,,,1,Drug Era
 901,0,0,,"Number of drug era records, by drug_concept_id",drug_concept_id,,,,,1,Drug Era
@@ -143,9 +161,12 @@ ANALYSIS_ID,DISTRIBUTION,COST,DISTRIBUTED_FIELD,ANALYSIS_NAME,STRATUM_1_NAME,STR
 906,1,0,,Distribution of age by drug_concept_id,drug_concept_id,gender_concept_id,,,,1,Drug Era
 907,1,0,,"Distribution of drug era length, by drug_concept_id",drug_concept_id,,,,,1,Drug Era
 908,0,0,,Number of drug eras without valid person,,,,,,1,Drug Era
-909,0,0,,Number of drug eras outside valid observation period,,,,,,1,Drug Era
-910,0,0,,Number of drug eras with end date < start date,,,,,,1,Drug Era
-920,0,0,,Number of drug era records  by drug era start month,calendar month,,,,,1,Drug Era
+910,0,0,,Number of drug_era records outside valid observation period,,,,,,1,Observation Period
+911,0,0,,Number of drug eras with end date < start date,,,,,,1,Drug Era
+920,0,0,,Number of drug era records by drug era start month,calendar month,,,,,1,Drug Era
+930,0,0,,Number of drug_era records inside a valid observation period,,,,,,1,Observation Period
+931,0,0,,Proportion of people with at least one drug_era record outside a valid observation period,Proportion,Number of people with a drug_era record outside a valid observation period,Number of people in drug_era,,,1,Observation Period
+932,0,0,,Proportion of drug_era records outside a valid observation period,Proportion,Number of records in drug_era outside a valid observation period,Number of drug_era records,,,1,Observation Period
 1000,0,0,,"Number of persons with at least one condition era, by condition_concept_id",condition_concept_id,,,,,1,Condition Era
 1001,0,0,,"Number of condition era records, by condition_concept_id",condition_concept_id,,,,,1,Condition Era
 1002,0,0,,"Number of persons by condition era start month, by condition_concept_id",condition_concept_id,calendar month,,,,1,Condition Era
@@ -154,9 +175,12 @@ ANALYSIS_ID,DISTRIBUTION,COST,DISTRIBUTED_FIELD,ANALYSIS_NAME,STRATUM_1_NAME,STR
 1006,1,0,,Distribution of age by condition_concept_id,condition_concept_id,gender_concept_id,,,,1,Condition Era
 1007,1,0,,"Distribution of condition era length, by condition_concept_id",condition_concept_id,,,,,1,Condition Era
 1008,0,0,,Number of condition eras without valid person,,,,,,1,Condition Era
-1009,0,0,,Number of condition eras outside valid observation period,,,,,,1,Condition Era
-1010,0,0,,Number of condition eras with end date < start date,,,,,,1,Condition Era
+1010,0,0,,Number of condition_era records outside a valid observation period,,,,,,1,Observation Period
+1011,0,0,,Number of condition eras with end date < start date,,,,,,1,Condition Era
 1020,0,0,,Number of condition era records by condition era start month,calendar month,,,,,1,Condition Era
+1030,0,0,,Number of condition_era records inside a valid observation period,,,,,,1,Observation Period
+1031,0,0,,Proportion of people with at least one condition_era record outside a valid observation period,Proportion,Number of people with a condition_era record outside a valid observation period,Number of people in condition_era,,,1,Observation Period
+1032,0,0,,Proportion of condition_era records outside a valid observation period,Proportion,Number of records in condition_era outside a valid observation period,Number of condition_era records,,,1,Observation Period
 1100,0,0,,Number of persons by location 3-digit zip,3-digit zip,,,,,1,Location
 1101,0,0,,Number of persons by location state,state,,,,,1,Location
 1102,0,0,,Number of care sites by location 3-digit zip,3-digit zip,,,,,1,Location
@@ -172,15 +196,18 @@ ANALYSIS_ID,DISTRIBUTION,COST,DISTRIBUTED_FIELD,ANALYSIS_NAME,STRATUM_1_NAME,STR
 1304,0,0,,"Number of persons with at least one visit detail, by visit_detail_concept_id by calendar year by gender by age decile",visit_detail_concept_id,calendar year,gender_concept_id,age decile,,1,Visit Detail
 1306,1,0,,Distribution of age by visit_detail_concept_id,visit_detail_concept_id,gender_concept_id,,,,1,Visit Detail
 1307,0,0,,Number of visit records with invalid person_id,,,,,,1,Visit Detail
-1308,0,0,,Number of visit records outside valid observation period,,,,,,1,Visit Detail
-1309,0,0,,Number of visit records with end date < start date,,,,,,1,Visit Detail
-1310,0,0,,Number of visit records with invalid care_site_id,,,,,,1,Visit Detail
-1311,1,0,,Distribution of length of stay by visit_detail_concept_id,visit_detail_concept_id,,,,,1,Visit Detail
+1309,0,0,,Number of visit_detail records with invalid care_site_id,,,,,,1,Visit Detail
+1310,0,0,,Number of visit_detail records outside a valid observation period,,,,,,1,Observation Period
+1311,0,0,,Number of visit_detail records with end date < start date,,,,,,1,Visit Detail
 1312,0,0,,"Number of persons with at least one visit detail, by calendar year by gender by age decile",calendar year,gender_concept_id,age decile,,,1,Visit Detail
+1313,1,0,,Distribution of length of stay by visit_detail_concept_id,visit_detail_concept_id,,,,,1,Visit Detail
 1320,0,0,,Number of visit detail records by visit detail start month,calendar month,,,,,1,Visit Detail
 1321,0,0,,Number of persons by visit start year,calendar year,,,,,1,Visit Detail
 1325,0,0,,Number of visit_detail records by visit_detail_source_concept_id,visit_detail_source_concept_id,,,,,1,Visit Detail
 1326,0,0,,Number of records by domain by visit_detail_concept_id,visit_detail_source_concept_id,cdm_table_name,,,,1,Visit Detail
+1330,0,0,,Number of visit_detail records inside a valid observation period,,,,,,1,Observation Period
+1331,0,0,,Proportion of people with at least one visit_detail record outside a valid observation period,Proportion,Number of people with a visit_detail record outside a valid observation period,Number of people in visit_detail,,,1,Observation Period
+1332,0,0,,Proportion of visit_detail records outside a valid observation period,Proportion,Number of records in visit_detail outside a valid observation period,Number of visit_detail records,,,1,Observation Period
 1406,1,0,,Length of payer plan (days) of first payer plan period by gender,gender_concept_id,,,,,1,Payer Plan Period
 1407,1,0,,Length of payer plan (days) of first payer plan period by age decile,age_decile,,,,,1,Payer Plan Period
 1408,0,0,,"Number of persons by length of payer plan period, in 30d increments",payer plan period length 30d increments,,,,,1,Payer Plan Period
@@ -225,7 +252,7 @@ ANALYSIS_ID,DISTRIBUTION,COST,DISTRIBUTED_FIELD,ANALYSIS_NAME,STRATUM_1_NAME,STR
 1806,1,0,,Distribution of age by measurement_concept_id,measurement_concept_id,gender_concept_id,,,,1,Measurement
 1807,0,0,,"Number of measurement occurrence records, by measurement_concept_id and unit_concept_id",measurement_concept_id,unit_concept_id,,,,1,Measurement
 1809,0,0,,Number of measurement records with invalid person_id,,,,,,1,Measurement
-1810,0,0,,Number of measurement records outside valid observation period,,,,,,1,Measurement
+1810,0,0,,Number of measurement records outside valid observation period,,,,,,1,Observation Period
 1812,0,0,,Number of measurement records with invalid provider_id,,,,,,1,Measurement
 1813,0,0,,Number of measurement records with invalid visit_id,,,,,,1,Measurement
 1814,0,0,,"Number of measurement records with no value (numeric, string, or concept)",,,,,,1,Measurement
@@ -237,10 +264,13 @@ ANALYSIS_ID,DISTRIBUTION,COST,DISTRIBUTED_FIELD,ANALYSIS_NAME,STRATUM_1_NAME,STR
 1821,0,0,,Number of measurement records with no numeric value,,,,,,1,Measurement
 1822,0,0,,"Number of measurement records, by measurement_concept_id and value_as_concept_id",measurement_concept_id,value_as_concept_id,,,,1,Measurement
 1823,0,0,,"Number of measurement records, by measurement_concept_id and operator_concept_id",measurement_concept_id,operator_concept_id,,,,1,Measurement
+1824,0,0,,Number of distinct people with co-occurring measurement measurement_concept_id pairs,measurement_concept_id,measurement_concept_id,ranking,num_people,num_cases,0,Measurement
+1825,0,0,,Number of measurement records by measurement_source_concept_id,measurement_source_concept_id,,,,,1,Measurement
 1826,0,0,,Number of measurement records by value_as_concept_id,value_as_concept_id,,,,,1,Measurement
 1827,0,0,,Number of measurement records by unit_concept_id,unit_as_concept_id,,,,,1,Measurement
-1825,0,0,,Number of measurement records by measurement_source_concept_id,measurement_source_concept_id,,,,,1,Measurement
-1824,0,0,,Number of distinct people with co-occurring measurement measurement_concept_id pairs,measurement_concept_id,measurement_concept_id,ranking,num_people,num_cases,0,Measurement
+1830,0,0,,Number of visit_detail records inside a valid observation period,,,,,,1,Observation Period
+1831,0,0,,Proportion of people with at least one measurement record outside a valid observation period,Proportion,Number of people with a measurement record outside a valid observation period,Number of people in measurement,,,1,Observation Period
+1832,0,0,,Proportion of measurement records outside a valid observation period,Proportion,Number of records in measurement outside a valid observation period,Number of measurement records,,,1,Observation Period
 1891,0,0,,Percentage of total persons that have at least x measurements,measurement_concept_id,measurement_person,,,,1,Measurement
 1900,0,0,,"Source values mapped to concept_id 0 by table, by column, by source_value",table_name,column_name,source_value,,,1,Completeness
 2000,0,0,,Number of patients with at least 1 Dx and 1 Rx,,,,,,1,Completeness
@@ -253,8 +283,11 @@ ANALYSIS_ID,DISTRIBUTION,COST,DISTRIBUTED_FIELD,ANALYSIS_NAME,STRATUM_1_NAME,STR
 2104,0,0,,"Number of persons with at least one device exposure, by device_concept_id by calendar year by gender by age decile",device_concept_id,calendar year,gender_concept_id,age decile,,1,Device Exposure
 2105,0,0,,"Number of device exposure records, by device_concept_id by device_type_concept_id",device_concept_id,device_type_concept_id,,,,1,Device Exposure
 2106,1,0,,Distribution of age by device_concept_id,device_concept_id,gender_concept_id,,,,1,Device Exposure
-2120,0,0,,Number of device exposure records by device exposure start month,calendar month,,,,,1,Device Exposure
+2110,0,0,,Number of device_exposure records outside valid observation period,,,,,,1,Observation Period
 2125,0,0,,Number of device_exposure records by device_source_concept_id,device_source_concept_id,,,,,1,Device Exposure
+2130,0,0,,Number of device_exposure records inside a valid observation period,,,,,,1,Observation Period
+2131,0,0,,Proportion of people with at least one device_exposure record outside a valid observation period,Proportion,Number of people with a device_exposure record outside a valid observation period,Number of people in device_exposure,,,1,Observation Period
+2132,0,0,,Proportion of device_exposure records outside a valid observation period,Proportion,Number of records in device_exposure outside a valid observation period,Number of device_exposure records,,,1,Observation Period
 2191,0,0,,Percentage of total persons that have at least x device exposures,device_concept_id,device_person,,,,1,Device Exposure
 2200,0,0,,Number of persons with at least one note by  note_type_concept_id,note_type_concept_id,,,,,1,Note
 2201,0,0,,"Number of note records, by note_type_concept_id",note_type_concept_id,,,,,1,Note

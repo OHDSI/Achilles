@@ -205,25 +205,20 @@ achilles <- function(connectionDetails,
   costIds <- analysisDetails$ANALYSIS_ID[analysisDetails$COST == 1]
   
   if (!missing(analysisIds)) {
-    analysisDetails <-
-      analysisDetails[analysisDetails$ANALYSIS_ID %in% analysisIds,]
+    # If specific analysis_ids are given, run only those
+    analysisDetails <- analysisDetails[analysisDetails$ANALYSIS_ID %in% analysisIds,]
+  } else if (defaultAnalysesOnly) {
+    # If specific analyses are not given, determine whether or not to run
+	# only default analyses
+    analysisDetails <- analysisDetails[analysisDetails$IS_DEFAULT == 1,]
+  }  
+  
+  # If COST analyses are not to be run, remove them from the list of analyses 
+  # if they are present
+  if (!runCostAnalysis && any(analysisDetails$ANALYSIS_ID %in% costIds)) {
+    analysisDetails <- analysisDetails[-which(analysisDetails$ANALYSIS_ID %in% costIds),]
+  }
     
-    # determine if cost analysis ids have been selected
-    runCostAnalysis <- any(analysisIds %in% costIds)
-  }
-  
-  if (!runCostAnalysis) {
-    if (defaultAnalysesOnly) {
-      # Exclude non-default analyses, such as the expensive co-occurrence queries
-      analysisDetails <-
-        analysisDetails[analysisDetails$COST == 0 &
-                          analysisDetails$IS_DEFAULT ==
-                          1,]
-    } else {
-      analysisDetails <- analysisDetails[analysisDetails$COST == 0,]
-    }
-  }
-  
   # Check if cohort table is present
   # ---------------------------------------------------------------------------------------------
   
@@ -1623,14 +1618,12 @@ optimizeAtlasCache <- function(connectionDetails,
              
              if (!sqlOnly) {
                # obtain the runTime for this analysis
-               runTime <-
-                 .getAchillesResultBenchmark(analysisId, outputFolder)
-               
+               runTime <- .getAchillesResultBenchmark(analysisId, outputFolder)
+			   
                benchmarkSelects <-
                  lapply(resultsTable$schema$FIELD_NAME, function(c) {
                    if (tolower(c) == "analysis_id") {
-                     sprintf("%d as analysis_id",
-                             .getBenchmarkOffset() + as.integer(analysisId))
+                     sprintf("%d as analysis_id",.getBenchmarkOffset() + as.integer(analysisId))
                    } else if (tolower(c) == "stratum_1") {
                      sprintf("'%s' as stratum_1", runTime)
                    } else if (tolower(c) == "count_value") {
@@ -1779,7 +1772,7 @@ optimizeAtlasCache <- function(connectionDetails,
   
   logs <- logs[logs$analysisId == analysisId,]
   if (nrow(logs) == 1) {
-    logs[1,]$runTime
+	paste0(round(as.numeric(strsplit(logs[1,]$runTime," ")[[1]][1]),2)," secs")
   } else {
     "ERROR: check log files"
   }

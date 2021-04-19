@@ -29,11 +29,11 @@ Installation
 =============
 1. See the instructions [here](https://ohdsi.github.io/Hades/rSetup.html) for configuring your R environment, including RTools and Java.
 
-2. In R, use the following commands to download and install CohortMethod:
+2. In R, use the following commands to download and install Achilles:
 
   ```r
-  install.packages("remotes")
-  remotes::install_github("ohdsi/Achilles")
+  install.packages("devtools")
+  devtools::install_github("OHDSI/Achilles")
   ```
 
 User Documentation

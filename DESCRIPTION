@@ -9,8 +9,9 @@ Authors@R: c(
   person("Martijn", "Schuemie", email = "schuemie@ohdsi.org", role = c("aut")),
   person("Vojtech", "Huser", role = c("aut")),
   person("Chris", "Knoll", role = c("aut")),
-  person("Ajit", "Londhe", email = "alondhe@amgen.com", role = c("aut")),
+  person("Ajit", "Londhe", email = "londhe@ohdsi.org", role = c("aut")),
   person("Taha", "Abdul-Basser", role = c("aut")),
+  person("Anthony", "Molinaro", role = c("aut")),
   person("Observational Health Data Science and Informatics", role = c("cph"))
   )
 Maintainer: Frank J DeFalco <fdefalco@ohdsi.org>
@@ -20,13 +21,14 @@ Description: Creates descriptive statistics summary for an entire OMOP CDM
 Depends:
   DatabaseConnector (>= 2.0.0)
 Imports:
-  SqlRender (>= 1.6.0),
-  dplyr,
-  rjson,
-  jsonlite,
-  ParallelLogger,
-  readr,
-  shiny
+    SqlRender (>= 1.6.0),
+    dplyr,
+    rjson,
+    jsonlite,
+    ParallelLogger,
+    readr,
+    shiny,
+    Castor
 Suggests:
   R.utils,
   DT,
@@ -34,6 +36,8 @@ Suggests:
   tidyr,
   knitr, 
   rmarkdown
+Remotes:
+  OHDSI/Castor
 VignetteBuilder: knitr
 License: Apache License
 Roxygen: list()
