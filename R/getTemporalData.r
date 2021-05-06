@@ -93,6 +93,7 @@ getTemporalData <- function(connectionDetails, cdmDatabaseSchema, resultsDatabas
 	  sqlFilename       = "temporal/achilles_temporal_data.sql",
 	  packageName       = "Achilles",
 	  dbms              = connectionDetails$dbms,
+	  db_name           = toupper(strsplit(connectionDetails$server(),"/")[[1]][2]),
 	  cdm_schema        = cdmDatabaseSchema,
 	  results_schema    = resultsDatabaseSchema,
 	  concept_id        = conceptId,

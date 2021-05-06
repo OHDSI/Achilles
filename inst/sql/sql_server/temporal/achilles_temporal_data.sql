@@ -6,7 +6,7 @@
 -- concepts and concepts with less than three years of data.
 
   with num as (
-select cs.cdm_source_abbreviation db_name,
+select '@db_name' db_name,
        case 
 	   when c.domain_id = 'Condition'   then 'CONDITION_OCCURRENCE'
 	   when c.domain_id = 'Procedure'   then 'PROCEDURE_OCCURRENCE'
@@ -25,7 +25,6 @@ select cs.cdm_source_abbreviation db_name,
 	   
   from @results_schema.achilles_results ar
   join @cdm_schema.concept c on ar.stratum_1  = cast(c.concept_id as varchar)
-  cross join @cdm_schema.cdm_source cs
 
 {@analysis_id_given} ? {where c.concept_id != 0 and ar.analysis_id in (@analysis_ids)}
 {@concept_id_given}  ? {where c.concept_id = @concept_id and ar.analysis_id in (202,402,602,702,802,1802,2102)}
@@ -42,5 +41,4 @@ select num.db_name,
   from num
   join @results_schema.achilles_results denom
     on num.stratum_2 = denom.stratum_1 and denom.analysis_id = 117
- where num.total >= 36
- order by num.cdm_table_name,num.concept_id,cast(num.stratum_2 as int);
+ where num.total >= 36;
