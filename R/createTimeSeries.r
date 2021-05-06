@@ -91,6 +91,9 @@ createTimeSeries <- function(temporalData)
 	
     # Convert YYYYMMDD string into a valid date
     resultSetData$START_DATE <- as.Date(resultSetData$START_DATE,"%Y%m%d")
+	
+	# Sort the temporal data by START_DATE rather than using an ORDER BY in the SQL
+	resultSetData <- resultSetData[order(resultSetData$START_DATE),]
 
     # Create a vector of dense dates to capture all dates between the start and end of the time series
     lastRow <- nrow(resultSetData)
