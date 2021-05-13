@@ -90,7 +90,7 @@ getTemporalData <- function(connectionDetails, cdmDatabaseSchema, resultsDatabas
 	}
 		
 	if (typeof(connectionDetails$server) == "character")
-		dbName <- connectionDetails$server
+		dbName <- toupper(strsplit(connectionDetails$server,"/")[[1]][2])
 	else
 		dbName <- toupper(strsplit(connectionDetails$server(),"/")[[1]][2])
 
