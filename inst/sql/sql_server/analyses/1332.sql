@@ -29,9 +29,10 @@ FROM
 )
 SELECT 
 	1332 AS analysis_id,
-	CASE 
-	WHEN vdt.record_count = 0 THEN CAST(NULL AS VARCHAR(255))
-	ELSE CAST(CAST(1.0*op.record_count/vdt.record_count AS NUMERIC(7,6)) AS VARCHAR(255)) 
+	CASE WHEN vdt.record_count != 0 THEN 
+		CAST(CAST(1.0*op.record_count/vdt.record_count AS NUMERIC(7,6)) AS VARCHAR(255)) 
+	ELSE 
+		CAST(NULL AS VARCHAR(255)) 
 	END AS stratum_1, 
 	CAST(op.record_count AS VARCHAR(255)) AS stratum_2,
 	CAST(vdt.record_count AS VARCHAR(255)) AS stratum_3,

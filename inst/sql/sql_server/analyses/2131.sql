@@ -29,9 +29,10 @@ FROM
 )
 SELECT 
 	2131 AS analysis_id,
-	CASE 
-	WHEN det.person_count = 0 THEN CAST(NULL AS VARCHAR(255))
-	ELSE CAST(CAST(1.0*op.person_count/det.person_count AS NUMERIC(7,6)) AS VARCHAR(255)) 
+	CASE WHEN det.person_count != 0 THEN
+		CAST(CAST(1.0*op.person_count/det.person_count AS NUMERIC(7,6)) AS VARCHAR(255)) 
+	ELSE
+		CAST(NULL AS VARCHAR(255)) 
 	END AS stratum_1, 
 	CAST(op.person_count AS VARCHAR(255)) AS stratum_2,
 	CAST(det.person_count AS VARCHAR(255)) AS stratum_3,

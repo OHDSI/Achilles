@@ -29,7 +29,11 @@ FROM
 )
 SELECT 
 	431 AS analysis_id,
-	CAST(CAST(1.0*op.person_count/co.person_count AS NUMERIC(7,6)) AS VARCHAR(255)) AS stratum_1, 
+	CASE WHEN co.person_count != 0 THEN
+		CAST(CAST(1.0*op.person_count/co.person_count AS NUMERIC(7,6)) AS VARCHAR(255)) 
+	ELSE 
+		CAST(NULL AS VARCHAR(255)) 
+	END AS stratum_1, 
 	CAST(op.person_count AS VARCHAR(255)) AS stratum_2,
 	CAST(co.person_count AS VARCHAR(255)) AS stratum_3,
 	CAST(NULL AS VARCHAR(255)) AS stratum_4,
