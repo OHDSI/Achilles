@@ -29,7 +29,7 @@ FROM
 )
 SELECT 
 	632 AS analysis_id,
-	CASE WHEN po.record_count != 0 TEN 
+	CASE WHEN po.record_count != 0 THEN 
 		CAST(CAST(1.0*op.record_count/po.record_count AS NUMERIC(7,6)) AS VARCHAR(255)) 
 	ELSE 
 		CAST(NULL AS VARCHAR(255)) 

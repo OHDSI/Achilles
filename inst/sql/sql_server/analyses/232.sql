@@ -29,7 +29,7 @@ FROM
 )
 SELECT 
 	232 AS analysis_id,
-	CASE WHEN vo.record_count != 0 THRN
+	CASE WHEN vo.record_count != 0 THEN
 		CAST(CAST(1.0*op.record_count/vo.record_count AS NUMERIC(7,6)) AS VARCHAR(255)) 
 	ELSE 
 	    CAST(NULL AS VARCHAR(255))
