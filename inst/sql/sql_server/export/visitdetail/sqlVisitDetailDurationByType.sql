@@ -21,7 +21,7 @@ FROM (
 	FROM 
 		@results_database_schema.achilles_results_dist
 	WHERE 
-		analysis_id = 1311
+		analysis_id = 1313
 	GROUP BY 
 		analysis_id,
 		stratum_1,

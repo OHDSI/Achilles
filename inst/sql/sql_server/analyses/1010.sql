@@ -1,11 +1,25 @@
--- 1010	Number of condition eras with end date < start date
+-- 1010	Number of condition_era records outside a valid observation period
 
-
-select 1010 as analysis_id,  
-	cast(null as varchar(255)) as stratum_1, cast(null as varchar(255)) as stratum_2, cast(null as varchar(255)) as stratum_3, cast(null as varchar(255)) as stratum_4, cast(null as varchar(255)) as stratum_5,
-	COUNT_BIG(ce1.PERSON_ID) as count_value
-into @scratchDatabaseSchema@schemaDelim@tempAchillesPrefix_1010
-from
-	@cdmDatabaseSchema.condition_era ce1
-where ce1.condition_era_end_date < ce1.condition_era_start_date
+SELECT 
+	1010 AS analysis_id,
+	CAST(NULL AS VARCHAR(255)) AS stratum_1,
+	CAST(NULL AS VARCHAR(255)) AS stratum_2,
+	CAST(NULL AS VARCHAR(255)) AS stratum_3,
+	CAST(NULL AS VARCHAR(255)) AS stratum_4,
+	CAST(NULL AS VARCHAR(255)) AS stratum_5,
+	COUNT_BIG(*) AS count_value
+INTO 
+	@scratchDatabaseSchema@schemaDelim@tempAchillesPrefix_1010
+FROM 
+	@cdmDatabaseSchema.condition_era ce
+LEFT JOIN 
+	@cdmDatabaseSchema.observation_period op 
+ON 
+	ce.person_id = op.person_id
+AND 
+	ce.condition_era_start_date >= op.observation_period_start_date
+AND 
+	ce.condition_era_start_date <= op.observation_period_end_date
+WHERE 
+	op.person_id IS NULL
 ;

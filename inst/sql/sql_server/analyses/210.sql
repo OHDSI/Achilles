@@ -1,14 +1,25 @@
---210	Number of visit records with invalid care_site_id
+-- 210 Number of visit_occurrence records outside a valid observation period
 
-
-select 210 as analysis_id,
-	cast(null as varchar(255)) as stratum_1, cast(null as varchar(255)) as stratum_2, cast(null as varchar(255)) as stratum_3, cast(null as varchar(255)) as stratum_4, cast(null as varchar(255)) as stratum_5,
-	COUNT_BIG(vo1.PERSON_ID) as count_value
-into @scratchDatabaseSchema@schemaDelim@tempAchillesPrefix_210
-from
-	@cdmDatabaseSchema.visit_occurrence vo1
-	left join @cdmDatabaseSchema.care_site cs1
-	on vo1.care_site_id = cs1.care_site_id
-where vo1.care_site_id is not null
-	and cs1.care_site_id is null
+SELECT 
+	210 AS analysis_id,
+	CAST(NULL AS VARCHAR(255)) AS stratum_1,
+	CAST(NULL AS VARCHAR(255)) AS stratum_2,
+	CAST(NULL AS VARCHAR(255)) AS stratum_3,
+	CAST(NULL AS VARCHAR(255)) AS stratum_4,
+	CAST(NULL AS VARCHAR(255)) AS stratum_5,
+	COUNT_BIG(*) AS count_value
+INTO 
+	@scratchDatabaseSchema@schemaDelim@tempAchillesPrefix_210
+FROM 
+	@cdmDatabaseSchema.visit_occurrence vo
+LEFT JOIN 
+	@cdmDatabaseSchema.observation_period op 
+ON 
+	vo.person_id = op.person_id
+AND 
+	vo.visit_start_date >= op.observation_period_start_date
+AND 
+	vo.visit_start_date <= op.observation_period_end_date
+WHERE 
+	op.person_id IS NULL
 ;

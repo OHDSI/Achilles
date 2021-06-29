@@ -2,7 +2,8 @@
 % Please edit documentation in R/exportToJson.R
 \name{exportPerformanceToJson}
 \alias{exportPerformanceToJson}
-\title{exportPerformanceToJson}
+\title{exportPerformanceToJson
+exportPerformanceToJson}
 \usage{
 exportPerformanceToJson(
   connectionDetails,

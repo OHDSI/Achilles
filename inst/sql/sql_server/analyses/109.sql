@@ -1,32 +1,50 @@
 -- 109	Number of persons with continuous observation in each year
--- Note: using temp table instead of nested query because this gives vastly improved performance in Oracle
-
---HINT DISTRIBUTE_ON_KEY(obs_year)
-SELECT DISTINCT 
-  YEAR(observation_period_start_date) AS obs_year,
-  (YEAR(observation_period_start_date)*100 + 1)*100 + 1 AS obs_year_start,
-  (YEAR(observation_period_start_date)*100 + 12)*100 + 31 AS obs_year_end
-INTO
-  #temp_dates_109
-FROM @cdmDatabaseSchema.observation_period
-;
 
 --HINT DISTRIBUTE_ON_KEY(stratum_1)
+-- generating date key sequences in a cross-dialect compatible fashion
+with century as (select '19' num union select '20' num), 
+tens as (select '0' num union select '1' num union select '2' num union select '3' num union select '4' num union select '5' num union select '6' num union select '7' num union select '8' num union select '9' num),
+ones as (select '0' num union select '1' num union select '2' num union select '3' num union select '4' num union select '5' num union select '6' num union select '7' num union select '8' num union select '9' num),
+months as (select '01' as num union select '02' num union select '03' num union select '04' num union select '05' num union select '06' num union select '07' num union select '08' num union select '09' num union select '10' num union select '11' num union select '12' num),
+date_keys as (select concat(century.num, tens.num, ones.num,months.num)  obs_month from century cross join tens cross join ones cross join months),
+-- From date_keys, we just need each year and the first and last day of each year
+ymd as (
+select cast(substring(obs_month,1,4) as integer)      as obs_year,
+       min(cast(substring(obs_month,5,2) as integer)) as month_start,
+       1                                              as day_start,
+       max(cast(substring(obs_month,5,2) as integer)) as month_end,
+       31                                             as day_end
+  from date_keys
+ where substring(obs_month,5,2) in ('01','12')
+ group by substring(obs_month,1,4)
+),
+-- This gives us each year and the first and last day of the year 
+year_ranges as (
+select obs_year,
+       datefromparts(obs_year,month_start,day_start) obs_year_start,
+       datefromparts(obs_year,month_end,day_end) obs_year_end
+  from ymd
+ where obs_year >= (select min(year(observation_period_start_date)) from @cdmDatabaseSchema.observation_period)
+   and obs_year <= (select max(year(observation_period_start_date)) from @cdmDatabaseSchema.observation_period)
+) 
 SELECT 
-	109 AS analysis_id,  
-	CAST(obs_year AS VARCHAR(255)) AS stratum_1,
-	CAST(NULL AS VARCHAR(255)) AS stratum_2, CAST(NULL AS VARCHAR(255)) AS stratum_3, CAST(NULL AS VARCHAR(255)) AS stratum_4, CAST(NULL AS VARCHAR(255)) AS stratum_5,
-	COUNT_BIG(DISTINCT person_id) AS count_value
-INTO @scratchDatabaseSchema@schemaDelim@tempAchillesPrefix_109
-FROM @cdmDatabaseSchema.observation_period
-CROSS JOIN #temp_dates_109
+	109                               AS analysis_id,  
+	CAST(yr.obs_year AS VARCHAR(255)) AS stratum_1,
+	CAST(NULL AS VARCHAR(255))        AS stratum_2, 
+	CAST(NULL AS VARCHAR(255))        AS stratum_3, 
+	CAST(NULL AS VARCHAR(255))        AS stratum_4, 
+	CAST(NULL AS VARCHAR(255))        AS stratum_5,
+	COUNT_BIG(DISTINCT op.person_id)  AS count_value
+INTO 
+	@scratchDatabaseSchema@schemaDelim@tempAchillesPrefix_109
+FROM 
+	@cdmDatabaseSchema.observation_period op
+CROSS JOIN 
+	year_ranges yr
 WHERE
-	(YEAR(observation_period_start_date)*100 + MONTH(observation_period_start_date))*100 + DAY(observation_period_start_date) <= obs_year_start
+	op.observation_period_start_date <= yr.obs_year_start
 AND
-	(YEAR(observation_period_end_date)*100 + MONTH(observation_period_end_date))*100 + DAY(observation_period_end_date) >= obs_year_end
+	op.observation_period_end_date   >= yr.obs_year_end
 GROUP BY 
-	obs_year
+	yr.obs_year
 ;
-
-TRUNCATE TABLE #temp_dates_109;
-DROP TABLE #temp_dates_109;
