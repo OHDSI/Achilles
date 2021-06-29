@@ -3,13 +3,13 @@
 # Copyright 2021 Observational Health Data Sciences and Informatics
 #
 # This file is part of Achilles
-# 
+#
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
-# 
+#
 #     https://www.apache.org/licenses/LICENSE-2.0
-# 
+#
 # Unless required by applicable law or agreed to in writing, software
 # distributed under the License is distributed on an "AS IS" BASIS,
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -90,6 +90,9 @@
 #'                                Default = TRUE
 #' @param optimizeAtlasCache      Boolean to determine if the atlas cache has to be optimized. Default
 #'                                = FALSE
+#' @param optimizeCacheWithPersonCount  Boolean to determine if the atlas cache has to be optimized and must contain
+#'                                person count and descendant person count. Has no effect if optimizeAtlasCache is set to FALSE.
+#'                                Default = FALSE
 #' @param defaultAnalysesOnly     Boolean to determine if only default analyses should be run.
 #'                                Including non-default analyses is substantially more resource
 #'                                intensive.  Default = TRUE
@@ -109,7 +112,7 @@
 #'                             numThreads = 10,
 #'                             outputFolder = "output")
 #' }
-#' 
+#'
 #' @export
 achilles <- function(connectionDetails,
                      cdmDatabaseSchema,
@@ -132,6 +135,7 @@ achilles <- function(connectionDetails,
                      outputFolder = "output",
                      verboseMode = TRUE,
                      optimizeAtlasCache = FALSE,
+                     optimizeCacheWithPersonCount = FALSE,
                      defaultAnalysesOnly = TRUE) {
 
   totalStart <- Sys.time()
@@ -763,7 +767,8 @@ achilles <- function(connectionDetails,
                                                 outputFolder = outputFolder,
                                                 sqlOnly = sqlOnly,
                                                 verboseMode = verboseMode,
-                                                tempAchillesPrefix = tempAchillesPrefix)
+                                                tempAchillesPrefix = tempAchillesPrefix,
+                                                optimizeCacheWithPersonCount = optimizeCacheWithPersonCount)
 
     achillesSql <- c(achillesSql, optimizeAtlasCacheSql)
   }
@@ -1131,6 +1136,8 @@ dropAllScratchTables <- function(connectionDetails,
 #'                                Default = TRUE
 #' @param tempAchillesPrefix      The prefix to use for the "temporary" (but actually permanent)
 #'                                Achilles analyses tables. Default is "tmpach"
+#' @param optimizeCacheWithPersonCount  Boolean to determine if the atlas cache must contain
+#'                                person count and descendant person count. Default = FALSE
 #'
 #' @export
 optimizeAtlasCache <- function(connectionDetails,
@@ -1139,6 +1146,7 @@ optimizeAtlasCache <- function(connectionDetails,
                                outputFolder = "output",
                                sqlOnly = FALSE,
                                verboseMode = TRUE,
+                               optimizeCacheWithPersonCount = FALSE,
                                tempAchillesPrefix = "tmpach") {
 
   if (!dir.exists(outputFolder)) {
@@ -1162,12 +1170,20 @@ optimizeAtlasCache <- function(connectionDetails,
                                          appenders = appenders)
   ParallelLogger::registerLogger(logger)
 
+  schemaCsv <- "schema_achilles_results_concept_count.csv"
+  sqlFileName <- "analyses/create_result_concept_table.sql"
+
+  if (optimizeCacheWithPersonCount) {
+    schemaCsv <- "schema_achilles_results_person_concept_count.csv"
+    sqlFileName <- "analyses/create_result_person_concept_table.sql"
+  }
   resultsConceptCountTable <- list(tablePrefix = tempAchillesPrefix,
                                    schema = read.csv(file = system.file("csv",
-                                                                                                          "schemas",
-                                                                                                          "schema_achilles_results_concept_count.csv",
-                                                                                                          package = "Achilles"), header = TRUE))
-  optimizeAtlasCacheSql <- SqlRender::loadRenderTranslateSql(sqlFilename = "analyses/create_result_concept_table.sql",
+                                                                        "schemas",
+                                                                        schemaCsv,
+                                                                        package = "Achilles"),
+                                                     header = TRUE))
+  optimizeAtlasCacheSql <- SqlRender::loadRenderTranslateSql(sqlFilename = sqlFileName,
                                                              packageName = "Achilles",
                                                              dbms = connectionDetails$dbms,
                                                              resultsDatabaseSchema = resultsDatabaseSchema,
