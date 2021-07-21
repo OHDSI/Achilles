@@ -26,7 +26,8 @@ achilles(
   outputFolder = "output",
   verboseMode = TRUE,
   optimizeAtlasCache = FALSE,
-  defaultAnalysesOnly = TRUE
+  defaultAnalysesOnly = TRUE,
+  updateGivenAnalysesOnly = FALSE
 )
 }
 \arguments{
@@ -110,6 +111,12 @@ Default = TRUE}
 \item{defaultAnalysesOnly}{Boolean to determine if only default analyses should be run.
 Including non-default analyses is substantially more resource
 intensive.  Default = TRUE}
+
+\item{updateGivenAnalysesOnly}{Boolean to determine whether to preserve the results of the analyses
+NOT specified with the \code{analysisIds} parameter.  To update only
+analyses specified by \code{analysisIds}, set createTable = FALSE and 
+updateGivenAnalysesOnly = TRUE. By default, updateGivenAnalysesOnly = FALSE, to preserve the 
+original behavior of Achilles when supplied \code{analysisIds}.}
 }
 \value{
 An object of type \code{achillesResults} containing details for connecting to the database
