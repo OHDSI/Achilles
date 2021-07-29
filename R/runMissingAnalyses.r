@@ -1,4 +1,4 @@
-# @file importMissingAnalyses
+# @file runMissingAnalyses
 #
 # Copyright 2021 Observational Health Data Sciences and Informatics
 #
@@ -26,10 +26,10 @@
 # @author Taha Abdul-Basser
 # @author Anthony Molinaro
 
-#'@title importMissingAnalyses
+#'@title runMissingAnalyses
 #'
 #' @description
-#' \code{importMissingAnalyses} Automatically find and compute analyses that haven't been executed.
+#' \code{runMissingAnalyses} Automatically find and compute analyses that haven't been executed.
 #'
 #' @param connectionDetails       An R object of type \code{connectionDetails} created using the
 #'                                function \code{createConnectionDetails} in the
@@ -61,7 +61,7 @@
 #'                                intensive.  Default = TRUE
 #' @examples
 #' \dontrun{
-#' Achilles::importMissingAnalyses(
+#' Achilles::runMissingAnalyses(
 #' 	connectionDetails     = connectionDetails,
 #'  cdmDatabaseSchema     = "cdm",
 #' 	resultsDatabaseSchema = "results",
@@ -70,7 +70,7 @@
 #'
 #'@export
 
-importMissingAnalyses <- function(
+runMissingAnalyses <- function(
 	connectionDetails,
 	cdmDatabaseSchema,
 	resultsDatabaseSchema   = cdmDatabaseSchema,
