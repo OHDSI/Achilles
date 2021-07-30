@@ -93,6 +93,12 @@
 #' @param defaultAnalysesOnly     Boolean to determine if only default analyses should be run.
 #'                                Including non-default analyses is substantially more resource
 #'                                intensive.  Default = TRUE
+#' @param updateGivenAnalysesOnly Boolean to determine whether to preserve the results of the analyses
+#'                                NOT specified with the \code{analysisIds} parameter.  To update only
+#'                                analyses specified by \code{analysisIds}, set createTable = FALSE and 
+#'                                updateGivenAnalysesOnly = TRUE. By default, updateGivenAnalysesOnly = FALSE, to preserve the 
+#'                                original behavior of Achilles when supplied \code{analysisIds}.
+
 #' @return
 #' An object of type \code{achillesResults} containing details for connecting to the database
 #' containing the results
@@ -132,7 +138,8 @@ achilles <- function(connectionDetails,
                      outputFolder = "output",
                      verboseMode = TRUE,
                      optimizeAtlasCache = FALSE,
-                     defaultAnalysesOnly = TRUE) {
+                     defaultAnalysesOnly = TRUE,
+					 updateGivenAnalysesOnly = FALSE) {
   totalStart <- Sys.time()
   achillesSql <- c()
   
@@ -320,22 +327,33 @@ achilles <- function(connectionDetails,
     ParallelLogger::logInfo("Beginning multi-threaded execution")
   }
   
-  # Check if createTable is FALSE and no analysisIds specified
+  # Determine whether or not to create Achilles support tables
   # -----------------------------------------------------
   
-  if (!createTable & missing(analysisIds)) {
-    createTable <- TRUE
+  if (!createTable && missing(analysisIds)) {
+    createTable     <- TRUE
+	preserveResults <- FALSE
+  } else if (!createTable && !missing(analysisIds) && !updateGivenAnalysesOnly) {
+    createTable     <- TRUE
+	preserveResults <- FALSE
+  } else if (!createTable && !missing(analysisIds) && updateGivenAnalysesOnly) {
+    preserveResults <- TRUE
   }
   
-  ## Remove existing results if createTable is FALSE
+  ## If not creating support tables, then either remove ALL prior 
+  ## results or only those results for the given analysisIds
   ## ----------------------------------------------------------------
   
-  if (!createTable) {
+  if (!createTable && !preserveResults) {
     .deleteExistingResults(
       connectionDetails = connectionDetails,
       resultsDatabaseSchema = resultsDatabaseSchema,
-      analysisDetails = analysisDetails
-    )
+      analysisDetails = analysisDetails)
+  } else if (!createTable && preserveResults) {
+    .deleteGivenAnalyses(
+      connectionDetails      = connectionDetails,
+      resultsDatabaseSchema  = resultsDatabaseSchema,
+      analysisIds            = analysisIds)
   }
   
   # Create analysis table -------------------------------------------------------------
@@ -1746,6 +1764,26 @@ optimizeAtlasCache <- function(connectionDetails,
       DatabaseConnector::executeSql(connection = connection, sql = sql)
     }
   }
+  
+  .deleteGivenAnalyses <- function (connectionDetails,resultsDatabaseSchema,analysisIds)
+  {
+    conn <- DatabaseConnector::connect(connectionDetails)
+
+    sql <- "delete from @resultsDatabaseSchema.achilles_results where analysis_id in (@analysisIds);"
+    sql <- SqlRender::render(sql, resultsDatabaseSchema = resultsDatabaseSchema, analysisIds =  paste(analysisIds, collapse = ","))
+    sql <- SqlRender::translate(sql, targetDialect = connectionDetails$dbms)
+
+    DatabaseConnector::executeSql(conn,sql)
+
+    sql <- "delete from @resultsDatabaseSchema.achilles_results_dist where analysis_id in (@analysisIds);"
+    sql <- SqlRender::render(sql, resultsDatabaseSchema = resultsDatabaseSchema, analysisIds =  paste(analysisIds, collapse = ","))
+    sql <- SqlRender::translate(sql, targetDialect = connectionDetails$dbms)
+
+	DatabaseConnector::executeSql(conn,sql)
+   
+    on.exit(DatabaseConnector::disconnect(conn))
+
+  }  
 
 .getAchillesResultBenchmark <- function(analysisId, outputFolder) {
   logs <-
