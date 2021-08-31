@@ -65,6 +65,9 @@ ANALYSIS_ID,DISTRIBUTION,COST,DISTRIBUTED_FIELD,ANALYSIS_NAME,STRATUM_1_NAME,STR
 411,0,0,,Number of condition occurrence records with end date < start date,,,,,,1,Condition Occurrence
 412,0,0,,Number of condition occurrence records with invalid provider_id,,,,,,1,Condition Occurrence
 413,0,0,,Number of condition occurrence records with invalid visit_id,,,,,,1,Condition Occurrence
+414,0,0,,"Number of condition occurrence records, by condition_status_concept_id",condition_status_concept_id,,,,,1,Condition Occurrence
+415,0,0,,"Number of condition occurrence records, by condition_type_concept_id",condition_type_concept_id,,,,,1,Condition Occurrence
+416,0,0,,"Number of condition occurrence records, by condition_status_concept_id, condition_type_concept_id",condition_status_concept_id,condition_type_concept_id,,,,1,Condition Occurrence
 420,0,0,,Number of condition occurrence records by condition occurrence start month,calendar month,,,,,1,Condition Occurrence
 425,0,0,,Number of condition_occurrence records by condition_source_concept_id,condition_source_concept_id,,,,,1,Condition Occurrence
 424,0,0,,Number of distinct people with co-occurring condition_occurrence condition_concept_id pairs,condition_concept_id,condition_concept_id,ranking,num_people,num_cases,0,Condition Occurrence
