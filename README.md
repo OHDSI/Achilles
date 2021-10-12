@@ -4,8 +4,6 @@ Achilles
 [![Build Status](https://travis-ci.org/OHDSI/Achilles.svg?branch=master)](https://travis-ci.org/OHDSI/Achilles)
 [![codecov.io](https://codecov.io/github/OHDSI/Achilles/coverage.svg?branch=master)](https://codecov.io/github/OHDSI/Achilles?branch=master)
 
-Achilles is part of [HADES](https://ohdsi.github.io/Hades).
-
 Introduction
 ============
 **A**utomated **C**haracterization of **H**ealth **I**nformation at **L**arge-scale **L**ongitudinal **E**vidence **S**ystems (ACHILLES)---descriptive statistics and data quality checks on an OMOP CDM v5 databases
