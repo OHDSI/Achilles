@@ -1281,7 +1281,7 @@ exportAO <- function(
     
     # domain summary - visit details
     queryVisitDetails <- SqlRender::loadRenderTranslateSql(
-      sqlFilename = "export/visitdetail/sqlVisitDetailTreemap.sql",
+      sqlFilename = "export/visitdetail/sqlVisitDetailTreemapAO.sql",
       packageName = "Achilles",
       dbms = connectionDetails$dbms,
       results_database_schema = resultsDatabaseSchema,
@@ -1292,12 +1292,13 @@ exportAO <- function(
     dataVisitDetails$PERCENT_PERSONS_NTILE <- dplyr::ntile(dplyr::desc(dataVisitDetails$PERCENT_PERSONS),10)
     dataVisitDetails$RECORDS_PER_PERSON <- format(round(dataVisitDetails$RECORDS_PER_PERSON,1),nsmall=1)
     dataVisitDetails$RECORDS_PER_PERSON_NTILE <- dplyr::ntile(dplyr::desc(dataVisitDetails$RECORDS_PER_PERSON),10)
+    dataVisitDetails$AVERAGE_DURATION <- format(round(dataVisitDetails$AVERAGE_DURATION,1),nsmall=1)
     names(dataVisitDetails)[names(dataVisitDetails) == 'CONCEPT_PATH'] <- 'CONCEPT_NAME'
     data.table::fwrite(dataVisitDetails, file=paste0(sourceOutputPath, "/domain-summary-visit_detail.csv"))      
     
     # domain summary - visits
     queryVisits <- SqlRender::loadRenderTranslateSql(
-      sqlFilename = "export/visit/sqlVisitTreemap.sql",
+      sqlFilename = "export/visit/sqlVisitTreemapAO.sql",
       packageName = "Achilles",
       dbms = connectionDetails$dbms,
       results_database_schema = resultsDatabaseSchema,
@@ -1308,6 +1309,7 @@ exportAO <- function(
     dataVisits$PERCENT_PERSONS_NTILE <- dplyr::ntile(dplyr::desc(dataVisits$PERCENT_PERSONS),10)
     dataVisits$RECORDS_PER_PERSON <- format(round(dataVisits$RECORDS_PER_PERSON,1),nsmall=1)
     dataVisits$RECORDS_PER_PERSON_NTILE <- dplyr::ntile(dplyr::desc(dataVisits$RECORDS_PER_PERSON),10)
+    dataVisits$AVERAGE_DURATION <- format(round(dataVisits$AVERAGE_DURATION,1),nsmall=1)
     names(dataVisits)[names(dataVisits) == 'CONCEPT_PATH'] <- 'CONCEPT_NAME'
     data.table::fwrite(dataVisits, file=paste0(sourceOutputPath, "/domain-summary-visit_occurrence.csv"))   
     
