@@ -61,7 +61,7 @@ cnt as count_value
   union
   select 'visit_detail' as table_name, 'visit_detail_source_value' as column_name, visit_detail_source_value as source_value, count_big(*) as cnt from @cdmDatabaseSchema.visit_detail where visit_detail_concept_id = 0 group by visit_detail_source_value
   union
-  {@cdmVersion == '5.4'} ? 
+  {@cdmVersion in ('5.4','5.4.0')} ? 
 	{
 	select 'visit_detail' as table_name, 'admitted_from_source_value' as column_name, admitted_from_source_value as source_value, count_big(*) as cnt from @cdmDatabaseSchema.visit_detail where admitted_from_concept_id = 0 group by admitted_from_source_value
 	union
@@ -77,7 +77,7 @@ cnt as count_value
   union
   select 'visit_occurrence' as table_name, 'visit_source_value' as column_name, visit_source_value as source_value, count_big(*) as cnt from @cdmDatabaseSchema.visit_occurrence where visit_concept_id = 0 group by visit_source_value
   union
-  {@cdmVersion == '5.4'} ?
+  {@cdmVersion in ('5.4','5.4.0')} ?
 	{
 	select 'visit_occurrence' as table_name, 'admitted_from_source_value' as column_name, admitted_from_source_value as source_value, count_big(*) as cnt from @cdmDatabaseSchema.visit_occurrence where  admitted_from_concept_id = 0 group by admitted_from_source_value
     union
