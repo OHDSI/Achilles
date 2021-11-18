@@ -735,6 +735,13 @@ generateAOMeasurementReports <- function(connectionDetails, dataMeasurements, cd
     vocab_database_schema = vocabDatabaseSchema
   )
   
+  queryMissingValues <- SqlRender::loadRenderTranslateSql(
+    sqlFilename = "export/measurement/sqlMissingValues.sql",
+    packageName = "Achilles",
+    dbms = connectionDetails$dbms,
+    results_database_schema = resultsDatabaseSchema
+  )
+
   conn <- DatabaseConnector::connect(connectionDetails)
   dataPrevalenceByGenderAgeYear <- DatabaseConnector::querySql(conn,queryPrevalenceByGenderAgeYear) 
   dataPrevalenceByMonth <- DatabaseConnector::querySql(conn,queryPrevalenceByMonth)  
@@ -746,6 +753,7 @@ generateAOMeasurementReports <- function(connectionDetails, dataMeasurements, cd
   dataUpperLimitDistribution <- DatabaseConnector::querySql(conn,queryUpperLimitDistribution)
   dataValuesRelativeToNorm <- DatabaseConnector::querySql(conn,queryValuesRelativeToNorm)
   dataFrequencyDistribution <- DatabaseConnector::querySql(conn,queryFrequencyDistribution)
+  dataMissingValues <- DatabaseConnector::querySql(conn,queryMissingValues)
   
   uniqueConcepts <- unique(dataPrevalenceByMonth$CONCEPT_ID)
   buildMeasurementReport <- function(concept_id) {
@@ -768,6 +776,8 @@ generateAOMeasurementReports <- function(connectionDetails, dataMeasurements, cd
     report$LOWER_LIMIT_DISTRIBUTION <- dataLowerLimitDistribution[dataLowerLimitDistribution$CONCEPT_ID == concept_id,c(2,3,4,5,6,7,8,9)]
     report$UPPER_LIMIT_DISTRIBUTION <- dataUpperLimitDistribution[dataUpperLimitDistribution$CONCEPT_ID == concept_id,c(2,3,4,5,6,7,8,9)]
     report$VALUES_RELATIVE_TO_NORM <- dataValuesRelativeToNorm[dataValuesRelativeToNorm$MEASUREMENT_CONCEPT_ID == concept_id,c(4,5)]
+	
+	report$PERCENT_MISSING_VALUES <- dataMissingValues[dataMissingValues$MEASUREMENT_CONCEPT_ID == concept_id,2]
     
     dir.create(paste0(outputPath,"/concepts/measurement"),recursive=T,showWarnings = F)    
     filename <- paste(outputPath, "/concepts/measurement/concept_" , concept_id , ".json", sep='')  
@@ -1256,12 +1266,14 @@ exportAO <- function(
       dbms = connectionDetails$dbms,
       results_database_schema = resultsDatabaseSchema,
       vocab_database_schema = vocabDatabaseSchema
-    )  
-    dataMeasurements <- DatabaseConnector::querySql(conn,queryMeasurements)   
+    )  	
+	dataMeasurements <- DatabaseConnector::querySql(conn,queryMeasurements)	
     dataMeasurements$PERCENT_PERSONS <- format(round(dataMeasurements$PERCENT_PERSONS,4), nsmall=4)
     dataMeasurements$PERCENT_PERSONS_NTILE <- dplyr::ntile(dplyr::desc(dataMeasurements$PERCENT_PERSONS), 10)
     dataMeasurements$RECORDS_PER_PERSON <- format(round(dataMeasurements$RECORDS_PER_PERSON,1),nsmall=1)
     dataMeasurements$RECORDS_PER_PERSON_NTILE <- dplyr::ntile(dplyr::desc(dataMeasurements$RECORDS_PER_PERSON), 10)
+	dataMeasurements$PERCENT_MISSING_VALUES <- format(round(dataMeasurements$PERCENT_MISSING_VALUES,4), nsmall=4)
+
     data.table::fwrite(dataMeasurements, file=paste0(sourceOutputPath, "/domain-summary-measurement.csv"))   
     
     # domain summary - observations

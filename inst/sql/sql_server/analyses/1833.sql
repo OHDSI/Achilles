@@ -13,7 +13,7 @@ SELECT
 	          AND COALESCE(m.value_as_concept_id,0) = 0 
 	    THEN 1 ELSE 0 END) AS VARCHAR(255))  AS stratum_2,
 	CAST(CAST(1.0*SUM(CASE WHEN m.value_as_number IS NULL AND COALESCE(m.value_as_concept_id,0) = 0 
-	                  THEN 1 ELSE 0 END)/GREATEST(1,count(*)) AS NUMERIC(7,6)) AS VARCHAR(255)) AS stratum_3, 
+	                  THEN 1 ELSE 0 END)/(CASE WHEN COUNT(*)=0 THEN 1 ELSE COUNT(*) END) AS NUMERIC(7,6)) AS VARCHAR(255)) AS stratum_3, 
 	CAST(NULL AS VARCHAR(255)) AS stratum_4,
 	CAST(NULL AS VARCHAR(255)) AS stratum_5,
 	COUNT(*) AS count_value
