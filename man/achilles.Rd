@@ -27,7 +27,8 @@ achilles(
   verboseMode = TRUE,
   optimizeAtlasCache = FALSE,
   defaultAnalysesOnly = TRUE,
-  updateGivenAnalysesOnly = FALSE
+  updateGivenAnalysesOnly = FALSE,
+  excludeAnalysisIds = c()
 )
 }
 \arguments{
@@ -117,6 +118,8 @@ NOT specified with the \code{analysisIds} parameter.  To update only
 analyses specified by \code{analysisIds}, set createTable = FALSE and 
 updateGivenAnalysesOnly = TRUE. By default, updateGivenAnalysesOnly = FALSE, to preserve the 
 original behavior of Achilles when supplied \code{analysisIds}.}
+
+\item{excludeAnalysisIds}{(OPTIONAL) A vector containing the set of Achilles analyses to exclude.}
 }
 \value{
 An object of type \code{achillesResults} containing details for connecting to the database
