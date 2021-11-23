@@ -140,7 +140,7 @@ generateDomainOverlapSql <- function() {
        '",
       domainString,
       "' as stratum_1,
-       cast((1.0 * personIntersection.count_value / totalPersonsDb.totalPersons) as varchar(6)) as stratum_2,
+       cast((1.0 * personIntersection.count_value / totalPersonsDb.totalPersons) as varchar(255)) as stratum_2,
        CAST(NULL AS VARCHAR(255)) as stratum_3,
        CAST(NULL AS VARCHAR(255)) as stratum_4,
        CAST(NULL AS VARCHAR(255)) as stratum_5,
