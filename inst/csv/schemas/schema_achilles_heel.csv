@@ -1,5 +1,0 @@
-FIELD_NAME,FIELD_TYPE
-analysis_id,int
-achilles_heel_warning,varchar(255)
-rule_id,int
-record_count,bigint

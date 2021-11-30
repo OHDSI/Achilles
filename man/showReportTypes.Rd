@@ -15,7 +15,7 @@ exportToJson.
 }
 \details{
 exportToJson supports the following report types: "CONDITION","CONDITION_ERA", "DASHBOARD",
-"DATA_DENSITY", "DEATH", "DRUG", "DRUG_ERA", "HEEL", "META", "OBSERVATION", "OBSERVATION_PERIOD",
+"DATA_DENSITY", "DEATH", "DRUG", "DRUG_ERA", "META", "OBSERVATION", "OBSERVATION_PERIOD",
 "PERSON", "PROCEDURE","VISIT"
 }
 \examples{

@@ -70,8 +70,6 @@
 #'                                small cell count restrictions.
 #' @param cdmVersion              Define the OMOP CDM version used: currently supports v5 and above.
 #'                                Use major release number or minor number only (e.g. 5, 5.3)
-#' @param runHeel                 Boolean to determine if Achilles Heel data quality reporting will be
-#'                                produced based on the summary statistics.  Default = TRUE
 #' @param runCostAnalysis         Boolean to determine if cost analysis should be run. Note: only works
 #'                                on v5.1+ style cost tables.
 #' @param createIndices           Boolean to determine if indices should be created on the resulting
@@ -129,7 +127,6 @@ achilles <- function(connectionDetails,
                      createTable = TRUE,
                      smallCellCount = 5,
                      cdmVersion = "5",
-                     runHeel = FALSE,
                      runCostAnalysis = FALSE,
                      createIndices = TRUE,
                      numThreads = 1,
@@ -1012,27 +1009,8 @@ achilles <- function(connectionDetails,
     
     achillesSql <- c(achillesSql, optimizeAtlasCacheSql)
   }
-  
-  # Run Heel? ---------------------------------------------------------------
-  
+    
   heelSql <- "/* HEEL EXECUTION SKIPPED PER USER REQUEST */"
-  if (runHeel) {
-    heelResults <- achillesHeel(
-      connectionDetails = connectionDetails,
-      cdmDatabaseSchema = cdmDatabaseSchema,
-      resultsDatabaseSchema = resultsDatabaseSchema,
-      scratchDatabaseSchema = scratchDatabaseSchema,
-      vocabDatabaseSchema = vocabDatabaseSchema,
-      cdmVersion = cdmVersion,
-      sqlOnly = sqlOnly,
-      numThreads = numThreads,
-      tempHeelPrefix = "tmpheel",
-      dropScratchTables = dropScratchTables,
-      outputFolder = outputFolder,
-      verboseMode = verboseMode
-    )
-    heelSql <- heelResults$heelSql
-  }
   
   ParallelLogger::unregisterLogger("achilles")
   
@@ -1232,7 +1210,7 @@ getAnalysisDetails <- function() {
 #' Drop all possible scratch tables
 #'
 #' @details
-#' Drop all possible Achilles and Heel scratch tables
+#' Drop all possible Achilles scratch tables
 #'
 #' @param connectionDetails       An R object of type \code{connectionDetails} created using the
 #'                                function \code{createConnectionDetails} in the
@@ -1241,12 +1219,9 @@ getAnalysisDetails <- function() {
 #'                                written to.
 #' @param tempAchillesPrefix      The prefix to use for the "temporary" (but actually permanent)
 #'                                Achilles analyses tables. Default is "tmpach"
-#' @param tempHeelPrefix          The prefix to use for the "temporary" (but actually permanent) Heel
-#'                                tables. Default is "tmpheel"
 #' @param numThreads              The number of threads to use to run this function. Default is 1
 #'                                thread.
-#' @param tableTypes              The types of Achilles scratch tables to drop: achilles or heel or
-#'                                both
+#' @param tableTypes              The types of Achilles scratch tables to drop: achilles
 #' @param outputFolder            Path to store logs and SQL files
 #' @param verboseMode             Boolean to determine if the console will show all execution steps.
 #'                                Default = TRUE
@@ -1258,9 +1233,8 @@ getAnalysisDetails <- function() {
 dropAllScratchTables <- function(connectionDetails,
                                  scratchDatabaseSchema,
                                  tempAchillesPrefix = "tmpach",
-                                 tempHeelPrefix = "tmpheel",
                                  numThreads = 1,
-                                 tableTypes = c("achilles", "heel"),
+                                 tableTypes = c("achilles"),
                                  outputFolder,
                                  verboseMode = TRUE,
                                  defaultAnalysesOnly = TRUE) {
@@ -1373,60 +1347,6 @@ dropAllScratchTables <- function(connectionDetails,
           DatabaseConnector::executeSql(connection = connection, sql = sql)
         }, error = function(e) {
           ParallelLogger::logError(sprintf("Drop Achilles Scratch Table -- ERROR (%s)", e))
-        }, finally = {
-          DatabaseConnector::disconnect(connection = connection)
-        })
-      })
-    
-    ParallelLogger::stopCluster(cluster = cluster)
-  }
-  
-  if ("heel" %in% tableTypes) {
-    # Drop Parallel Heel Scratch Tables ------------------------------------------------------
-    
-    parallelFiles <-
-      list.files(
-        path = file.path(
-          system.file(package = "Achilles"),
-          "sql/sql_server/heels/parallel"
-        ),
-        recursive = TRUE,
-        full.names = FALSE,
-        all.files = FALSE,
-        pattern = "\\.sql$"
-      )
-    
-    parallelHeelTables <-
-      lapply(parallelFiles, function(t)
-        tolower(paste(
-          tempHeelPrefix,
-          trimws(tools::file_path_sans_ext(basename(t))),
-          sep = "_"
-        )))
-    
-    dropSqls <- lapply(parallelHeelTables, function(scratchTable) {
-      sql <-
-        SqlRender::render(
-          "IF OBJECT_ID('@scratchDatabaseSchema@schemaDelim@scratchTable', 'U') IS NOT NULL DROP TABLE @scratchDatabaseSchema@schemaDelim@scratchTable;",
-          scratchDatabaseSchema = scratchDatabaseSchema,
-          schemaDelim = schemaDelim,
-          scratchTable = scratchTable
-        )
-      sql <-
-        SqlRender::translate(sql = sql, targetDialect = connectionDetails$dbms)
-    })
-    
-    cluster <-
-      ParallelLogger::makeCluster(numberOfThreads = numThreads,
-                                  singleThreadToMain = TRUE)
-    dummy <-
-      ParallelLogger::clusterApply(cluster = cluster, x = dropSqls, function(sql) {
-        connection <-
-          DatabaseConnector::connect(connectionDetails = connectionDetails)
-        tryCatch({
-          DatabaseConnector::executeSql(connection = connection, sql = sql)
-        }, error = function(e) {
-          ParallelLogger::logError(sprintf("Drop Heel Scratch Table -- ERROR (%s)", e))
         }, finally = {
           DatabaseConnector::disconnect(connection = connection)
         })

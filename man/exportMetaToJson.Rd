@@ -33,10 +33,10 @@ database and the schema, so for example 'results.dbo'.}
 none
 }
 \description{
-\code{exportMetaToJson} Exports Achilles Heel report into a JSON form for reports.
+\code{exportMetaToJson} Exports Achilles META report into a JSON form for reports.
 }
 \details{
-Creates individual files for Achilles Heel report found in Achilles.Web
+Creates individual files for Achilles META report found in Achilles.Web
 }
 \examples{
 \dontrun{

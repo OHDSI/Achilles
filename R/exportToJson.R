@@ -27,14 +27,10 @@
 
 # When adding a new report, append it to inst/csv/export/all_reports.csv
 
-getAllReports <- function(includeHeel = FALSE) {
+getAllReports <- function() {
   reports <- read.csv(file = system.file("csv", "export", "all_reports.csv", package = "Achilles"),
                       stringsAsFactors = FALSE,
                       header = TRUE)$REPORT
-  if (!includeHeel) {
-    reports <- reports[-which(reports == "HEEL")]
-  }
-
   return(reports)
 }
 
@@ -56,7 +52,7 @@ initOutputPath <- function(outputPath) {
 #'
 #' @details
 #' exportToJson supports the following report types: "CONDITION","CONDITION_ERA", "DASHBOARD",
-#' "DATA_DENSITY", "DEATH", "DRUG", "DRUG_ERA", "HEEL", "META", "OBSERVATION", "OBSERVATION_PERIOD",
+#' "DATA_DENSITY", "DEATH", "DRUG", "DRUG_ERA", "META", "OBSERVATION", "OBSERVATION_PERIOD",
 #' "PERSON", "PROCEDURE","VISIT"
 #'
 #' @return
@@ -205,15 +201,6 @@ exportToJson <- function(connectionDetails,
                         resultsDatabaseSchema,
                         outputPath,
                         vocabDatabaseSchema)
-  }
-
-  if ("HEEL" %in% reports) {
-    generateAchillesHeelReport(conn,
-                               connectionDetails$dbms,
-                               cdmDatabaseSchema,
-                               resultsDatabaseSchema,
-                               outputPath,
-                               vocabDatabaseSchema)
   }
 
   if (("META" %in% reports)) {
@@ -679,61 +666,15 @@ exportDrugEraToJson <- function(connectionDetails,
                vocabDatabaseSchema)
 }
 
-#' @title
-#' exportHeelToJson
-#'
-#' @description
-#' \code{exportHeelToJson} Exports Achilles Heel report into a JSON form for reports.
-#'
-#' @details
-#' Creates individual files for Achilles Heel report found in Achilles.Web
-#'
-#'
-#' @param connectionDetails           An R object of type ConnectionDetail (details for the function
-#'                                    that contains server info, database type, optionally
-#'                                    username/password, port)
-#' @param cdmDatabaseSchema           Name of the database schema that contains the vocabulary files
-#' @param resultsDatabaseSchema       Name of the database schema that contains the Achilles analysis
-#'                                    files. Default is cdmDatabaseSchema
-#' @param outputPath                  folder location to save the JSON files. Default is current
-#'                                    working folder
-#'
-#' @param vocabDatabaseSchema   name of database schema that contains OMOP Vocabulary. Default is
-#'                                    cdmDatabaseSchema. On SQL Server, this should specifiy both the
-#'                                    database and the schema, so for example 'results.dbo'.
-#'
-#' @return
-#' none
-#' @examples
-#' \dontrun{
-#' connectionDetails <- DatabaseConnector::createConnectionDetails(dbms = "sql server",
-#'                                                                 server = "yourserver")
-#' exportHeelToJson(connectionDetails,
-#'                  cdmDatabaseSchema = "cdm4_sim",
-#'                  outputPath = "your/output/path")
-#' }
-#' @export
-exportHeelToJson <- function(connectionDetails,
-                             cdmDatabaseSchema,
-                             resultsDatabaseSchema,
-                             outputPath = getwd(),
-                             vocabDatabaseSchema = cdmDatabaseSchema) {
-  exportToJson(connectionDetails,
-               cdmDatabaseSchema,
-               resultsDatabaseSchema,
-               outputPath,
-               reports = c("HEEL"),
-               vocabDatabaseSchema)
-}
 
 #' @title
 #' exportMetaToJson
 #'
 #' @description
-#' \code{exportMetaToJson} Exports Achilles Heel report into a JSON form for reports.
+#' \code{exportMetaToJson} Exports Achilles META report into a JSON form for reports.
 #'
 #' @details
-#' Creates individual files for Achilles Heel report found in Achilles.Web
+#' Creates individual files for Achilles META report found in Achilles.Web
 #'
 #'
 #' @param connectionDetails           An R object of type ConnectionDetail (details for the function
@@ -1149,28 +1090,6 @@ exportPerformanceToJson <- function(connectionDetails,
                vocabDatabaseSchema)
 }
 
-generateAchillesHeelReport <- function(conn,
-                                       dbms,
-                                       cdmDatabaseSchema,
-                                       resultsDatabaseSchema,
-                                       outputPath,
-                                       vocabDatabaseSchema = cdmDatabaseSchema) {
-  writeLines("Generating achilles heel report")
-  output <- {
-  }
-
-  queryAchillesHeel <- SqlRender::loadRenderTranslateSql(sqlFilename = "export/achillesheel/sqlAchillesHeel.sql",
-                                                         packageName = "Achilles",
-                                                         dbms = dbms,
-                                                         warnOnMissingParameters = FALSE,
-                                                         cdm_database_schema = cdmDatabaseSchema,
-                                                         results_database_schema = resultsDatabaseSchema,
-                                                         vocab_database_schema = vocabDatabaseSchema)
-
-  output$MESSAGES <- DatabaseConnector::querySql(conn, queryAchillesHeel)
-  jsonOutput <- rjson::toJSON(output)
-  write(jsonOutput, file = paste(outputPath, "/achillesheel.json", sep = ""))
-}
 
 generateAchillesPerformanceReport <- function(conn,
                                               dbms,
