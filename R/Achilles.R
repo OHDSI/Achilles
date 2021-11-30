@@ -98,7 +98,8 @@
 #'                                analyses specified by \code{analysisIds}, set createTable = FALSE and 
 #'                                updateGivenAnalysesOnly = TRUE. By default, updateGivenAnalysesOnly = FALSE, to preserve the 
 #'                                original behavior of Achilles when supplied \code{analysisIds}.
-
+#' @param excludeAnalysisIds      (OPTIONAL) A vector containing the set of Achilles analyses to exclude.
+#'
 #' @return
 #' An object of type \code{achillesResults} containing details for connecting to the database
 #' containing the results
@@ -139,7 +140,8 @@ achilles <- function(connectionDetails,
                      verboseMode = TRUE,
                      optimizeAtlasCache = FALSE,
                      defaultAnalysesOnly = TRUE,
-					 updateGivenAnalysesOnly = FALSE) {
+					 updateGivenAnalysesOnly = FALSE,
+					 excludeAnalysisIds = c()) {
   totalStart <- Sys.time()
   achillesSql <- c()
   
@@ -220,6 +222,11 @@ achilles <- function(connectionDetails,
     analysisDetails <- analysisDetails[analysisDetails$IS_DEFAULT == 1,]
   }  
   
+  # Remove unwanted analyses, if any are specified
+  if (length(excludeAnalysisIds) != 0 ) {
+	analysisDetails <- analysisDetails[-which(analysisDetails$ANALYSIS_ID %in% excludeAnalysisIds),]  
+  }
+
   # If COST analyses are not to be run, remove them from the list of analyses 
   # if they are present
   if (!runCostAnalysis && any(analysisDetails$ANALYSIS_ID %in% costIds)) {
