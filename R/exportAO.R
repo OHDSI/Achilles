@@ -1174,6 +1174,17 @@ exportAO <- function(
     )  
     conceptsPerPerson <- DatabaseConnector::querySql(conn,renderedSql)
     data.table::fwrite(conceptsPerPerson, file=paste0(sourceOutputPath, "/datadensity-concepts-per-person.csv"))
+    
+    # data density - domains per person
+    renderedSql <- SqlRender::loadRenderTranslateSql(
+      sqlFilename = "export/datadensity/domainsperperson.sql",
+      packageName = "Achilles",
+      dbms = connectionDetails$dbms,
+      results_database_schema = resultsDatabaseSchema
+    )  
+    domainsPerPerson <- DatabaseConnector::querySql(conn,renderedSql)
+    domainsPerPerson$PERCENT_VALUE <- round(as.numeric(domainsPerPerson$PERCENT_VALUE),2)
+    data.table::fwrite(domainsPerPerson, file=paste0(sourceOutputPath, "/datadensity-domains-per-person.csv"))    
   }
   
   if (length(reports) == 0  || (length(reports) > 0 && ("domain" %in% reports || "concept" %in% reports))) {
