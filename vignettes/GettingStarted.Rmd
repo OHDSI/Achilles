@@ -29,23 +29,23 @@ Getting Started
 1. In R, use the following commands to install Achilles.
 
     ```r
-    if (!require("devtools")) install.packages("devtools")
+    if (!require("remotes")) install.packages("remotes")
     
     # To install the master branch
-    devtools::install_github("OHDSI/Achilles")
+    remotes::install_github("OHDSI/Achilles")
     
     # To install latest release (if master branch contains a bug for you)
-    # devtools::install_github("OHDSI/Achilles@*release")  
+    # remotes::install_github("OHDSI/Achilles@*release")  
     
     # To avoid Java 32 vs 64 issues 
-    # devtools::install_github("OHDSI/Achilles", args="--no-multiarch")  
+    # remotes::install_github("OHDSI/Achilles", args="--no-multiarch")  
     ```
 
 1. To run the Achilles analysis, first determine if you'd like to run the function in multi-threaded mode or in single-threaded mode. Use `runCostAnalysis = FALSE` to save on execution time, as cost analyses tend to run long.
     
     **In multi-threaded mode**
     
-    The analyses are run in multiple SQL sessions, which can be set using the `numThreads` setting and setting scratchDatabaseSchema to something other than `#`. For example, 10 threads means 10 independent SQL sessions. Intermediate results are written to scratch tables before finally being combined into the final results tables. Scratch tables are permanent tables; you can either choose to have Achilles drop these tables (`dropScratchTables = TRUE`) or you can drop them at a later time (`dropScratchTables = FALSE`). Dropping the scratch tables can add time to the full execution. If desired, you can set your own custom prefix for all Achilles analysis scratch tables (tempAchillesPrefix) and/or for all Achilles Heel scratch tables (tempHeelPrefix).
+    The analyses are run in multiple SQL sessions, which can be set using the `numThreads` setting and setting scratchDatabaseSchema to something other than `#`. For example, 10 threads means 10 independent SQL sessions. Intermediate results are written to scratch tables before finally being combined into the final results tables. Scratch tables are permanent tables; you can either choose to have Achilles drop these tables (`dropScratchTables = TRUE`) or you can drop them at a later time (`dropScratchTables = FALSE`). Dropping the scratch tables can add time to the full execution. If desired, you can set your own custom prefix for all Achilles analysis scratch tables (tempAchillesPrefix).
     
     **In single-threaded mode**
     
@@ -69,12 +69,7 @@ Getting Started
     achilles(connectionDetails, 
       cdmDatabaseSchema = "cdm5_inst", 
       resultsDatabaseSchema="results",
-      vocabDatabaseSchema = "vocab",
-      numThreads = 1,
-      sourceName = "My Source Name", 
-      cdmVersion = "5.3.0",
-      runHeel = TRUE,
-      runCostAnalysis = TRUE)
+      outputFolder = "output")
     ```
 
     **Multi-threaded mode**
@@ -84,12 +79,8 @@ Getting Started
       cdmDatabaseSchema = "cdm5_inst", 
       resultsDatabaseSchema = "results",
       scratchDatabaseSchema = "scratch",
-      vocabDatabaseSchema = "vocab",
       numThreads = 10,
-      sourceName = "My Source Name", 
-      cdmVersion = "5.3.0",
-      runHeel = TRUE,
-      runCostAnalysis = TRUE)
+      outputFolder = "output")
     ```
     
     The `"cdm5_inst"` cdmDatabaseSchema parameter, `"results"` resultsDatabaseSchema parameter, and `"scratch"` scratchDatabaseSchema parameter are the fully qualified names of the schemas holding the CDM data, targeted for result writing, and holding the intermediate scratch tables, respectively. See the [DatabaseConnector](https://github.com/OHDSI/DatabaseConnector) package for details on settings the connection details for your database, for example by typing
@@ -98,41 +89,9 @@ Getting Started
     ?createConnectionDetails
     ```
 
-    Execution of all Achilles pre-computations may take a long time, particularly in single-threaded mode and with COST analyses enabled. See <extras/notes.md> file to find out how some analyses can be excluded to make the execution faster (excluding cost pre-computations) 
+    Execution of all Achilles pre-computations may take a long time, particularly in single-threaded mode and with COST analyses enabled. See <extras/notes.md> file to find out how some analyses can be excluded to make the execution faster. 
       
     The SQL platforms supported by [DatabaseConnector](https://github.com/OHDSI/DatabaseConnector) and [SqlRender](https://github.com/OHDSI/SqlRender) are the **only** ones supported here in Achilles as `dbms`. `cdmVersion` can be *ONLY* 5.x (please look at prior commit history for v4 support).
-
-1. To use [AchillesWeb](https://github.com/OHDSI/AchillesWeb) to explore the Achilles statistics, you must first export the statistics to a folder JSON files, which can optionally be compressed into one gzipped file for easier transportability.
-
-    ```r
-    exportToJson(connectionDetails, 
-      cdmDatabaseSchema = "cdm5_inst", 
-      resultsDatabaseSchema = "results", 
-      outputPath = "c:/myPath/AchillesExport", 
-      compressIntoOneFile = TRUE) # creates gzipped file of all JSON files
-    ```
-
-1. Possible optional additional steps:
-
-    - To see what errors were found (from within R), run:
-        ```r
-        fetchAchillesHeelResults(connectionDetails,resultsDatabaseSchema)
-        ```
-    - To see a particular analysis, run:
-        ```r
-        fetchAchillesAnalysisResults(connectionDetails,resultsDatabaseSchema,analysisId = 2)
-        ```
-    - To join data tables with some lookup (overview files), obtain those using commands below:
-    - To get description of analyses, run `getAnalysisDetails()`.
-    - To get description of derived measures, run:
-        ```r
-        read.csv(system.file("csv","derived_analysis_details",package="Achilles"),as.is=T)
-        ```
-    - Similarly, for overview of rules, run:
-        ```r
-        read.csv(system.file("csv","achilles_rule.csv",package="Achilles"),as.is=T)
-        ```
-    - Also see [notes.md](extras/notes.md) for more information (in the extras folder).
 
 ## Developers: How to Add or Modify Analyses
 

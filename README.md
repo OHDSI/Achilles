@@ -30,8 +30,8 @@ Installation
 2. In R, use the following commands to download and install Achilles:
 
   ```r
-  install.packages("devtools")
-  devtools::install_github("OHDSI/Achilles")
+  install.packages("remotes")
+  remotes::install_github("OHDSI/Achilles")
   ```
 
 User Documentation
