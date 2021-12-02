@@ -1186,8 +1186,9 @@ generateAOConditionEraReports <- function(connectionDetails, dataConditionEra, c
 #' 
 #' @return none 
 #' 
-#'@import data.table
+#'@importFrom data.table fwrite
 #'@import lubridate
+#'@importFrom dplyr ntile desc
 #'@export
 #'
 exportAO <- function(
