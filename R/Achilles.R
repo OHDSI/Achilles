@@ -53,9 +53,9 @@
 #' @param vocabDatabaseSchema     String name of database schema that contains OMOP Vocabulary. Default
 #'                                is cdmDatabaseSchema. On SQL Server, this should specifiy both the
 #'                                database and the schema, so for example 'results.dbo'.
-#' @param oracleTempSchema        For Oracle only: the name of the database schema where you want all
-#'                                temporary tables to be managed. Requires create/insert permissions to
-#'                                this database.
+#' @param tempEmulationSchema     Formerly oracleTempSchema.  For databases like Oracle where you must specify
+#'                                the name of the database schema where you want all temporary tables to be managed. 
+#'                                Requires create/insert permissions to this database.
 #' @param sourceName              String name of the data source name. If blank, CDM_SOURCE table will
 #'                                be queried to try to obtain this.
 #' @param analysisIds             (OPTIONAL) A vector containing the set of Achilles analysisIds for
@@ -121,7 +121,7 @@ achilles <- function(connectionDetails,
                      resultsDatabaseSchema = cdmDatabaseSchema,
                      scratchDatabaseSchema = resultsDatabaseSchema,
                      vocabDatabaseSchema = cdmDatabaseSchema,
-                     oracleTempSchema = resultsDatabaseSchema,
+                     tempEmulationSchema = resultsDatabaseSchema,
                      sourceName = "",
                      analysisIds,
                      createTable = TRUE,
@@ -488,7 +488,7 @@ achilles <- function(connectionDetails,
             warnOnMissingParameters = FALSE,
             cdmDatabaseSchema = cdmDatabaseSchema,
             scratchDatabaseSchema = scratchDatabaseSchema,
-            oracleTempSchema = oracleTempSchema,
+            tempEmulationSchema = tempEmulationSchema,
             schemaDelim = schemaDelim,
             tempAchillesPrefix = tempAchillesPrefix,
             domainId = domainId,
@@ -582,7 +582,7 @@ achilles <- function(connectionDetails,
                   schemaDelim = schemaDelim,
                   cdmDatabaseSchema = cdmDatabaseSchema,
                   scratchDatabaseSchema = scratchDatabaseSchema,
-                  oracleTempSchema = oracleTempSchema,
+                  tempEmulationSchema = tempEmulationSchema,
                   costColumn = drugCostMappings[drugCostMappings$OLD ==
                                                   analysisDetail["DISTRIBUTED_FIELD"][[1]],]$CURRENT,
                   domainId = "Drug",
@@ -607,7 +607,7 @@ achilles <- function(connectionDetails,
                                             schemaDelim = schemaDelim,
                                             cdmDatabaseSchema = cdmDatabaseSchema,
                                             scratchDatabaseSchema = scratchDatabaseSchema,
-                                            oracleTempSchema = oracleTempSchema,
+                                            tempEmulationSchema = tempEmulationSchema,
                                             costColumn = procedureCostMappings[procedureCostMappings$OLD ==
                                                                                  analysisDetail["DISTRIBUTED_FIELD"][[1]],]$CURRENT,
                                             domainId = "Procedure",
@@ -717,7 +717,7 @@ achilles <- function(connectionDetails,
         scratchDatabaseSchema = scratchDatabaseSchema,
         cdmDatabaseSchema = cdmDatabaseSchema,
         resultsDatabaseSchema = resultsDatabaseSchema,
-        oracleTempSchema = oracleTempSchema,
+        tempEmulationSchema = tempEmulationSchema,
         cdmVersion = cdmVersion,
         tempAchillesPrefix = tempAchillesPrefix,
         resultsTables = resultsTables,
@@ -831,7 +831,7 @@ achilles <- function(connectionDetails,
       schemaDelim = schemaDelim,
       scratchDatabaseSchema = scratchDatabaseSchema,
       resultsDatabaseSchema = resultsDatabaseSchema,
-      oracleTempSchema = oracleTempSchema,
+      tempEmulationSchema = tempEmulationSchema,
       cdmVersion = cdmVersion,
       tempAchillesPrefix = tempAchillesPrefix,
       numThreads = numThreads,
@@ -1009,13 +1009,9 @@ achilles <- function(connectionDetails,
     
     achillesSql <- c(achillesSql, optimizeAtlasCacheSql)
   }
-    
-  heelSql <- "/* HEEL EXECUTION SKIPPED PER USER REQUEST */"
-  
+      
   ParallelLogger::unregisterLogger("achilles")
-  
-  achillesSql <- c(achillesSql, heelSql)
-  
+    
   if (sqlOnly) {
     SqlRender::writeSql(
       sql = paste(achillesSql, collapse = "\n\n"),
@@ -1036,7 +1032,6 @@ achilles <- function(connectionDetails,
       sourceName = sourceName,
       analysisIds = analysisDetails$ANALYSIS_ID,
       achillesSql = paste(achillesSql, collapse = "\n\n"),
-      heelSql = heelSql,
       indicesSql = indicesSql,
       call = match.call()
     )
@@ -1495,7 +1490,7 @@ optimizeAtlasCache <- function(connectionDetails,
                             scratchDatabaseSchema,
                             cdmDatabaseSchema,
                             resultsDatabaseSchema,
-                            oracleTempSchema,
+                            tempEmulationSchema,
                             cdmVersion,
                             tempAchillesPrefix,
                             resultsTables,
@@ -1513,7 +1508,7 @@ optimizeAtlasCache <- function(connectionDetails,
     resultsDatabaseSchema = resultsDatabaseSchema,
     schemaDelim = schemaDelim,
     tempAchillesPrefix = tempAchillesPrefix,
-    oracleTempSchema = oracleTempSchema,
+    tempEmulationSchema = tempEmulationSchema,
     source_name = sourceName,
     achilles_version = packageVersion(pkg = "Achilles"),
     cdmVersion = cdmVersion,
@@ -1529,7 +1524,7 @@ optimizeAtlasCache <- function(connectionDetails,
                                         schemaDelim,
                                         scratchDatabaseSchema,
                                         resultsDatabaseSchema,
-                                        oracleTempSchema,
+                                        tempEmulationSchema,
                                         cdmVersion,
                                         tempAchillesPrefix,
                                         numThreads,
@@ -1622,7 +1617,7 @@ optimizeAtlasCache <- function(connectionDetails,
     warnOnMissingParameters = FALSE,
     createTable = createTable,
     resultsDatabaseSchema = resultsDatabaseSchema,
-    oracleTempSchema = oracleTempSchema,
+    tempEmulationSchema = tempEmulationSchema,
     detailType = resultsTable$detailType,
     detailSqls = paste(detailSqls, collapse = " \nunion all\n "),
     fieldNames = paste(resultsTable$schema$FIELD_NAME,

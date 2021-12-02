@@ -10,7 +10,7 @@ achilles(
   resultsDatabaseSchema = cdmDatabaseSchema,
   scratchDatabaseSchema = resultsDatabaseSchema,
   vocabDatabaseSchema = cdmDatabaseSchema,
-  oracleTempSchema = resultsDatabaseSchema,
+  tempEmulationSchema = resultsDatabaseSchema,
   sourceName = "",
   analysisIds,
   createTable = TRUE,
@@ -55,9 +55,9 @@ temporary tables instead of permanent tables.}
 is cdmDatabaseSchema. On SQL Server, this should specifiy both the
 database and the schema, so for example 'results.dbo'.}
 
-\item{oracleTempSchema}{For Oracle only: the name of the database schema where you want all
-temporary tables to be managed. Requires create/insert permissions to
-this database.}
+\item{tempEmulationSchema}{Formerly oracleTempSchema.  For databases like Oracle where you must specify
+the name of the database schema where you want all temporary tables to be managed. 
+Requires create/insert permissions to this database.}
 
 \item{sourceName}{String name of the data source name. If blank, CDM_SOURCE table will
 be queried to try to obtain this.}

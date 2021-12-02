@@ -50,9 +50,9 @@
 #' @param vocabDatabaseSchema     String name of database schema that contains OMOP Vocabulary. Default
 #'                                is cdmDatabaseSchema. On SQL Server, this should specifiy both the
 #'                                database and the schema, so for example 'results.dbo'.
-#' @param oracleTempSchema        For Oracle only: the name of the database schema where you want all
-#'                                temporary tables to be managed. Requires create/insert permissions to
-#'                                this database.
+#' @param tempEmulationSchema     Formerly tempEmulationSchema.  For databases like Oracle where you must specify
+#'                                the name of the database schema where you want all temporary tables to be managed. 
+#'                                Requires create/insert permissions to this database.
 #' @param runCostAnalysis         Boolean to determine if cost analysis should be run. Note: only works
 #'                                on v5.1+ style cost tables.
 #' @param outputFolder            Path to store logs and SQL files
@@ -76,7 +76,7 @@ runMissingAnalyses <- function(
 	resultsDatabaseSchema   = cdmDatabaseSchema,
 	scratchDatabaseSchema   = resultsDatabaseSchema,
 	vocabDatabaseSchema     = cdmDatabaseSchema,
-	oracleTempSchema        = resultsDatabaseSchema,
+	tempEmulationSchema     = resultsDatabaseSchema,
 	outputFolder            = "output",
 	defaultAnalysesOnly     = TRUE,
 	runCostAnalysis         = FALSE
@@ -146,7 +146,7 @@ runMissingAnalyses <- function(
 				 resultsDatabaseSchema   = resultsDatabaseSchema,
 				 scratchDatabaseSchema   = scratchDatabaseSchema,
 				 vocabDatabaseSchema     = cdmDatabaseSchema,
-				 oracleTempSchema        = oracleTempSchema,
+				 tempEmulationSchema     = tempEmulationSchema,
 				 analysisIds             = missingAnalysisIds,
 				 defaultAnalysesOnly     = defaultAnalysesOnly, 
 				 runCostAnalysis         = runCostAnalysis,
