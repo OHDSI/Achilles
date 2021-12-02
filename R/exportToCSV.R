@@ -28,7 +28,8 @@ exportResultsToCSV <- function(connectionDetails,
                                resultsDatabaseSchema,
                                analysisIds = c(),
                                minCellCount = 5,
-                               exportFolder) {
+
+  exportFolder) {
   # Ensure the export folder exists
   if (!file.exists(exportFolder)) {
     dir.create(exportFolder, recursive = TRUE)
@@ -40,12 +41,8 @@ exportResultsToCSV <- function(connectionDetails,
 
   # Obtain the data from the achilles tables
   sql <- SqlRender::loadRenderTranslateSql(sqlFilename = "export/raw/export_raw_achilles_results.sql",
-                                           packageName = "Achilles",
-                                           dbms = connectionDetails$dbms,
-                                           warnOnMissingParameters = FALSE,
-                                           results_database_schema = resultsDatabaseSchema,
-                                           min_cell_count = minCellCount,
-                                           analysis_ids = analysisIds)
+    packageName = "Achilles", dbms = connectionDetails$dbms, warnOnMissingParameters = FALSE, results_database_schema = resultsDatabaseSchema,
+    min_cell_count = minCellCount, analysis_ids = analysisIds)
   ParallelLogger::logInfo("Querying achilles_results")
   results <- DatabaseConnector::querySql(connection = connection, sql = sql)
 

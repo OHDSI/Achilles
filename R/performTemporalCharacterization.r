@@ -90,6 +90,8 @@
 #' }
 #'
 #'@import dplyr
+#'@import stats
+#'@import utils
 #'@export
 
 performTemporalCharacterization <- function(

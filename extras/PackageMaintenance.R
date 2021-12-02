@@ -35,19 +35,24 @@ unlink("extras/Achilles.pdf")
 shell("R CMD Rd2pdf ./ --output=extras/Achilles.pdf")
 
 dir.create("inst/doc")
-rmarkdown::render("vignettes/RunningAchilles.Rmd",
-                  output_file = "../inst/doc/RunningAchilles.pdf",
-                  rmarkdown::pdf_document(latex_engine = "pdflatex",
-                                          toc = TRUE,
-                                          number_sections = TRUE))
-rmarkdown::render("vignettes/GettingStarted.Rmd",
-                  output_file = "../inst/doc/GettingStarted.pdf",
-                  rmarkdown::pdf_document(latex_engine = "pdflatex",
-                                          toc = TRUE,
-                                          number_sections = TRUE))
+
+# rmarkdown::render("vignettes/RunningAchilles.Rmd",
+#   output_file = "../inst/doc/RunningAchilles.pdf",
+#   rmarkdown::pdf_document(latex_engine = "pdflatex",
+#   toc = TRUE, number_sections = TRUE)
+# )
+# 
+# rmarkdown::render("vignettes/GettingStarted.Rmd",
+#   output_file = "../inst/doc/GettingStarted.pdf",
+#   rmarkdown::pdf_document(latex_engine = "pdflatex",
+#   toc = TRUE, number_sections = TRUE)
+# )
+
+devtools::check()
 
 pkgdown::build_site()
-OhdsiRTools::fixHadesLogo()
+
+# OhdsiRTools::fixHadesLogo()
 
 # Release package:
 devtools::check_win_devel()

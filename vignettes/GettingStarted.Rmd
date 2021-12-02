@@ -1,6 +1,5 @@
 ---
 title: "Getting Started with Achilles"
-author: "Ajit Londhe"
 date: "`r Sys.Date()`"
 output:
   pdf_document:
@@ -18,9 +17,7 @@ vignette: >
 Getting Started
 ===============
 
-(Please review the [Achilles Wiki](https://github.com/OHDSI/Achilles/wiki/Additional-instructions-for-Linux) for specific details for Linux)
-
-1. Make sure you have your data in the OMOP CDM v5.x format
+1. Make sure you have your data in a supported OMOP CDM format.  Achilles currently supports version 5.3 and 5.4 of the OMOP CDM.
     (https://github.com/OHDSI/CommonDataModel).
 
 1. This package makes use of rJava. Make sure that you have Java installed. If you don't have Java already installed on your computer (on most computers it already is installed), go to [java.com](https://java.com) to get the latest version. If you are having trouble with rJava, [this Stack Overflow post](https://stackoverflow.com/questions/7019912/using-the-rjava-package-on-win7-64-bit-with-r) may assist you when you begin troubleshooting.
@@ -97,6 +94,7 @@ Getting Started
 
 Please refer to the [README-developers.md file](README-developers.md).
 
+(Please review the [Achilles Wiki](https://github.com/OHDSI/Achilles/wiki/Additional-instructions-for-Linux) for specific details for Linux)
 
 ## License
 

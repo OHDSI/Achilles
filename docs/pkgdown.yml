@@ -1,8 +1,8 @@
 pandoc: 2.11.4
-pkgdown: 1.6.1
+pkgdown: 2.0.0
 pkgdown_sha: ~
 articles:
-  RunningAchilles: RunningAchilles.html
   GettingStarted: GettingStarted.html
-last_built: 2021-03-03T13:54Z
+  RunningAchilles: RunningAchilles.html
+last_built: 2021-12-02T19:59Z
 

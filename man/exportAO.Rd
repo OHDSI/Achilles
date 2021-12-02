@@ -37,9 +37,3 @@ none
 \details{
 Creates export files
 }
-\examples{
-\dontrun{
-  connectionDetails <- DatabaseConnector::createConnectionDetails(dbms="sql server", server="yourserver")
-  exportToJson(connectionDetails, cdmDatabaseSchema="cdm4_sim", outputPath="your/output/path")
-}
-}

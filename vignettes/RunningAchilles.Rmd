@@ -1,6 +1,5 @@
 ---
 title: "Running Achilles on Your CDM"
-author: "Ajit Londhe"
 date: "`r Sys.Date()`"
 output:
   pdf_document:
