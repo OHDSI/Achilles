@@ -1,148 +1,156 @@
 
-# How to run Achilles Heel only: 
+# Before you run Achilles:achilles() 
 
-Execution of all analyses computations is not necessary if all you want to do is to run new data quality measures in a revised version of Heel. Instead of 10+ hours, you can be done in few minutes with running just heel
-```
-#initialize your connectionDetails as usual
-#set your schema names for where is data and where to store results
-  myCdm='cdm5_inst';resDb='results'
-
-#run heel only like this
-  heel<-achillesHeel(connectionDetails,cdmDatabaseSchema = myCdm, resultsDatabaseSchema = resDb,cdmVersion = "5")
-
-#optionally - get heel errors and warnings as a small CSV file
-  heelRes<-fetchAchillesHeelResults(connectionDetails,resDb)
-  write.csv(heelRes,paste0(myCdm,'-01-heel-res.csv'),row.names = F,na = '')
-
+Running Achilles::getAnalysisDetails() is a great way to get to know the Achilles package.  See the Q&A below.
 ```
 
-# How to save time on running full Achilles - make it finish much earlier
-If you are willing to skip cost analyses (not used very often), this smaller set of analyses will finish much earlier
-```
-#get all possible analyses first
-allAnalyses=getAnalysisDetails()$ANALYSIS_ID
+# Q: What does getAnalysisDetails() do?
+# A: getAnalysisDetails() returns a data frame of detailed information regarding all Achilles analyses.
+#    We can use getAnalysisDetails() to answer common questions about the different Achilles analyses.
 
-#cost analyses may take 15+ hours and may not be always necessary
-longAnalyses1=c(1500:1699)
+> details <- Achilles::getAnalysisDetails()
+> colnames(details)
+"ANALYSIS_ID"  "DISTRIBUTION"  "COST"  "DISTRIBUTED_FIELD"  "ANALYSIS_NAME"  "STRATUM_1_NAME" 
+"STRATUM_2_NAME"  "STRATUM_3_NAME"  "STRATUM_4_NAME"  "STRATUM_5_NAME"  "IS_DEFAULT" "CATEGORY"         
 
-#exclude them
-subSet1=setdiff(allAnalyses,longAnalyses1)
+# Q: How many analyses run by default?
+# A: See below.
 
+> length(which(details$IS_DEFAULT == 1))
+[1] 292 
 
-#create connection details (modify for your server)
-connectionDetails <- createConnectionDetails(dbms="redshift", server="server.com", user="secret",
-                            password='secret', schema="cdm5_inst", port="5439")
+# Q: What are the non-default analyses?
+# A: See below.
 
-#run Achilles (and Heel)  with this smaller subSet1 only (this will save several hours (or days) of your execution time)
-achillesResults <- achilles(connectionDetails, cdmDatabaseSchema="cdm5_inst", 
-                            resultsDatabaseSchema="results", sourceName="My Source Name", 
-                            vocabDatabaseSchema="vocabulary",cdmVersion = "5",analysisIds = subSet1)
-```
-
-# Execute only few new analyses
-Achilles can take a long time to execute. To see new analyses, it is possible to only execute those new analyses. E.g., newly integrated Iris analyses.
-Use the following code that specifies a set of analysis_id's.
-The key is to specify which anlayses to run, and to specify createTables to FALSE so that this execution will preserve results previously executed.
-```R
-cdmDatabaseSchema='ccae_v5'    #change to yours
-resultsDatabaseSchema='nih'    #change to yours
-vocabDatabaseSchema='ccae_v5'  #change to yours
-achillesResults <- achilles(connectionDetails,cdmDatabaseSchema=cdmDatabaseSchema,
-                            resultsDatabaseSchema=resultsDatabaseSchema,
-                            sourceName="My Source Name", 
-                            vocabDatabaseSchema=vocabDatabaseSchema,
-                            cdmVersion = "5",
-                            createTable = F,analysisIds = c(2000,2001))
-                            
-```
-# Small maintenance tasks for the package 
-## update CSV overview file for analyses
-```R
-connectionDetails$schema=resultsDatabaseSchema
-conn<-connect(connectionDetails)
-achilles_analysis<-querySql(conn,'select * from achilles_analysis')
-#this line caused issue 151: names(achilles_analysis) <- tolower(names(achilles_analysis))
-write.csv(achilles_analysis,file = 'inst/csv/analysisDetails.csv',na = '',row.names = F)
-
-#optionaly insert rule overview into the database
-#or rewrite this as  package file
-read.csv(system.file("csv","derived_analysis_details",package="Achilles"),as.is=T)
-
-#achilles_derived_measures<-read.csv(file = 'inst/csv/derived_analysis_details.csv',as.is=T)
-achilles_derived_measures<-read.csv(system.file("csv","derived_analysis_details.csv",package="Achilles"),as.is=T)
-insertTable(conn,'achilles_derived_measures',achilles_derived_measures)
-
-achilles_rule<-read.csv(system.file("csv","achilles_rule.csv",package="Achilles"),as.is=T)
-insertTable(conn,'achilles_rule',achilles_rule)
+> details[details$IS_DEFAULT == 0,c(1,5)]
+ANALYSIS_ID ANALYSIS_NAME
+        424 Number of distinct people with co-occurring condition_occurrence condition_concept_id pairs
+        624 Number of distinct people with co-occurring procedure_occurrence procedure_concept_id pairs
+        724 Number of distinct people with co-occurring drug_exposure drug_concept_id pairs
+        824 Number of distinct people with co-occurring observation observation_concept_id pairs
+       1824 Number of distinct people with co-occurring measurement measurement_concept_id pairs
+	   
+# Q: What are the analysis categories?
+# A: See below.
+	   
+> unique(details$CATEGORY)
+ [1] "General"      "Person"               "Observation Period"  "Visit Occurrence"   "Provider"  "Condition Occurrence"
+ [7] "Death"        "Procedure Occurrence" "Drug Exposure"       "Observation"        "Drug Era"  "Condition Era"       
+[13] "Location"     "Care Site"            "Visit Detail"        "Payer Plan Period"  "Cost"      "Cohort"              
+[19] "Measurement"  "Completeness"         "Device Exposure"     "Note"                
 
 ```
 
-## overview html files 
-The code below updates html files that show content overview. Use rawgit.com/OHDSI/... to view it nicely.
-```R
-tempf<-tempfile(pattern = 'temp', fileext = '.Rmd')
-writeLines('---\ntitle: "Rules"\n---\n```{r, echo=FALSE}\n rules<-read.csv(system.file("csv","achilles_rule.csv",package="Achilles"),as.is=T);knitr::kable(rules)\n```',tempf)
-rmarkdown::render(tempf,output_file = 'c:/temp/Heel-Rules.html',rmarkdown::html_document(toc = F, fig_caption = TRUE))
-
-
-tempf<-tempfile(pattern = 'temp', fileext = '.Rmd')
-writeLines('---\ntitle: "Overview"\n---\n```{r, echo=FALSE}\n rules<-read.csv(system.file("csv","derived_analysis_details.csv",package="Achilles"),as.is=T);knitr::kable(rules)\n```',tempf)
-rmarkdown::render(tempf,output_file = 'c:/temp/Derived-Analyses.html',rmarkdown::html_document(toc = F, fig_caption = TRUE))
-
-tempf<-tempfile(pattern = 'temp', fileext = '.Rmd')
-writeLines('---\ntitle: "Overview"\n---\n```{r, echo=FALSE}\n rules<-read.csv(system.file("csv","rule_drill_down.csv",package="Achilles"),as.is=T);knitr::kable(rules)\n```',tempf)
-rmarkdown::render(tempf,output_file = 'c:/temp/Rule-Drill-Down.html',rmarkdown::html_document(toc = F, fig_caption = TRUE))
+# Running Achilles:achilles()
+Use the achilles() function to "run Achilles" against your CDM.  Different ways of executing achilles() are illustrated below.  
 ```
 
+# Q: How do I run all default analyses? 
+# A: See below.  You must supply connectionDetails, cdmDatabaseSchema, and resultsDatabaseSchema.
+#    outputFolder will default to pwd/output if not specified.
 
+Achilles::achilles(
+  connectionDetails     = connectionDetails,
+  cdmDatabaseSchema     = cdmDatabaseSchema,
+  resultsDatabaseSchema = resultsDatabaseSchema,
+  outputFolder          = "your output folder"
+)
 
-# Data Quality CDM 
-These notes relate Achilles and Achilles Heel to Data Quality CDM (DQ CDM)
+# Q: How do I run all analyses? 
+# A: Use the defaultAnalysesOnly parameter.  See below. 
 
-DQM terminology is slightly different
+Achilles::achilles(
+  connectionDetails     = connectionDetails,
+  cdmDatabaseSchema     = cdmDatabaseSchema,
+  resultsDatabaseSchema = resultsDatabaseSchema,
+  defaultAnalysesOnly   = FALSE,
+  outputFolder          = "your output folder"
+)
 
-**Achilles term = DQM term**  
-analysis = measure  
-stratum = dimension  
-rule = check
+# Q: How do I run only non-default analyses? 
+# A: Use the analysisIds parameter.  See below.  
 
-## Classification of measures
-### by PURPOSE	
-- general purpose measure (% of males)
-- measure specific for DQ (count of rows with invalid provider_id)
-### by OUTPUT	
-- single row measure  (count of providers)
-- multiple rows measure  (medium, large, very large) (depends on stratification)
-### by TERMINOLOGY/MODEL	
-- terminology dependent measure/rule  (hysterectomy (using SNOMED (SCT0013513) (Athena CIDs)) (ICD9CM, 10PCS, CPT)
-- terminology independent measure/rule (eg, at least 1 numerical lab result value in 1000 person sample)
-- model independent measure/rule (eg, zombie events, prior conception events)
+details     <- Achilles::getAnalysisDetails()
+analysisIds <- details[which(details$IS_DEFAULT==0),]$ANALYSIS_ID
 
+Achilles::achilles(
+  connectionDetails     = connectionDetails,
+  cdmDatabaseSchema     = cdmDatabaseSchema,
+  resultsDatabaseSchema = resultsDatabaseSchema,
+  analysisIds           = analysisIds,
+  outputFolder          = "your output folder"
+)
 
+# Q: How do I execute only specific analyses, removing old/other analyses if they exist? 
+# A: Use the analysisIds parameter.  See below.  
 
-## By outputed results
-### Stratified analyses
+onlyThese <- c(402,702)
 
-These anlyses use table ACHILLES_results
+Achilles::achilles(
+  connectionDetails     = connectionDetails,
+  cdmDatabaseSchema     = cdmDatabaseSchema,
+  resultsDatabaseSchema = resultsDatabaseSchema,
+  analysisIds           = onlyThese,
+  outputFolder          = "your output folder"
+)
 
-### distributions 
-Such analyses use table ACHILLES_results_dist
-e.g., 103,104,105,106,107,203,206,211,403,406,506,511,512,513,514,515,603,606,704,706,715,716,717,803,806,815
+# Q: How do I execute (or re-run) certain analyses, without removing previous results for other analyses? 
+# A: Use the parameters analysisIds, createTable, and updateGivenAnalysesOnly.  See below.  
+# Please see the following forum post for more details: 
+# https://forums.ohdsi.org/t/achilles-introducing-new-functionality/14566
 
-## By nature
+reRunThese <- c(402,702)
 
-### general
-Some analyses are checking data size (and useful in general)  
-### conformance to data model
-Other analyses have only while others are s
-### data quality specific analyses
-e.g., analysis_id 7,8,9,207
+Achilles::achilles(
+  connectionDetails       = connectionDetails,
+  cdmDatabaseSchema       = cdmDatabaseSchema,
+  resultsDatabaseSchema   = resultsDatabaseSchema,
+  analysisIds             = reRunThese,
+  updateGivenAnalysesOnly = T,
+  createTable             = F,
+  outputFolder            = "your output folder"
+)
 
+# Q: How do I skip specific analyses? 
+# A: Use the excludeAnalysisIds parameter.  See below.  
 
+skipThese <- c(402,702)
 
-# Analyzing Heel Results
-### Simple rules: 
-There are  simple rules that generate a single error or warning.
+Achilles::achilles(
+  connectionDetails     = connectionDetails,
+  cdmDatabaseSchema     = cdmDatabaseSchema,
+  resultsDatabaseSchema = resultsDatabaseSchema,
+  excludeAnalysisIds    = skipThese,
+  outputFolder          = "your output folder"
+)
 
-### Complex rules
-However, some rules (e.g., rule_id 6) can generate multiple rows. The true primary key for output is combination of rule_id and analysis_id
+# Q: How do I skip all analyses for a given table? 
+# A: Use the excludeAnalysisIds parameter.  See below.  
+
+details   <- Achilles::getAnalysisDetails()
+skipThese <- details[details$CATEGORY == "Drug Exposure",]$ANALYSIS_ID
+
+Achilles::achilles(
+  connectionDetails     = connectionDetails,
+  cdmDatabaseSchema     = cdmDatabaseSchema,
+  resultsDatabaseSchema = resultsDatabaseSchema,
+  excludeAnalysisIds    = skipThese,
+  outputFolder          = "your output folder"
+)
+
+# Q: How do I find and optionally run analyses that were previously skipped or recently added to Achilles?
+# A: Use listMissingAnalyses() to see the analyses and runMissingAnalyses() to run them.
+#    NB: runMissingAnalyses() does NOT delete prior data.
+# Please see the following forum post for more details: 
+# https://forums.ohdsi.org/t/achilles-introducing-new-functionality/14566
+
+Achilles::listMissingAnalyses(connectionDetails,resultsDatabaseSchema)
+
+Achilles::runMissingAnalyses(
+  connectionDetails     = connectionDetails,
+  cdmDatabaseSchema     = cdmDatabaseSchema,
+  resultsDatabaseSchema = resultsDatabaseSchema,
+  outputFolder          = "your output folder"
+)
+
+```

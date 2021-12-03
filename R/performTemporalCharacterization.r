@@ -89,7 +89,9 @@
 #'  outputFolder          = "output/CompleteTemporalChar.csv")
 #' }
 #'
-#'@import dplyr
+#'@importFrom dplyr left_join
+#'@import stats
+#'@import utils
 #'@export
 
 performTemporalCharacterization <- function(

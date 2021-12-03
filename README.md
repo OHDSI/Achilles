@@ -1,11 +1,5 @@
 Achilles
 ========
-
-[![Build Status](https://travis-ci.org/OHDSI/Achilles.svg?branch=master)](https://travis-ci.org/OHDSI/Achilles)
-[![codecov.io](https://codecov.io/github/OHDSI/Achilles/coverage.svg?branch=master)](https://codecov.io/github/OHDSI/Achilles?branch=master)
-
-Introduction
-============
 **A**utomated **C**haracterization of **H**ealth **I**nformation at **L**arge-scale **L**ongitudinal **E**vidence **S**ystems (ACHILLES)---descriptive statistics and data quality checks on an OMOP CDM databases.  ACHILLES currently supports CDM version 5.3 and 5.4.
 
 * Vignette: [Running Achilles on Your CDM](https://github.com/OHDSI/Achilles/raw/master/vignettes/RunningAchilles.pdf)
@@ -14,6 +8,7 @@ Features
 ========
 - Performs broad database characterization
 - Export feature for AchillesWeb 
+- Export feature for [ARES](https://github.com/OHDSI/Ares)
 
 Technology
 ==========
@@ -30,8 +25,8 @@ Installation
 2. In R, use the following commands to download and install Achilles:
 
   ```r
-  install.packages("devtools")
-  devtools::install_github("OHDSI/Achilles")
+  install.packages("remotes")
+  remotes::install_github("OHDSI/Achilles")
   ```
 
 User Documentation

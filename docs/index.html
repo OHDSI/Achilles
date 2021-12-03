@@ -5,13 +5,13 @@
 <meta charset="utf-8">
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Creates Descriptive Statistics Summary for an Entire OMOP CDM Instance • Achilles</title>
+<title>Generates descriptive statistics for an OMOP CDM instance • Achilles</title>
 <!-- jquery --><script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.4.1/jquery.min.js" integrity="sha256-CSXorXvZcTkaix6Yvo6HppcZGetbYMGWSFlBw8HfCJo=" crossorigin="anonymous"></script><!-- Bootstrap --><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.4.1/css/bootstrap.min.css" integrity="sha256-bZLfwXAP04zRMK2BjiO8iu9pf4FbLqX6zitd+tIvLhE=" crossorigin="anonymous">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.4.1/js/bootstrap.min.js" integrity="sha256-nuL8/2cJ5NDSSwnKD8VqreErSWHtnEP9E7AySL+1ev4=" crossorigin="anonymous"></script><!-- bootstrap-toc --><link rel="stylesheet" href="bootstrap-toc.css">
 <script src="bootstrap-toc.js"></script><!-- Font Awesome icons --><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.12.1/css/all.min.css" integrity="sha256-mmgLkCYLUQbXn0B1SRqzHar6dCnv9oZFPEC1g1cwlkk=" crossorigin="anonymous">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.12.1/css/v4-shims.min.css" integrity="sha256-wZjR52fzng1pJHwx4aV2AO3yyTOXrcDW7jBpJtTwVxw=" crossorigin="anonymous">
 <!-- clipboard.js --><script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.6/clipboard.min.js" integrity="sha256-inc5kl9MA1hkeYUt+EC3BhlIgyp/2jDIyBLS6k3UxPI=" crossorigin="anonymous"></script><!-- headroom.js --><script src="https://cdnjs.cloudflare.com/ajax/libs/headroom/0.11.0/headroom.min.js" integrity="sha256-AsUX4SJE1+yuDu5+mAVzJbuYNPHj/WroHuZ8Ir/CkE0=" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/headroom/0.11.0/jQuery.headroom.min.js" integrity="sha256-ZX/yNShbjqsohH1k95liqY9Gd8uOiE1S4vZc+9KQ1K4=" crossorigin="anonymous"></script><!-- pkgdown --><link href="pkgdown.css" rel="stylesheet">
-<script src="pkgdown.js"></script><meta property="og:title" content="Creates Descriptive Statistics Summary for an Entire OMOP CDM Instance">
+<script src="pkgdown.js"></script><meta property="og:title" content="Generates descriptive statistics for an OMOP CDM instance">
 <meta property="og:description" content="Creates descriptive statistics summary for an entire OMOP CDM
   instance. Currently supports CDM 5.3.">
 <!-- mathjax --><script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js" integrity="sha256-nvJJv9wWKEm88qvoQl9ekL2J+k/RWIsaSScxxlsrv8k=" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/config/TeX-AMS-MML_HTMLorMML.js" integrity="sha256-84DKXVJXs0/F8OTMzX4UR909+jtl4G7SPypPavF+GfA=" crossorigin="anonymous"></script><!--[if lt IE 9]>
@@ -20,6 +20,8 @@
 <![endif]-->
 </head>
 <body data-spy="scroll" data-target="#toc">
+    
+
     <div class="container template-home">
       <header><div class="navbar navbar-default navbar-fixed-top" role="navigation">
   <div class="container">
@@ -32,18 +34,12 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="index.html">Achilles</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">1.6.7</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">1.7</span>
       </span>
     </div>
 
     <div id="navbar" class="navbar-collapse collapse">
       <ul class="nav navbar-nav">
-<li>
-  <a href="index.html">
-    <span class="fas fa-home fa-lg"></span>
-     
-  </a>
-</li>
 <li>
   <a href="reference/index.html">Reference</a>
 </li>
@@ -55,6 +51,9 @@
   </a>
   <ul class="dropdown-menu" role="menu">
 <li>
+      <a href="articles/GettingStarted.html">Getting Started with Achilles</a>
+    </li>
+    <li>
       <a href="articles/RunningAchilles.html">Running Achilles on Your CDM</a>
     </li>
   </ul>
@@ -72,216 +71,110 @@
 
       </header><div class="row">
   <div class="contents col-md-9">
-<div id="achilles" class="section level1">
-<div class="page-header"><h1 class="hasAnchor">
-<a href="#achilles" class="anchor"></a>Achilles</h1></div>
 
-<p><strong>A</strong>utomated <strong>C</strong>haracterization of <strong>H</strong>ealth <strong>I</strong>nformation at <strong>L</strong>arge-scale <strong>L</strong>ongitudinal <strong>E</strong>vidence <strong>S</strong>ystems (ACHILLES)—descriptive statistics and data quality checks on an OMOP CDM v5 databases</p>
+<div class="section level1">
+<div class="page-header"><h1 id="achilles">Achilles<a class="anchor" aria-label="anchor" href="#achilles"></a>
+</h1></div>
+<p><strong>A</strong>utomated <strong>C</strong>haracterization of <strong>H</strong>ealth <strong>I</strong>nformation at <strong>L</strong>arge-scale <strong>L</strong>ongitudinal <strong>E</strong>vidence <strong>S</strong>ystems (ACHILLES)—descriptive statistics and data quality checks on an OMOP CDM databases. ACHILLES currently supports CDM version 5.3 and 5.4.</p>
 <ul>
-<li>Vignette: <a href="https://github.com/OHDSI/Achilles/raw/master/vignettes/RunningAchilles.pdf">Running Achilles on Your CDM</a>
+<li>Vignette: <a href="https://github.com/OHDSI/Achilles/raw/master/vignettes/RunningAchilles.pdf" class="external-link">Running Achilles on Your CDM</a>
 </li>
 </ul>
-<p>Achilles consists of several parts:</p>
-<ol>
-<li><p>Precomputations (for database characterization)</p></li>
-<li><p>Achilles Heel for data quality</p></li>
-<li><p>Export feature for AchillesWeb (or, Atlas Data Sources can read the Achilles tables directly)</p></li>
-<li><p>Index generation for better performance with Atlas Data Sources</p></li>
+</div>
+<div class="section level1">
+<h1 id="features">Features<a class="anchor" aria-label="anchor" href="#features"></a>
+</h1>
+<ul>
+<li>Performs broad database characterization</li>
+<li>Export feature for AchillesWeb</li>
+<li>Export feature for <a href="https://github.com/OHDSI/Ares" class="external-link">ARES</a>
+</li>
+</ul>
+</div>
+<div class="section level1">
+<h1 id="technology">Technology<a class="anchor" aria-label="anchor" href="#technology"></a>
+</h1>
+<p>Achilles is an R package.</p>
+</div>
+<div class="section level1">
+<h1 id="system-requirements">System Requirements<a class="anchor" aria-label="anchor" href="#system-requirements"></a>
+</h1>
+<p>Requires R (version 3.6.0 or higher).</p>
+</div>
+<div class="section level1">
+<h1 id="installation">Installation<a class="anchor" aria-label="anchor" href="#installation"></a>
+</h1>
+<ol style="list-style-type: decimal">
+<li><p>See the instructions <a href="https://ohdsi.github.io/Hades/rSetup.html" class="external-link">here</a> for configuring your R environment, including RTools and Java.</p></li>
+<li><p>In R, use the following commands to download and install Achilles:</p></li>
 </ol>
-<p>Achilles is actively being developed for CDM v5.x only.</p>
-<div id="getting-started" class="section level2">
-<h2 class="hasAnchor">
-<a href="#getting-started" class="anchor"></a>Getting Started</h2>
-<p>(Please review the <a href="https://github.com/OHDSI/Achilles/wiki/Additional-instructions-for-Linux">Achilles Wiki</a> for specific details for Linux)</p>
-<ol>
-<li><p>Make sure you have your data in the OMOP CDM v5.x format (<a href="https://github.com/OHDSI/CommonDataModel" class="uri">https://github.com/OHDSI/CommonDataModel</a>).</p></li>
-<li><p>This package makes use of rJava. Make sure that you have Java installed. If you don’t have Java already installed on your computer (on most computers it already is installed), go to <a href="https://java.com">java.com</a> to get the latest version. If you are having trouble with rJava, <a href="https://stackoverflow.com/questions/7019912/using-the-rjava-package-on-win7-64-bit-with-r">this Stack Overflow post</a> may assist you when you begin troubleshooting.</p></li>
-<li>
-<p>In R, use the following commands to install Achilles.</p>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="kw">if</span> <span class="op">(</span><span class="op">!</span><span class="kw"><a href="https://rdrr.io/r/base/library.html">require</a></span><span class="op">(</span><span class="st"><a href="https://devtools.r-lib.org/">"devtools"</a></span><span class="op">)</span><span class="op">)</span> <span class="fu"><a href="https://rdrr.io/r/utils/install.packages.html">install.packages</a></span><span class="op">(</span><span class="st">"devtools"</span><span class="op">)</span>
-
-<span class="co"># To install the master branch</span>
-<span class="fu">devtools</span><span class="fu">::</span><span class="fu"><a href="https://devtools.r-lib.org//reference/remote-reexports.html">install_github</a></span><span class="op">(</span><span class="st">"OHDSI/Achilles"</span><span class="op">)</span>
-
-<span class="co"># To install latest release (if master branch contains a bug for you)</span>
-<span class="co"># devtools::install_github("OHDSI/Achilles@*release")  </span>
-
-<span class="co"># To avoid Java 32 vs 64 issues </span>
-<span class="co"># devtools::install_github("OHDSI/Achilles", args="--no-multiarch")  </span></code></pre></div>
-</li>
-<li>
-<p>To run the Achilles analysis, first determine if you’d like to run the function in multi-threaded mode or in single-threaded mode. Use <code>runCostAnalysis = FALSE</code> to save on execution time, as cost analyses tend to run long.</p>
-<p><strong>In multi-threaded mode</strong></p>
-<p>The analyses are run in multiple SQL sessions, which can be set using the <code>numThreads</code> setting and setting scratchDatabaseSchema to something other than <code>#</code>. For example, 10 threads means 10 independent SQL sessions. Intermediate results are written to scratch tables before finally being combined into the final results tables. Scratch tables are permanent tables; you can either choose to have Achilles drop these tables (<code>dropScratchTables = TRUE</code>) or you can drop them at a later time (<code>dropScratchTables = FALSE</code>). Dropping the scratch tables can add time to the full execution. If desired, you can set your own custom prefix for all Achilles analysis scratch tables (tempAchillesPrefix) and/or for all Achilles Heel scratch tables (tempHeelPrefix).</p>
-<p><strong>In single-threaded mode</strong></p>
-<p>The analyses are run in one SQL session and all intermediate results are written to temp tables before finally being combined into the final results tables. Temp tables are dropped once the package is finished running. Single-threaded mode can be invoked by either setting <code>numThreads = 1</code> or <code>scratchDatabaseSchema = "#"</code>.</p>
-<p>Use the following commands in R:</p>
-<div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va">Achilles</span><span class="op">)</span>
-<span class="va">connectionDetails</span> <span class="op">&lt;-</span> <span class="fu">createConnectionDetails</span><span class="op">(</span>
-  dbms<span class="op">=</span><span class="st">"redshift"</span>, 
-  server<span class="op">=</span><span class="st">"server.com"</span>, 
-  user<span class="op">=</span><span class="st">"secret"</span>, 
-  password<span class="op">=</span><span class="st">'secret'</span>, 
-  port<span class="op">=</span><span class="st">"5439"</span><span class="op">)</span></code></pre></div>
-<p><strong>Single-threaded mode</strong></p>
-<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="fu"><a href="reference/achilles.html">achilles</a></span><span class="op">(</span><span class="va">connectionDetails</span>, 
-  cdmDatabaseSchema <span class="op">=</span> <span class="st">"cdm5_inst"</span>, 
-  resultsDatabaseSchema<span class="op">=</span><span class="st">"results"</span>,
-  vocabDatabaseSchema <span class="op">=</span> <span class="st">"vocab"</span>,
-  numThreads <span class="op">=</span> <span class="fl">1</span>,
-  sourceName <span class="op">=</span> <span class="st">"My Source Name"</span>, 
-  cdmVersion <span class="op">=</span> <span class="st">"5.3.0"</span>,
-  runHeel <span class="op">=</span> <span class="cn">TRUE</span>,
-  runCostAnalysis <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></code></pre></div>
-<p><strong>Multi-threaded mode</strong></p>
-<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="fu"><a href="reference/achilles.html">achilles</a></span><span class="op">(</span><span class="va">connectionDetails</span>, 
-  cdmDatabaseSchema <span class="op">=</span> <span class="st">"cdm5_inst"</span>, 
-  resultsDatabaseSchema <span class="op">=</span> <span class="st">"results"</span>,
-  scratchDatabaseSchema <span class="op">=</span> <span class="st">"scratch"</span>,
-  vocabDatabaseSchema <span class="op">=</span> <span class="st">"vocab"</span>,
-  numThreads <span class="op">=</span> <span class="fl">10</span>,
-  sourceName <span class="op">=</span> <span class="st">"My Source Name"</span>, 
-  cdmVersion <span class="op">=</span> <span class="st">"5.3.0"</span>,
-  runHeel <span class="op">=</span> <span class="cn">TRUE</span>,
-  runCostAnalysis <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></code></pre></div>
-<p>The <code>"cdm5_inst"</code> cdmDatabaseSchema parameter, <code>"results"</code> resultsDatabaseSchema parameter, and <code>"scratch"</code> scratchDatabaseSchema parameter are the fully qualified names of the schemas holding the CDM data, targeted for result writing, and holding the intermediate scratch tables, respectively. See the <a href="https://github.com/OHDSI/DatabaseConnector">DatabaseConnector</a> package for details on settings the connection details for your database, for example by typing</p>
-<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="op">?</span><span class="va">createConnectionDetails</span></code></pre></div>
-<p>Execution of all Achilles pre-computations may take a long time, particularly in single-threaded mode and with COST analyses enabled. See &lt;extras/notes.md&gt; file to find out how some analyses can be excluded to make the execution faster (excluding cost pre-computations)</p>
-<p>The SQL platforms supported by <a href="https://github.com/OHDSI/DatabaseConnector">DatabaseConnector</a> and <a href="https://github.com/OHDSI/SqlRender">SqlRender</a> are the <strong>only</strong> ones supported here in Achilles as <code>dbms</code>. <code>cdmVersion</code> can be <em>ONLY</em> 5.x (please look at prior commit history for v4 support).</p>
-</li>
-<li>
-<p>To use <a href="https://github.com/OHDSI/AchillesWeb">AchillesWeb</a> to explore the Achilles statistics, you must first export the statistics to a folder JSON files, which can optionally be compressed into one gzipped file for easier transportability.</p>
-<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="fu"><a href="reference/exportToJson.html">exportToJson</a></span><span class="op">(</span><span class="va">connectionDetails</span>, 
-  cdmDatabaseSchema <span class="op">=</span> <span class="st">"cdm5_inst"</span>, 
-  resultsDatabaseSchema <span class="op">=</span> <span class="st">"results"</span>, 
-  outputPath <span class="op">=</span> <span class="st">"c:/myPath/AchillesExport"</span>, 
-  compressIntoOneFile <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span> <span class="co"># creates gzipped file of all JSON files</span></code></pre></div>
-</li>
-<li>
-<p>To run only Achilles Heel (component of Achilles), use the following command:</p>
-<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="fu"><a href="reference/achillesHeel.html">achillesHeel</a></span><span class="op">(</span><span class="va">connectionDetails</span>, 
-  cdmDatabaseSchema <span class="op">=</span> <span class="st">"cdm5_inst"</span>, 
-  resultsDatabaseSchema <span class="op">=</span> <span class="st">"results"</span>, 
-  scratchDatabaseSchema <span class="op">=</span> <span class="st">"scratch"</span>,
-  numThreads <span class="op">=</span> <span class="fl">10</span>, <span class="co"># multi-threaded mode</span>
-  cdmVersion <span class="op">=</span> <span class="st">"5.3.0"</span><span class="op">)</span></code></pre></div>
-</li>
-<li>
-<p>To optimize Atlas cache during achilles execution, use the following command:</p>
-<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="fu"><a href="reference/achilles.html">achilles</a></span><span class="op">(</span><span class="va">connectionDetails</span>, 
-  cdmDatabaseSchema <span class="op">=</span> <span class="st">"cdm5_inst"</span>, 
-  resultsDatabaseSchema<span class="op">=</span><span class="st">"results"</span>,
-  vocabDatabaseSchema <span class="op">=</span> <span class="st">"vocab"</span>,
-  numThreads <span class="op">=</span> <span class="fl">1</span>,
-  sourceName <span class="op">=</span> <span class="st">"My Source Name"</span>, 
-  cdmVersion <span class="op">=</span> <span class="st">"5.3.0"</span>,
-  runHeel <span class="op">=</span> <span class="cn">TRUE</span>,
-  optimizeAtlasCache <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span> <span class="co"># creates additional table to store results for Atlas cache</span></code></pre></div>
-</li>
-<li>
-<p>To run only optimization of Atlas cache, use the following command:</p>
-<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="fu"><a href="reference/optimizeAtlasCache.html">optimizeAtlasCache</a></span><span class="op">(</span><span class="va">connectionDetails</span>,
-                   resultsDatabaseSchema<span class="op">=</span><span class="st">"results"</span>,
-                   vocabDatabaseSchema <span class="op">=</span> <span class="st">"dbo"</span><span class="op">)</span>     </code></pre></div>
-</li>
-<li>
-<p>Possible optional additional steps:</p>
+<code class="sourceCode R"><span class="fu"><a href="https://rdrr.io/r/utils/install.packages.html" class="external-link">install.packages</a></span><span class="op">(</span><span class="st">"remotes"</span><span class="op">)</span>
+<span class="fu">remotes</span><span class="fu">::</span><span class="fu"><a href="https://remotes.r-lib.org/reference/install_github.html" class="external-link">install_github</a></span><span class="op">(</span><span class="st">"OHDSI/Achilles"</span><span class="op">)</span></code></pre></div>
+</div>
+<div class="section level1">
+<h1 id="user-documentation">User Documentation<a class="anchor" aria-label="anchor" href="#user-documentation"></a>
+</h1>
+<p>Documentation can be found on the <a href="https://ohdsi.github.io/Achilles" class="external-link">package website</a>.</p>
+<p>PDF versions of the documentation are also available: * Vignette: <a href="https://raw.githubusercontent.com/OHDSI/Achilles/master/inst/doc/RunningAchilles.pdf" class="external-link">Running Achilles</a> * Package manual: <a href="https://raw.githubusercontent.com/OHDSI/Achilles/master/extras/Achilles.pdf" class="external-link">Achilles.pdf</a></p>
+</div>
+<div class="section level1">
+<h1 id="support">Support<a class="anchor" aria-label="anchor" href="#support"></a>
+</h1>
 <ul>
-<li>To see what errors were found (from within R), run: <code>r      fetchAchillesHeelResults(connectionDetails,resultsDatabaseSchema)</code>
+<li>Developer questions/comments/feedback: <a href="http://forums.ohdsi.org/c/developers" class="external-link">OHDSI Forums</a>
 </li>
-<li>To see a particular analysis, run: <code>r      fetchAchillesAnalysisResults(connectionDetails,resultsDatabaseSchema,analysisId = 2)</code>
-</li>
-<li>To join data tables with some lookup (overview files), obtain those using commands below:</li>
-<li>To get description of analyses, run <code><a href="reference/getAnalysisDetails.html">getAnalysisDetails()</a></code>.</li>
-<li>To get description of derived measures, run: <code>r      read.csv(system.file("csv","derived_analysis_details",package="Achilles"),as.is=T)</code>
-</li>
-<li>Similarly, for overview of rules, run: <code>r      read.csv(system.file("csv","achilles_rule.csv",package="Achilles"),as.is=T)</code>
-</li>
-<li>Also see <a href="extras/notes.html">notes.md</a> for more information (in the extras folder).</li>
+<li>We use the <a href="https://github.com/OHDSI/Achilles/issues" class="external-link">GitHub issue tracker</a> for all bugs/issues/enhancements</li>
 </ul>
-</li>
-</ol>
 </div>
-<div id="developers-how-to-add-or-modify-analyses" class="section level2">
-<h2 class="hasAnchor">
-<a href="#developers-how-to-add-or-modify-analyses" class="anchor"></a>Developers: How to Add or Modify Analyses</h2>
-<p>Please refer to the <a href="README-developers.html">README-developers.md file</a>.</p>
+<div class="section level1">
+<h1 id="contributing">Contributing<a class="anchor" aria-label="anchor" href="#contributing"></a>
+</h1>
+<p>Read <a href="https://ohdsi.github.io/Hades/contribute.html" class="external-link">here</a> how you can contribute to this package.</p>
 </div>
-<div id="getting-started-with-docker" class="section level2">
-<h2 class="hasAnchor">
-<a href="#getting-started-with-docker" class="anchor"></a>Getting Started with Docker</h2>
-<p>This is an alternative method for running Achilles that does not require R and Java installations, using a Docker container instead.</p>
-<ol>
-<li><p>Install <a href="https://docs.docker.com/installation/">Docker</a> and <a href="https://docs.docker.com/compose/install/">Docker Compose</a>.</p></li>
-<li><p>Clone this repository with git (<code>git clone https://github.com/OHDSI/Achilles.git</code>) and make it your working directory (<code>cd Achilles</code>).</p></li>
-<li><p>Copy <em><code>env_vars.sample</code></em> to <em><code>env_vars</code></em> and fill in the variable definitions. The <code>ACHILLES_DB_URI</code> should be formatted as <code>&lt;dbms&gt;://&lt;username&gt;:&lt;password&gt;@&lt;host&gt;/&lt;schema&gt;</code>.</p></li>
-<li><p>Copy <em><code>docker-compose.yml.sample</code></em> to <em><code>docker-compose.yml</code></em> and fill in the data output directory.</p></li>
-<li><p>Build the docker image with <code>docker-compose build</code>.</p></li>
-<li><p>Run Achilles in the background with <code>docker-compose run -d achilles</code>.</p></li>
-</ol>
-<p>Alternatively, you can run it with one long command line, like in the following example:</p>
-<div class="sourceCode" id="cb10"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="ex">docker</span> run <span class="dt">\</span></span>
-<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a>  <span class="at">--rm</span> <span class="dt">\</span></span>
-<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">--net</span><span class="op">=</span>host <span class="dt">\</span></span>
-<span id="cb10-4"><a href="#cb10-4" aria-hidden="true" tabindex="-1"></a>  <span class="at">-v</span> <span class="st">"</span><span class="va">$(</span><span class="bu">pwd</span><span class="va">)</span><span class="st">"</span>/output:/opt/app/output <span class="dt">\</span></span>
-<span id="cb10-5"><a href="#cb10-5" aria-hidden="true" tabindex="-1"></a>  <span class="at">-e</span> ACHILLES_SOURCE=DEFAULT <span class="dt">\</span></span>
-<span id="cb10-6"><a href="#cb10-6" aria-hidden="true" tabindex="-1"></a>  <span class="at">-e</span> ACHILLES_DB_URI=postgresql://webapi:webapi@localhost:5432/ohdsi <span class="dt">\</span></span>
-<span id="cb10-7"><a href="#cb10-7" aria-hidden="true" tabindex="-1"></a>  <span class="at">-e</span> ACHILLES_CDM_SCHEMA=cdm5 <span class="dt">\</span></span>
-<span id="cb10-8"><a href="#cb10-8" aria-hidden="true" tabindex="-1"></a>  <span class="at">-e</span> ACHILLES_VOCAB_SCHEMA=cdm5 <span class="dt">\</span></span>
-<span id="cb10-9"><a href="#cb10-9" aria-hidden="true" tabindex="-1"></a>  <span class="at">-e</span> ACHILLES_RES_SCHEMA=webapi <span class="dt">\</span></span>
-<span id="cb10-10"><a href="#cb10-10" aria-hidden="true" tabindex="-1"></a>  <span class="at">-e</span> ACHILLES_CDM_VERSION=5 <span class="dt">\</span></span>
-<span id="cb10-11"><a href="#cb10-11" aria-hidden="true" tabindex="-1"></a>  <span class="op">&lt;</span>image name<span class="op">&gt;</span></span></code></pre></div>
-</div>
-<div id="license" class="section level2">
-<h2 class="hasAnchor">
-<a href="#license" class="anchor"></a>License</h2>
+<div class="section level1">
+<h1 id="license">License<a class="anchor" aria-label="anchor" href="#license"></a>
+</h1>
 <p>Achilles is licensed under Apache License 2.0</p>
 </div>
-<div id="pre-computations" class="section level2">
-<h2 class="hasAnchor">
-<a href="#pre-computations" class="anchor"></a>Pre-computations</h2>
-<p>Achilles has some compatibility with Data Quality initiatives of the Data Quality Collaborative (DQC; <a href="http://repository.edm-forum.org/dqc" class="uri">http://repository.edm-forum.org/dqc</a> or GitHub <a href="https://github.com/orgs/DQCollaborative" class="uri">https://github.com/orgs/DQCollaborative</a>). For example, a harmonized set of data quality terms has been published by Khan at al. in 2016.</p>
-<p>What Achilles calls an <em>analysis</em> (a pre-computation for a given dataset), the term used by DQC would be <em>measure</em>.</p>
-<p>Some Heel Rules take advantage of derived measures. A feature of Heel introduced since version 1.4. A <em>derived measure</em> is a result of an SQL query that takes Achilles analyses as input. It is simply a different view of the precomputations that has some advantage to be materialized. The logic for computing a derived measures can be viewed in the Heel SQL files in <em><code>/inst/sql/sql_server/heels</code></em>, which are described further in the <a href="README-developers.html">Developers README file</a>.</p>
-<p>Overview of derived measures can be seen in <a href="inst/csv/heel/heel_results_derived_details.csv">CSV file here</a>.</p>
-<p>For possible future flexible setting of Achilles Heel rule thresholds, some Heel rules are split into two phase approach. First, a derived measure is computed and the result is stored in a separate table <code>ACHILLES_RESULTS_DERIVED</code>. A Heel rule logic is than made simpler by a simple comparison whether a derived measure is over a threshold. A link between which rules use which pre-computation is available in <a href="inst/csv/heel/heel_rules_all.csv">CSV file here</a> (previously was in <code>inst/csv/achilles_rule.csv</code>) (see column <code>linked_measure</code>).</p>
+<div class="section level1">
+<h1 id="development">Development<a class="anchor" aria-label="anchor" href="#development"></a>
+</h1>
+<p>Achilles is being developed in R Studio.</p>
 </div>
-<div id="heel-rules" class="section level2">
-<h2 class="hasAnchor">
-<a href="#heel-rules" class="anchor"></a>Heel Rules</h2>
-<p>Rules are classified into <code>CDM conformance</code> rules and <code>DQ</code> rules - see column <code>rule_type</code> in the <a href="inst/csv/heel/heel_rules_all.csv">CSV file here</a>.</p>
-<p>Some Heel rules can be generalized to non-OMOP datasets. Other rules are dependant on OMOP concept ids and a translation of the code to other CDMs would be needed (for example rule with <code>rule_id</code> of <code>29</code> uses OMOP specific concept;concept 195075).</p>
-<p>Rules that have in their name a prefix <code>[GeneralPopulationOnly]</code> are applicable to datasets that represent a general population. Once metadata for this parameter is implemented by OHDSI, their execution can be limited to such datasets. In the meantime, users should ignore output of rules that are meant for general population if their dataset is not of that type.</p>
-<p>Rules are classified into: error, warning and notification (see column <code>severity</code>).</p>
-</div>
-<div id="acknowledgements" class="section level2">
-<h2 class="hasAnchor">
-<a href="#acknowledgements" class="anchor"></a>Acknowledgements</h2>
+<div class="section level1">
+<h1 id="development-status">Development status<a class="anchor" aria-label="anchor" href="#development-status"></a>
+</h1>
+<p>Achilles is ready for use.</p>
+<div class="section level4">
+<h4 id="acknowledgements">Acknowledgements<a class="anchor" aria-label="anchor" href="#acknowledgements"></a>
+</h4>
 <ul>
 <li>This project is supported in part through the National Science Foundation grant IIS 1251151.</li>
 </ul>
 </div>
 </div>
+
   </div>
 
   <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">
     <div class="license">
-<h2>License</h2>
+<h2 data-toc-skip>License</h2>
 <ul class="list-unstyled">
 <li>Apache License</li>
 </ul>
 </div>
+
+
+<div class="citation">
+<h2 data-toc-skip>Citation</h2>
+<ul class="list-unstyled">
+<li><a href="authors.html#citation">Citing Achilles</a></li>
+</ul>
+</div>
+
 <div class="developers">
-<h2>Developers</h2>
+<h2 data-toc-skip>Developers</h2>
 <ul class="list-unstyled">
 <li>Frank DeFalco <br><small class="roles"> Author, maintainer </small>  </li>
 <li>Patrick Ryan <br><small class="roles"> Author </small>  </li>
@@ -290,27 +183,25 @@
 <li>Chris Knoll <br><small class="roles"> Author </small>  </li>
 <li>Ajit Londhe <br><small class="roles"> Author </small>  </li>
 <li>Taha Abdul-Basser <br><small class="roles"> Author </small>  </li>
-<li><a href="authors.html">All authors...</a></li>
+<li>Anthony Molinaro <br><small class="roles"> Author </small>  </li>
+<li><a href="authors.html">More about authors...</a></li>
 </ul>
 </div>
 
-  <div class="dev-status">
-<h2>Dev status</h2>
-<ul class="list-unstyled">
-<li><a href="https://travis-ci.org/OHDSI/Achilles"><img src="https://travis-ci.org/OHDSI/Achilles.svg?branch=master" alt="Build Status"></a></li>
-<li><a href="https://codecov.io/github/OHDSI/Achilles?branch=master"><img src="https://codecov.io/github/OHDSI/Achilles/coverage.svg?branch=master" alt="codecov.io"></a></li>
-</ul>
-</div>
-</div>
+
+
+  </div>
 </div>
 
 
       <footer><div class="copyright">
-  <p>Developed by Frank DeFalco, Patrick Ryan, Martijn Schuemie, Vojtech Huser, Chris Knoll, Ajit Londhe, Taha Abdul-Basser.</p>
+  <p></p>
+<p>Developed by Frank DeFalco, Patrick Ryan, Martijn Schuemie, Vojtech Huser, Chris Knoll, Ajit Londhe, Taha Abdul-Basser, Anthony Molinaro.</p>
 </div>
 
 <div class="pkgdown">
-  <p>Site built with <a href="https://pkgdown.r-lib.org/">pkgdown</a> 1.6.1.</p>
+  <p></p>
+<p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.0.</p>
 </div>
 
       </footer>
@@ -318,6 +209,8 @@
 
   
 
+
+  
 
   </body>
 </html>

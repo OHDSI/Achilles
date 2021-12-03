@@ -746,7 +746,7 @@ generateAOMeasurementReports <- function(connectionDetails, dataMeasurements, cd
   dataUpperLimitDistribution <- DatabaseConnector::querySql(conn,queryUpperLimitDistribution)
   dataValuesRelativeToNorm <- DatabaseConnector::querySql(conn,queryValuesRelativeToNorm)
   dataFrequencyDistribution <- DatabaseConnector::querySql(conn,queryFrequencyDistribution)
-    
+  
   uniqueConcepts <- unique(dataPrevalenceByMonth$CONCEPT_ID)
   buildMeasurementReport <- function(concept_id) {
     summaryRecord <- dataMeasurements[dataMeasurements$CONCEPT_ID==concept_id,]
@@ -768,7 +768,7 @@ generateAOMeasurementReports <- function(connectionDetails, dataMeasurements, cd
     report$LOWER_LIMIT_DISTRIBUTION <- dataLowerLimitDistribution[dataLowerLimitDistribution$CONCEPT_ID == concept_id,c(2,3,4,5,6,7,8,9)]
     report$UPPER_LIMIT_DISTRIBUTION <- dataUpperLimitDistribution[dataUpperLimitDistribution$CONCEPT_ID == concept_id,c(2,3,4,5,6,7,8,9)]
     report$VALUES_RELATIVE_TO_NORM <- dataValuesRelativeToNorm[dataValuesRelativeToNorm$MEASUREMENT_CONCEPT_ID == concept_id,c(4,5)]
-	    
+    
     dir.create(paste0(outputPath,"/concepts/measurement"),recursive=T,showWarnings = F)    
     filename <- paste(outputPath, "/concepts/measurement/concept_" , concept_id , ".json", sep='')  
     write(jsonlite::toJSON(report),filename)  
@@ -1185,11 +1185,12 @@ generateAOConditionEraReports <- function(connectionDetails, dataConditionEra, c
 #' See \code{showReportTypes} for a list of all report types
 #' 
 #' @return none 
-#' @examples \dontrun{
-#'   connectionDetails <- DatabaseConnector::createConnectionDetails(dbms="sql server", server="yourserver")
-#'   exportToJson(connectionDetails, cdmDatabaseSchema="cdm4_sim", outputPath="your/output/path")
-#' }
-#' @export
+#' 
+#'@importFrom data.table fwrite
+#'@import lubridate
+#'@importFrom dplyr ntile desc
+#'@export
+#'
 exportAO <- function(
   connectionDetails, 
   cdmDatabaseSchema, 
@@ -1344,14 +1345,12 @@ exportAO <- function(
       dbms = connectionDetails$dbms,
       results_database_schema = resultsDatabaseSchema,
       vocab_database_schema = vocabDatabaseSchema
-    )  	
-	dataMeasurements <- DatabaseConnector::querySql(conn,queryMeasurements)	
+    )  
+    dataMeasurements <- DatabaseConnector::querySql(conn,queryMeasurements)   
     dataMeasurements$PERCENT_PERSONS <- format(round(dataMeasurements$PERCENT_PERSONS,4), nsmall=4)
     dataMeasurements$PERCENT_PERSONS_NTILE <- dplyr::ntile(dplyr::desc(dataMeasurements$PERCENT_PERSONS), 10)
     dataMeasurements$RECORDS_PER_PERSON <- format(round(dataMeasurements$RECORDS_PER_PERSON,1),nsmall=1)
     dataMeasurements$RECORDS_PER_PERSON_NTILE <- dplyr::ntile(dplyr::desc(dataMeasurements$RECORDS_PER_PERSON), 10)
-	dataMeasurements$PERCENT_MISSING_VALUES <- format(round(dataMeasurements$PERCENT_MISSING_VALUES,4), nsmall=4)
-
     data.table::fwrite(dataMeasurements, file=paste0(sourceOutputPath, "/domain-summary-measurement.csv"))   
     
     # domain summary - observations
@@ -1371,7 +1370,7 @@ exportAO <- function(
     
     # domain summary - visit details
     queryVisitDetails <- SqlRender::loadRenderTranslateSql(
-      sqlFilename = "export/visitdetail/sqlVisitDetailTreemapAO.sql",
+      sqlFilename = "export/visitdetail/sqlVisitDetailTreemap.sql",
       packageName = "Achilles",
       dbms = connectionDetails$dbms,
       results_database_schema = resultsDatabaseSchema,
@@ -1382,13 +1381,12 @@ exportAO <- function(
     dataVisitDetails$PERCENT_PERSONS_NTILE <- dplyr::ntile(dplyr::desc(dataVisitDetails$PERCENT_PERSONS),10)
     dataVisitDetails$RECORDS_PER_PERSON <- format(round(dataVisitDetails$RECORDS_PER_PERSON,1),nsmall=1)
     dataVisitDetails$RECORDS_PER_PERSON_NTILE <- dplyr::ntile(dplyr::desc(dataVisitDetails$RECORDS_PER_PERSON),10)
-    dataVisitDetails$AVERAGE_DURATION <- format(round(dataVisitDetails$AVERAGE_DURATION,1),nsmall=1)
     names(dataVisitDetails)[names(dataVisitDetails) == 'CONCEPT_PATH'] <- 'CONCEPT_NAME'
     data.table::fwrite(dataVisitDetails, file=paste0(sourceOutputPath, "/domain-summary-visit_detail.csv"))      
     
     # domain summary - visits
     queryVisits <- SqlRender::loadRenderTranslateSql(
-      sqlFilename = "export/visit/sqlVisitTreemapAO.sql",
+      sqlFilename = "export/visit/sqlVisitTreemap.sql",
       packageName = "Achilles",
       dbms = connectionDetails$dbms,
       results_database_schema = resultsDatabaseSchema,
@@ -1399,7 +1397,6 @@ exportAO <- function(
     dataVisits$PERCENT_PERSONS_NTILE <- dplyr::ntile(dplyr::desc(dataVisits$PERCENT_PERSONS),10)
     dataVisits$RECORDS_PER_PERSON <- format(round(dataVisits$RECORDS_PER_PERSON,1),nsmall=1)
     dataVisits$RECORDS_PER_PERSON_NTILE <- dplyr::ntile(dplyr::desc(dataVisits$RECORDS_PER_PERSON),10)
-    dataVisits$AVERAGE_DURATION <- format(round(dataVisits$AVERAGE_DURATION,1),nsmall=1)
     names(dataVisits)[names(dataVisits) == 'CONCEPT_PATH'] <- 'CONCEPT_NAME'
     data.table::fwrite(dataVisits, file=paste0(sourceOutputPath, "/domain-summary-visit_occurrence.csv"))   
     

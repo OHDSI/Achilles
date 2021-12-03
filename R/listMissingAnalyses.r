@@ -26,53 +26,61 @@
 # @author Taha Abdul-Basser
 # @author Anthony Molinaro
 
-#'@title listMissingAnalyses
+#' @title
+#' listMissingAnalyses
 #'
 #' @description
-#' \code{listMissingAnalyses} Find and return analyses that exist in \code{getAnalysisDetails}, but not in achilles_results or achilles_results_dist 
+#' \code{listMissingAnalyses} Find and return analyses that exist in \code{getAnalysisDetails}, but
+#' not in achilles_results or achilles_results_dist
 #'
 #' @param connectionDetails       An R object of type \code{connectionDetails} created using the
 #'                                function \code{createConnectionDetails} in the
 #'                                \code{DatabaseConnector} package.
-#' @param resultsDatabaseSchema   Fully qualified name of database schema that contains achilles_results and achilles_results_dist tables.
+#' @param resultsDatabaseSchema   Fully qualified name of database schema that contains
+#'                                achilles_results and achilles_results_dist tables.
 #'
-#' @return A dataframe which is a subset of \code{getAnalysisDetails}
+#' @return
+#' A dataframe which is a subset of \code{getAnalysisDetails}
 #'
 #' @examples
 #' \dontrun{
-#' Achilles::listMissingAnalyses(
-#' 	connectionDetails     = connectionDetails,
-#' 	resultsDatabaseSchema = "results")
+#' Achilles::listMissingAnalyses(connectionDetails = connectionDetails,
+#'                               resultsDatabaseSchema = "results")
 #' }
 #'
-#'@export
+#' @export
 
-listMissingAnalyses <- function(connectionDetails, resultsDatabaseSchema)
-{
+listMissingAnalyses <- function(connectionDetails, resultsDatabaseSchema) {
 
-	# Determine which analyses are missing by comparing analysisDetails with achilles_results and achilles_results_dist
-	analysisDetails <- getAnalysisDetails()
-	allAnalysisIds  <- analysisDetails$ANALYSIS_ID
-		
-	conn <- DatabaseConnector::connect(connectionDetails)
-	print("Retrieving previously computed achilles_results and achilles_results_dist data...")
-	
-	sql <- "select distinct analysis_id from @results_schema.achilles_results
-	        union
-			select distinct analysis_id from @results_schema.achilles_results_dist;"
-			
-	sql <- SqlRender::render(sql, results_schema = resultsDatabaseSchema)
-	sql <- SqlRender::translate(sql,targetDialect = connectionDetails$dbms)
-	
-	existingAnalysisIds <- DatabaseConnector::querySql(conn,sql)$ANALYSIS_ID
-	
-	DatabaseConnector::disconnect(conn)
-		
-	missingAnalysisIds <- setdiff(allAnalysisIds,existingAnalysisIds)
+  # Determine which analyses are missing by comparing analysisDetails with achilles_results and
+  # achilles_results_dist
+  analysisDetails <- getAnalysisDetails()
+  allAnalysisIds <- analysisDetails$ANALYSIS_ID
 
-    colsToDisplay <- c("ANALYSIS_ID","DISTRIBUTION","COST","CATEGORY","IS_DEFAULT","ANALYSIS_NAME")	
-	retVal <- analysisDetails[analysisDetails$ANALYSIS_ID %in% missingAnalysisIds,colsToDisplay]
-	retVal <- retVal[order(retVal$ANALYSIS_ID),]
- 
-	return (retVal)
+  conn <- DatabaseConnector::connect(connectionDetails)
+  print("Retrieving previously computed achilles_results and achilles_results_dist data...")
+
+  sql <- "select distinct analysis_id from @results_schema.achilles_results
+        union
+select distinct analysis_id from @results_schema.achilles_results_dist;"
+
+  sql <- SqlRender::render(sql, results_schema = resultsDatabaseSchema)
+  sql <- SqlRender::translate(sql, targetDialect = connectionDetails$dbms)
+
+  existingAnalysisIds <- DatabaseConnector::querySql(conn, sql)$ANALYSIS_ID
+
+  DatabaseConnector::disconnect(conn)
+
+  missingAnalysisIds <- setdiff(allAnalysisIds, existingAnalysisIds)
+
+  colsToDisplay <- c("ANALYSIS_ID",
+                     "DISTRIBUTION",
+                     "COST",
+                     "CATEGORY",
+                     "IS_DEFAULT",
+                     "ANALYSIS_NAME")
+  retVal <- analysisDetails[analysisDetails$ANALYSIS_ID %in% missingAnalysisIds, colsToDisplay]
+  retVal <- retVal[order(retVal$ANALYSIS_ID), ]
+
+  return(retVal)
 }

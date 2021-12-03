@@ -1,6 +1,5 @@
 ---
 title: "Running Achilles on Your CDM"
-author: "Ajit Londhe"
 date: "`r Sys.Date()`"
 output:
   pdf_document:
@@ -26,7 +25,7 @@ knitr::opts_chunk$set(
 
 # Introduction
 
-In this vignette we cover how to run the Achilles package on your Common Data Model (CDM) database in order to characterize the dataset and run data quality (DQ) checks. The characterizations and DQ results can help you learn more about your dataset's features and limitations, and can then be consumed graphically using [AchillesWeb](https://github.com/OHDSI/AchillesWeb) or [Atlas Data Sources](https://github.com/OHDSI/Atlas). 
+In this vignette we cover how to run the Achilles package on your Common Data Model (CDM) database in order to characterize the dataset. The characterizations can help you learn more about your dataset's features and limitations.
 
 It is a best practice for all OHDSI sites to run Achilles on their CDM datasets to ensure researchers can evaluate study feasibility and contextualize study results.
 
@@ -38,8 +37,6 @@ The Achilles package consists of:
 2. The **createIndices** function creates table indices for the achilles tables, which can help improve query performance.
 3. The **getAnalysisDetails** function provides descriptions about the full set of Achilles analyses.
 4. The **dropAllScratchTables** function is useful only for multi-threaded mode. It can clear any leftover staging tables.
-5. The **exportToJson** function can be used to export all Achilles results to JSON files, which is necessary for using AchillesWeb.
-6. The **addDataSource** function can point a data source's JSON files to the AchillesWeb application.
 
 ## SQL Only Mode
 
@@ -59,7 +56,7 @@ In order to run the package, you will need to determine if you'd like the Achill
 
 ### Multi-Threaded vs Single-Threaded
 
-As the **achilles** and most of the **achillesHeel** functions can run independently, we have added a multi-threaded mode to allow for more than 1 SQL script to execute at a time. This is particularly useful for massively parallel processing (MPP) platforms such as Amazon Redshift and Microsoft PDW. It may not be beneficial for traditional SQL platforms, so only use the multi-threaded mode if confident it can be useful.
+As the **achilles** functions can run independently, we have added a multi-threaded mode to allow for more than 1 SQL script to execute at a time. This is particularly useful for massively parallel processing (MPP) platforms such as Amazon Redshift and Microsoft PDW. It may not be beneficial for traditional SQL platforms, so only use the multi-threaded mode if confident it can be useful.
 
 Further, while multiple threads can help performance in MPP platforms, there can be diminishing returns as the cluster has a finite number of concurrency slots to handle the queries. A rule of thumb: most likely you should not use more than 10. 
 
@@ -75,7 +72,7 @@ To keep the staging tables organized, the **achilles** function will use a table
 
 ## Source Name
 
-The `sourceName` parameter is used to assign the name of the dataset to the Achilles results. It is used in the Dashboard page in AchillesWeb and Atlas Data Sources. If you set this to `NULL`, the **achilles** function will try to obtain the source name from the CDM_SOURCE table.
+The `sourceName` parameter is used to assign the name of the dataset to the Achilles results.  If you set this to `NULL`, the **achilles** function will try to obtain the source name from the CDM_SOURCE table.
 
 ## Create Table
 
@@ -83,7 +80,7 @@ The `createTable` parameter, when set to `TRUE`, drops any existing Achilles res
 
 ## Limiting the Analyses
 
-By default, the **achilles** function runs all analyses detailed in the `getAnalysisDetails` function. However, it may be useful to focus on a subset of analyses rather than running the whole set. This can be accomplished by specifying analysis Ids in the `analysisIds` parameter.
+By default, the **achilles** function runs all default analyses detailed in the `getAnalysisDetails` function. However, it may be useful to focus on a subset of analyses rather than running the whole set. This can be accomplished by specifying analysis Ids in the `analysisIds` parameter.
 
 ## Cost Analyses
 
@@ -114,7 +111,7 @@ When running **achilles**, the return value, if you assign a variable to the fun
 
 # Running Achilles: Single-Threaded Mode
 
-In single-threaded mode, there is no need to set a `scratchDatabaseSchema`, as temporary tables will be used. Here we will focus only on achilles execution and skip running Heel.
+In single-threaded mode, there is no need to set a `scratchDatabaseSchema`, as temporary tables will be used.
 
 ```{r tidy = FALSE, eval = FALSE}
 connectionDetails <- createConnectionDetails(dbms = "postgresql", 
@@ -125,16 +122,12 @@ connectionDetails <- createConnectionDetails(dbms = "postgresql",
 achilles(connectionDetails = connectionDetails, 
          cdmDatabaseSchema = "cdm", 
          resultsDatabaseSchema = "results", 
-         vocabDatabaseSchema = "vocab", 
-         sourceName = "Synpuf", 
-         cdmVersion = 5.3, 
-         numThreads = 1,
-         runHeel = FALSE)
+		 outputFolder = "output")
 ```
 
 # Running Achilles: Multi-Threaded Mode
 
-In multi-threaded mode, you need to specify `scratchDatabaseSchema` and use > 1 for `numThreads`. Here we will focus only on achilles execution and skip running Heel.
+In multi-threaded mode, you need to specify `scratchDatabaseSchema` and use > 1 for `numThreads`.
 
 ```{r tidy = FALSE, eval = FALSE}
 connectionDetails <- createConnectionDetails(dbms = "postgresql", 
@@ -146,73 +139,8 @@ achilles(connectionDetails = connectionDetails,
          cdmDatabaseSchema = "cdm", 
          resultsDatabaseSchema = "results", 
          scratchDatabaseSchema = "scratch", 
-         vocabDatabaseSchema = "vocab", 
-         sourceName = "Synpuf", 
-         cdmVersion = 5.3, 
-         numThreads = 5,
-         runHeel = FALSE)
-```
-
-
-# Achilles Heel Parameters (Both Modes)
-
-## Staging Table Prefix
-
-To keep the staging tables organized, the **achillesHeel** function will use a table prefix of "tmpheel" by default, but you can choose a different one using the `tempHeelPrefix` parameter. This is useful for database platforms like Oracle, which limit the length of table names.
-
-## Drop Scratch Tables
-
-*See the Post-Processing section to read about how to run this step separately*
-
-*This parameter is only necessary if running in multi-threaded mode*
-
-The `dropScratchTables` parameter, if set to `TRUE` will drop all staging tables created during the execution of **achillesHeel** in multi-threaded mode.
-
-## Thresholds 
-
-The `ThresholdAgeWarning`, `ThresholdOutpatientVisitPerc`, and `ThresholdMinimalPtMeasDxRx` parameters can be used to configure DQ thresholds in **achillesHeel**.
-
-* `ThresholdAgeWarning` refers to the maximum age to allow in the dataset; by default, this is 125 years of age.
-* `ThresholdOutpatientVisitPerc` refers to the maximum percentage of outpatient visits allowed among all visits. This is by default set to 0.43.
-* `ThresholdMinimalPtMeasDxRx` refers to the minimum percentage required of patients with at least 1 measurement, 1 condition, and 1 drug exposure. This is by default set to 20.5%.
-
-# Running Achilles Heel: Single-Threaded Mode
-
-In single-threaded mode, there is no need to set a `scratchDatabaseSchema`, as temporary tables will be used.
-
-```{r tidy = FALSE, eval = FALSE}
-connectionDetails <- createConnectionDetails(dbms = "postgresql", 
-                                             server = "localhost/synpuf", 
-                                             user = "cdm_user", 
-                                             password = "cdm_password")
-
-achillesHeel(connectionDetails = connectionDetails, 
-             cdmDatabaseSchema = "cdm", 
-             resultsDatabaseSchema = "results", 
-             vocabDatabaseSchema = "vocab", 
-             cdmVersion = 5.3, 
-             numThreads = 1, 
-             outputFolder = "output")
-```
-
-# Running Achilles Heel: Multi-Threaded Mode
-
-In multi-threaded mode, you need to specify `scratchDatabaseSchema` and use > 1 for `numThreads`. 
-
-```{r tidy = FALSE, eval = FALSE}
-connectionDetails <- createConnectionDetails(dbms = "postgresql", 
-                                             server = "localhost/synpuf", 
-                                             user = "cdm_user", 
-                                             password = "cdm_password")
-achillesHeel(connectionDetails = connectionDetails, 
-             cdmDatabaseSchema = "cdm", 
-             resultsDatabaseSchema = "results", 
-             vocabDatabaseSchema = "vocab", 
-             cdmVersion = 5.3, 
-             numThreads = 5, 
-             outputFolder = "output", 
-             scratchDatabaseSchema = "scratch")
-
+		 numThreads = 5,
+         outputFolder = "output")
 ```
 
 # Post-Processing
@@ -242,7 +170,7 @@ createIndices(connectionDetails = connectionDetails,
 
 If the **achilles** execution has errors, or if you did not enable this step in the call to these functions, use the `dropAllScratchTables` function.
 
-The `tableTypes` parameter can be used to specify which batch of staging tables to drop ("achilles", "heel"). The default value is to drop them all.
+The `tableTypes` parameter can be used to specify which batch of staging tables to drop ("achilles"). 
 
 ```{r tidy = FALSE, eval = FALSE}
 connectionDetails <- createConnectionDetails(dbms = "postgresql", 
@@ -253,42 +181,6 @@ connectionDetails <- createConnectionDetails(dbms = "postgresql",
 dropAllScratchTables(connectionDetails = connectionDetails, 
                      scratchDatabaseSchema = "scratch", numThreads = 5)
 ```
-
-## Using AchillesWeb
-
-AchillesWeb is a lightweight web application that can be used to consume the Achilles and Heel results graphically. It is no longer actively updated, as development priorities have shifted towards Atlas Data Sources, but AchillesWeb can still be utilized. To connect Achilles results to AchillesWeb, the Achilles results need to be exported to JSON files and the AchillesWeb JSON file needs to point to those JSON files.
-
-Please refer to [AchillesWeb](https://github.com/OHDSI/AchillesWeb) for more information.
-
-### Exporting to JSON
-
-The `exportToJson` function can export all of the Achilles results to JSON files that AchillesWeb can consume. 
-
-* The `compressIntoOnFile` parameter, if set to `TRUE`, will compress all of the files into one zip file for easier portability. 
-* The `reports` parameter can be used to export specific reports rather than all. Use the `showReportTypes` function to see all possible reports.
-
-```{r tidy = FALSE, eval = FALSE}
-connectionDetails <- createConnectionDetails(dbms = "postgresql", 
-                                             server = "localhost/synpuf", 
-                                             user = "cdm_user", 
-                                             password = "cdm_password")
-
-exportToJson(connectionDetails = connectionDetails, 
-             cdmDatabaseSchema = "cdm", 
-             resultsDatabaseSchema = "results", 
-             outputPath = "output", 
-             vocabDatabaseSchema = "vocab")
-```
-
-### Adding Data Sources to AchillesWeb
-
-AchillesWeb relies upon a JSON file to point to CDM Achilles result JSON files.
-
-```{r tidy = FALSE, eval = FALSE}
-addDataSource(jsonFolderPath = "output", 
-              dataSourcePath = "achillesWeb")
-```
-
 
 # Acknowledgments
 

@@ -8,9 +8,8 @@ dropAllScratchTables(
   connectionDetails,
   scratchDatabaseSchema,
   tempAchillesPrefix = "tmpach",
-  tempHeelPrefix = "tmpheel",
   numThreads = 1,
-  tableTypes = c("achilles", "heel"),
+  tableTypes = c("achilles"),
   outputFolder,
   verboseMode = TRUE,
   defaultAnalysesOnly = TRUE
@@ -27,14 +26,10 @@ written to.}
 \item{tempAchillesPrefix}{The prefix to use for the "temporary" (but actually permanent)
 Achilles analyses tables. Default is "tmpach"}
 
-\item{tempHeelPrefix}{The prefix to use for the "temporary" (but actually permanent) Heel
-tables. Default is "tmpheel"}
-
 \item{numThreads}{The number of threads to use to run this function. Default is 1
 thread.}
 
-\item{tableTypes}{The types of Achilles scratch tables to drop: achilles or heel or
-both}
+\item{tableTypes}{The types of Achilles scratch tables to drop: achilles}
 
 \item{outputFolder}{Path to store logs and SQL files}
 
@@ -49,5 +44,5 @@ intensive.  Default = TRUE}
 Drop all possible scratch tables
 }
 \details{
-Drop all possible Achilles and Heel scratch tables
+Drop all possible Achilles scratch tables
 }
