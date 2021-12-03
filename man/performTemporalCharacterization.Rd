@@ -10,7 +10,7 @@ performTemporalCharacterization(
   resultsDatabaseSchema,
   analysisIds = NULL,
   conceptId = NULL,
-  outputFile
+  outputFile = "temporal-characterization.csv"
 )
 }
 \arguments{
@@ -34,7 +34,7 @@ If not specified, data for all analysis will be returned. Ignored if \code{conce
 \item{conceptId}{(OPTIONAL) A SNOMED concept_id from the \code{CONCEPT} table for which a monthly Achilles analysis exists.
 If not specified, all concepts for a given analysis will be returned.}
 
-\item{outputFile}{CSV file where temporal characterization will be written}
+\item{outputFile}{CSV file where temporal characterization will be written. Default is temporal-characterization.csv.}
 }
 \value{
 A csv file with temporal analyses for each time series
