@@ -100,6 +100,13 @@
 #'                                  of Achilles when supplied \code{analysisIds}.
 #' @param excludeAnalysisIds        (OPTIONAL) A vector containing the set of Achilles analyses to
 #'                                  exclude.
+#' @param sqlDialect                (OPTIONAL) String to be used when specifying sqlOnly = TRUE and 
+#'                                  NOT supplying the \code{connectionDetails} parameter. 
+#'                                  if the \code{connectionDetails} parameter is supplied, \code{sqlDialect} 
+#'                                  is ignored.  If the \code{connectionDetails} parameter is not supplied, 
+#'                                  \code{sqlDialect} must be supplied to enable \code{SqlRender} 
+#'                                  to translate properly.  \code{sqlDialect} takes the value normally 
+#'                                  supplied to connectionDetails$dbms.  Default = NULL.
 #'
 #' @return
 #' An object of type \code{achillesResults} containing details for connecting to the database
@@ -127,10 +134,23 @@ achilles <- function(connectionDetails,
   sourceName = "", analysisIds, createTable = TRUE, smallCellCount = 5, cdmVersion = "5", runCostAnalysis = FALSE,
   createIndices = TRUE, numThreads = 1, tempAchillesPrefix = "tmpach", dropScratchTables = TRUE, sqlOnly = FALSE,
   outputFolder = "output", verboseMode = TRUE, optimizeAtlasCache = FALSE, defaultAnalysesOnly = TRUE,
-  updateGivenAnalysesOnly = FALSE, excludeAnalysisIds = c()) {
+  updateGivenAnalysesOnly = FALSE, excludeAnalysisIds = c(), sqlDialect = NULL) {
   totalStart <- Sys.time()
   achillesSql <- c()
 
+  # Check if the correct parameters are supplied when running in sqlOnly mode
+  if (sqlOnly && missing(connectionDetails) && is.null(sqlDialect)) {
+	stop("Error: When specifying sqlOnly = TRUE, sqlDialect or connectionDetails must be supplied.")
+  }  
+  if (sqlOnly && !missing(connectionDetails)) {
+	print("Running Achilles in SQL ONLY mode.  Using connectionDetails, sqlDialect is ignored.  Please wait for script generation.")
+  }
+  if (sqlOnly && missing(connectionDetails) && !is.null(sqlDialect)) {
+	connectionDetails <- DatabaseConnector::createConnectionDetails(dbms = sqlDialect)
+	print("Running Achilles in SQL ONLY mode.  Using dialect supplied by sqlDialect.  Please wait for script generation.")
+  }
+
+  
   # Log execution
   # -----------------------------------------------------------------------------------------------------------------
   ParallelLogger::clearLoggers()
@@ -154,7 +174,7 @@ achilles <- function(connectionDetails,
   # Try to get CDM Version if not provided
   # ----------------------------------------------------------------------------------------
 
-  if (missing(cdmVersion)) {
+  if (missing(cdmVersion) && !sqlOnly) {
     cdmVersion <- .getCdmVersion(connectionDetails, cdmDatabaseSchema)
   }
 
@@ -198,38 +218,12 @@ achilles <- function(connectionDetails,
 
   # Remove unwanted analyses, if any are specified
   if (length(excludeAnalysisIds) != 0) {
-    analysisDetails <- analysisDetails[-which(analysisDetails$ANALYSIS_ID %in% excludeAnalysisIds),
-      ]
+    analysisDetails <- analysisDetails[-which(analysisDetails$ANALYSIS_ID %in% excludeAnalysisIds),]
   }
 
   # If COST analyses are not to be run, remove them from the list of analyses if they are present
   if (!runCostAnalysis && any(analysisDetails$ANALYSIS_ID %in% costIds)) {
     analysisDetails <- analysisDetails[-which(analysisDetails$ANALYSIS_ID %in% costIds), ]
-  }
-
-  # Check if cohort table is present
-  # ---------------------------------------------------------------------------------------------
-
-  connection <- DatabaseConnector::connect(connectionDetails = connectionDetails)
-
-  sql <- SqlRender::render("select top 1 cohort_definition_id from @resultsDatabaseSchema.cohort;",
-    resultsDatabaseSchema = resultsDatabaseSchema)
-  sql <- SqlRender::translate(sql = sql, targetDialect = connectionDetails$dbms)
-
-  cohortTableExists <- tryCatch({
-    dummy <- DatabaseConnector::querySql(connection = connection,
-                                         sql = sql,
-                                         errorReportFile = "cohortTableNotExist.sql")
-    TRUE
-  }, error = function(e) {
-    unlink("cohortTableNotExist.sql")
-    ParallelLogger::logWarn("Cohort table not found, will skip analyses 1700 and 1701")
-    FALSE
-  })
-  DatabaseConnector::disconnect(connection = connection)
-
-  if (!cohortTableExists) {
-    analysisDetails <- analysisDetails[!analysisDetails$ANALYSIS_ID %in% c(1700, 1701), ]
   }
 
   if (cdmVersion < "5.3") {
@@ -251,29 +245,38 @@ achilles <- function(connectionDetails,
 
   schemaDelim <- "."
 
-  if (numThreads == 1 || scratchDatabaseSchema == "#") {
-    numThreads <- 1
-
-    if (.supportsTempTables(connectionDetails) && connectionDetails$dbms != "oracle") {
-      scratchDatabaseSchema <- "#"
-      schemaDelim <- "s_"
+  # Do not connect to a database if running in sqlOnly mode
+  if (sqlOnly) {
+	if (.supportsTempTables(connectionDetails) && connectionDetails$dbms != "oracle") {
+		scratchDatabaseSchema <- "#"
+		schemaDelim <- "s_"
     }
+  } else { 
+  
+	  if (numThreads == 1 || scratchDatabaseSchema == "#") {
+		numThreads <- 1
 
-    ParallelLogger::logInfo("Beginning single-threaded execution")
+		if (.supportsTempTables(connectionDetails) && connectionDetails$dbms != "oracle") {
+		  scratchDatabaseSchema <- "#"
+		  schemaDelim <- "s_"
+		}
 
-    # first invocation of the connection, to persist throughout to maintain temp tables
-    connection <- DatabaseConnector::connect(connectionDetails = connectionDetails)
-  } else if (!requireNamespace("ParallelLogger", quietly = TRUE)) {
-    stop("Multi-threading support requires package 'ParallelLogger'.",
-         " Consider running single-threaded by setting",
+		ParallelLogger::logInfo("Beginning single-threaded execution")
 
-      " `numThreads = 1` and `scratchDatabaseSchema = '#'`.", " You may install it using devtools with the following code:",
-      "\n    devtools::install_github('OHDSI/ParallelLogger')", "\n\nAlternately, you might want to install ALL suggested packages using:",
-      "\n    devtools::install_github('OHDSI/Achilles', dependencies = TRUE)", call. = FALSE)
-  } else {
-    ParallelLogger::logInfo("Beginning multi-threaded execution")
+		# first invocation of the connection, to persist throughout to maintain temp tables
+		connection <- DatabaseConnector::connect(connectionDetails = connectionDetails)
+	  } else if (!requireNamespace("ParallelLogger", quietly = TRUE)) {
+		stop("Multi-threading support requires package 'ParallelLogger'.",
+			 " Consider running single-threaded by setting",
+
+		  " `numThreads = 1` and `scratchDatabaseSchema = '#'`.", " You may install it using devtools with the following code:",
+		  "\n    devtools::install_github('OHDSI/ParallelLogger')", "\n\nAlternately, you might want to install ALL suggested packages using:",
+		  "\n    devtools::install_github('OHDSI/Achilles', dependencies = TRUE)", call. = FALSE)
+	  } else {
+		ParallelLogger::logInfo("Beginning multi-threaded execution")
+	  }
   }
-
+  
   # Determine whether or not to create Achilles support tables
   # -----------------------------------------------------
 
@@ -290,18 +293,20 @@ achilles <- function(connectionDetails,
   ## If not creating support tables, then either remove ALL prior results or only those results for
   ## the given analysisIds ----------------------------------------------------------------
 
-  if (!createTable && !preserveResults) {
-    .deleteExistingResults(connectionDetails = connectionDetails,
-                           resultsDatabaseSchema = resultsDatabaseSchema,
+  if (!sqlOnly) {
+	  if (!createTable && !preserveResults) {
+		.deleteExistingResults(connectionDetails = connectionDetails,
+							   resultsDatabaseSchema = resultsDatabaseSchema,
 
-      analysisDetails = analysisDetails)
-  } else if (!createTable && preserveResults) {
-    .deleteGivenAnalyses(connectionDetails = connectionDetails,
-                         resultsDatabaseSchema = resultsDatabaseSchema,
+		  analysisDetails = analysisDetails)
+	  } else if (!createTable && preserveResults) {
+		.deleteGivenAnalyses(connectionDetails = connectionDetails,
+							 resultsDatabaseSchema = resultsDatabaseSchema,
 
-      analysisIds = analysisIds)
+		  analysisIds = analysisIds)
+	  }
   }
-
+  
   # Create analysis table -------------------------------------------------------------
 
   if (createTable) {
@@ -638,7 +643,7 @@ achilles <- function(connectionDetails,
 
   # Clean up scratch tables -----------------------------------------------
 
-  if (numThreads == 1 && .supportsTempTables(connectionDetails)) {
+  if (numThreads == 1 && .supportsTempTables(connectionDetails) && !sqlOnly) {
     if (connectionDetails$dbms == "oracle") {
       ParallelLogger::logInfo(sprintf("Dropping scratch Achilles tables from schema %s",
                                       scratchDatabaseSchema))
