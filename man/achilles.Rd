@@ -27,7 +27,8 @@ achilles(
   optimizeAtlasCache = FALSE,
   defaultAnalysesOnly = TRUE,
   updateGivenAnalysesOnly = FALSE,
-  excludeAnalysisIds = c()
+  excludeAnalysisIds = c(),
+  sqlDialect = NULL
 )
 }
 \arguments{
@@ -119,6 +120,14 @@ of Achilles when supplied \code{analysisIds}.}
 
 \item{excludeAnalysisIds}{(OPTIONAL) A vector containing the set of Achilles analyses to
 exclude.}
+
+\item{sqlDialect}{(OPTIONAL) String to be used when specifying sqlOnly = TRUE and 
+NOT supplying the \code{connectionDetails} parameter. 
+if the \code{connectionDetails} parameter is supplied, \code{sqlDialect} 
+is ignored.  If the \code{connectionDetails} parameter is not supplied, 
+\code{sqlDialect} must be supplied to enable \code{SqlRender} 
+to translate properly.  \code{sqlDialect} takes the value normally 
+supplied to connectionDetails$dbms.  Default = NULL.}
 }
 \value{
 An object of type \code{achillesResults} containing details for connecting to the database

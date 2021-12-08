@@ -244,8 +244,6 @@ ANALYSIS_ID,DISTRIBUTION,COST,DISTRIBUTED_FIELD,ANALYSIS_NAME,STRATUM_1_NAME,STR
 1607,1,1,total_out_of_pocket,"Distribution of total out-of-pocket, by procedure_concept_id",procedure_concept_id,,,,,1,Cost
 1608,1,1,total_paid,"Distribution of total paid, by procedure_concept_id",procedure_concept_id,,,,,1,Cost
 1610,0,1,,Number of records by revenue_code_concept_id,revenue_code_concept_id,,,,,1,Cohort
-1700,0,0,,Number of records by cohort_concept_id,cohort_concept_id,,,,,1,Cohort
-1701,0,0,,Number of records with cohort end date < cohort start date,,,,,,1,Cohort
 1800,0,0,,"Number of persons with at least one measurement occurrence, by measurement_concept_id",measurement_concept_id,,,,,1,Measurement
 1801,0,0,,"Number of measurement occurrence records, by measurement_concept_id",measurement_concept_id,,,,,1,Measurement
 1802,0,0,,"Number of persons by measurement occurrence start month, by measurement_concept_id",measurement_concept_id,calendar month,,,,1,Measurement
