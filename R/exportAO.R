@@ -1451,6 +1451,11 @@ exportAO <- function(
       results_database_schema = resultsDatabaseSchema
     )  
     dataCompleteness <- DatabaseConnector::querySql(conn,queryCompleteness)   
+    dataCompleteness <- dataCompleteness[order(-dataCompleteness$RECORD_COUNT),]
+    # prevent downstream crashes with large files
+    if (nrow(dataCompleteness) > 100000) {
+      dataCompleteness <- dataCompleteness[1:100000,]
+    }
     data.table::fwrite(dataCompleteness, file=paste0(sourceOutputPath, "/quality-completeness.csv"))   
   }
 
