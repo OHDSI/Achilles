@@ -12,7 +12,7 @@ from @cdm_database_schema.cdm_source c,
 
 (
   select 'Earliest date available' as attribute_name,
-         min(stratum_1)*1 as attribute_value,
+         min(cast(stratum_1 as numeric))*1 as attribute_value,
          1 as rank_order
   from @results_database_schema.achilles_results
   where analysis_id = 110
@@ -20,7 +20,7 @@ from @cdm_database_schema.cdm_source c,
   union
   
   select 'Latest date available' as attribute_name,
-         max(stratum_1)*1 as attribute_value,
+         max(cast(stratum_1 as numeric))*1 as attribute_value,
          2 as rank_order
   from @results_database_schema.achilles_results
   where analysis_id = 110
@@ -48,7 +48,7 @@ from @cdm_database_schema.cdm_source c,
          (select count_value from @results_database_schema.achilles_results a where analysis_id = 1) as attribute_value,
          5 as rank_order
   from @results_database_schema.achilles_results a
-  where analysis_id = 2 and stratum_1 = 8532
+  where analysis_id = 2 and stratum_1 = '8532'
   
   union
   
@@ -101,7 +101,7 @@ from @cdm_database_schema.cdm_source c,
          (select count_value from @results_database_schema.achilles_results a where analysis_id = 1) as attribute_value,
          11 as rank_order
   from @results_database_schema.achilles_results a
-  where analysis_id = 201 and stratum_1 = 9201
+  where analysis_id = 201 and stratum_1 = '9201'
 
   union
 
