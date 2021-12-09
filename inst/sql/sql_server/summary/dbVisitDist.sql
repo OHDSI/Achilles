@@ -6,30 +6,21 @@ select c.cdm_source_name,
        t1.visit_concept_id,
        t1.concept_name,
        t1.count_value
-	     
 from @cdm_database_schema.cdm_source c,
-
 (
   select aa.analysis_name, 
-         b.visit_concept_id,
+         a.visit_concept_id,
          c.concept_name,
-         b.count_value
+         a.count_value
   from (
-        select analysis_id,
-               visit_concept_id,
-               sum(count_value) as count_value
-        from (
-              select analysis_id,
-                     case when cast(stratum_1 as numeric) = 0 then 9202 else cast(stratum_1 as numeric) end as visit_concept_id,
-                     count_value
-              from @results_database_schema.achilles_results
-              where analysis_id = '201'
-              ) a
-        group by analysis_id, visit_concept_id
-      ) b
+          select analysis_id,
+                 cast(stratum_1 as numeric) as visit_concept_id,
+                 count_value
+          from @results_database_schema.achilles_results
+          where analysis_id = '201'
+        ) a
   join @results_database_schema.achilles_analysis aa
-    on b.analysis_id = aa.analysis_id
+    on a.analysis_id = aa.analysis_id
   join @cdm_database_schema.concept c
-    on b.visit_concept_id = c.concept_id
-) t1
-;
+    on a.visit_concept_id = c.concept_id
+) t1;

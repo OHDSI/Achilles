@@ -109,23 +109,16 @@ generateDbSummary <- function (connectionDetails,
   dbVisitDist <- DatabaseConnector::querySql(conn, sql)
   
   DatabaseConnector::dbDisconnect(conn)
-  
-  #TODO: Below is the original code I wrote to make the dbSummary table pretty. 
-  #      This needs to be updated with source vocabs and visit distribution
-  
+
+  # extract columns and pivot
   dbInfo <- dbSummary[1,c(1,2,3,4)]
-  
   row.names(dbSummary) <- dbSummary$ATTRIBUTE_NAME
-  
   df <- dbSummary[,c('ATTRIBUTE_VALUE')]
-  
   df_t <- t(df)
-  
   colnames(df_t) <- rownames(dbSummary)
-  
   dbSummaryFinal <- cbind(dbInfo, df_t)
   
   colnames(dbSummaryFinal)[1:4] <- c("Data Source Name", "Data Source Abbreviation", "Source Country", "Data Provenance")
   
-  return(dbSummaryFinal)
+  return(list(summary=dbSummaryFinal, visitDist=dbVisitDist, sourceVocabs = dbSourceVocabs))
 }
