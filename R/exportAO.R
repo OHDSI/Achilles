@@ -171,8 +171,8 @@ generateAOAchillesPerformanceReport <- function(connectionDetails, cdmDatabaseSc
   
   conn <- DatabaseConnector::connect(connectionDetails)
   dataPerformance <- DatabaseConnector::querySql(conn,queryAchillesPerformance)
-  names(dataPerformance) <- c("analysis_id", "analysis_name", "elapsed_seconds")
-  dataPerformance$elapsed_seconds <- format(round(as.numeric(gsub(" secs","",dataPerformance$elapsed_seconds)),digits = 2),nsmall = 2)
+  names(dataPerformance) <- c("analysis_id", "analysis_name","category", "elapsed_seconds")
+  dataPerformance$elapsed_seconds <- format(round(as.numeric(dataPerformance$elapsed_seconds),digits = 2),nsmall = 2)
   data.table::fwrite(dataPerformance, file.path(outputPath, "achilles-performance.csv"))
 }
 
