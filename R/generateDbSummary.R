@@ -68,7 +68,7 @@ generateDbSummary <- function (connectionDetails,
   
   sql <-
     SqlRender::loadRenderTranslateSql(
-      sqlFilename = "generateDbSummary.sql",
+      sqlFilename = "summary/generateDbSummary.sql",
       packageName = "Achilles",
       dbms = connectionDetails$dbms,
       warnOnMissingParameters = FALSE,
@@ -79,6 +79,39 @@ generateDbSummary <- function (connectionDetails,
     )
   
   dbSummary <- DatabaseConnector::querySql(conn, sql)
+  
+  sql <-
+    SqlRender::loadRenderTranslateSql(
+      sqlFilename = "summary/dbSourceVocabs.sql",
+      packageName = "Achilles",
+      dbms = connectionDetails$dbms,
+      warnOnMissingParameters = FALSE,
+      cdm_database_schema = cdmDatabaseSchema,
+      results_database_schema = resultsDatabaseSchema,
+      country = country,
+      provenance = provenance
+    )
+  
+  dbSourceVocabs <- DatabaseConnector::querySql(conn, sql)
+  
+  sql <-
+    SqlRender::loadRenderTranslateSql(
+      sqlFilename = "summary/dbVisitDist.sql",
+      packageName = "Achilles",
+      dbms = connectionDetails$dbms,
+      warnOnMissingParameters = FALSE,
+      cdm_database_schema = cdmDatabaseSchema,
+      results_database_schema = resultsDatabaseSchema,
+      country = country,
+      provenance = provenance
+    )
+  
+  dbVisitDist <- DatabaseConnector::querySql(conn, sql)
+  
+  DatabaseConnector::dbDisconnect(conn)
+  
+  #TODO: Below is the original code I wrote to make the dbSummary table pretty. 
+  #      This needs to be updated with source vocabs and visit distribution
   
   dbInfo <- dbSummary[1,c(1,2,3,4)]
   
