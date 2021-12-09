@@ -1261,7 +1261,7 @@ optimizeAtlasCache <- function(connectionDetails,
 
   logs <- logs[logs$analysisId == analysisId, ]
   if (nrow(logs) == 1) {
-    paste0(round(as.numeric(strsplit(logs[1, ]$runTime, " ")[[1]][1]), 2), " secs")
+    round(as.numeric(strsplit(logs[1, ]$runTime, " ")[[1]][1]), 2)
   } else {
     "ERROR: check log files"
   }
