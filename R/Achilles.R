@@ -71,8 +71,6 @@
 #'                                  small cell count restrictions.
 #' @param cdmVersion                Define the OMOP CDM version used: currently supports v5 and above.
 #'                                  Use major release number or minor number only (e.g. 5, 5.3)
-#' @param runCostAnalysis           Boolean to determine if cost analysis should be run. Note: only
-#'                                  works on v5.1+ style cost tables.
 #' @param createIndices             Boolean to determine if indices should be created on the resulting
 #'                                  Achilles tables. Default= TRUE
 #' @param numThreads                (OPTIONAL, multi-threaded mode) The number of threads to use to run
@@ -120,7 +118,6 @@
 #'   scratchDatabaseSchema = "scratch", 
 #'   sourceName = "Some Source", 
 #'   cdmVersion = "5.3", 
-#'   runCostAnalysis = TRUE,
 #'   numThreads = 10, 
 #'   outputFolder = "output")
 #' }
@@ -131,7 +128,7 @@ achilles <- function(connectionDetails,
                      resultsDatabaseSchema = cdmDatabaseSchema,
 
   scratchDatabaseSchema = resultsDatabaseSchema, vocabDatabaseSchema = cdmDatabaseSchema, tempEmulationSchema = resultsDatabaseSchema,
-  sourceName = "", analysisIds, createTable = TRUE, smallCellCount = 5, cdmVersion = "5", runCostAnalysis = FALSE,
+  sourceName = "", analysisIds, createTable = TRUE, smallCellCount = 5, cdmVersion = "5", 
   createIndices = TRUE, numThreads = 1, tempAchillesPrefix = "tmpach", dropScratchTables = TRUE, sqlOnly = FALSE,
   outputFolder = "output", verboseMode = TRUE, optimizeAtlasCache = FALSE, defaultAnalysesOnly = TRUE,
   updateGivenAnalysesOnly = FALSE, excludeAnalysisIds = c(), sqlDialect = NULL) {
@@ -206,8 +203,7 @@ achilles <- function(connectionDetails,
   # --------------------------------------------------------------------------------------------------------
 
   analysisDetails <- getAnalysisDetails()
-  costIds <- analysisDetails$ANALYSIS_ID[analysisDetails$COST == 1]
-
+  
   if (!missing(analysisIds)) {
     # If specific analysis_ids are given, run only those
     analysisDetails <- analysisDetails[analysisDetails$ANALYSIS_ID %in% analysisIds, ]
@@ -219,11 +215,6 @@ achilles <- function(connectionDetails,
   # Remove unwanted analyses, if any are specified
   if (length(excludeAnalysisIds) != 0) {
     analysisDetails <- analysisDetails[-which(analysisDetails$ANALYSIS_ID %in% excludeAnalysisIds),]
-  }
-
-  # If COST analyses are not to be run, remove them from the list of analyses if they are present
-  if (!runCostAnalysis && any(analysisDetails$ANALYSIS_ID %in% costIds)) {
-    analysisDetails <- analysisDetails[-which(analysisDetails$ANALYSIS_ID %in% costIds), ]
   }
 
   if (cdmVersion < "5.3") {
@@ -364,160 +355,11 @@ achilles <- function(connectionDetails,
                                     scratchDatabaseSchema))
   }
 
-  # Generate cost analyses ----------------------------------------------------------
-
-  if (runCostAnalysis) {
-    distCostAnalysisDetails <- analysisDetails[analysisDetails$COST == 1 & analysisDetails$DISTRIBUTION ==
-      1, ]
-    costMappings <- read.csv(system.file("csv",
-                                         "achilles",
-                                         "achilles_cost_columns.csv",
-                                         package = "Achilles"),
-      header = TRUE, stringsAsFactors = FALSE)
-
-    drugCostMappings <- costMappings[costMappings$DOMAIN == "Drug", ]
-    procedureCostMappings <- costMappings[costMappings$DOMAIN == "Procedure", ]
-
-    ## Create raw cost tables before generating cost analyses
-
-    rawCostSqls <- lapply(c("Drug", "Procedure"), function(domainId) {
-      costMappings <- get(sprintf("%sCostMappings", tolower(domainId)))
-
-      if (cdmVersion == "5") {
-        costColumns <- apply(costMappings, 1, function(c) {
-          sprintf("%1s as %2s", c["OLD"], c["CURRENT"])
-        })
-      } else {
-        costColumns <- costMappings$CURRENT
-      }
-      list(analysisId = ifelse(domainId == "Drug", 15000, 16000),
-           sql = SqlRender::loadRenderTranslateSql(sqlFilename = "analyses/raw_cost_template.sql",
-        packageName = "Achilles", dbms = connectionDetails$dbms, warnOnMissingParameters = FALSE,
-        cdmDatabaseSchema = cdmDatabaseSchema, scratchDatabaseSchema = scratchDatabaseSchema,
-        tempEmulationSchema = tempEmulationSchema, schemaDelim = schemaDelim, tempAchillesPrefix = tempAchillesPrefix,
-        domainId = domainId, domainTable = ifelse(domainId == "Drug",
-                                                  "drug_exposure",
-                                                  "procedure_occurrence"),
-        costColumns = paste(costColumns, collapse = ",")))
-    })
-
-    achillesSql <- c(achillesSql, rawCostSqls)
-
-    if (!sqlOnly & length(rawCostSqls) > 0) {
-      if (numThreads == 1) {
-        for (rawCostSql in rawCostSqls) {
-          start <- Sys.time()
-          ParallelLogger::logInfo(sprintf("[Raw Cost] [START] %s", rawCostSql$analysisId))
-          DatabaseConnector::executeSql(connection = connection,
-                                        sql = rawCostSql$sql,
-                                        errorReportFile = file.path(getwd(),
-          paste0("achillesError_", rawCostSql$analysisId, ".txt")))
-          delta <- Sys.time() - start
-          ParallelLogger::logInfo(sprintf("[Raw Cost] [COMPLETE] %s (%f %s)", rawCostSql$analysisId,
-          delta, attr(delta, "units")))
-        }
-      } else {
-        cluster <- ParallelLogger::makeCluster(numberOfThreads = length(rawCostSqls),
-                                               singleThreadToMain = TRUE)
-        results <- ParallelLogger::clusterApply(cluster = cluster,
-                                                x = rawCostSqls,
-                                                function(rawCostSql) {
-          start <- Sys.time()
-          ParallelLogger::logInfo(sprintf("[Raw Cost] [START] %s", rawCostSql$analysisId))
-          connection <- DatabaseConnector::connect(connectionDetails = connectionDetails)
-          on.exit(DatabaseConnector::disconnect(connection = connection))
-          DatabaseConnector::executeSql(connection = connection,
-                                        sql = rawCostSql$sql,
-                                        errorReportFile = file.path(getwd(),
-          paste0("achillesError_", rawCostSql$analysisId, ".txt")))
-          delta <- Sys.time() - start
-          ParallelLogger::logInfo(sprintf("[Raw Cost] [COMPLETE] %s (%f %s)", rawCostSql$analysisId,
-          delta, attr(delta, "units")))
-        })
-
-        ParallelLogger::stopCluster(cluster = cluster)
-      }
-    }
-
-    distCostDrugSqls <- apply(distCostAnalysisDetails[distCostAnalysisDetails$STRATUM_1_NAME == "drug_concept_id",
-      ], 1, function(analysisDetail) {
-      list(analysisId = analysisDetail["ANALYSIS_ID"][[1]],
-           sql = SqlRender::loadRenderTranslateSql(sqlFilename = "analyses/cost_distribution_template.sql",
-        packageName = "Achilles", dbms = connectionDetails$dbms, warnOnMissingParameters = FALSE,
-        cdmVersion = cdmVersion, schemaDelim = schemaDelim, cdmDatabaseSchema = cdmDatabaseSchema,
-        scratchDatabaseSchema = scratchDatabaseSchema, tempEmulationSchema = tempEmulationSchema,
-        costColumn = drugCostMappings[drugCostMappings$OLD == analysisDetail["DISTRIBUTED_FIELD"][[1]],
-          ]$CURRENT, domainId = "Drug", domainTable = "drug_exposure", analysisId = analysisDetail["ANALYSIS_ID"][[1]],
-        tempAchillesPrefix = tempAchillesPrefix))
-    })
-
-    distCostProcedureSqls <- apply(distCostAnalysisDetails[distCostAnalysisDetails$STRATUM_1_NAME ==
-      "procedure_concept_id", ], 1, function(analysisDetail) {
-      list(analysisId = analysisDetail["ANALYSIS_ID"][[1]],
-           sql = SqlRender::loadRenderTranslateSql(sqlFilename = "analyses/cost_distribution_template.sql",
-        packageName = "Achilles", dbms = connectionDetails$dbms, warnOnMissingParameters = FALSE,
-        cdmVersion = cdmVersion, schemaDelim = schemaDelim, cdmDatabaseSchema = cdmDatabaseSchema,
-        scratchDatabaseSchema = scratchDatabaseSchema, tempEmulationSchema = tempEmulationSchema,
-        costColumn = procedureCostMappings[procedureCostMappings$OLD == analysisDetail["DISTRIBUTED_FIELD"][[1]],
-          ]$CURRENT, domainId = "Procedure", domainTable = "procedure_occurrence", analysisId = analysisDetail["ANALYSIS_ID"][[1]],
-        tempAchillesPrefix = tempAchillesPrefix))
-    })
-
-    distCostAnalysisSqls <- c(distCostDrugSqls, distCostProcedureSqls)
-
-    achillesSql <- c(achillesSql, lapply(distCostAnalysisSqls, function(s) s$sql))
-
-    if (!sqlOnly & length(distCostAnalysisSqls) > 0) {
-      if (numThreads == 1) {
-        for (distCostAnalysisSql in distCostAnalysisSqls) {
-          start <- Sys.time()
-          ParallelLogger::logInfo(sprintf("[Cost Analysis] [START] %d",
-                                          as.integer(distCostAnalysisSql$analysisId)))
-          DatabaseConnector::executeSql(connection = connection, sql = distCostAnalysisSql$sql,
-          errorReportFile = file.path(getwd(),
-                                      paste0("achillesError_", distCostAnalysisSql$analysisId,
-            ".txt")))
-          delta <- Sys.time() - start
-          ParallelLogger::logInfo(sprintf("[Cost Analysis] [COMPLETE] %d (%f %s)",
-                                          as.integer(distCostAnalysisSql$analysisId),
-
-          delta, attr(delta, "units")))
-        }
-      } else {
-        cluster <- ParallelLogger::makeCluster(numberOfThreads = length(distCostAnalysisSqls),
-          singleThreadToMain = TRUE)
-        results <- ParallelLogger::clusterApply(cluster = cluster, x = distCostAnalysisSqls,
-          function(distCostAnalysisSql) {
-          start <- Sys.time()
-          ParallelLogger::logInfo(sprintf("[Cost Analysis] [START] %d",
-                                          as.integer(distCostAnalysisSql$analysisId)))
-          connection <- DatabaseConnector::connect(connectionDetails = connectionDetails)
-          on.exit(DatabaseConnector::disconnect(connection = connection))
-          DatabaseConnector::executeSql(connection = connection, sql = distCostAnalysisSql$sql,
-            errorReportFile = file.path(getwd(),
-                                        paste0("achillesError_", distCostAnalysisSql$analysisId,
-            ".txt")))
-          delta <- Sys.time() - start
-          ParallelLogger::logInfo(sprintf("[Cost Analysis] [COMPLETE] %d (%f %s)",
-                                          as.integer(distCostAnalysisSql$analysisId),
-
-            delta, attr(delta, "units")))
-          })
-        ParallelLogger::stopCluster(cluster = cluster)
-      }
-    }
-  }
-
   # Generate Main Analyses
   # ----------------------------------------------------------------------------------------------------------------
 
   mainAnalysisIds <- analysisDetails$ANALYSIS_ID
-  if (runCostAnalysis) {
-    # remove distributed cost analysis ids, since that's been executed already
-    mainAnalysisIds <- dplyr::anti_join(x = analysisDetails,
-                                        y = distCostAnalysisDetails,
-                                        by = "ANALYSIS_ID")$ANALYSIS_ID
-  }
+  
   mainSqls <- lapply(mainAnalysisIds, function(analysisId) {
     list(analysisId = analysisId,
          sql = .getAnalysisSql(analysisId = analysisId, connectionDetails = connectionDetails,
@@ -602,8 +444,7 @@ achilles <- function(connectionDetails,
       createTable = createTable, schemaDelim = schemaDelim, scratchDatabaseSchema = scratchDatabaseSchema,
       resultsDatabaseSchema = resultsDatabaseSchema, tempEmulationSchema = tempEmulationSchema,
       cdmVersion = cdmVersion, tempAchillesPrefix = tempAchillesPrefix, numThreads = numThreads,
-      smallCellCount = smallCellCount, outputFolder = outputFolder, sqlOnly = sqlOnly, includeRawCost = ifelse(table$detailType ==
-        "results_dist", runCostAnalysis, FALSE))
+      smallCellCount = smallCellCount, outputFolder = outputFolder, sqlOnly = sqlOnly)
   })
 
   achillesSql <- c(achillesSql, mergeSqls)
@@ -956,15 +797,6 @@ dropAllScratchTables <- function(connectionDetails,
       sql <- SqlRender::translate(sql = sql, targetDialect = connectionDetails$dbms)
     })
 
-    dropRawCostSqls <- lapply(c("Drug", "Procedure"), function(domainId) {
-      sql <- SqlRender::render(sql = "IF OBJECT_ID('@scratchDatabaseSchema@schemaDelim@tempAchillesPrefix_@domainId_cost_raw', 'U') IS NOT NULL DROP TABLE @scratchDatabaseSchema@schemaDelim@tempAchillesPrefix_@domainId_cost_raw;",
-        scratchDatabaseSchema = scratchDatabaseSchema, schemaDelim = schemaDelim, tempAchillesPrefix = tempAchillesPrefix,
-        domainId = domainId)
-      sql <- SqlRender::translate(sql = sql, targetDialect = connectionDetails$dbms)
-    })
-
-    dropSqls <- c(dropSqls, dropRawCostSqls)
-
     cluster <- ParallelLogger::makeCluster(numberOfThreads = numThreads, singleThreadToMain = TRUE)
     dummy <- ParallelLogger::clusterApply(cluster = cluster, x = dropSqls, function(sql) {
       connection <- DatabaseConnector::connect(connectionDetails = connectionDetails)
@@ -1103,7 +935,7 @@ optimizeAtlasCache <- function(connectionDetails,
                                         schemaDelim,
 
   scratchDatabaseSchema, resultsDatabaseSchema, tempEmulationSchema, cdmVersion, tempAchillesPrefix,
-  numThreads, smallCellCount, outputFolder, sqlOnly, includeRawCost) {
+  numThreads, smallCellCount, outputFolder, sqlOnly) {
   castedNames <- apply(resultsTable$schema, 1, function(field) {
     SqlRender::render("cast(@fieldName as @fieldType) as @fieldName",
                       fieldName = field["FIELD_NAME"],
@@ -1146,30 +978,6 @@ optimizeAtlasCache <- function(connectionDetails,
     }
     analysisSql
   })
-
-  if (!sqlOnly & includeRawCost) {
-    # obtain the runTime for this analysis
-
-    benchmarkSqls <- lapply(c(15000, 16000), function(rawCostId) {
-      runTime <- .getAchillesResultBenchmark(rawCostId, outputFolder)
-
-      benchmarkSelects <- lapply(resultsTable$schema$FIELD_NAME, function(c) {
-        if (tolower(c) == "analysis_id") {
-          sprintf("%d as analysis_id", .getBenchmarkOffset() + rawCostId)
-        } else if (tolower(c) == "stratum_1") {
-          sprintf("'%s' as stratum_1", runTime)
-        } else if (tolower(c) == "count_value") {
-          sprintf("%d as count_value", smallCellCount + 1)
-        } else {
-          sprintf("NULL as %s", c)
-        }
-      })
-      SqlRender::render(sql = "select @benchmarkSelect", benchmarkSelect = paste(benchmarkSelects,
-        collapse = ", "))
-    })
-    benchmarkSql <- paste(benchmarkSqls, collapse = " union all ")
-    detailSqls <- c(detailSqls, benchmarkSql)
-  }
 
   SqlRender::loadRenderTranslateSql(sqlFilename = "analyses/merge_achilles_tables.sql",
                                     packageName = "Achilles",

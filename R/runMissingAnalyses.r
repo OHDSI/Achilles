@@ -55,8 +55,6 @@
 #'                                must specify the name of the database schema where you want all
 #'                                temporary tables to be managed. Requires create/insert permissions to
 #'                                this database.
-#' @param runCostAnalysis         Boolean to determine if cost analysis should be run. Note: only works
-#'                                on v5.1+ style cost tables.
 #' @param outputFolder            Path to store logs and SQL files
 #' @param defaultAnalysesOnly     Boolean to determine if only default analyses should be run.
 #'                                Including non-default analyses is substantially more resource
@@ -77,29 +75,21 @@ runMissingAnalyses <- function(connectionDetails,
                                resultsDatabaseSchema = cdmDatabaseSchema,
 
   scratchDatabaseSchema = resultsDatabaseSchema, vocabDatabaseSchema = cdmDatabaseSchema, tempEmulationSchema = resultsDatabaseSchema,
-  outputFolder = "output", defaultAnalysesOnly = TRUE, runCostAnalysis = FALSE) {
+  outputFolder = "output", defaultAnalysesOnly = TRUE) {
 
   # Determine which analyses are missing by comparing analysisDetails with achilles_results and
   # achilles_results_dist
   analysisDetails <- getAnalysisDetails()
 
   # Determine which analyses to run
-  index1 <- which(analysisDetails$IS_DEFAULT == 1 & analysisDetails$COST == 1 & analysisDetails$DISTRIBUTION ==
-    0)
-  index2 <- which(analysisDetails$IS_DEFAULT == 1 & analysisDetails$COST == 1 & analysisDetails$DISTRIBUTION ==
-    1)
-  index3 <- which(analysisDetails$IS_DEFAULT == 1 & analysisDetails$COST == 0 & analysisDetails$DISTRIBUTION ==
-    0)
-  index4 <- which(analysisDetails$IS_DEFAULT == 1 & analysisDetails$COST == 0 & analysisDetails$DISTRIBUTION ==
-    1)
-  index5 <- which(analysisDetails$IS_DEFAULT == 0 & analysisDetails$COST == 1 & analysisDetails$DISTRIBUTION ==
-    0)
-  index6 <- which(analysisDetails$IS_DEFAULT == 0 & analysisDetails$COST == 1 & analysisDetails$DISTRIBUTION ==
-    1)
-  index7 <- which(analysisDetails$IS_DEFAULT == 0 & analysisDetails$COST == 0 & analysisDetails$DISTRIBUTION ==
-    0)
-  index8 <- which(analysisDetails$IS_DEFAULT == 0 & analysisDetails$COST == 0 & analysisDetails$DISTRIBUTION ==
-    1)
+  index1 <- which(analysisDetails$IS_DEFAULT == 1 & analysisDetails$COST == 1 & analysisDetails$DISTRIBUTION == 0)
+  index2 <- which(analysisDetails$IS_DEFAULT == 1 & analysisDetails$COST == 1 & analysisDetails$DISTRIBUTION == 1)
+  index3 <- which(analysisDetails$IS_DEFAULT == 1 & analysisDetails$COST == 0 & analysisDetails$DISTRIBUTION == 0)
+  index4 <- which(analysisDetails$IS_DEFAULT == 1 & analysisDetails$COST == 0 & analysisDetails$DISTRIBUTION == 1)
+  index5 <- which(analysisDetails$IS_DEFAULT == 0 & analysisDetails$COST == 1 & analysisDetails$DISTRIBUTION == 0)
+  index6 <- which(analysisDetails$IS_DEFAULT == 0 & analysisDetails$COST == 1 & analysisDetails$DISTRIBUTION == 1)
+  index7 <- which(analysisDetails$IS_DEFAULT == 0 & analysisDetails$COST == 0 & analysisDetails$DISTRIBUTION == 0)
+  index8 <- which(analysisDetails$IS_DEFAULT == 0 & analysisDetails$COST == 0 & analysisDetails$DISTRIBUTION == 1)
 
   if (defaultAnalysesOnly && runCostAnalysis) {
     allResultAnalysisIds <- analysisDetails[index1, ]$ANALYSIS_ID
@@ -132,12 +122,6 @@ runMissingAnalyses <- function(connectionDetails,
   missingResultAnalysisIds <- setdiff(allResultAnalysisIds, existingResultAnalysisIds)
   missingDistAnalysisIds <- setdiff(allDistAnalysisIds, existingDistAnalysisIds)
 
-  # Exclude analyses skipped due to missing cohort table
-  if (!("COHORT" %in% DatabaseConnector::getTableNames(conn, resultsDatabaseSchema))) {
-    missingResultAnalysisIds <- missingResultAnalysisIds[-which(missingResultAnalysisIds %in% c(1700,
-      1701))]
-  }
-
   DatabaseConnector::disconnect(conn)
 
   missingAnalysisIds <- c(missingResultAnalysisIds, missingDistAnalysisIds)
@@ -150,9 +134,8 @@ runMissingAnalyses <- function(connectionDetails,
     achilles(connectionDetails = connectionDetails,
              cdmDatabaseSchema = cdmDatabaseSchema,
              resultsDatabaseSchema = resultsDatabaseSchema,
-
       scratchDatabaseSchema = scratchDatabaseSchema, vocabDatabaseSchema = cdmDatabaseSchema, tempEmulationSchema = tempEmulationSchema,
-      analysisIds = missingAnalysisIds, defaultAnalysesOnly = defaultAnalysesOnly, runCostAnalysis = runCostAnalysis,
+      analysisIds = missingAnalysisIds, defaultAnalysesOnly = defaultAnalysesOnly,
       outputFolder = outputFolder, createTable = FALSE, updateGivenAnalysesOnly = TRUE)
   }
 }
