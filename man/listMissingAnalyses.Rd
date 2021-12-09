@@ -11,19 +11,20 @@ listMissingAnalyses(connectionDetails, resultsDatabaseSchema)
 function \code{createConnectionDetails} in the
 \code{DatabaseConnector} package.}
 
-\item{resultsDatabaseSchema}{Fully qualified name of database schema that contains achilles_results and achilles_results_dist tables.}
+\item{resultsDatabaseSchema}{Fully qualified name of database schema that contains
+achilles_results and achilles_results_dist tables.}
 }
 \value{
 A dataframe which is a subset of \code{getAnalysisDetails}
 }
 \description{
-\code{listMissingAnalyses} Find and return analyses that exist in \code{getAnalysisDetails}, but not in achilles_results or achilles_results_dist
+\code{listMissingAnalyses} Find and return analyses that exist in \code{getAnalysisDetails}, but
+not in achilles_results or achilles_results_dist
 }
 \examples{
 \dontrun{
-Achilles::listMissingAnalyses(
-	connectionDetails     = connectionDetails,
-	resultsDatabaseSchema = "results")
+Achilles::listMissingAnalyses(connectionDetails = connectionDetails,
+                              resultsDatabaseSchema = "results")
 }
 
 }

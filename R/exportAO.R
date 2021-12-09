@@ -746,7 +746,7 @@ generateAOMeasurementReports <- function(connectionDetails, dataMeasurements, cd
   dataUpperLimitDistribution <- DatabaseConnector::querySql(conn,queryUpperLimitDistribution)
   dataValuesRelativeToNorm <- DatabaseConnector::querySql(conn,queryValuesRelativeToNorm)
   dataFrequencyDistribution <- DatabaseConnector::querySql(conn,queryFrequencyDistribution)
-    
+  
   uniqueConcepts <- unique(dataPrevalenceByMonth$CONCEPT_ID)
   buildMeasurementReport <- function(concept_id) {
     summaryRecord <- dataMeasurements[dataMeasurements$CONCEPT_ID==concept_id,]
@@ -768,7 +768,7 @@ generateAOMeasurementReports <- function(connectionDetails, dataMeasurements, cd
     report$LOWER_LIMIT_DISTRIBUTION <- dataLowerLimitDistribution[dataLowerLimitDistribution$CONCEPT_ID == concept_id,c(2,3,4,5,6,7,8,9)]
     report$UPPER_LIMIT_DISTRIBUTION <- dataUpperLimitDistribution[dataUpperLimitDistribution$CONCEPT_ID == concept_id,c(2,3,4,5,6,7,8,9)]
     report$VALUES_RELATIVE_TO_NORM <- dataValuesRelativeToNorm[dataValuesRelativeToNorm$MEASUREMENT_CONCEPT_ID == concept_id,c(4,5)]
-	    
+    
     dir.create(paste0(outputPath,"/concepts/measurement"),recursive=T,showWarnings = F)    
     filename <- paste(outputPath, "/concepts/measurement/concept_" , concept_id , ".json", sep='')  
     write(jsonlite::toJSON(report),filename)  
@@ -1024,40 +1024,44 @@ generateAODeviceReports <- function(connectionDetails, dataDevices, cdmDatabaseS
 generateAOConditionReports <- function(connectionDetails, dataConditions, cdmDatabaseSchema, resultsDatabaseSchema, vocabDatabaseSchema, outputPath) 
 {
   writeLines("Generating condition reports")
-  queryPrevalenceByGenderAgeYear <- SqlRender::loadRenderTranslateSql(sqlFilename = "export/condition/sqlPrevalenceByGenderAgeYear.sql",
-                                                                      packageName = "Achilles",
-                                                                      dbms = connectionDetails$dbms,
-                                                                      warnOnMissingParameters = FALSE,
-                                                                      cdm_database_schema = cdmDatabaseSchema,
-                                                                      results_database_schema = resultsDatabaseSchema,
-                                                                      vocab_database_schema = vocabDatabaseSchema
+  queryPrevalenceByGenderAgeYear <- SqlRender::loadRenderTranslateSql(
+    sqlFilename = "export/condition/sqlPrevalenceByGenderAgeYear.sql",
+    packageName = "Achilles",
+    dbms = connectionDetails$dbms,
+    warnOnMissingParameters = FALSE,
+    cdm_database_schema = cdmDatabaseSchema,
+    results_database_schema = resultsDatabaseSchema,
+    vocab_database_schema = vocabDatabaseSchema
   )
   
-  queryPrevalenceByMonth <- SqlRender::loadRenderTranslateSql(sqlFilename = "export/condition/sqlPrevalenceByMonth.sql",
-                                                              packageName = "Achilles",
-                                                              dbms = connectionDetails$dbms,
-                                                              warnOnMissingParameters = FALSE,
-                                                              cdm_database_schema = cdmDatabaseSchema,
-                                                              results_database_schema = resultsDatabaseSchema,
-                                                              vocab_database_schema = vocabDatabaseSchema
+  queryPrevalenceByMonth <- SqlRender::loadRenderTranslateSql(
+    sqlFilename = "export/condition/sqlPrevalenceByMonth.sql",
+    packageName = "Achilles",
+    dbms = connectionDetails$dbms,
+    warnOnMissingParameters = FALSE,
+    cdm_database_schema = cdmDatabaseSchema,
+    results_database_schema = resultsDatabaseSchema,
+    vocab_database_schema = vocabDatabaseSchema
   )
   
-  queryConditionsByType <- SqlRender::loadRenderTranslateSql(sqlFilename = "export/condition/sqlConditionsByType.sql",
-                                                             packageName = "Achilles",
-                                                             dbms = connectionDetails$dbms,
-                                                             warnOnMissingParameters = FALSE,
-                                                             cdm_database_schema = cdmDatabaseSchema,
-                                                             results_database_schema = resultsDatabaseSchema,
-                                                             vocab_database_schema = vocabDatabaseSchema
+  queryConditionsByType <- SqlRender::loadRenderTranslateSql(
+    sqlFilename = "export/condition/sqlConditionsByType.sql",
+    packageName = "Achilles",
+    dbms = connectionDetails$dbms,
+    warnOnMissingParameters = FALSE,
+    cdm_database_schema = cdmDatabaseSchema,
+    results_database_schema = resultsDatabaseSchema,
+    vocab_database_schema = vocabDatabaseSchema
   )
   
-  queryAgeAtFirstDiagnosis <- SqlRender::loadRenderTranslateSql(sqlFilename = "export/condition/sqlAgeAtFirstDiagnosis.sql",
-                                                                packageName = "Achilles",
-                                                                dbms = connectionDetails$dbms,
-                                                                warnOnMissingParameters = FALSE,
-                                                                cdm_database_schema = cdmDatabaseSchema,
-                                                                results_database_schema = resultsDatabaseSchema,
-                                                                vocab_database_schema = vocabDatabaseSchema
+  queryAgeAtFirstDiagnosis <- SqlRender::loadRenderTranslateSql(
+    sqlFilename = "export/condition/sqlAgeAtFirstDiagnosis.sql",
+    packageName = "Achilles",
+    dbms = connectionDetails$dbms,
+    warnOnMissingParameters = FALSE,
+    cdm_database_schema = cdmDatabaseSchema,
+    results_database_schema = resultsDatabaseSchema,
+    vocab_database_schema = vocabDatabaseSchema
   )
   
   conn <- DatabaseConnector::connect(connectionDetails)
@@ -1089,6 +1093,79 @@ generateAOConditionReports <- function(connectionDetails, dataConditions, cdmDat
   x <- lapply(uniqueConcepts, buildConditionReport)  
 }
 
+generateAOConditionEraReports <- function(connectionDetails, dataConditionEra, cdmDatabaseSchema, resultsDatabaseSchema, vocabDatabaseSchema, outputPath)
+{
+  writeLines("Generating condition era reports")
+
+  queryPrevalenceByGenderAgeYear <- SqlRender::loadRenderTranslateSql(
+    sqlFilename = "export/conditionera/sqlPrevalenceByGenderAgeYear.sql",
+    packageName = "Achilles",
+    dbms = connectionDetails$dbms,
+    warnOnMissingParameters = FALSE,
+    cdm_database_schema = cdmDatabaseSchema,
+    results_database_schema = resultsDatabaseSchema,
+    vocab_database_schema = vocabDatabaseSchema
+  )
+  
+  queryPrevalenceByMonth <- SqlRender::loadRenderTranslateSql(
+    sqlFilename = "export/conditionera/sqlPrevalenceByMonth.sql",
+    packageName = "Achilles",
+    dbms = connectionDetails$dbms,
+    warnOnMissingParameters = FALSE,
+    cdm_database_schema = cdmDatabaseSchema,
+    results_database_schema = resultsDatabaseSchema,
+    vocab_database_schema = vocabDatabaseSchema
+  )
+  
+  queryAgeAtFirstDiagnosis <- SqlRender::loadRenderTranslateSql(
+    sqlFilename = "export/conditionera/sqlAgeAtFirstDiagnosis.sql",
+    packageName = "Achilles",
+    dbms = connectionDetails$dbms,
+    warnOnMissingParameters = FALSE,
+    cdm_database_schema = cdmDatabaseSchema,
+    results_database_schema = resultsDatabaseSchema,
+    vocab_database_schema = vocabDatabaseSchema
+  )
+  
+  queryLengthOfEra <- SqlRender::loadRenderTranslateSql(
+    sqlFilename = "export/conditionera/sqlLengthOfEra.sql",
+    packageName = "Achilles",
+    dbms = connectionDetails$dbms,
+    warnOnMissingParameters = FALSE,
+    cdm_database_schema = cdmDatabaseSchema,
+    results_database_schema = resultsDatabaseSchema,
+    vocab_database_schema = vocabDatabaseSchema
+  )
+  
+  conn <- DatabaseConnector::connect(connectionDetails)  
+  dataPrevalenceByGenderAgeYear <- DatabaseConnector::querySql(conn, queryPrevalenceByGenderAgeYear)
+  dataPrevalenceByMonth <- DatabaseConnector::querySql(conn, queryPrevalenceByMonth)
+  dataLengthOfEra <- DatabaseConnector::querySql(conn, queryLengthOfEra)
+  dataAgeAtFirstDiagnosis <- DatabaseConnector::querySql(conn, queryAgeAtFirstDiagnosis)
+  uniqueConcepts <- unique(dataConditionEra$CONCEPT_ID)
+
+  buildConditionEraReport <- function(concept_id) {
+    summaryRecord <- dataConditionEra[dataConditionEra$CONCEPT_ID==concept_id,]
+    report <- {}
+    report$CONCEPT_ID <- concept_id
+    report$CDM_TABLE_NAME <- "CONDITION_ERA"
+    report$CONCEPT_NAME <- summaryRecord$CONCEPT_NAME
+    report$NUM_PERSONS <- summaryRecord$NUM_PERSONS
+    report$PERCENT_PERSONS <-summaryRecord$PERCENT_PERSONS
+    report$RECORDS_PER_PERSON <- summaryRecord$RECORDS_PER_PERSON
+    report$AGE_AT_FIRST_EXPOSURE <- dataAgeAtFirstDiagnosis[dataAgeAtFirstDiagnosis$CONCEPT_ID == concept_id,c(2,3,4,5,6,7,8,9)]
+    report$PREVALENCE_BY_GENDER_AGE_YEAR <- dataPrevalenceByGenderAgeYear[dataPrevalenceByGenderAgeYear$CONCEPT_ID == concept_id,c(2,3,4,5)]  
+    report$PREVALENCE_BY_MONTH <- dataPrevalenceByMonth[dataPrevalenceByMonth$CONCEPT_ID == concept_id,c(2,3)]
+    report$LENGTH_OF_ERA <- dataLengthOfEra[dataLengthOfEra$CONCEPT_ID == concept_id, c(2,3,4,5,6,7,8,9)]
+    
+    dir.create(paste0(outputPath,"/concepts/condition_era"),recursive=T,showWarnings = F)        
+    filename <- paste(outputPath, "/concepts/condition_era/concept_" , concept_id , ".json", sep='')  
+    write(jsonlite::toJSON(report),filename)  
+  }
+  
+  x <- lapply(uniqueConcepts, buildConditionEraReport)
+}
+
 #' @title exportAO
 #'
 #' @description
@@ -1108,11 +1185,12 @@ generateAOConditionReports <- function(connectionDetails, dataConditions, cdmDat
 #' See \code{showReportTypes} for a list of all report types
 #' 
 #' @return none 
-#' @examples \dontrun{
-#'   connectionDetails <- DatabaseConnector::createConnectionDetails(dbms="sql server", server="yourserver")
-#'   exportToJson(connectionDetails, cdmDatabaseSchema="cdm4_sim", outputPath="your/output/path")
-#' }
-#' @export
+#' 
+#'@importFrom data.table fwrite
+#'@import lubridate
+#'@importFrom dplyr ntile desc
+#'@export
+#'
 exportAO <- function(
   connectionDetails, 
   cdmDatabaseSchema, 
@@ -1174,6 +1252,17 @@ exportAO <- function(
     )  
     conceptsPerPerson <- DatabaseConnector::querySql(conn,renderedSql)
     data.table::fwrite(conceptsPerPerson, file=paste0(sourceOutputPath, "/datadensity-concepts-per-person.csv"))
+    
+    # data density - domains per person
+    renderedSql <- SqlRender::loadRenderTranslateSql(
+      sqlFilename = "export/datadensity/domainsperperson.sql",
+      packageName = "Achilles",
+      dbms = connectionDetails$dbms,
+      results_database_schema = resultsDatabaseSchema
+    )  
+    domainsPerPerson <- DatabaseConnector::querySql(conn,renderedSql)
+    domainsPerPerson$PERCENT_VALUE <- round(as.numeric(domainsPerPerson$PERCENT_VALUE),2)
+    data.table::fwrite(domainsPerPerson, file=paste0(sourceOutputPath, "/datadensity-domains-per-person.csv"))    
   }
   
   if (length(reports) == 0  || (length(reports) > 0 && ("domain" %in% reports || "concept" %in% reports))) {
@@ -1205,19 +1294,19 @@ exportAO <- function(
     data.table::fwrite(dataConditions, file=paste0(sourceOutputPath, "/domain-summary-condition_occurrence.csv"))  
     
     # domain summary - condition eras
-    queryConditionEras <- SqlRender::loadRenderTranslateSql(
+    queryConditionEra <- SqlRender::loadRenderTranslateSql(
       sqlFilename = "export/conditionera/sqlConditionEraTable.sql",
       packageName = "Achilles",
       dbms = connectionDetails$dbms,
       results_database_schema = resultsDatabaseSchema,
       vocab_database_schema = vocabDatabaseSchema
     )  
-    dataConditionEras <- DatabaseConnector::querySql(conn,queryConditionEras)   
-    dataConditionEras$PERCENT_PERSONS <- format(round(dataConditionEras$PERCENT_PERSONS,4), nsmall=4)
-    dataConditionEras$PERCENT_PERSONS_NTILE <- dplyr::ntile(dplyr::desc(dataConditionEras$PERCENT_PERSONS),10)
-    dataConditionEras$RECORDS_PER_PERSON <- format(round(dataConditionEras$RECORDS_PER_PERSON,1),nsmall=1)
-    dataConditionEras$RECORDS_PER_PERSON_NTILE <- dplyr::ntile(dplyr::desc(dataConditionEras$RECORDS_PER_PERSON),10)
-    data.table::fwrite(dataConditionEras, file=paste0(sourceOutputPath, "/domain-summary-condition_era.csv"))     
+    dataConditionEra <- DatabaseConnector::querySql(conn,queryConditionEra)   
+    dataConditionEra$PERCENT_PERSONS <- format(round(dataConditionEra$PERCENT_PERSONS,4), nsmall=4)
+    dataConditionEra$PERCENT_PERSONS_NTILE <- dplyr::ntile(dplyr::desc(dataConditionEra$PERCENT_PERSONS),10)
+    dataConditionEra$RECORDS_PER_PERSON <- format(round(dataConditionEra$RECORDS_PER_PERSON,1),nsmall=1)
+    dataConditionEra$RECORDS_PER_PERSON_NTILE <- dplyr::ntile(dplyr::desc(dataConditionEra$RECORDS_PER_PERSON),10)
+    data.table::fwrite(dataConditionEra, file=paste0(sourceOutputPath, "/domain-summary-condition_era.csv"))     
     
     # domain summary - drugs
     queryDrugs <- SqlRender::loadRenderTranslateSql(
@@ -1256,14 +1345,12 @@ exportAO <- function(
       dbms = connectionDetails$dbms,
       results_database_schema = resultsDatabaseSchema,
       vocab_database_schema = vocabDatabaseSchema
-    )  	
-	dataMeasurements <- DatabaseConnector::querySql(conn,queryMeasurements)	
+    )  
+    dataMeasurements <- DatabaseConnector::querySql(conn,queryMeasurements)   
     dataMeasurements$PERCENT_PERSONS <- format(round(dataMeasurements$PERCENT_PERSONS,4), nsmall=4)
     dataMeasurements$PERCENT_PERSONS_NTILE <- dplyr::ntile(dplyr::desc(dataMeasurements$PERCENT_PERSONS), 10)
     dataMeasurements$RECORDS_PER_PERSON <- format(round(dataMeasurements$RECORDS_PER_PERSON,1),nsmall=1)
     dataMeasurements$RECORDS_PER_PERSON_NTILE <- dplyr::ntile(dplyr::desc(dataMeasurements$RECORDS_PER_PERSON), 10)
-	dataMeasurements$PERCENT_MISSING_VALUES <- format(round(dataMeasurements$PERCENT_MISSING_VALUES,4), nsmall=4)
-
     data.table::fwrite(dataMeasurements, file=paste0(sourceOutputPath, "/domain-summary-measurement.csv"))   
     
     # domain summary - observations
@@ -1283,7 +1370,7 @@ exportAO <- function(
     
     # domain summary - visit details
     queryVisitDetails <- SqlRender::loadRenderTranslateSql(
-      sqlFilename = "export/visitdetail/sqlVisitDetailTreemapAO.sql",
+      sqlFilename = "export/visitdetail/sqlVisitDetailTreemap.sql",
       packageName = "Achilles",
       dbms = connectionDetails$dbms,
       results_database_schema = resultsDatabaseSchema,
@@ -1294,13 +1381,12 @@ exportAO <- function(
     dataVisitDetails$PERCENT_PERSONS_NTILE <- dplyr::ntile(dplyr::desc(dataVisitDetails$PERCENT_PERSONS),10)
     dataVisitDetails$RECORDS_PER_PERSON <- format(round(dataVisitDetails$RECORDS_PER_PERSON,1),nsmall=1)
     dataVisitDetails$RECORDS_PER_PERSON_NTILE <- dplyr::ntile(dplyr::desc(dataVisitDetails$RECORDS_PER_PERSON),10)
-    dataVisitDetails$AVERAGE_DURATION <- format(round(dataVisitDetails$AVERAGE_DURATION,1),nsmall=1)
     names(dataVisitDetails)[names(dataVisitDetails) == 'CONCEPT_PATH'] <- 'CONCEPT_NAME'
     data.table::fwrite(dataVisitDetails, file=paste0(sourceOutputPath, "/domain-summary-visit_detail.csv"))      
     
     # domain summary - visits
     queryVisits <- SqlRender::loadRenderTranslateSql(
-      sqlFilename = "export/visit/sqlVisitTreemapAO.sql",
+      sqlFilename = "export/visit/sqlVisitTreemap.sql",
       packageName = "Achilles",
       dbms = connectionDetails$dbms,
       results_database_schema = resultsDatabaseSchema,
@@ -1311,7 +1397,6 @@ exportAO <- function(
     dataVisits$PERCENT_PERSONS_NTILE <- dplyr::ntile(dplyr::desc(dataVisits$PERCENT_PERSONS),10)
     dataVisits$RECORDS_PER_PERSON <- format(round(dataVisits$RECORDS_PER_PERSON,1),nsmall=1)
     dataVisits$RECORDS_PER_PERSON_NTILE <- dplyr::ntile(dplyr::desc(dataVisits$RECORDS_PER_PERSON),10)
-    dataVisits$AVERAGE_DURATION <- format(round(dataVisits$AVERAGE_DURATION,1),nsmall=1)
     names(dataVisits)[names(dataVisits) == 'CONCEPT_PATH'] <- 'CONCEPT_NAME'
     data.table::fwrite(dataVisits, file=paste0(sourceOutputPath, "/domain-summary-visit_occurrence.csv"))   
     
@@ -1366,6 +1451,11 @@ exportAO <- function(
       results_database_schema = resultsDatabaseSchema
     )  
     dataCompleteness <- DatabaseConnector::querySql(conn,queryCompleteness)   
+    dataCompleteness <- dataCompleteness[order(-dataCompleteness$RECORD_COUNT),]
+    # prevent downstream crashes with large files
+    if (nrow(dataCompleteness) > 100000) {
+      dataCompleteness <- dataCompleteness[1:100000,]
+    }
     data.table::fwrite(dataCompleteness, file=paste0(sourceOutputPath, "/quality-completeness.csv"))   
   }
 
@@ -1381,6 +1471,7 @@ exportAO <- function(
     generateAOVisitDetailReports(connectionDetails, cdmDatabaseSchema, resultsDatabaseSchema, vocabDatabaseSchema, sourceOutputPath)    
     generateAOMeasurementReports(connectionDetails, dataMeasurements, cdmDatabaseSchema, resultsDatabaseSchema, vocabDatabaseSchema, sourceOutputPath)
     generateAOConditionReports(connectionDetails, dataConditions, cdmDatabaseSchema, resultsDatabaseSchema, vocabDatabaseSchema, sourceOutputPath)
+    generateAOConditionEraReports(connectionDetails, dataConditionEra, cdmDatabaseSchema, resultsDatabaseSchema, vocabDatabaseSchema, sourceOutputPath)
     generateAODrugReports(connectionDetails, dataDrugs, cdmDatabaseSchema, resultsDatabaseSchema, vocabDatabaseSchema, sourceOutputPath)
     generateAODeviceReports(connectionDetails, dataDevices, cdmDatabaseSchema, resultsDatabaseSchema, vocabDatabaseSchema, sourceOutputPath)    
     generateAODrugEraReports(connectionDetails, dataDrugEra, cdmDatabaseSchema, resultsDatabaseSchema, vocabDatabaseSchema, sourceOutputPath)

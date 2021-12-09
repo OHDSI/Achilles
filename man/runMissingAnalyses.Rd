@@ -10,7 +10,7 @@ runMissingAnalyses(
   resultsDatabaseSchema = cdmDatabaseSchema,
   scratchDatabaseSchema = resultsDatabaseSchema,
   vocabDatabaseSchema = cdmDatabaseSchema,
-  oracleTempSchema = resultsDatabaseSchema,
+  tempEmulationSchema = resultsDatabaseSchema,
   outputFolder = "output",
   defaultAnalysesOnly = TRUE,
   runCostAnalysis = FALSE
@@ -41,7 +41,8 @@ temporary tables instead of permanent tables.}
 is cdmDatabaseSchema. On SQL Server, this should specifiy both the
 database and the schema, so for example 'results.dbo'.}
 
-\item{oracleTempSchema}{For Oracle only: the name of the database schema where you want all
+\item{tempEmulationSchema}{Formerly tempEmulationSchema.  For databases like Oracle where you
+must specify the name of the database schema where you want all
 temporary tables to be managed. Requires create/insert permissions to
 this database.}
 
@@ -59,11 +60,11 @@ on v5.1+ style cost tables.}
 }
 \examples{
 \dontrun{
-Achilles::runMissingAnalyses(
-	connectionDetails     = connectionDetails,
- cdmDatabaseSchema     = "cdm",
-	resultsDatabaseSchema = "results",
- outputFolder          = "/tmp")
+Achilles::runMissingAnalyses(connectionDetails = connectionDetails,
+                             cdmDatabaseSchema = "cdm",
+                             resultsDatabaseSchema = "results",
+
+  outputFolder = "/tmp")
 }
 
 }

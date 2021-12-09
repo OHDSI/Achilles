@@ -9,14 +9,14 @@ months as (select '01' as num union select '02' num union select '03' num union 
 date_keys as (select concat(century.num, tens.num, ones.num,months.num)  obs_month from century cross join tens cross join ones cross join months),
 -- From date_keys, we just need each year and the first and last day of each year
 ymd as (
-select cast(substring(obs_month,1,4) as integer)      as obs_year,
-       min(cast(substring(obs_month,5,2) as integer)) as month_start,
-       1                                              as day_start,
-       max(cast(substring(obs_month,5,2) as integer)) as month_end,
-       31                                             as day_end
+select cast(left(obs_month,4) as integer)               as obs_year,
+       min(cast(right(left(obs_month,6),2) as integer)) as month_start,
+       1                                                as day_start,
+       max(cast(right(left(obs_month,6),2) as integer)) as month_end,
+       31                                               as day_end
   from date_keys
- where substring(obs_month,5,2) in ('01','12')
- group by substring(obs_month,1,4)
+ where right(left(obs_month,6),2) in ('01','12')
+ group by left(obs_month,4)
 ),
 -- This gives us each year and the first and last day of the year 
 year_ranges as (

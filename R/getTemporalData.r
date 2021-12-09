@@ -26,21 +26,17 @@
 # @author Taha Abdul-Basser
 # @author Anthony Molinaro
 
-#'@title getTemporalData
+#' @title
+#' getTemporalData
 #'
 #' @description
-#' \code{getTemporalData} Retrieve specific monthly analyses data to support temporal characterization.
+#' \code{getTemporalData} Retrieve specific monthly analyses data to support temporal
+#' characterization.
 #'
 #' @details
-#' \code{getTemporalData} Assumes \code{achilles} has been run.
-#' \preformatted{Currently supported Achilles monthly analyses are:
-#' 202  - Visit Occurrence
-#' 402  - Condition occurrence
-#' 602  - Procedure Occurrence
-#' 702  - Drug Exposure
-#' 802  - Observation
-#' 1802 - Measurement
-#' 2102 - Device}
+#' \code{getTemporalData} Assumes \code{achilles} has been run. \preformatted{Currently supported
+#' Achilles monthly analyses are: 202 - Visit Occurrence 402 - Condition occurrence 602 - Procedure
+#' Occurrence 702 - Drug Exposure 802 - Observation 1802 - Measurement 2102 - Device}
 #'
 #' @param connectionDetails       An R object of type \code{connectionDetails} created using the
 #'                                function \code{createConnectionDetails} in the
@@ -53,65 +49,65 @@
 #'                                specifiy both the database and the schema, so for example, on SQL
 #'                                Server, 'cdm_results.dbo'.
 #' @param analysisIds             (OPTIONAL) A vector containing the set of Achilles analysisIds for
-#'                                which results will be returned. The following are supported: \code{202,402,602,702,802,1802,2102}.
-#'                                If not specified, data for all analysis will be returned. Ignored if \code{conceptId} is given. 
-#' @param conceptId               (OPTIONAL) A SNOMED concept_id from the \code{CONCEPT} table for which a monthly Achilles analysis exists.
-#'                                If not specified, all concepts for a given analysis will be returned.
+#'                                which results will be returned. The following are supported:
+#'                                \code{202,402,602,702,802,1802,2102}. If not specified, data for all
+#'                                analysis will be returned. Ignored if \code{conceptId} is given.
+#' @param conceptId               (OPTIONAL) A SNOMED concept_id from the \code{CONCEPT} table for
+#'                                which a monthly Achilles analysis exists. If not specified, all
+#'                                concepts for a given analysis will be returned.
 #' @return
-#' A data frame of query results from \code{DatabaseConnector} 
+#' A data frame of query results from \code{DatabaseConnector}
 #'
 #' @examples
 #' \dontrun{
 #' pneumonia <- 255848
-#' monthlyResults <- getTemporalData(
-#'                   	connectionDetails     = connectionDetails,
-#'                      cdmDatabaseSchema     = "cdm",
-#'                      resultsDatabaseSchema = "results",
-#'                      conceptId             = pneumonia)
+#' monthlyResults <- getTemporalData(connectionDetails = connectionDetails,
+#'                                   cdmDatabaseSchema = "cdm",
+#'
+#'   resultsDatabaseSchema = "results", conceptId = pneumonia)
 #' }
 #'
-#'@export
+#' @export
 
 
-getTemporalData <- function(connectionDetails, cdmDatabaseSchema, resultsDatabaseSchema, analysisIds = NULL, conceptId = NULL)
-{
-	if (!is.null(conceptId)) {
-		print(paste0("Retrieving Achilles monthly data for temporal support for concept_id: ",conceptId))
-		conceptIdGiven  <- TRUE
-		analysisIdGiven <- FALSE
-	} else if (!is.null(analysisIds)) {
-		print(paste0("Retrieving Achilles monthly data for temporal support for analyses: ",paste(analysisIds,collapse = ", ")))
-		conceptIdGiven  <- FALSE
-		analysisIdGiven <- TRUE
-	} else {
-		print("Retrieving Achilles monthly data for temporal support for all supported analyses")
-		conceptIdGiven  <- FALSE
-		analysisIdGiven <- FALSE
-	}
-		
-	if (typeof(connectionDetails$server) == "character")
-		dbName <- toupper(strsplit(connectionDetails$server,"/")[[1]][2])
-	else
-		dbName <- toupper(strsplit(connectionDetails$server(),"/")[[1]][2])
+getTemporalData <- function(connectionDetails,
+                            cdmDatabaseSchema,
+                            resultsDatabaseSchema,
+                            analysisIds = NULL,
 
-	translatedSql <- SqlRender::loadRenderTranslateSql(
-	  sqlFilename       = "temporal/achilles_temporal_data.sql",
-	  packageName       = "Achilles",
-	  dbms              = connectionDetails$dbms,
-	  db_name           = dbName,
-	  cdm_schema        = cdmDatabaseSchema,
-	  results_schema    = resultsDatabaseSchema,
-	  concept_id        = conceptId,
-	  analysis_ids      = analysisIds,
-	  concept_id_given  = conceptIdGiven,
-	  analysis_id_given = analysisIdGiven)
+  conceptId = NULL) {
+  if (!is.null(conceptId)) {
+    print(paste0("Retrieving Achilles monthly data for temporal support for concept_id: ",
+                 conceptId))
+    conceptIdGiven <- TRUE
+    analysisIdGiven <- FALSE
+  } else if (!is.null(analysisIds)) {
+    print(paste0("Retrieving Achilles monthly data for temporal support for analyses: ",
+                 paste(analysisIds,
+      collapse = ", ")))
+    conceptIdGiven <- FALSE
+    analysisIdGiven <- TRUE
+  } else {
+    print("Retrieving Achilles monthly data for temporal support for all supported analyses")
+    conceptIdGiven <- FALSE
+    analysisIdGiven <- FALSE
+  }
 
-	conn <- DatabaseConnector::connect(connectionDetails)
+  if (typeof(connectionDetails$server) == "character")
+    dbName <- toupper(strsplit(connectionDetails$server,
+                               "/")[[1]][2]) else dbName <- toupper(strsplit(connectionDetails$server(), "/")[[1]][2])
 
-    queryResults <- DatabaseConnector::querySql(conn,translatedSql)
+  translatedSql <- SqlRender::loadRenderTranslateSql(sqlFilename = "temporal/achilles_temporal_data.sql",
+    packageName = "Achilles", dbms = connectionDetails$dbms, db_name = dbName, cdm_schema = cdmDatabaseSchema,
+    results_schema = resultsDatabaseSchema, concept_id = conceptId, analysis_ids = analysisIds, concept_id_given = conceptIdGiven,
+    analysis_id_given = analysisIdGiven)
 
-    on.exit(DatabaseConnector::disconnect(conn))
+  conn <- DatabaseConnector::connect(connectionDetails)
 
-	return(queryResults)
+  queryResults <- DatabaseConnector::querySql(conn, translatedSql)
+
+  on.exit(DatabaseConnector::disconnect(conn))
+
+  return(queryResults)
 
 }

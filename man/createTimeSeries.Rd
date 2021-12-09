@@ -13,42 +13,36 @@ createTimeSeries(temporalData)
 A multivariate time series object
 }
 \description{
-\code{createTimeSeries} Creates a monthly multivariate time series object given a data frame in the proper format.
+\code{createTimeSeries} Creates a monthly multivariate time series object given a data frame in the
+proper format.
 }
 \details{
-\code{createTimeSeries} Requires the following:
-\preformatted{
-1. The given data frame must contain four columns: START_DATE, COUNT_VALUE, PREVALENCE, and PROPORTION_WITHIN_YEAR. 
-2. START_DATE must be in the YYYYMMDD format.
-3. COUNT_VALUE, PREVALENCE, and PROPORTION_WITHIN_YEAR contain only numeric data.
-}
-The individual monthly univariate time series can be extracted by specifying the correct column name (see example).
+\code{createTimeSeries} Requires the following: \preformatted{ 1. The given data frame must contain
+four columns: START_DATE, COUNT_VALUE, PREVALENCE, and PROPORTION_WITHIN_YEAR. 2. START_DATE must
+be in the YYYYMMDD format. 3. COUNT_VALUE, PREVALENCE, and PROPORTION_WITHIN_YEAR contain only
+numeric data. } The individual monthly univariate time series can be extracted by specifying the
+correct column name (see example).
 }
 \examples{
 \dontrun{
 # Example 1:
-temporalData <- data.frame(
-                  START_DATE  = seq.Date(as.Date("20210101","\%Y\%m\%d"),as.Date("20231201","\%Y\%m\%d"),by = "month"),
-                  COUNT_VALUE = round(runif(36,1,1000)),
-                  PREVALENCE  = round(runif(36,0,10),2),
-                  PROPORTION_WITHIN_YEAR = round(runif(36,0,1),2),
-                  stringsAsFactors = FALSE)
+temporalData <- data.frame(START_DATE = seq.Date(as.Date("20210101", "\%Y\%m\%d"),
+                                                 as.Date("20231201",
+  "\%Y\%m\%d"), by = "month"), COUNT_VALUE = round(runif(36, 1, 1000)), PREVALENCE = round(runif(36,
+  0, 10), 2), PROPORTION_WITHIN_YEAR = round(runif(36, 0, 1), 2), stringsAsFactors = FALSE)
 dummyTs <- createTimeSeries(temporalData)
-dummyTs.cv  <- dummyTs[,"COUNT_VALUE"]
-dummyTs.pv  <- dummyTs[,"PREVALENCE"]
-dummyTs.pwy <- dummyTs[,"PROPORTION_WITHIN_YEAR"]
+dummyTs.cv <- dummyTs[, "COUNT_VALUE"]
+dummyTs.pv <- dummyTs[, "PREVALENCE"]
+dummyTs.pwy <- dummyTs[, "PROPORTION_WITHIN_YEAR"]
 
 # Example 2:
 pneumonia <- 255848
-temporalData <- getTemporalData(
-                	connectionDetails     = connectionDetails,
-                 cdmDatabaseSchema     = "cdm",
-                 resultsDatabaseSchema = "results",
-                 conceptId             = pneumonia)
+temporalData <- getTemporalData(connectionDetails = connectionDetails, cdmDatabaseSchema = "cdm",
+  resultsDatabaseSchema = "results", conceptId = pneumonia)
 pneumoniaTs <- createTimeSeries(temporalData)
-pneumoniaTs.cv  <- pneumoniaTs[,"COUNT_VALUE"]
-pneumoniaTs.pv  <- pneumoniaTs[,"PREVALENCE"]
-pneumoniaTs.pwy <- pneumoniaTs[,"PROPORTION_WITHIN_YEAR"]
+pneumoniaTs.cv <- pneumoniaTs[, "COUNT_VALUE"]
+pneumoniaTs.pv <- pneumoniaTs[, "PREVALENCE"]
+pneumoniaTs.pwy <- pneumoniaTs[, "PROPORTION_WITHIN_YEAR"]
 }
 
 }
