@@ -1,3 +1,7 @@
+/* COST column mappings for the COST table.
+ * OLD == CDM v5, NEW == CDM v5+
+ */
+
 DOMAIN_ID,OLD,CURRENT
 Drug,paid_copay,paid_patient_copay
 Drug,paid_coinsurance,paid_patient_coinsurance

@@ -12,8 +12,7 @@ runMissingAnalyses(
   vocabDatabaseSchema = cdmDatabaseSchema,
   tempEmulationSchema = resultsDatabaseSchema,
   outputFolder = "output",
-  defaultAnalysesOnly = TRUE,
-  runCostAnalysis = FALSE
+  defaultAnalysesOnly = TRUE
 )
 }
 \arguments{
@@ -51,9 +50,6 @@ this database.}
 \item{defaultAnalysesOnly}{Boolean to determine if only default analyses should be run.
 Including non-default analyses is substantially more resource
 intensive.  Default = TRUE}
-
-\item{runCostAnalysis}{Boolean to determine if cost analysis should be run. Note: only works
-on v5.1+ style cost tables.}
 }
 \description{
 \code{runMissingAnalyses} Automatically find and compute analyses that haven't been executed.
