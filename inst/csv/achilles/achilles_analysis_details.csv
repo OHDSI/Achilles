@@ -222,28 +222,24 @@ ANALYSIS_ID,DISTRIBUTION,COST,DISTRIBUTED_FIELD,ANALYSIS_NAME,STRATUM_1_NAME,STR
 1414,0,0,,Number of persons with payer plan period before year-of-birth,,,,,,1,Payer Plan Period
 1415,0,0,,Number of persons with payer plan period end < payer plan period start,,,,,,1,Payer Plan Period
 1425,0,0,,Number of payer_plan_period records by payer_source_concept_id,payer_source_concept_id,,,,,1,Payer Plan Period
-1500,0,1,,Number of drug cost records with invalid drug exposure id,,,,,,1,Cost
-1501,0,1,,Number of drug cost records with invalid payer plan period id,,,,,,1,Cost
-1502,1,1,paid_copay,"Distribution of paid copay, by drug_concept_id",drug_concept_id,,,,,1,Cost
-1503,1,1,paid_coinsurance,"Distribution of paid coinsurance, by drug_concept_id",drug_concept_id,,,,,1,Cost
-1504,1,1,paid_toward_deductible,"Distribution of paid toward deductible, by drug_concept_id",drug_concept_id,,,,,1,Cost
-1505,1,1,paid_by_payer,"Distribution of paid by payer, by drug_concept_id",drug_concept_id,,,,,1,Cost
-1506,1,1,paid_by_coordination_benefits,"Distribution of paid by coordination of benefit, by drug_concept_id",drug_concept_id,,,,,1,Cost
-1507,1,1,total_out_of_pocket,"Distribution of total out-of-pocket, by drug_concept_id",drug_concept_id,,,,,1,Cost
-1508,1,1,total_paid,"Distribution of total paid, by drug_concept_id",drug_concept_id,,,,,1,Cost
-1509,1,1,ingredient_cost,"Distribution of ingredient_cost, by drug_concept_id",drug_concept_id,,,,,1,Cost
-1510,1,1,dispensing_fee,"Distribution of dispensing fee, by drug_concept_id",drug_concept_id,,,,,1,Cost
-1511,1,1,average_wholesale_price,"Distribution of average wholesale price, by drug_concept_id",drug_concept_id,,,,,1,Cost
-1600,0,1,,Number of procedure cost records with invalid procedure occurrence id,,,,,,1,Cost
-1601,0,1,,Number of procedure cost records with invalid payer plan period id,,,,,,1,Cost
-1602,1,1,paid_copay,"Distribution of paid copay, by procedure_concept_id",procedure_concept_id,,,,,1,Cost
-1603,1,1,paid_coinsurance,"Distribution of paid coinsurance, by procedure_concept_id",procedure_concept_id,,,,,1,Cost
-1604,1,1,paid_toward_deductible,"Distribution of paid toward deductible, by procedure_concept_id",procedure_concept_id,,,,,1,Cost
-1605,1,1,paid_by_payer,"Distribution of paid by payer, by procedure_concept_id",procedure_concept_id,,,,,1,Cost
-1606,1,1,paid_by_coordination_benefits,"Distribution of paid by coordination of benefit, by procedure_concept_id",procedure_concept_id,,,,,1,Cost
-1607,1,1,total_out_of_pocket,"Distribution of total out-of-pocket, by procedure_concept_id",procedure_concept_id,,,,,1,Cost
-1608,1,1,total_paid,"Distribution of total paid, by procedure_concept_id",procedure_concept_id,,,,,1,Cost
-1610,0,1,,Number of records by revenue_code_concept_id,revenue_code_concept_id,,,,,1,Cohort
+1502,1,1,paid_patient_copay,"Distribution of paid_patient_copay, by drug_concept_id",drug_concept_id,,,,,0,Cost
+1503,1,1,paid_patient_coinsurance,"Distribution of paid_patient_coinsurance, by drug_concept_id",drug_concept_id,,,,,0,Cost
+1504,1,1,paid_patient_deductible,"Distribution of paid_patient_deductible, by drug_concept_id",drug_concept_id,,,,,0,Cost
+1505,1,1,paid_by_payer,"Distribution of paid_by_payer, by drug_concept_id",drug_concept_id,,,,,0,Cost
+1506,1,1,paid_by_primary,"Distribution of paid_by_primary, by drug_concept_id",drug_concept_id,,,,,0,Cost
+1507,1,1,paid_by_patient,"Distribution of paid_by_patient, by drug_concept_id",drug_concept_id,,,,,0,Cost
+1508,1,1,total_paid,"Distribution of total_paid, by drug_concept_id",drug_concept_id,,,,,0,Cost
+1509,1,1,paid_ingredient_cost,"Distribution of paid_ingredient_cost, by drug_concept_id",drug_concept_id,,,,,0,Cost
+1510,1,1,paid_dispensing_fee,"Distribution of paid_dispensing_fee, by drug_concept_id",drug_concept_id,,,,,0,Cost
+1511,1,1,total_cost,"Distribution of total_cost, by drug_concept_id",drug_concept_id,,,,,0,Cost
+1602,1,1,paid_patient_copay,"Distribution of paid_patient_copay, by procedure_concept_id",procedure_concept_id,,,,,0,Cost
+1603,1,1,paid_patient_coinsurance,"Distribution of paid_patient_coinsurance, by procedure_concept_id",procedure_concept_id,,,,,0,Cost
+1604,1,1,paid_patient_deductible,"Distribution of paid_patient_deductible, by procedure_concept_id",procedure_concept_id,,,,,0,Cost
+1605,1,1,paid_by_payer,"Distribution of paid_by_payer, by procedure_concept_id",procedure_concept_id,,,,,0,Cost
+1606,1,1,paid_by_primary,"Distribution of paid_by_primary, by procedure_concept_id",procedure_concept_id,,,,,0,Cost
+1607,1,1,paid_by_patient,"Distribution of paid_by_patient, by procedure_concept_id",procedure_concept_id,,,,,0,Cost
+1608,1,1,total_paid,"Distribution of total paid, by procedure_concept_id",procedure_concept_id,,,,,0,Cost
+1610,0,1,,Number of records by revenue_code_concept_id,revenue_code_concept_id,,,,,0,Cost
 1800,0,0,,"Number of persons with at least one measurement occurrence, by measurement_concept_id",measurement_concept_id,,,,,1,Measurement
 1801,0,0,,"Number of measurement occurrence records, by measurement_concept_id",measurement_concept_id,,,,,1,Measurement
 1802,0,0,,"Number of persons by measurement occurrence start month, by measurement_concept_id",measurement_concept_id,calendar month,,,,1,Measurement

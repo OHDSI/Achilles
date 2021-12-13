@@ -16,7 +16,6 @@ achilles(
   createTable = TRUE,
   smallCellCount = 5,
   cdmVersion = "5",
-  runCostAnalysis = FALSE,
   createIndices = TRUE,
   numThreads = 1,
   tempAchillesPrefix = "tmpach",
@@ -79,9 +78,6 @@ small cell count restrictions.}
 
 \item{cdmVersion}{Define the OMOP CDM version used: currently supports v5 and above.
 Use major release number or minor number only (e.g. 5, 5.3)}
-
-\item{runCostAnalysis}{Boolean to determine if cost analysis should be run. Note: only
-works on v5.1+ style cost tables.}
 
 \item{createIndices}{Boolean to determine if indices should be created on the resulting
 Achilles tables. Default= TRUE}
@@ -148,7 +144,6 @@ achillesResults <- achilles(connectionDetails = connectionDetails,
   scratchDatabaseSchema = "scratch", 
   sourceName = "Some Source", 
   cdmVersion = "5.3", 
-  runCostAnalysis = TRUE,
   numThreads = 10, 
   outputFolder = "output")
 }
