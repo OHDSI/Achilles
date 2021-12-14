@@ -2,7 +2,7 @@ Achilles
 ========
 **A**utomated **C**haracterization of **H**ealth **I**nformation at **L**arge-scale **L**ongitudinal **E**vidence **S**ystems (ACHILLES)
 
-Achilles provies descriptive statistics on an OMOP CDM database.  ACHILLES currently supports CDM version 5.3 and 5.4.
+Achilles provides descriptive statistics on an OMOP CDM database.  ACHILLES currently supports CDM version 5.3 and 5.4.
 
 * Vignette: [Running Achilles on Your CDM](https://github.com/OHDSI/Achilles/raw/master/vignettes/RunningAchilles.pdf)
 
