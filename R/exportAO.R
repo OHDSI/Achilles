@@ -1442,6 +1442,19 @@ exportAO <- function(
     data.table::fwrite(dataDevices, file=paste0(sourceOutputPath, "/domain-summary-device_exposure.csv"))    
   }
   
+    # domain summary - provider
+    queryProviders <- SqlRender::loadRenderTranslateSql(
+      sqlFilename = "export/provider/sqlProviderSpecialty.sql",
+      packageName = "Achilles",
+      dbms = connectionDetails$dbms,
+      results_database_schema = resultsDatabaseSchema,
+      vocab_database_schema = vocabDatabaseSchema
+    )  
+	writeLines("Generating provider reports")
+    dataProviders <- DatabaseConnector::querySql(conn,queryProviders)   
+    dataProviders$PERCENT_PERSONS <- format(round(dataProviders$PERCENT_PERSONS,4), nsmall=4)
+    data.table::fwrite(dataProviders, file=paste0(sourceOutputPath, "/domain-summary-provider.csv"))      
+  
   if (length(reports) == 0  || (length(reports) > 0 && "quality" %in% reports)) {
     # quality - completeness
     queryCompleteness <- SqlRender::loadRenderTranslateSql(

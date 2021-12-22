@@ -51,7 +51,7 @@ ANALYSIS_ID,DISTRIBUTION,COST,DISTRIBUTED_FIELD,ANALYSIS_NAME,STRATUM_1_NAME,STR
 232,0,0,,Proportion of visit_occurrence records outside a valid observation period,Proportion,Number of visit_occurrence records outside a valid observation period,Number of visit_occurrence records,,,1,Observation Period
 300,0,0,,Number of providers,,,,,,1,Provider
 301,0,0,,Number of providers by specialty concept_id,specialty_concept_id,,,,,1,Provider
-302,0,0,,Number of providers with invalid care site id,,,,,,1,Provider
+303,0,0,,Number of providers records by specialty_concept_id and visit_concept_id,specialty_concept_id,visit_concept_id,,,,1,Provider
 325,0,0,,Number of provider records by specialty_source_concept_id,specialty_source_concept_id,,,,,1,Provider
 400,0,0,,"Number of persons with at least one condition occurrence, by condition_concept_id",condition_concept_id,,,,,1,Condition Occurrence
 401,0,0,,"Number of condition occurrence records, by condition_concept_id",condition_concept_id,,,,,1,Condition Occurrence
