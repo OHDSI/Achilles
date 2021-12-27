@@ -1321,8 +1321,19 @@ exportAO <- function(
     dataDrugs$PERCENT_PERSONS_NTILE <- dplyr::ntile(dplyr::desc(dataDrugs$PERCENT_PERSONS),10)
     dataDrugs$RECORDS_PER_PERSON <- format(round(dataDrugs$RECORDS_PER_PERSON,1),nsmall=1)
     dataDrugs$RECORDS_PER_PERSON_NTILE <- dplyr::ntile(dplyr::desc(dataDrugs$RECORDS_PER_PERSON),10)
-    data.table::fwrite(dataDrugs, file=paste0(sourceOutputPath, "/domain-summary-drug_exposure.csv"))    
+    data.table::fwrite(dataDrugs, file=paste0(sourceOutputPath, "/domain-summary-drug_exposure.csv"))   
     
+    # domain stratification by drug type concept
+    queryDrugType <- SqlRender::loadRenderTranslateSql(
+      sqlFilename = "export/drug/sqlDomainDrugStratification.sql",
+      packageName = "Achilles",
+      dbms = connectionDetails$dbms,
+      results_database_schema = resultsDatabaseSchema,
+      vocab_database_schema = vocabDatabaseSchema
+    )  
+    dataDrugType <- DatabaseConnector::querySql(conn,queryDrugType)   
+    data.table::fwrite(dataDrugType, file=paste0(sourceOutputPath, "/domain-drug-stratification.csv"))      
+
     # domain summary - drug era
     queryDrugEra <- SqlRender::loadRenderTranslateSql(
       sqlFilename = "export/drugera/sqlDrugEraTable.sql",
