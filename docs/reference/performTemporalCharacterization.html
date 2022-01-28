@@ -62,7 +62,7 @@
   <span class="va">resultsDatabaseSchema</span>,
   analysisIds <span class="op">=</span> <span class="cn">NULL</span>,
   conceptId <span class="op">=</span> <span class="cn">NULL</span>,
-  <span class="va">outputFile</span>
+  outputFile <span class="op">=</span> <span class="st">"temporal-characterization.csv"</span>
 <span class="op">)</span></code></pre></div></div>
 
     <div id="arguments">
@@ -88,7 +88,7 @@ If not specified, data for all analysis will be returned. Ignored if <code>conce
 <dd><p>(OPTIONAL) A SNOMED concept_id from the <code>CONCEPT</code> table for which a monthly Achilles analysis exists.
 If not specified, all concepts for a given analysis will be returned.</p></dd>
 <dt>outputFile</dt>
-<dd><p>CSV file where temporal characterization will be written</p></dd>
+<dd><p>CSV file where temporal characterization will be written. Default is temporal-characterization.csv.</p></dd>
 </dl></div>
     <div id="value">
     <h2>Value</h2>

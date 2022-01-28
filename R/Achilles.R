@@ -26,7 +26,8 @@
 # @author Taha Abdul-Basser
 
 
-#' The main Achilles analyses (for v5.x)
+#' @title
+#' achilles
 #'
 #' @description
 #' \code{achilles} creates descriptive statistics summary for an entire OMOP CDM instance.

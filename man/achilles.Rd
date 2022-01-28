@@ -2,7 +2,7 @@
 % Please edit documentation in R/Achilles.R
 \name{achilles}
 \alias{achilles}
-\title{The main Achilles analyses (for v5.x)}
+\title{achilles}
 \usage{
 achilles(
   connectionDetails,
