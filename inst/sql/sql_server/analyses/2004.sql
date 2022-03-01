@@ -1,5 +1,5 @@
 -- Analysis 2004: Number of distinct patients that overlap between specific domains
--- Bit String Breakdown:   1) Condition Occurrence 2) Drug Exposure 3) Device Exposure 4) Measurement 5) Death 6) Procedure Occurrence 7) Observation Period
+-- Bit String Breakdown:   1) Condition Occurrence 2) Drug Exposure 3) Device Exposure 4) Measurement 5) Death 6) Procedure Occurrence 7) Observation
 
 select distinct person_id into #conoc from @cdmDatabaseSchema.condition_occurrence;
 select distinct person_id into #drexp from @cdmDatabaseSchema.drug_exposure;
@@ -7,7 +7,7 @@ select distinct person_id into #dvexp from @cdmDatabaseSchema.device_exposure;
 select distinct person_id into #msmt from @cdmDatabaseSchema.measurement;
 select distinct person_id into #death from @cdmDatabaseSchema.death;
 select distinct person_id into #prococ from @cdmDatabaseSchema.procedure_occurrence;
-select distinct person_id into #obs from @cdmDatabaseSchema.observation_period;
+select distinct person_id into #obs from @cdmDatabaseSchema.observation;
 
 with rawData as (
 select 2004 as analysis_id,

@@ -11,7 +11,7 @@ generateDomainOverlapSql <- function() {
                                   drug_exposure = 0:1,
                                   device_exposure = 0:1,
 
-    measurement = 0:1, death = 0:1, procedure_occurrence = 0:1, observation_period = 0:1)
+    measurement = 0:1, death = 0:1, procedure_occurrence = 0:1, observation = 0:1)
   domainMatrixResults <- domainMatrix
   domainMatrixResults <- domainMatrixResults %>%
     mutate(count = 0, proportion = 0, dataSource = "")
@@ -20,7 +20,7 @@ generateDomainOverlapSql <- function() {
   # Creates notes
   write(x = "-- Analysis 2004: Number of distinct patients that overlap between specific domains",
     sqlFile, append = TRUE)
-  write(x = "-- Bit String Breakdown:   1) Condition Occurrence 2) Drug Exposure 3) Device Exposure 4) Measurement 5) Death 6) Procedure Occurrence 7) Observation Period",
+  write(x = "-- Bit String Breakdown:   1) Condition Occurrence 2) Drug Exposure 3) Device Exposure 4) Measurement 5) Death 6) Procedure Occurrence 7) Observation",
     sqlFile, append = TRUE)
   write(x = "", sqlFile, append = TRUE)
 
@@ -41,7 +41,7 @@ generateDomainOverlapSql <- function() {
         append = TRUE)
   write(x = "select distinct person_id into #prococ from @cdmDatabaseSchema.procedure_occurrence;",
     sqlFile, append = TRUE)
-  write(x = "select distinct person_id into #obs from @cdmDatabaseSchema.observation_period;",
+  write(x = "select distinct person_id into #obs from @cdmDatabaseSchema.observation;",
         sqlFile,
 
     append = TRUE)
@@ -127,7 +127,7 @@ generateDomainOverlapSql <- function() {
         }
       }
 
-      # Observation Period
+      # Observation
       if ((j == 7) & (domainMatrix[i, j] == 1)) {
         if (sql == "select count(*) as count_value from(") {
           sql <- paste0(sql, "select person_id from #obs")
