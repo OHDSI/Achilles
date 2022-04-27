@@ -19,7 +19,8 @@ LazyData: true
 Description: Creates descriptive statistics summary for an entire OMOP CDM
   instance. Currently supports CDM 5.3.
 Depends:
-  DatabaseConnector (>= 2.0.0)
+  DatabaseConnector (>= 2.0.0),
+  R (>= 4.0.0)
 Imports:
     SqlRender (>= 1.6.0),
     dplyr,
