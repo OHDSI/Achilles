@@ -43,7 +43,7 @@
   <a href="../reference/index.html">Reference</a>
 </li>
 <li class="dropdown">
-  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">
+  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
     Articles
      
     <span class="caret"></span>
@@ -73,7 +73,7 @@
     <div class="page-header toc-ignore">
       <h1 data-toc-skip>Getting Started with Achilles</h1>
             
-            <h4 data-toc-skip class="date">2022-01-28</h4>
+            <h4 data-toc-skip class="date">2022-04-27</h4>
       
       
       <div class="hidden name"><code>GettingStarted.Rmd</code></div>
@@ -82,12 +82,18 @@
 
     
     
-<div class="section level1">
-<h1 id="getting-started">Getting Started<a class="anchor" aria-label="anchor" href="#getting-started"></a>
-</h1>
+<div class="section level2">
+<h2 id="installation">Installation<a class="anchor" aria-label="anchor" href="#installation"></a>
+</h2>
 <ol style="list-style-type: decimal">
-<li><p>Make sure you have your data in a supported OMOP CDM format. Achilles currently supports version 5.3 and 5.4 of the OMOP CDM. (<a href="https://github.com/OHDSI/CommonDataModel" class="external-link uri">https://github.com/OHDSI/CommonDataModel</a>).</p></li>
-<li><p>This package makes use of rJava. Make sure that you have Java installed. If you don’t have Java already installed on your computer (on most computers it already is installed), go to <a href="https://java.com" class="external-link">java.com</a> to get the latest version. If you are having trouble with rJava, <a href="https://stackoverflow.com/questions/7019912/using-the-rjava-package-on-win7-64-bit-with-r" class="external-link">this Stack Overflow post</a> may assist you when you begin troubleshooting.</p></li>
+<li><p>Achilles currently supports version 5.3 and 5.4 of the OMOP CDM.
+(<a href="https://github.com/OHDSI/CommonDataModel" class="external-link uri">https://github.com/OHDSI/CommonDataModel</a>).</p></li>
+<li><p>This package makes use of rJava. Make sure that you have Java
+installed. If you don’t have Java already installed on your computer (on
+most computers it already is installed), go to <a href="https://java.com" class="external-link">java.com</a> to get the latest version. If you
+are having trouble with rJava, <a href="https://stackoverflow.com/questions/7019912/using-the-rjava-package-on-win7-64-bit-with-r" class="external-link">this
+Stack Overflow post</a> may assist you when you begin
+troubleshooting.</p></li>
 <li>
 <p>In R, use the following commands to install Achilles.</p>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
@@ -102,53 +108,46 @@
 <span class="co"># To avoid Java 32 vs 64 issues </span>
 <span class="co"># remotes::install_github("OHDSI/Achilles", args="--no-multiarch")  </span></code></pre></div>
 </li>
-<li>
-<p>To run the Achilles analysis, first determine if you’d like to run the function in multi-threaded mode or in single-threaded mode. Use <code>runCostAnalysis = FALSE</code> to save on execution time, as cost analyses tend to run long.</p>
-<p><strong>In multi-threaded mode</strong></p>
-<p>The analyses are run in multiple SQL sessions, which can be set using the <code>numThreads</code> setting and setting scratchDatabaseSchema to something other than <code>#</code>. For example, 10 threads means 10 independent SQL sessions. Intermediate results are written to scratch tables before finally being combined into the final results tables. Scratch tables are permanent tables; you can either choose to have Achilles drop these tables (<code>dropScratchTables = TRUE</code>) or you can drop them at a later time (<code>dropScratchTables = FALSE</code>). Dropping the scratch tables can add time to the full execution. If desired, you can set your own custom prefix for all Achilles analysis scratch tables (tempAchillesPrefix).</p>
-<p><strong>In single-threaded mode</strong></p>
-<p>The analyses are run in one SQL session and all intermediate results are written to temp tables before finally being combined into the final results tables. Temp tables are dropped once the package is finished running. Single-threaded mode can be invoked by either setting <code>numThreads = 1</code> or <code>scratchDatabaseSchema = "#"</code>.</p>
-<p>Use the following commands in R:</p>
-<div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va">Achilles</span><span class="op">)</span>
-<span class="va">connectionDetails</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://ohdsi.github.io/DatabaseConnector/reference/createConnectionDetails.html" class="external-link">createConnectionDetails</a></span><span class="op">(</span>
-  dbms<span class="op">=</span><span class="st">"redshift"</span>, 
-  server<span class="op">=</span><span class="st">"server.com"</span>, 
-  user<span class="op">=</span><span class="st">"secret"</span>, 
-  password<span class="op">=</span><span class="st">'secret'</span>, 
-  port<span class="op">=</span><span class="st">"5439"</span><span class="op">)</span></code></pre></div>
-<p><strong>Single-threaded mode</strong></p>
-<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="fu"><a href="../reference/achilles.html">achilles</a></span><span class="op">(</span><span class="va">connectionDetails</span>, 
-  cdmDatabaseSchema <span class="op">=</span> <span class="st">"cdm5_inst"</span>, 
-  resultsDatabaseSchema<span class="op">=</span><span class="st">"results"</span>,
-  outputFolder <span class="op">=</span> <span class="st">"output"</span><span class="op">)</span></code></pre></div>
-<p><strong>Multi-threaded mode</strong></p>
-<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="fu"><a href="../reference/achilles.html">achilles</a></span><span class="op">(</span><span class="va">connectionDetails</span>, 
-  cdmDatabaseSchema <span class="op">=</span> <span class="st">"cdm5_inst"</span>, 
-  resultsDatabaseSchema <span class="op">=</span> <span class="st">"results"</span>,
-  scratchDatabaseSchema <span class="op">=</span> <span class="st">"scratch"</span>,
-  numThreads <span class="op">=</span> <span class="fl">10</span>,
-  outputFolder <span class="op">=</span> <span class="st">"output"</span><span class="op">)</span></code></pre></div>
-<p>The <code>"cdm5_inst"</code> cdmDatabaseSchema parameter, <code>"results"</code> resultsDatabaseSchema parameter, and <code>"scratch"</code> scratchDatabaseSchema parameter are the fully qualified names of the schemas holding the CDM data, targeted for result writing, and holding the intermediate scratch tables, respectively. See the <a href="https://github.com/OHDSI/DatabaseConnector" class="external-link">DatabaseConnector</a> package for details on settings the connection details for your database, for example by typing</p>
-<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="op">?</span><span class="va">createConnectionDetails</span></code></pre></div>
-<p>Execution of all Achilles pre-computations may take a long time, particularly in single-threaded mode and with COST analyses enabled. See &lt;extras/notes.md&gt; file to find out how some analyses can be excluded to make the execution faster.</p>
-<p>The SQL platforms supported by <a href="https://github.com/OHDSI/DatabaseConnector" class="external-link">DatabaseConnector</a> and <a href="https://github.com/OHDSI/SqlRender" class="external-link">SqlRender</a> are the <strong>only</strong> ones supported here in Achilles as <code>dbms</code>. <code>cdmVersion</code> can be <em>ONLY</em> 5.x (please look at prior commit history for v4 support).</p>
-</li>
 </ol>
+</div>
+<div class="section level2">
+<h2 id="running-achilles">Running Achilles<a class="anchor" aria-label="anchor" href="#running-achilles"></a>
+</h2>
+<pre><code>The analyses are run in one SQL session and all intermediate results are written to temp tables before finally being combined into the final results tables. Temp tables are dropped once the package is finished running. 
+
+See the [DatabaseConnector](https://github.com/OHDSI/DatabaseConnector) package for details on settings the connection details for your database:
+
+```r
+library(Achilles)
+connectionDetails &lt;- createConnectionDetails(
+  dbms="redshift", 
+  server="server.com", 
+  user="secret", 
+  password='secret', 
+  port="5439")
+```
+
+```r
+Achilles::achilles(
+    cdmVersion = "5.4", 
+    connectionDetails = connectionDetails,
+    cdmDatabaseSchema = "yourCdmSchema",
+    resultsDatabaseSchema = "yourResultsSchema"
+)
+```
+The cdmDatabaseSchema parameter, and resultsDatabaseSchema parameter, are the fully qualified names of the schemas holding the CDM data, and targeted for result writing,  respectively. 
+
+The SQL platforms supported by [DatabaseConnector](https://github.com/OHDSI/DatabaseConnector) and [SqlRender](https://github.com/OHDSI/SqlRender) are the **only** ones supported here in Achilles as `dbms`.  </code></pre>
+</div>
 <div class="section level2">
 <h2 id="developers-how-to-add-or-modify-analyses">Developers: How to Add or Modify Analyses<a class="anchor" aria-label="anchor" href="#developers-how-to-add-or-modify-analyses"></a>
 </h2>
 <p>Please refer to the <a href="README-developers.html">README-developers.md file</a>.</p>
-<p>(Please review the <a href="https://github.com/OHDSI/Achilles/wiki/Additional-instructions-for-Linux" class="external-link">Achilles Wiki</a> for specific details for Linux)</p>
 </div>
 <div class="section level2">
 <h2 id="license">License<a class="anchor" aria-label="anchor" href="#license"></a>
 </h2>
 <p>Achilles is licensed under Apache License 2.0</p>
-</div>
 </div>
   </div>
 
@@ -169,7 +168,7 @@
 
 <div class="pkgdown">
   <p></p>
-<p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.0.</p>
+<p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.3.</p>
 </div>
 
       </footer>

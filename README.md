@@ -4,13 +4,15 @@ Achilles
 
 Achilles provides descriptive statistics on an OMOP CDM database.  ACHILLES currently supports CDM version 5.3 and 5.4.
 
-* Vignette: [Running Achilles on Your CDM](https://github.com/OHDSI/Achilles/raw/master/vignettes/RunningAchilles.pdf)
+User Documentation
+==================
+Documentation can be found on the [package website](https://ohdsi.github.io/Achilles).
 
 Features
 ========
 - Performs broad database characterization
-- Export feature for AchillesWeb 
 - Export feature for [ARES](https://github.com/OHDSI/Ares)
+- Export feature for AchillesWeb (deprecated)
 
 Technology
 ==========
@@ -18,7 +20,7 @@ Achilles is an R package.
 
 System Requirements
 ============
-Requires R (version 3.6.0 or higher). 
+Requires R (version 4.0 or higher). 
 
 Installation
 =============
@@ -30,14 +32,6 @@ Installation
   install.packages("remotes")
   remotes::install_github("OHDSI/Achilles")
   ```
-
-User Documentation
-==================
-Documentation can be found on the [package website](https://ohdsi.github.io/Achilles).
-
-PDF versions of the documentation are also available:
-* Vignette: [Running Achilles](https://raw.githubusercontent.com/OHDSI/Achilles/master/inst/doc/RunningAchilles.pdf)
-* Package manual: [Achilles.pdf](https://raw.githubusercontent.com/OHDSI/Achilles/master/extras/Achilles.pdf)
 
 Support
 =======

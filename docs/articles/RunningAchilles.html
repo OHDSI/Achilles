@@ -43,7 +43,7 @@
   <a href="../reference/index.html">Reference</a>
 </li>
 <li class="dropdown">
-  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">
+  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
     Articles
      
     <span class="caret"></span>
@@ -73,7 +73,7 @@
     <div class="page-header toc-ignore">
       <h1 data-toc-skip>Running Achilles on Your CDM</h1>
             
-            <h4 data-toc-skip class="date">2022-01-28</h4>
+            <h4 data-toc-skip class="date">2022-04-27</h4>
       
       
       <div class="hidden name"><code>RunningAchilles.Rmd</code></div>
@@ -82,109 +82,182 @@
 
     
     
-<div class="section level1">
-<h1 id="introduction">Introduction<a class="anchor" aria-label="anchor" href="#introduction"></a>
-</h1>
-<p>In this vignette we cover how to run the Achilles package on your Common Data Model (CDM) database in order to characterize the dataset. The characterizations can help you learn more about your dataset’s features and limitations.</p>
-<p>It is a best practice for all OHDSI sites to run Achilles on their CDM datasets to ensure researchers can evaluate study feasibility and contextualize study results.</p>
+<div class="section level2">
+<h2 id="introduction">Introduction<a class="anchor" aria-label="anchor" href="#introduction"></a>
+</h2>
+<p>In this vignette we cover how to run the Achilles package on your
+Common Data Model (CDM) database in order to characterize the dataset.
+The characterizations can help you learn more about your dataset’s
+features and limitations.</p>
+<p>It is a best practice for all OHDSI sites to run Achilles on their
+CDM datasets to ensure researchers can evaluate study feasibility and
+contextualize study results.</p>
 </div>
-<div class="section level1">
-<h1 id="general-approach">General Approach<a class="anchor" aria-label="anchor" href="#general-approach"></a>
-</h1>
+<div class="section level2">
+<h2 id="general-approach">General Approach<a class="anchor" aria-label="anchor" href="#general-approach"></a>
+</h2>
 <p>The Achilles package consists of:</p>
 <ol style="list-style-type: decimal">
-<li>The <strong>achilles</strong> function runs a set of SQL scripts to characterize the domains and concepts of the CDM.</li>
-<li>The <strong>createIndices</strong> function creates table indices for the achilles tables, which can help improve query performance.</li>
-<li>The <strong>getAnalysisDetails</strong> function provides descriptions about the full set of Achilles analyses.</li>
-<li>The <strong>dropAllScratchTables</strong> function is useful only for multi-threaded mode. It can clear any leftover staging tables.</li>
+<li>The <strong>achilles</strong> function runs a set of SQL scripts to
+characterize the domains and concepts of the CDM.</li>
+<li>The <strong>createIndices</strong> function creates table indices
+for the achilles tables, which can help improve query performance.</li>
+<li>The <strong>getAnalysisDetails</strong> function provides
+descriptions about the full set of Achilles analyses.</li>
+<li>The <strong>dropAllScratchTables</strong> function is useful only
+for multi-threaded mode. It can clear any leftover staging tables.</li>
 </ol>
-<div class="section level2">
-<h2 id="sql-only-mode">SQL Only Mode<a class="anchor" aria-label="anchor" href="#sql-only-mode"></a>
-</h2>
-<p>In most Achilles functions, you can specify <code>sqlOnly = TRUE</code> in order to produce the SQL without executing it, which can be useful if you’d like to examine the SQL closely or debug something. The SQL files are stored in the <code>outputFolder</code>.</p>
-</div>
-<div class="section level2">
-<h2 id="logging">Logging<a class="anchor" aria-label="anchor" href="#logging"></a>
-</h2>
-<p>File and console logging is enabled across most Achilles functions. The status of each step is logged into files in the <code>outputFolder</code>. You can review the files in a common text editor.</p>
-</div>
-<div class="section level2">
-<h2 id="verbose-mode">Verbose Mode<a class="anchor" aria-label="anchor" href="#verbose-mode"></a>
-</h2>
-<p>The <code>verboseMode</code> parameter can be set to FALSE if you’d like less details about the function execution to appear in the console. Either way, all details are written to the log files. By default, this is set to TRUE.</p>
-</div>
-<div class="section level2">
-<h2 id="preparation-for-running-achilles">Preparation for running Achilles<a class="anchor" aria-label="anchor" href="#preparation-for-running-achilles"></a>
-</h2>
-<p>In order to run the package, you will need to determine if you’d like the Achilles tables and staging tables to be stored in schemas that are separate from your CDM’s schema (recommended), or within the same schema as the CDM.</p>
 <div class="section level3">
-<h3 id="multi-threaded-vs-single-threaded">Multi-Threaded vs Single-Threaded<a class="anchor" aria-label="anchor" href="#multi-threaded-vs-single-threaded"></a>
+<h3 id="sql-only-mode">SQL Only Mode<a class="anchor" aria-label="anchor" href="#sql-only-mode"></a>
 </h3>
-<p>As the <strong>achilles</strong> functions can run independently, we have added a multi-threaded mode to allow for more than 1 SQL script to execute at a time. This is particularly useful for massively parallel processing (MPP) platforms such as Amazon Redshift and Microsoft PDW. It may not be beneficial for traditional SQL platforms, so only use the multi-threaded mode if confident it can be useful.</p>
-<p>Further, while multiple threads can help performance in MPP platforms, there can be diminishing returns as the cluster has a finite number of concurrency slots to handle the queries. A rule of thumb: most likely you should not use more than 10.</p>
-<p>In the multi-threaded mode, all scripts produce permanent staging tables, whereas in the single-threaded mode, the scripts produce temporary staging tables. In both, the staging tables are merged to produce the final Achilles tables.</p>
+<p>In most Achilles functions, you can specify
+<code>sqlOnly = TRUE</code> in order to produce the SQL without
+executing it, which can be useful if you’d like to examine the SQL
+closely or debug something. The SQL files are stored in the
+<code>outputFolder</code>.</p>
+</div>
+<div class="section level3">
+<h3 id="logging">Logging<a class="anchor" aria-label="anchor" href="#logging"></a>
+</h3>
+<p>File and console logging is enabled across most Achilles functions.
+The status of each step is logged into files in the
+<code>outputFolder</code>. You can review the files in a common text
+editor.</p>
+</div>
+<div class="section level3">
+<h3 id="verbose-mode">Verbose Mode<a class="anchor" aria-label="anchor" href="#verbose-mode"></a>
+</h3>
+<p>The <code>verboseMode</code> parameter can be set to FALSE if you’d
+like less details about the function execution to appear in the console.
+Either way, all details are written to the log files. By default, this
+is set to TRUE.</p>
+</div>
+<div class="section level3">
+<h3 id="preparation-for-running-achilles">Preparation for running Achilles<a class="anchor" aria-label="anchor" href="#preparation-for-running-achilles"></a>
+</h3>
+<p>In order to run the package, you will need to determine if you’d like
+the Achilles tables and staging tables to be stored in schemas that are
+separate from your CDM’s schema (recommended), or within the same schema
+as the CDM.</p>
+<div class="section level4">
+<h4 id="multi-threaded-vs-single-threaded">Multi-Threaded vs Single-Threaded<a class="anchor" aria-label="anchor" href="#multi-threaded-vs-single-threaded"></a>
+</h4>
+<p>As the <strong>achilles</strong> functions can run independently, we
+have added a multi-threaded mode to allow for more than 1 SQL script to
+execute at a time. This is particularly useful for massively parallel
+processing (MPP) platforms such as Amazon Redshift and Microsoft PDW. It
+may not be beneficial for traditional SQL platforms, so only use the
+multi-threaded mode if confident it can be useful.</p>
+<p>Further, while multiple threads can help performance in MPP
+platforms, there can be diminishing returns as the cluster has a finite
+number of concurrency slots to handle the queries. A rule of thumb: most
+likely you should not use more than 10.</p>
+<p>In the multi-threaded mode, all scripts produce permanent staging
+tables, whereas in the single-threaded mode, the scripts produce
+temporary staging tables. In both, the staging tables are merged to
+produce the final Achilles tables.</p>
 </div>
 </div>
-</div>
-<div class="section level1">
-<h1 id="achilles-parameters-both-modes">Achilles Parameters (Both Modes)<a class="anchor" aria-label="anchor" href="#achilles-parameters-both-modes"></a>
-</h1>
-<p>The following sub-sections describe the optional parameters in <strong>achilles</strong> that can be configured, regardless of whether you run the function in single- or multi-threaded mode.</p>
-<div class="section level2">
-<h2 id="staging-table-prefix">Staging Table Prefix<a class="anchor" aria-label="anchor" href="#staging-table-prefix"></a>
-</h2>
-<p>To keep the staging tables organized, the <strong>achilles</strong> function will use a table prefix of “tmpach” by default, but you can choose a different one using the <code>tempAchillesPrefix</code> parameter. This is useful for database platforms like Oracle, which limit the length of table names.</p>
-</div>
-<div class="section level2">
-<h2 id="source-name">Source Name<a class="anchor" aria-label="anchor" href="#source-name"></a>
-</h2>
-<p>The <code>sourceName</code> parameter is used to assign the name of the dataset to the Achilles results. If you set this to <code>NULL</code>, the <strong>achilles</strong> function will try to obtain the source name from the CDM_SOURCE table.</p>
-</div>
-<div class="section level2">
-<h2 id="create-table">Create Table<a class="anchor" aria-label="anchor" href="#create-table"></a>
-</h2>
-<p>The <code>createTable</code> parameter, when set to <code>TRUE</code>, drops any existing Achilles results tables and builds new ones. If set to <code>FALSE</code>, these tables will persist, and the <strong>achilles</strong> function will just insert new data to them.</p>
-</div>
-<div class="section level2">
-<h2 id="limiting-the-analyses">Limiting the Analyses<a class="anchor" aria-label="anchor" href="#limiting-the-analyses"></a>
-</h2>
-<p>By default, the <strong>achilles</strong> function runs all default analyses detailed in the <code>getAnalysisDetails</code> function. However, it may be useful to focus on a subset of analyses rather than running the whole set. This can be accomplished by specifying analysis Ids in the <code>analysisIds</code> parameter.</p>
-</div>
-<div class="section level2">
-<h2 id="cost-analyses">Cost Analyses<a class="anchor" aria-label="anchor" href="#cost-analyses"></a>
-</h2>
-<p>By default, the <strong>achilles</strong> function does not run analyses on the COST table(s), as they can be very time-consuming, and are not critical to most OHDSI studies. However, you can choose to run these analyses by setting <code>runCostAnalysis</code> to <code>TRUE</code>. The cost analyses are conditional on the CDM version. If using CDM v5.0, then the older cost tables are queried. If using any version after 5.0, the unified cost table is queried.</p>
-</div>
-<div class="section level2">
-<h2 id="small-cell-count">Small Cell Count<a class="anchor" aria-label="anchor" href="#small-cell-count"></a>
-</h2>
-<p>To avoid patient identification, you can establish the minimum cell size that should be kept in the Achilles tables. Cells with small counts (less than or equal to the value of the <code>smallCellCount</code> parameter) are deleted. By default, this is set to 5. Set to 0 for complete summary without small cell count restrictions.</p>
-</div>
-<div class="section level2">
-<h2 id="drop-scratch-tables">Drop Scratch Tables<a class="anchor" aria-label="anchor" href="#drop-scratch-tables"></a>
-</h2>
-<p><em>See the Post-Processing section to read about how to run this step separately</em></p>
-<p><em>This parameter is only necessary if running in multi-threaded mode</em></p>
-<p>The <code>dropScratchTables</code> parameter, if set to <code>TRUE</code>, will drop all staging tables created during the execution of <strong>achilles</strong> in multi-threaded mode.</p>
-</div>
-<div class="section level2">
-<h2 id="create-indices">Create Indices<a class="anchor" aria-label="anchor" href="#create-indices"></a>
-</h2>
-<p><em>See the Post-Processing section to read about how to run this step separately</em></p>
-<p>The <code>createIndices</code> parameter, if set to <code>TRUE</code>, will result in indices on the Achilles results tables to be created in order to improve query performance.</p>
 </div>
 <div class="section level2">
-<h2 id="return-value">Return Value<a class="anchor" aria-label="anchor" href="#return-value"></a>
+<h2 id="achilles-parameters-both-modes">Achilles Parameters (Both Modes)<a class="anchor" aria-label="anchor" href="#achilles-parameters-both-modes"></a>
 </h2>
-<p>When running <strong>achilles</strong>, the return value, if you assign a variable to the function call, is a list object in which metadata about the execution and all of the SQL scripts executed are attributes. You can also run the function call without assigning a variable to it, so that no values are printed or returned.</p>
+<p>The following sub-sections describe the optional parameters in
+<strong>achilles</strong> that can be configured, regardless of whether
+you run the function in single- or multi-threaded mode.</p>
+<div class="section level3">
+<h3 id="staging-table-prefix">Staging Table Prefix<a class="anchor" aria-label="anchor" href="#staging-table-prefix"></a>
+</h3>
+<p>To keep the staging tables organized, the <strong>achilles</strong>
+function will use a table prefix of “tmpach” by default, but you can
+choose a different one using the <code>tempAchillesPrefix</code>
+parameter. This is useful for database platforms like Oracle, which
+limit the length of table names.</p>
+</div>
+<div class="section level3">
+<h3 id="source-name">Source Name<a class="anchor" aria-label="anchor" href="#source-name"></a>
+</h3>
+<p>The <code>sourceName</code> parameter is used to assign the name of
+the dataset to the Achilles results. If you set this to
+<code>NULL</code>, the <strong>achilles</strong> function will try to
+obtain the source name from the CDM_SOURCE table.</p>
+</div>
+<div class="section level3">
+<h3 id="create-table">Create Table<a class="anchor" aria-label="anchor" href="#create-table"></a>
+</h3>
+<p>The <code>createTable</code> parameter, when set to
+<code>TRUE</code>, drops any existing Achilles results tables and builds
+new ones. If set to <code>FALSE</code>, these tables will persist, and
+the <strong>achilles</strong> function will just insert new data to
+them.</p>
+</div>
+<div class="section level3">
+<h3 id="limiting-the-analyses">Limiting the Analyses<a class="anchor" aria-label="anchor" href="#limiting-the-analyses"></a>
+</h3>
+<p>By default, the <strong>achilles</strong> function runs all default
+analyses detailed in the <code>getAnalysisDetails</code> function.
+However, it may be useful to focus on a subset of analyses rather than
+running the whole set. This can be accomplished by specifying analysis
+Ids in the <code>analysisIds</code> parameter.</p>
+</div>
+<div class="section level3">
+<h3 id="cost-analyses">Cost Analyses<a class="anchor" aria-label="anchor" href="#cost-analyses"></a>
+</h3>
+<p>By default, the <strong>achilles</strong> function does not run
+analyses on the COST table(s), as they can be very time-consuming, and
+are not critical to most OHDSI studies. However, you can choose to run
+these analyses by setting <code>runCostAnalysis</code> to
+<code>TRUE</code>. The cost analyses are conditional on the CDM version.
+If using CDM v5.0, then the older cost tables are queried. If using any
+version after 5.0, the unified cost table is queried.</p>
+</div>
+<div class="section level3">
+<h3 id="small-cell-count">Small Cell Count<a class="anchor" aria-label="anchor" href="#small-cell-count"></a>
+</h3>
+<p>To avoid patient identification, you can establish the minimum cell
+size that should be kept in the Achilles tables. Cells with small counts
+(less than or equal to the value of the <code>smallCellCount</code>
+parameter) are deleted. By default, this is set to 5. Set to 0 for
+complete summary without small cell count restrictions.</p>
+</div>
+<div class="section level3">
+<h3 id="drop-scratch-tables">Drop Scratch Tables<a class="anchor" aria-label="anchor" href="#drop-scratch-tables"></a>
+</h3>
+<p><em>See the Post-Processing section to read about how to run this
+step separately</em></p>
+<p><em>This parameter is only necessary if running in multi-threaded
+mode</em></p>
+<p>The <code>dropScratchTables</code> parameter, if set to
+<code>TRUE</code>, will drop all staging tables created during the
+execution of <strong>achilles</strong> in multi-threaded mode.</p>
+</div>
+<div class="section level3">
+<h3 id="create-indices">Create Indices<a class="anchor" aria-label="anchor" href="#create-indices"></a>
+</h3>
+<p><em>See the Post-Processing section to read about how to run this
+step separately</em></p>
+<p>The <code>createIndices</code> parameter, if set to
+<code>TRUE</code>, will result in indices on the Achilles results tables
+to be created in order to improve query performance.</p>
+</div>
+<div class="section level3">
+<h3 id="return-value">Return Value<a class="anchor" aria-label="anchor" href="#return-value"></a>
+</h3>
+<p>When running <strong>achilles</strong>, the return value, if you
+assign a variable to the function call, is a list object in which
+metadata about the execution and all of the SQL scripts executed are
+attributes. You can also run the function call without assigning a
+variable to it, so that no values are printed or returned.</p>
 </div>
 </div>
-<div class="section level1">
-<h1 id="running-achilles-single-threaded-mode">Running Achilles: Single-Threaded Mode<a class="anchor" aria-label="anchor" href="#running-achilles-single-threaded-mode"></a>
-</h1>
-<p>In single-threaded mode, there is no need to set a <code>scratchDatabaseSchema</code>, as temporary tables will be used.</p>
+<div class="section level2">
+<h2 id="running-achilles-single-threaded-mode">Running Achilles: Single-Threaded Mode<a class="anchor" aria-label="anchor" href="#running-achilles-single-threaded-mode"></a>
+</h2>
+<p>In single-threaded mode, there is no need to set a
+<code>scratchDatabaseSchema</code>, as temporary tables will be
+used.</p>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="va">connectionDetails</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://ohdsi.github.io/DatabaseConnector/reference/createConnectionDetails.html" class="external-link">createConnectionDetails</a></span><span class="op">(</span>dbms <span class="op">=</span> <span class="st">"postgresql"</span>, 
+<code class="sourceCode R"><span class="va">connectionDetails</span> <span class="op">&lt;-</span> <span class="fu">createConnectionDetails</span><span class="op">(</span>dbms <span class="op">=</span> <span class="st">"postgresql"</span>, 
                                              server <span class="op">=</span> <span class="st">"localhost/synpuf"</span>, 
                                              user <span class="op">=</span> <span class="st">"cdm_user"</span>, 
                                              password <span class="op">=</span> <span class="st">"cdm_password"</span><span class="op">)</span>
@@ -194,12 +267,14 @@
          resultsDatabaseSchema <span class="op">=</span> <span class="st">"results"</span>, 
          outputFolder <span class="op">=</span> <span class="st">"output"</span><span class="op">)</span></code></pre></div>
 </div>
-<div class="section level1">
-<h1 id="running-achilles-multi-threaded-mode">Running Achilles: Multi-Threaded Mode<a class="anchor" aria-label="anchor" href="#running-achilles-multi-threaded-mode"></a>
-</h1>
-<p>In multi-threaded mode, you need to specify <code>scratchDatabaseSchema</code> and use &gt; 1 for <code>numThreads</code>.</p>
+<div class="section level2">
+<h2 id="running-achilles-multi-threaded-mode">Running Achilles: Multi-Threaded Mode<a class="anchor" aria-label="anchor" href="#running-achilles-multi-threaded-mode"></a>
+</h2>
+<p>In multi-threaded mode, you need to specify
+<code>scratchDatabaseSchema</code> and use &gt; 1 for
+<code>numThreads</code>.</p>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="va">connectionDetails</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://ohdsi.github.io/DatabaseConnector/reference/createConnectionDetails.html" class="external-link">createConnectionDetails</a></span><span class="op">(</span>dbms <span class="op">=</span> <span class="st">"postgresql"</span>, 
+<code class="sourceCode R"><span class="va">connectionDetails</span> <span class="op">&lt;-</span> <span class="fu">createConnectionDetails</span><span class="op">(</span>dbms <span class="op">=</span> <span class="st">"postgresql"</span>, 
                                              server <span class="op">=</span> <span class="st">"localhost/synpuf"</span>, 
                                              user <span class="op">=</span> <span class="st">"cdm_user"</span>, 
                                              password <span class="op">=</span> <span class="st">"cdm_password"</span><span class="op">)</span>
@@ -211,17 +286,21 @@
          numThreads <span class="op">=</span> <span class="fl">5</span>,
          outputFolder <span class="op">=</span> <span class="st">"output"</span><span class="op">)</span></code></pre></div>
 </div>
-<div class="section level1">
-<h1 id="post-processing">Post-Processing<a class="anchor" aria-label="anchor" href="#post-processing"></a>
-</h1>
-<p>This section describes the usage of standalone functions for post-processing that can be invoked if you did not use them in the <strong>achilles</strong> function call.</p>
 <div class="section level2">
-<h2 id="creating-indices">Creating Indices<a class="anchor" aria-label="anchor" href="#creating-indices"></a>
+<h2 id="post-processing">Post-Processing<a class="anchor" aria-label="anchor" href="#post-processing"></a>
 </h2>
-<p><em>Not supported by Amazon Redshift or IBM Netezza; function will skip this step if using those platforms</em></p>
-<p>To improve query performance of the Achilles results tables, run the <strong>createIndices</strong> function.</p>
+<p>This section describes the usage of standalone functions for
+post-processing that can be invoked if you did not use them in the
+<strong>achilles</strong> function call.</p>
+<div class="section level3">
+<h3 id="creating-indices">Creating Indices<a class="anchor" aria-label="anchor" href="#creating-indices"></a>
+</h3>
+<p><em>Not supported by Amazon Redshift or IBM Netezza; function will
+skip this step if using those platforms</em></p>
+<p>To improve query performance of the Achilles results tables, run the
+<strong>createIndices</strong> function.</p>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="va">connectionDetails</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://ohdsi.github.io/DatabaseConnector/reference/createConnectionDetails.html" class="external-link">createConnectionDetails</a></span><span class="op">(</span>dbms <span class="op">=</span> <span class="st">"postgresql"</span>, 
+<code class="sourceCode R"><span class="va">connectionDetails</span> <span class="op">&lt;-</span> <span class="fu">createConnectionDetails</span><span class="op">(</span>dbms <span class="op">=</span> <span class="st">"postgresql"</span>, 
                                              server <span class="op">=</span> <span class="st">"localhost/synpuf"</span>, 
                                              user <span class="op">=</span> <span class="st">"cdm_user"</span>, 
                                              password <span class="op">=</span> <span class="st">"cdm_password"</span><span class="op">)</span>
@@ -230,13 +309,16 @@
               resultsDatabaseSchema <span class="op">=</span> <span class="st">"results"</span>, 
               outputFolder <span class="op">=</span> <span class="st">"output"</span><span class="op">)</span></code></pre></div>
 </div>
-<div class="section level2">
-<h2 id="dropping-all-staging-tables-multi-threaded-only">Dropping All Staging Tables (Multi-threaded only)<a class="anchor" aria-label="anchor" href="#dropping-all-staging-tables-multi-threaded-only"></a>
-</h2>
-<p>If the <strong>achilles</strong> execution has errors, or if you did not enable this step in the call to these functions, use the <code>dropAllScratchTables</code> function.</p>
-<p>The <code>tableTypes</code> parameter can be used to specify which batch of staging tables to drop (“achilles”).</p>
+<div class="section level3">
+<h3 id="dropping-all-staging-tables-multi-threaded-only">Dropping All Staging Tables (Multi-threaded only)<a class="anchor" aria-label="anchor" href="#dropping-all-staging-tables-multi-threaded-only"></a>
+</h3>
+<p>If the <strong>achilles</strong> execution has errors, or if you did
+not enable this step in the call to these functions, use the
+<code>dropAllScratchTables</code> function.</p>
+<p>The <code>tableTypes</code> parameter can be used to specify which
+batch of staging tables to drop (“achilles”).</p>
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="va">connectionDetails</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://ohdsi.github.io/DatabaseConnector/reference/createConnectionDetails.html" class="external-link">createConnectionDetails</a></span><span class="op">(</span>dbms <span class="op">=</span> <span class="st">"postgresql"</span>, 
+<code class="sourceCode R"><span class="va">connectionDetails</span> <span class="op">&lt;-</span> <span class="fu">createConnectionDetails</span><span class="op">(</span>dbms <span class="op">=</span> <span class="st">"postgresql"</span>, 
                                              server <span class="op">=</span> <span class="st">"localhost/synpuf"</span>, 
                                              user <span class="op">=</span> <span class="st">"cdm_user"</span>, 
                                              password <span class="op">=</span> <span class="st">"cdm_password"</span><span class="op">)</span>
@@ -245,10 +327,11 @@
                      scratchDatabaseSchema <span class="op">=</span> <span class="st">"scratch"</span>, numThreads <span class="op">=</span> <span class="fl">5</span><span class="op">)</span></code></pre></div>
 </div>
 </div>
-<div class="section level1">
-<h1 id="acknowledgments">Acknowledgments<a class="anchor" aria-label="anchor" href="#acknowledgments"></a>
-</h1>
-<p>Considerable work has been dedicated to provide the <code>Achilles</code> package.</p>
+<div class="section level2">
+<h2 id="acknowledgments">Acknowledgments<a class="anchor" aria-label="anchor" href="#acknowledgments"></a>
+</h2>
+<p>Considerable work has been dedicated to provide the
+<code>Achilles</code> package.</p>
 <div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="fu"><a href="https://rdrr.io/r/utils/citation.html" class="external-link">citation</a></span><span class="op">(</span><span class="st">"Achilles"</span><span class="op">)</span></code></pre></div>
 <pre><code><span class="co">#&gt; </span>
@@ -287,7 +370,7 @@
 
 <div class="pkgdown">
   <p></p>
-<p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.0.</p>
+<p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.3.</p>
 </div>
 
       </footer>
