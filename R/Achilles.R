@@ -132,7 +132,7 @@ achilles <- function(connectionDetails,
   sourceName = "", analysisIds, createTable = TRUE, smallCellCount = 5, cdmVersion = "5", 
   createIndices = TRUE, numThreads = 1, tempAchillesPrefix = "tmpach", dropScratchTables = TRUE, sqlOnly = FALSE,
   outputFolder = "output", verboseMode = TRUE, optimizeAtlasCache = FALSE, defaultAnalysesOnly = TRUE,
-  updateGivenAnalysesOnly = FALSE, excludeAnalysisIds = c(), sqlDialect = NULL) {
+  updateGivenAnalysesOnly = FALSE, excludeAnalysisIds, sqlDialect = NULL) {
   totalStart <- Sys.time()
   achillesSql <- c()
 
@@ -213,13 +213,9 @@ achilles <- function(connectionDetails,
     analysisDetails <- analysisDetails[analysisDetails$IS_DEFAULT == 1, ]
   }
 
-  # Remove unwanted analyses, if any are specified
-  if (length(excludeAnalysisIds) != 0) {
+  # Remove unwanted analyses that have not already been excluded, if any are specified
+  if (!missing(excludeAnalysisIds) && any(analysisDetails$ANALYSIS_ID %in% excludeAnalysisIds)) {
     analysisDetails <- analysisDetails[-which(analysisDetails$ANALYSIS_ID %in% excludeAnalysisIds),]
-  }
-
-  if (cdmVersion < "5.3") {
-    analysisDetails <- analysisDetails[!analysisDetails$ANALYSIS_ID == 1425, ]
   }
 
   resultsTables <- list(list(detailType = "results",
