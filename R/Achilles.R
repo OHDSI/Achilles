@@ -299,10 +299,10 @@ achilles <- function(connectionDetails,
 
   if (createTable) {
     analysesSqls <- apply(analysisDetails, 1, function(analysisDetail) {
-      SqlRender::render("select @analysisId as analysis_id, '@analysisName' as analysis_name,
-               '@stratum1Name' as stratum_1_name, '@stratum2Name' as stratum_2_name,
-               '@stratum3Name' as stratum_3_name, '@stratum4Name' as stratum_4_name,
-               '@stratum5Name' as stratum_5_name, '@isDefault' as is_default, '@category' as category",
+      SqlRender::render("select @analysisId as analysis_id, cast('@analysisName' as varchar(255)) as analysis_name,
+               cast('@stratum1Name' as varchar(255)) as stratum_1_name, cast('@stratum2Name' as varchar(255)) as stratum_2_name,
+               cast('@stratum3Name' as varchar(255)) as stratum_3_name, cast('@stratum4Name' as varchar(255)) as stratum_4_name,
+               cast('@stratum5Name' as varchar(255)) as stratum_5_name, '@isDefault' as is_default, '@category' as category",
         analysisId = analysisDetail["ANALYSIS_ID"], analysisName = analysisDetail["ANALYSIS_NAME"],
         stratum1Name = analysisDetail["STRATUM_1_NAME"], stratum2Name = analysisDetail["STRATUM_2_NAME"],
         stratum3Name = analysisDetail["STRATUM_3_NAME"], stratum4Name = analysisDetail["STRATUM_4_NAME"],
