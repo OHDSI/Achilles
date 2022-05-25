@@ -24,4 +24,4 @@ AND
 WHERE 
 	m.value_as_number IS NULL
 AND 
-	m.value_as_concept_id IS NULL;
+	(m.value_as_concept_id IS NULL OR m.value_as_concept_id = 0);
