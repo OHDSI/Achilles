@@ -73,69 +73,38 @@
 runMissingAnalyses <- function(connectionDetails,
                                cdmDatabaseSchema,
                                resultsDatabaseSchema = cdmDatabaseSchema,
+							   scratchDatabaseSchema = resultsDatabaseSchema, 
+							   vocabDatabaseSchema   = cdmDatabaseSchema, 
+							   tempEmulationSchema   = resultsDatabaseSchema,
+							   outputFolder          = "output", 
+							   defaultAnalysesOnly   = TRUE) 
+{
+							   
+  missingAnalyses <- Achilles::listMissingAnalyses(connectionDetails,resultsDatabaseSchema)
 
-  scratchDatabaseSchema = resultsDatabaseSchema, vocabDatabaseSchema = cdmDatabaseSchema, tempEmulationSchema = resultsDatabaseSchema,
-  outputFolder = "output", defaultAnalysesOnly = TRUE) {
-
-  # Determine which analyses are missing by comparing analysisDetails with achilles_results and
-  # achilles_results_dist
-  analysisDetails <- getAnalysisDetails()
-
-  # Determine which analyses to run
-  index1 <- which(analysisDetails$IS_DEFAULT == 1 & analysisDetails$COST == 1 & analysisDetails$DISTRIBUTION == 0)
-  index2 <- which(analysisDetails$IS_DEFAULT == 1 & analysisDetails$COST == 1 & analysisDetails$DISTRIBUTION == 1)
-  index3 <- which(analysisDetails$IS_DEFAULT == 1 & analysisDetails$COST == 0 & analysisDetails$DISTRIBUTION == 0)
-  index4 <- which(analysisDetails$IS_DEFAULT == 1 & analysisDetails$COST == 0 & analysisDetails$DISTRIBUTION == 1)
-  index5 <- which(analysisDetails$IS_DEFAULT == 0 & analysisDetails$COST == 1 & analysisDetails$DISTRIBUTION == 0)
-  index6 <- which(analysisDetails$IS_DEFAULT == 0 & analysisDetails$COST == 1 & analysisDetails$DISTRIBUTION == 1)
-  index7 <- which(analysisDetails$IS_DEFAULT == 0 & analysisDetails$COST == 0 & analysisDetails$DISTRIBUTION == 0)
-  index8 <- which(analysisDetails$IS_DEFAULT == 0 & analysisDetails$COST == 0 & analysisDetails$DISTRIBUTION == 1)
-
-  if (defaultAnalysesOnly && runCostAnalysis) {
-    allResultAnalysisIds <- analysisDetails[index1, ]$ANALYSIS_ID
-    allDistAnalysisIds <- analysisDetails[index2, ]$ANALYSIS_ID
-  } else if (defaultAnalysesOnly && !runCostAnalysis) {
-    allResultAnalysisIds <- analysisDetails[index3, ]$ANALYSIS_ID
-    allDistAnalysisIds <- analysisDetails[index4, ]$ANALYSIS_ID
-  } else if (!defaultAnalysesOnly && runCostAnalysis) {
-    allResultAnalysisIds <- analysisDetails[index5, ]$ANALYSIS_ID
-    allDistAnalysisIds <- analysisDetails[index6, ]$ANALYSIS_ID
-  } else {
-    allResultAnalysisIds <- analysisDetails[index7, ]$ANALYSIS_ID
-    allDistAnalysisIds <- analysisDetails[index8, ]$ANALYSIS_ID
+  if (nrow(missingAnalyses) == 0) {
+    stop("NO MISSING ANALYSES FOUND")
   }
+  
+  if (defaultAnalysesOnly) {
+    missingAnalyses <- missingAnalyses[missingAnalyses$IS_DEFAULT == 1,]
+  }  
 
-  conn <- DatabaseConnector::connect(connectionDetails)
-
-  sql <- "select distinct analysis_id from @results_schema.achilles_results;"
-  sql <- SqlRender::render(sql, results_schema = resultsDatabaseSchema)
-  sql <- SqlRender::translate(sql, targetDialect = connectionDetails$dbms)
-
-  existingResultAnalysisIds <- DatabaseConnector::querySql(conn, sql)$ANALYSIS_ID
-
-  sql <- "select distinct analysis_id from @results_schema.achilles_results_dist;"
-  sql <- SqlRender::render(sql, results_schema = resultsDatabaseSchema)
-  sql <- SqlRender::translate(sql, targetDialect = connectionDetails$dbms)
-
-  existingDistAnalysisIds <- DatabaseConnector::querySql(conn, sql)$ANALYSIS_ID
-
-  missingResultAnalysisIds <- setdiff(allResultAnalysisIds, existingResultAnalysisIds)
-  missingDistAnalysisIds <- setdiff(allDistAnalysisIds, existingDistAnalysisIds)
-
-  DatabaseConnector::disconnect(conn)
-
-  missingAnalysisIds <- c(missingResultAnalysisIds, missingDistAnalysisIds)
-
-  if (length(missingAnalysisIds) == 0) {
-    print("NO MISSING ANALYSES FOUND")
-  } else {
-    # By supplying analysisIds along with specifying createTable=F and updateGivenAnalysesOnly=T,
-    # we add the missing analysis_ids without removing existing data
-    achilles(connectionDetails = connectionDetails,
-             cdmDatabaseSchema = cdmDatabaseSchema,
-             resultsDatabaseSchema = resultsDatabaseSchema,
-      scratchDatabaseSchema = scratchDatabaseSchema, vocabDatabaseSchema = cdmDatabaseSchema, tempEmulationSchema = tempEmulationSchema,
-      analysisIds = missingAnalysisIds, defaultAnalysesOnly = defaultAnalysesOnly,
-      outputFolder = outputFolder, createTable = FALSE, updateGivenAnalysesOnly = TRUE)
+  if (nrow(missingAnalyses) == 0) {
+    stop("NO DEFAULT MISSING ANALYSES FOUND")
   }
+  
+  # By supplying analysisIds along with specifying createTable=F and updateGivenAnalysesOnly=T,
+  # we add the missing analysis_ids without removing existing data
+  achilles(connectionDetails       = connectionDetails,
+           cdmDatabaseSchema       = cdmDatabaseSchema,
+           resultsDatabaseSchema   = resultsDatabaseSchema,
+           scratchDatabaseSchema   = scratchDatabaseSchema, 
+		   vocabDatabaseSchema     = cdmDatabaseSchema, 
+		   tempEmulationSchema     = tempEmulationSchema,
+           analysisIds             = missingAnalyses$ANALYSIS_ID, 
+		   defaultAnalysesOnly     = defaultAnalysesOnly,
+		   outputFolder            = outputFolder, 
+		   createTable             = FALSE, 
+		   updateGivenAnalysesOnly = TRUE)
 }
