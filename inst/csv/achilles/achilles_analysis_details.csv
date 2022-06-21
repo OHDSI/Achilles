@@ -250,6 +250,7 @@ ANALYSIS_ID,DISTRIBUTION,DISTRIBUTED_FIELD,ANALYSIS_NAME,STRATUM_1_NAME,STRATUM_
 1807,0,,"Number of measurement occurrence records, by measurement_concept_id and unit_concept_id",measurement_concept_id,unit_concept_id,,,,1,Measurement
 1809,0,,Number of measurement records with invalid person_id,,,,,,1,Measurement
 1810,0,,Number of measurement records outside valid observation period,,,,,,1,Observation Period
+1811,0,,"Number of measurement records with a valid value (with a mapped, non-null value_as_number)",,,,,,1,Measurement
 1812,0,,Number of measurement records with invalid provider_id,,,,,,1,Measurement
 1813,0,,Number of measurement records with invalid visit_id,,,,,,1,Measurement
 1814,0,,"Number of measurement records with no value (numeric, string, or concept)",,,,,,1,Measurement
@@ -257,6 +258,7 @@ ANALYSIS_ID,DISTRIBUTION,DISTRIBUTED_FIELD,ANALYSIS_NAME,STRATUM_1_NAME,STRATUM_
 1816,1,,"Distribution of low range, by measurement_concept_id and unit_concept_id",,,,,,1,Measurement
 1817,1,,"Distribution of high range, by measurement_concept_id and unit_concept_id",,,,,,1,Measurement
 1818,0,,"Number of measurement records below/within/above normal range, by measurement_concept_id and unit_concept_id",,,,,,1,Measurement
+1819,0,,"Number of measurement records, by measurement_concept_id, with a valid value (with a mapped, non-null value_as_number)",measurement_concept_id,,,,,1,Measurement
 1820,0,,Number of measurement records  by measurement start month,calendar month,,,,,1,Measurement
 1821,0,,Number of measurement records with no numeric value,,,,,,1,Measurement
 1822,0,,"Number of measurement records, by measurement_concept_id and value_as_concept_id",measurement_concept_id,value_as_concept_id,,,,1,Measurement
