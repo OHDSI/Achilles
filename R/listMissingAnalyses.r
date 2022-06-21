@@ -61,8 +61,8 @@ listMissingAnalyses <- function(connectionDetails, resultsDatabaseSchema) {
   print("Retrieving previously computed achilles_results and achilles_results_dist data...")
 
   sql <- "select distinct analysis_id from @results_schema.achilles_results
-        union
-select distinct analysis_id from @results_schema.achilles_results_dist;"
+          union
+         select distinct analysis_id from @results_schema.achilles_results_dist;"
 
   sql <- SqlRender::render(sql, results_schema = resultsDatabaseSchema)
   sql <- SqlRender::translate(sql, targetDialect = connectionDetails$dbms)
@@ -75,7 +75,6 @@ select distinct analysis_id from @results_schema.achilles_results_dist;"
 
   colsToDisplay <- c("ANALYSIS_ID",
                      "DISTRIBUTION",
-                     "COST",
                      "CATEGORY",
                      "IS_DEFAULT",
                      "ANALYSIS_NAME")
