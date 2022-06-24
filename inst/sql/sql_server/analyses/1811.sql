@@ -23,6 +23,6 @@ AND
 	m.measurement_date <= op.observation_period_end_date		
 WHERE 
 	m.value_as_number IS NOT NULL
-AND 
+OR 
 	m.value_as_concept_id != 0;
 
