@@ -1,6 +1,6 @@
 -- 432	Proportion of condition_occurrence records outside a valid observation period
 --
--- stratum_1:   Proportion to 6 decimal places
+-- stratum_1:   Proportion
 -- stratum_2:   Number of condition_occurrence records outside a valid observation period (numerator)
 -- stratum_3:   Number of condition_occurrence records (denominator)
 -- count_value: Flag (0 or 1) indicating whether any such records exist
@@ -30,7 +30,7 @@ FROM
 SELECT 
 	432 AS analysis_id,
 	CASE WHEN co.record_count != 0 THEN 
-		CAST(CAST(1.0*op.record_count/co.record_count AS NUMERIC(7,6)) AS VARCHAR(255)) 
+		CAST(CAST(1.0*op.record_count/co.record_count AS FLOAT) AS VARCHAR(255)) 
 	ELSE
 		CAST(NULL AS VARCHAR(255))
 	END AS stratum_1, 
