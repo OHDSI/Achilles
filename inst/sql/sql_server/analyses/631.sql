@@ -1,6 +1,6 @@
 -- 631	Proportion of people with at least one procedure_occurrence record outside a valid observation period
 --
--- stratum_1:   Proportion to 6 decimal places
+-- stratum_1:   Proportion
 -- stratum_2:   Number of people with a record outside a valid observation period (numerator)
 -- stratum_3:   Number of people in procedure_occurrence (denominator)
 -- count_value: Flag (0 or 1) indicating whether any such records exist
@@ -30,7 +30,7 @@ FROM
 SELECT 
 	631 AS analysis_id,
 	CASE WHEN po.person_count != 0 THEN 
-		CAST(CAST(1.0*op.person_count/po.person_count AS NUMERIC(7,6)) AS VARCHAR(255)) 
+		CAST(CAST(1.0*op.person_count/po.person_count AS FLOAT) AS VARCHAR(255)) 
 	ELSE 
 		CAST(NULL AS VARCHAR(255)) 
 	END AS stratum_1, 
