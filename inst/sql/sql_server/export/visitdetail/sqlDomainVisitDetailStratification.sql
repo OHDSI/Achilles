@@ -6,6 +6,6 @@ SELECT
 FROM 
 	@results_database_schema.achilles_results ar
 JOIN 
-	@vocab_database_schema.concept c ON c.concept_id = CAST(ar.stratum_1 AS INT)
+	@vocab_database_schema.concept c ON c.concept_id = CAST(ar.stratum_1 AS BIGINT)
 WHERE 
 	ar.analysis_id = 1326

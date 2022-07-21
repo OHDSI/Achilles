@@ -19,10 +19,10 @@ FROM (
 		denom.count_value AS denom_count_value
 	FROM (
 		SELECT 
-			CAST(stratum_1 AS INT) stratum_1,
-			CAST(stratum_2 AS INT) stratum_2,
-			CAST(stratum_3 AS INT) stratum_3,
-			CAST(stratum_4 AS INT) stratum_4,
+			CAST(stratum_1 AS BIGINT) stratum_1,
+			CAST(stratum_2 AS BIGINT) stratum_2,
+			CAST(stratum_3 AS BIGINT) stratum_3,
+			CAST(stratum_4 AS BIGINT) stratum_4,
 			count_value
 		FROM 
 			@results_database_schema.achilles_results
@@ -38,10 +38,10 @@ FROM (
 		) num
 	JOIN (
 		SELECT 
-			CAST(stratum_1 AS INT) stratum_1,
-			CAST(stratum_2 AS INT) stratum_2,
-			CAST(stratum_3 AS INT) stratum_3,
-			CAST(stratum_4 AS INT) stratum_4,
+			CAST(stratum_1 AS BIGINT) stratum_1,
+			CAST(stratum_2 AS BIGINT) stratum_2,
+			CAST(stratum_3 AS BIGINT) stratum_3,
+			CAST(stratum_4 AS BIGINT) stratum_4,
 			count_value
 		FROM 
 			@results_database_schema.achilles_results

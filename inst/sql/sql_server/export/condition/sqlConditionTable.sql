@@ -4,9 +4,9 @@ select concept.concept_id,
 	round(1.0*ar1.count_value / denom.count_value,5) as percent_persons,
 	round(1.0*ar2.count_value / ar1.count_value,5) as records_per_person
 from 
-	(select cast(stratum_1 as int) stratum_1, count_value from @results_database_schema.achilles_results where analysis_id = 400 GROUP BY analysis_id, stratum_1, count_value) ar1
+	(select cast(stratum_1 as bigint) stratum_1, count_value from @results_database_schema.achilles_results where analysis_id = 400 GROUP BY analysis_id, stratum_1, count_value) ar1
 	inner join
-	(select cast(stratum_1 as int) stratum_1, count_value from @results_database_schema.achilles_results where analysis_id = 401 GROUP BY analysis_id, stratum_1, count_value) ar2
+	(select cast(stratum_1 as bigint) stratum_1, count_value from @results_database_schema.achilles_results where analysis_id = 401 GROUP BY analysis_id, stratum_1, count_value) ar2
 	on ar1.stratum_1 = ar2.stratum_1
 	inner join
 	(

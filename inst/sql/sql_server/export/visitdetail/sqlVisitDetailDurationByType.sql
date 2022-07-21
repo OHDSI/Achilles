@@ -10,7 +10,7 @@ SELECT
 	ard1.max_value AS max_value
 FROM (
 	SELECT 
-		CAST(stratum_1 AS INT) stratum_1,
+		CAST(stratum_1 AS BIGINT) stratum_1,
 		min_value,
 		p10_value,
 		p25_value,

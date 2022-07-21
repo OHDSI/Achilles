@@ -6,7 +6,7 @@ SELECT
 	1.0 * ar2.count_value / ar1.count_value AS records_per_person
 FROM (
 	SELECT 
-		CAST(stratum_1 AS INT) stratum_1,
+		CAST(stratum_1 AS BIGINT) stratum_1,
 		count_value
 	FROM 
 		@results_database_schema.achilles_results
@@ -19,7 +19,7 @@ FROM (
 	) ar1
 JOIN (
 	SELECT 
-		CAST(stratum_1 AS INT) stratum_1,
+		CAST(stratum_1 AS BIGINT) stratum_1,
 		count_value
 	FROM 
 		@results_database_schema.achilles_results

@@ -7,7 +7,7 @@ select c1.concept_name as Category,
 	ard1.p90_value as p90_value,
 	ard1.max_value as max_value
 from (
-  select cast(stratum_1 as int) stratum_1, min_value, p10_value, p25_value, median_value, p75_value, p90_value, max_value
+  select cast(stratum_1 as bigint) stratum_1, min_value, p10_value, p25_value, median_value, p75_value, p90_value, max_value
   FROM @results_database_schema.achilles_results_dist
   where analysis_id = 104
   GROUP BY analysis_id, stratum_1, min_value, p10_value, p25_value, median_value, p75_value, p90_value, max_value 
