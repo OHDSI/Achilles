@@ -295,43 +295,46 @@ achilles <- function(connectionDetails,
 	  }
   }
   
-  # Create analysis table -------------------------------------------------------------
+  ###### Create and populate the achilles_analysis table (assumes inst/csv/achilles_analysis_details.csv exists) 
 
   if (createTable) {
-    analysesSqls <- apply(analysisDetails, 1, function(analysisDetail) {
-      SqlRender::render("select @analysisId as analysis_id, '@analysisName' as analysis_name,
-               '@stratum1Name' as stratum_1_name, '@stratum2Name' as stratum_2_name,
-               '@stratum3Name' as stratum_3_name, '@stratum4Name' as stratum_4_name,
-               '@stratum5Name' as stratum_5_name, '@isDefault' as is_default, '@category' as category",
-        analysisId = analysisDetail["ANALYSIS_ID"], analysisName = analysisDetail["ANALYSIS_NAME"],
-        stratum1Name = analysisDetail["STRATUM_1_NAME"], stratum2Name = analysisDetail["STRATUM_2_NAME"],
-        stratum3Name = analysisDetail["STRATUM_3_NAME"], stratum4Name = analysisDetail["STRATUM_4_NAME"],
-        stratum5Name = analysisDetail["STRATUM_5_NAME"], isDefault = analysisDetail["IS_DEFAULT"],
-        category = analysisDetail["CATEGORY"])
-    })
+  
+    sql <- SqlRender::loadRenderTranslateSql(
+		sqlFilename = "analyses/achilles_analysis_ddl.sql",
+		packageName = "Achilles", 
+		dbms        = connectionDetails$dbms, 
+        resultsDatabaseSchema   = resultsDatabaseSchema)
 
-    sql <- SqlRender::loadRenderTranslateSql(sqlFilename = "analyses/create_analysis_table.sql",
-      packageName = "Achilles", dbms = connectionDetails$dbms, warnOnMissingParameters = FALSE,
-      resultsDatabaseSchema = resultsDatabaseSchema, analysesSqls = paste(analysesSqls,
-                                                                          collapse = " \nunion all\n "))
+	# Populate achilles_analysis without the "distribution" and "distributed_field"
+	# columns from achilles_analysis_details.csv
 
-    achillesSql <- c(achillesSql, sql)
+	analysisDetailsCsv <- Achilles::getAnalysisDetails()
+	analysisDetailsCsv <- analysisDetailsCsv[,-c(2,3)]
 
     if (!sqlOnly) {
-      if (numThreads == 1) {
-        # connection is already alive
-        DatabaseConnector::executeSql(connection = connection,
-                                      sql = sql,
-                                      errorReportFile = file.path(getwd(),
-          "achillesErrorCreateAnalysis.txt"))
-      } else {
+	  if (numThreads != 1) {
         connection <- DatabaseConnector::connect(connectionDetails = connectionDetails)
-        DatabaseConnector::executeSql(connection = connection,
-                                      sql = sql,
-                                      errorReportFile = file.path(getwd(),
-          "achillesErrorCreateAnalysis.txt"))
-        DatabaseConnector::disconnect(connection = connection)
-      }
+	  }
+	  
+	  # Create empty achilles_analysis
+      DatabaseConnector::executeSql(
+		connection = connection,
+        sql = sql,
+        errorReportFile = file.path(getwd(),"achillesErrorCreateAchillesAnalysis.txt"))
+		
+	  # Populate achilles_analysis with data from achilles_analysis_details.csv from above 
+	  DatabaseConnector::insertTable(
+		connection        = connection,
+        databaseSchema    = resultsDatabaseSchema,
+        tableName         = "ACHILLES_ANALYSIS",
+        data              = analysisDetailsCsv,
+		dropTableIfExists = FALSE,
+		createTable       = FALSE,
+		tempTable         = FALSE)
+		
+	  if (numThreads != 1) {
+        DatabaseConnector::disconnect(connection)
+	  }
     }
   }
 
