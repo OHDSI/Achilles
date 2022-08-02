@@ -26,7 +26,7 @@ achilles(
   optimizeAtlasCache = FALSE,
   defaultAnalysesOnly = TRUE,
   updateGivenAnalysesOnly = FALSE,
-  excludeAnalysisIds = c(),
+  excludeAnalysisIds,
   sqlDialect = NULL
 )
 }

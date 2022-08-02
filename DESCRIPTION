@@ -2,7 +2,7 @@ Package: Achilles
 Type: Package
 Title: Generates descriptive statistics for an OMOP CDM instance
 Version: 1.7
-Date: 2021-12-02
+Date: 2022-08-02
 Authors@R: c(
   person("Frank", "DeFalco", email = "fdefalco@ohdsi.org", role = c("aut","cre")),  
   person("Patrick", "Ryan", email = "ryan@ohdsi.org", role = c("aut")),  
@@ -17,7 +17,7 @@ Authors@R: c(
 Maintainer: Frank J DeFalco <fdefalco@ohdsi.org>
 LazyData: true
 Description: Creates descriptive statistics summary for an entire OMOP CDM
-  instance. Currently supports CDM 5.3.
+  instance. Currently supports CDM 5.3 and 5.4.
 Depends:
   DatabaseConnector (>= 2.0.0),
   R (>= 4.0.0)
@@ -42,5 +42,5 @@ Remotes:
 VignetteBuilder: knitr
 License: Apache License
 Roxygen: list()
-RoxygenNote: 7.1.2
+RoxygenNote: 7.2.1
 Encoding: UTF-8
