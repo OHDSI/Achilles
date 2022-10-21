@@ -1,9 +1,9 @@
 -- 903	Number of distinct drug era concepts per person
 
 --HINT DISTRIBUTE_ON_KEY(count_value)
-WITH rawData(count_value) AS (
 SELECT
 	COUNT_BIG(DISTINCT de.drug_concept_id) AS count_value
+INTO #tempRawData_903
 FROM 
 	@cdmDatabaseSchema.drug_era de
 JOIN 
@@ -15,23 +15,23 @@ AND
 AND 
 	de.drug_era_start_date <= op.observation_period_end_date
 GROUP BY 
-	de.person_id
-),
-overallStats (avg_value, stdev_value, min_value, max_value, total) as
+	de.person_id;
+
+WITH overallStats (avg_value, stdev_value, min_value, max_value, total) as
 (
   select CAST(avg(1.0 * count_value) AS FLOAT) as avg_value,
     CAST(stdev(count_value) AS FLOAT) as stdev_value,
     min(count_value) as min_value,
     max(count_value) as max_value,
     count_big(*) as total
-  from rawData
+  from #tempRawData_903
 ),
 statsView (count_value, total, rn) as
 (
   select count_value, 
   	count_big(*) as total, 
 		row_number() over (order by count_value) as rn
-  FROM rawData
+  FROM #tempRawData_903
   group by count_value
 ),
 priorStats (count_value, total, accumulated) as
@@ -57,6 +57,9 @@ from priorStats p
 CROSS JOIN overallStats o
 GROUP BY o.total, o.min_value, o.max_value, o.avg_value, o.stdev_value
 ;
+
+truncate table #tempRawData_903;
+drop table #tempRawData_903;
 
 --HINT DISTRIBUTE_ON_KEY(count_value)
 select analysis_id, 

@@ -1,10 +1,11 @@
 -- 1803	Number of distinct measurement occurrence concepts per person
-
+DROP TABLE IF EXISTS #tempResults_1803;
+DROP TABLE IF EXISTS #temp_rawdata_1803;
 --HINT DISTRIBUTE_ON_KEY(count_value)
-with rawData(count_value) as
-(
 SELECT 
 	COUNT_BIG(DISTINCT m.measurement_concept_id) AS count_value
+INTO 
+    #temp_rawdata_1803
 FROM 
 	@cdmDatabaseSchema.measurement m
 JOIN 
@@ -16,23 +17,23 @@ AND
 AND 
 	m.measurement_date <= op.observation_period_end_date		
 GROUP BY 
-	m.person_id
-),
-overallStats (avg_value, stdev_value, min_value, max_value, total) as
+	m.person_id;
+	
+WITH overallStats (avg_value, stdev_value, min_value, max_value, total) as
 (
   select CAST(avg(1.0 * count_value) AS FLOAT) as avg_value,
     CAST(stdev(count_value) AS FLOAT) as stdev_value,
     min(count_value) as min_value,
     max(count_value) as max_value,
     count_big(*) as total
-  from rawData
+  from #temp_rawdata_1803
 ),
 statsView (count_value, total, rn) as
 (
   select count_value, 
   	count_big(*) as total, 
 		row_number() over (order by count_value) as rn
-  FROM rawData
+  FROM #temp_rawdata_1803
   group by count_value
 ),
 priorStats (count_value, total, accumulated) as
@@ -68,5 +69,7 @@ from #tempResults_1803
 ;
 
 truncate table #tempResults_1803;
-
 drop table #tempResults_1803;
+
+truncate table #temp_rawdata_1803;
+drop table #temp_rawdata_1803;

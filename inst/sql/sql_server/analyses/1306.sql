@@ -1,12 +1,13 @@
 -- 1306	Distribution of age by visit_detail_concept_id
 
 --HINT DISTRIBUTE_ON_KEY(stratum1_id)
-WITH rawData (stratum1_id, stratum2_id, count_value) AS
-(
+
 SELECT 
 	vd.visit_detail_concept_id AS stratum1_id,
 	p.gender_concept_id AS stratum2_id,
 	vd.visit_detail_start_year - p.year_of_birth AS count_value
+INTO
+	#tempRawData_1306
 FROM 
 	@cdmDatabaseSchema.person p
 JOIN (
@@ -29,9 +30,9 @@ JOIN (
 		vd.visit_detail_concept_id
 	) vd 
 ON 
-	p.person_id = vd.person_id
-),
-overallStats (stratum1_id, stratum2_id, avg_value, stdev_value, min_value, max_value, total) AS
+	p.person_id = vd.person_id;
+
+WITH overallStats (stratum1_id, stratum2_id, avg_value, stdev_value, min_value, max_value, total) AS
 (
 SELECT 
 	stratum1_id,
@@ -42,7 +43,7 @@ SELECT
 	MAX(count_value) AS max_value,
 	COUNT_BIG(*) AS total
 FROM 
-	rawData
+	#tempRawData_1306
 GROUP BY 
 	stratum1_id,
 	stratum2_id
@@ -56,7 +57,7 @@ SELECT
 	COUNT_BIG(*) AS total,
 	ROW_NUMBER() OVER (PARTITION BY stratum1_id,stratum2_id ORDER BY count_value) AS rn
 FROM 
-	rawData
+	#tempRawData_1306
 GROUP BY 
 	stratum1_id,
 	stratum2_id,
@@ -112,6 +113,9 @@ GROUP BY
 	o.avg_value, 
 	o.stdev_value
 ;
+
+TRUNCATE TABLE #tempRawData_1306;
+DROP TABLE #tempRawData_1306;
 
 --HINT DISTRIBUTE_ON_KEY(stratum_1)
 SELECT 

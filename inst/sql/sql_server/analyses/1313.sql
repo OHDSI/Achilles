@@ -2,11 +2,10 @@
 -- restrict to visits inside observation period
 
 --HINT DISTRIBUTE_ON_KEY(stratum_id) 
-WITH rawData(stratum_id, count_value) AS
-(
 SELECT 
 	vd.visit_detail_concept_id AS stratum_id,
 	DATEDIFF(dd, vd.visit_detail_start_date, vd.visit_detail_END_date) AS count_value
+INTO #tempRawData_1313
 FROM 
 	@cdmDatabaseSchema.visit_detail vd
 JOIN 
@@ -16,9 +15,9 @@ ON
 AND	
 	vd.visit_detail_start_date >= op.observation_period_start_date  
 AND 
-	vd.visit_detail_start_date <= op.observation_period_end_date
-),
-overallStats (stratum_id, avg_value, stdev_value, min_value, max_value, total) AS
+	vd.visit_detail_start_date <= op.observation_period_end_date;
+
+WITH overallStats (stratum_id, avg_value, stdev_value, min_value, max_value, total) AS
 (
 SELECT 
 	stratum_id,
@@ -28,7 +27,7 @@ SELECT
 	MAX(count_value) AS max_value,
 	COUNT_BIG(*) AS total
 FROM 
-	rawData
+	#tempRawData_1313
 GROUP BY 
 	stratum_id
 ),
@@ -40,7 +39,7 @@ SELECT
 	COUNT_BIG(*) AS total,
 	ROW_NUMBER() OVER (ORDER BY count_value) AS rn
 FROM 
-	rawData
+	#tempRawData_1313
 GROUP BY 
 	stratum_id,
 	count_value
@@ -93,6 +92,9 @@ GROUP BY
 	o.avg_value, 
 	o.stdev_value
 ;
+
+TRUNCATE TABLE #tempRawData_1313;
+DROP TABLE #tempRawData_1313;
 
 --HINT DISTRIBUTE_ON_KEY(stratum_1) 
 SELECT 

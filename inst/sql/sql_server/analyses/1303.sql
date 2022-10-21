@@ -1,12 +1,11 @@
 -- 1303	Number of distinct visit detail concepts per person
 
 --HINT DISTRIBUTE_ON_KEY(count_value)
-with rawData(person_id, count_value) as
-(
 SELECT 
 	vd.person_id,
 	COUNT_BIG(DISTINCT vd.visit_detail_concept_id) AS count_value
-FROM 
+INTO #tempRawData_1303
+FROM
 	@cdmDatabaseSchema.visit_detail vd
 JOIN 
 	@cdmDatabaseSchema.observation_period op 
@@ -17,9 +16,9 @@ AND
 AND 
 	vd.visit_detail_start_date <= op.observation_period_end_date
 GROUP BY 
-	vd.person_id
-),
-overallStats (avg_value, stdev_value, min_value, max_value, total) AS
+	vd.person_id;
+
+with overallStats (avg_value, stdev_value, min_value, max_value, total) AS
 (
 SELECT 
 	CAST(AVG(1.0 * count_value) AS FLOAT) AS avg_value,
@@ -28,7 +27,7 @@ SELECT
 	MAX(count_value) AS max_value,
 	COUNT_BIG(*) AS total
 FROM 
-	rawData
+	#tempRawData_1303
 ),
 statsView (count_value, total, rn) AS
 (
@@ -37,7 +36,7 @@ SELECT
 	COUNT_BIG(*) AS total,
 	ROW_NUMBER() OVER (ORDER BY count_value) AS rn
 FROM 
-	rawData
+	#tempRawData_1303
 GROUP BY 
 	count_value
 ),
@@ -81,6 +80,9 @@ GROUP BY
 	o.avg_value,
 	o.stdev_value
 ;
+
+TRUNCATE TABLE #tempRawData_1303;
+DROP TABLE #tempRawData_1303;
 
 --HINT DISTRIBUTE_ON_KEY(count_value)
 SELECT 

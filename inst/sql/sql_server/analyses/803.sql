@@ -1,10 +1,11 @@
 -- 803	Number of distinct observation occurrence concepts per person
-
+DROP TABLE IF EXISTS #tempResults_803;
+DROP TABLE IF EXISTS #temp_rawdata_803;
 --HINT DISTRIBUTE_ON_KEY(count_value)
-WITH rawData(count_value) AS
-(
 SELECT 
 	COUNT_BIG(DISTINCT o.observation_concept_id) AS count_value
+INTO 
+    #temp_rawdata_803
 FROM 
 	@cdmDatabaseSchema.observation o
 JOIN 
@@ -16,23 +17,23 @@ AND
 AND 
 	o.observation_date <= op.observation_period_end_date
 GROUP BY 
-	o.person_id
-),
-overallStats (avg_value, stdev_value, min_value, max_value, total) as
+	o.person_id;
+	
+WITH overallStats (avg_value, stdev_value, min_value, max_value, total) as
 (
   select CAST(avg(1.0 * count_value) AS FLOAT) as avg_value,
     CAST(stdev(count_value) AS FLOAT) as stdev_value,
     min(count_value) as min_value,
     max(count_value) as max_value,
     count_big(*) as total
-  from rawData
+  from #temp_rawData_803
 ),
 statsView (count_value, total, rn) as
 (
   select count_value, 
   	count_big(*) as total, 
 		row_number() over (order by count_value) as rn
-  FROM rawData
+  FROM #temp_rawData_803
   group by count_value
 ),
 priorStats (count_value, total, accumulated) as
@@ -68,5 +69,7 @@ from #tempResults_803
 ;
 
 truncate table #tempResults_803;
-
 drop table #tempResults_803;
+
+truncate table #temp_rawdata_803;
+drop table #temp_rawdata_803;

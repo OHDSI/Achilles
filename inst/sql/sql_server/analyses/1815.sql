@@ -35,6 +35,12 @@ GROUP BY
 	m.count_value
 ;
 
+  select s.stratum1_id, s.stratum2_id, s.count_value, s.total, sum(p.total) as accumulated
+  into #statsViewAccumlated_1815
+  from #statsView_1815 s
+  join #statsView_1815 p on s.stratum1_id = p.stratum1_id and s.stratum2_id = p.stratum2_id and p.rn <= s.rn
+  group by s.stratum1_id, s.stratum2_id, s.count_value, s.total, s.rn
+
 --HINT DISTRIBUTE_ON_KEY(stratum1_id)
 select 1815 as analysis_id,
   CAST(o.stratum1_id AS VARCHAR(255)) AS stratum1_id,
@@ -51,12 +57,7 @@ select 1815 as analysis_id,
 	MIN(case when p.accumulated >= .90 * o.total then count_value else o.max_value end) as p90_value
 into #tempResults_1815
 from 
-(
-  select s.stratum1_id, s.stratum2_id, s.count_value, s.total, sum(p.total) as accumulated
-  from #statsView_1815 s
-  join #statsView_1815 p on s.stratum1_id = p.stratum1_id and s.stratum2_id = p.stratum2_id and p.rn <= s.rn
-  group by s.stratum1_id, s.stratum2_id, s.count_value, s.total, s.rn
-) p
+#statsViewAccumlated_1815 p
 join 
 (
 	SELECT 
@@ -105,6 +106,9 @@ from #tempResults_1815
 
 truncate table #statsView_1815;
 drop table #statsView_1815;
+
+truncate table #statsViewAccumlated_1815;
+drop table #statsViewAccumlated_1815;
 
 truncate table #tempResults_1815;
 drop table #tempResults_1815;
