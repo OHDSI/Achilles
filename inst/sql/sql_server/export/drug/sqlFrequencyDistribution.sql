@@ -1,12 +1,21 @@
-select c1.concept_id as CONCEPT_ID, 
-	c1.concept_name as CONCEPT_NAME,
-	cast(round((100.0*num.count_value / denom.count_value), 0) as bigint) as Y_NUM_PERSONS,
-	num.stratum_2 as X_COUNT
-from 
-	(select count_value from @results_database_schema.achilles_results where analysis_id = 1) denom,
-	(select CAST(stratum_1 as bigint) stratum_1, CAST(stratum_2 as bigint) stratum_2, count_value 
-	from @results_database_schema.achilles_results
-	where analysis_id = 791) num
-	inner join @vocab_database_schema.concept c1 on num.stratum_1 = c1.concept_id
-	order by num.stratum_2
-	
+SELECT c1.concept_id AS CONCEPT_ID,
+	c1.concept_name AS CONCEPT_NAME,
+	CAST(ROUND((100.0 * tmp.num_count_value / tmp.denom_count_value), 0) AS BIGINT) AS Y_NUM_PERSONS,
+	tmp.stratum_2 AS X_COUNT
+FROM (
+	SELECT * 
+	FROM (
+		SELECT count_value AS denom_count_value
+		FROM @results_database_schema.achilles_results
+		WHERE analysis_id = 1
+		) denom,
+		(
+			SELECT CAST(stratum_1 AS BIGINT) stratum_1,
+				CAST(stratum_2 AS BIGINT) stratum_2,
+				count_value AS num_count_value
+			FROM @results_database_schema.achilles_results
+			WHERE analysis_id = 791
+			) num
+	) tmp
+INNER JOIN @vocab_database_schema.concept c1 ON tmp.stratum_1 = c1.concept_id
+ORDER BY tmp.stratum_2
