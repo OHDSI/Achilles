@@ -30,7 +30,7 @@ FROM
 SELECT 
 	532 AS analysis_id,
 	CASE WHEN dt.record_count != 0 THEN
-		CAST(CAST(1.0*op.record_count/dt.record_count AS NUMERIC(7,6)) AS VARCHAR(255)) 
+		CAST(CAST(1.0*op.record_count/dt.record_count AS FLOAT) AS VARCHAR(255)) 
 	ELSE 
 		CAST(NULL AS VARCHAR(255))
 	END AS stratum_1, 
