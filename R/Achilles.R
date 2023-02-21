@@ -1079,7 +1079,10 @@ optimizeAtlasCache <- function(connectionDetails,
 .getAchillesResultBenchmark <- function(analysisId, logs) {
   logs <- logs[logs$analysisId == analysisId, ]
   if (nrow(logs) == 1) {
-    round(as.numeric(strsplit(logs[1, ]$runTime, " ")[[1]][1]), 2)
+    runTime <- strsplit(logs[1, ]$runTime, " ")[[1]]
+    runTimeValue <- round(as.numeric(runTime[1]), 2)
+    runTimeUnit <- runTime[2]
+    paste(runTimeValue, runTimeUnit)
   } else {
     "ERROR: no runtime found, check log files"
   }
