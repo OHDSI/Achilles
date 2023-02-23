@@ -1082,9 +1082,16 @@ optimizeAtlasCache <- function(connectionDetails,
     runTime <- strsplit(logs[1, ]$runTime, " ")[[1]]
     runTimeValue <- round(as.numeric(runTime[1]), 2)
     runTimeUnit <- runTime[2]
-    paste(runTimeValue, runTimeUnit)
+    if (runTimeUnit == "mins") {
+      runtTimevalue <- runtTimevalue * 60
+    } else if (runTimeUnit == "hours") {
+      runtTimevalue <- runtTimevalue * 60 * 60
+    } else if (runTimeUnit == "days") {
+      runtTimevalue <- runtTimevalue * 60 * 60 * 24
+    }
+    runTimeValue
   } else {
-    "ERROR: no runtime found, check log files"
+    "ERROR: no runtime found in log file"
   }
 }
 
