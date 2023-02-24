@@ -1083,11 +1083,11 @@ optimizeAtlasCache <- function(connectionDetails,
     runTimeValue <- round(as.numeric(runTime[1]), 2)
     runTimeUnit <- runTime[2]
     if (runTimeUnit == "mins") {
-      runtTimevalue <- runtTimevalue * 60
+      runTimeValue <- runTimeValue * 60
     } else if (runTimeUnit == "hours") {
-      runtTimevalue <- runtTimevalue * 60 * 60
+      runTimeValue <- runTimeValue * 60 * 60
     } else if (runTimeUnit == "days") {
-      runtTimevalue <- runtTimevalue * 60 * 60 * 24
+      runTimeValue <- runTimeValue * 60 * 60 * 24
     }
     runTimeValue
   } else {
