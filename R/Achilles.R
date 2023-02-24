@@ -933,59 +933,81 @@ optimizeAtlasCache <- function(connectionDetails,
                                         createTable,
                                         connectionDetails,
                                         schemaDelim,
-
-  scratchDatabaseSchema, resultsDatabaseSchema, tempEmulationSchema, cdmVersion, tempAchillesPrefix,
-  numThreads, smallCellCount, outputFolder, sqlOnly) {
+                                        scratchDatabaseSchema,
+                                        resultsDatabaseSchema,
+                                        tempEmulationSchema,
+                                        cdmVersion,
+                                        tempAchillesPrefix,
+                                        numThreads,
+                                        smallCellCount,
+                                        outputFolder,
+                                        sqlOnly) {
   castedNames <- apply(resultsTable$schema, 1, function(field) {
-    SqlRender::render("cast(@fieldName as @fieldType) as @fieldName",
-                      fieldName = field["FIELD_NAME"],
-
-      fieldType = field["FIELD_TYPE"])
+    SqlRender::render(
+      "cast(@fieldName as @fieldType) as @fieldName",
+      fieldName = field["FIELD_NAME"],
+      fieldType = field["FIELD_TYPE"]
+    )
   })
 
   # obtain the analysis SQLs to union in the merge
   # ------------------------------------------------------------------
-
-  detailSqls <- lapply(resultsTable$analysisIds[resultsTable$analysisIds %in% analysisIds],
-                       function(analysisId) {
-    analysisSql <- SqlRender::render(sql = "select @castedNames from
+  if (!sqlOnly) {
+    logs <- .parseLogs(outputFolder)
+  }
+  detailSqls <- lapply(
+    resultsTable$analysisIds[resultsTable$analysisIds %in% analysisIds],
+    function(analysisId) {
+      analysisSql <- SqlRender::render(
+        sql = "select @castedNames from
                    @scratchDatabaseSchema@schemaDelim@tablePrefix_@analysisId",
-      scratchDatabaseSchema = scratchDatabaseSchema, schemaDelim = schemaDelim, castedNames = paste(castedNames,
-        collapse = ", "), tablePrefix = resultsTable$tablePrefix, analysisId = analysisId)
+        scratchDatabaseSchema = scratchDatabaseSchema, 
+        schemaDelim = schemaDelim,
+        castedNames = paste(castedNames, collapse = ", "),
+        tablePrefix = resultsTable$tablePrefix,
+        analysisId = analysisId
+      )
 
-    if (!sqlOnly) {
-      # obtain the runTime for this analysis
-      runTime <- .getAchillesResultBenchmark(analysisId, outputFolder)
+      if (!sqlOnly) {
+        # obtain the runTime for this analysis
+        runTime <- .getAchillesResultBenchmark(analysisId, logs)
 
-      benchmarkSelects <- lapply(resultsTable$schema$FIELD_NAME, function(c) {
-        if (tolower(c) == "analysis_id") {
-          sprintf("%d as analysis_id", .getBenchmarkOffset() + as.integer(analysisId))
-        } else if (tolower(c) == "stratum_1") {
-          sprintf("'%s' as stratum_1", runTime)
-        } else if (tolower(c) == "count_value") {
-          sprintf("%d as count_value", smallCellCount + 1)
-        } else {
-          sprintf("NULL as %s", c)
-        }
-      })
+        benchmarkSelects <- lapply(resultsTable$schema$FIELD_NAME, function(c) {
+          if (tolower(c) == "analysis_id") {
+            sprintf("%d as analysis_id", .getBenchmarkOffset() + as.integer(analysisId))
+          } else if (tolower(c) == "stratum_1") {
+            sprintf("'%s' as stratum_1", runTime)
+          } else if (tolower(c) == "count_value") {
+            sprintf("%d as count_value", smallCellCount + 1)
+          } else {
+            sprintf("NULL as %s", c)
+          }
+        })
 
-      benchmarkSql <- SqlRender::render(sql = "select @benchmarkSelect",
-                                        benchmarkSelect = paste(benchmarkSelects,
-        collapse = ", "))
+        benchmarkSql <- SqlRender::render(
+          sql = "select @benchmarkSelect",
+          benchmarkSelect = paste(benchmarkSelects, collapse = ", ")
+        )
 
-      analysisSql <- paste(c(analysisSql, benchmarkSql), collapse = " union all ")
-
+        analysisSql <- paste(c(analysisSql, benchmarkSql), collapse = " union all ")
+      }
+      analysisSql
     }
-    analysisSql
-  })
+  )
 
-  SqlRender::loadRenderTranslateSql(sqlFilename = "analyses/merge_achilles_tables.sql",
-                                    packageName = "Achilles",
-
-    dbms = connectionDetails$dbms, warnOnMissingParameters = FALSE, createTable = createTable, resultsDatabaseSchema = resultsDatabaseSchema,
-    tempEmulationSchema = tempEmulationSchema, detailType = resultsTable$detailType, detailSqls = paste(detailSqls,
-      collapse = " \nunion all\n "), fieldNames = paste(resultsTable$schema$FIELD_NAME, collapse = ", "),
-    smallCellCount = smallCellCount)
+  SqlRender::loadRenderTranslateSql(
+    sqlFilename = "analyses/merge_achilles_tables.sql",
+    packageName = "Achilles",
+    dbms = connectionDetails$dbms,
+    warnOnMissingParameters = FALSE,
+    createTable = createTable,
+    resultsDatabaseSchema = resultsDatabaseSchema,
+    tempEmulationSchema = tempEmulationSchema,
+    detailType = resultsTable$detailType,
+    detailSqls = paste(detailSqls, collapse = " \nunion all\n "),
+    fieldNames = paste(resultsTable$schema$FIELD_NAME, collapse = ", "),
+    smallCellCount = smallCellCount
+  )
 }
 
 .getSourceName <- function(connectionDetails, cdmDatabaseSchema) {
@@ -1054,37 +1076,56 @@ optimizeAtlasCache <- function(connectionDetails,
 
 }
 
-.getAchillesResultBenchmark <- function(analysisId, outputFolder) {
-  logs <- utils::read.table(file = file.path(outputFolder,
-                                             "log_achilles.txt"), header = FALSE, sep = "\t",
-    stringsAsFactors = FALSE)
+.getAchillesResultBenchmark <- function(analysisId, logs) {
+  logs <- logs[logs$analysisId == analysisId, ]
+  if (nrow(logs) == 1) {
+    runTime <- strsplit(logs[1, ]$runTime, " ")[[1]]
+    runTimeValue <- round(as.numeric(runTime[1]), 2)
+    runTimeUnit <- runTime[2]
+    if (runTimeUnit == "mins") {
+      runTimeValue <- runTimeValue * 60
+    } else if (runTimeUnit == "hours") {
+      runTimeValue <- runTimeValue * 60 * 60
+    } else if (runTimeUnit == "days") {
+      runTimeValue <- runTimeValue * 60 * 60 * 24
+    }
+    runTimeValue
+  } else {
+    "ERROR: no runtime found in log file"
+  }
+}
+
+.parseLogs <- function(outputFolder) {
+  logs <- utils::read.table(
+      file = file.path(
+          outputFolder,
+          "log_achilles.txt"
+      ),
+      header = FALSE,
+      sep = "\t",
+      stringsAsFactors = FALSE
+  )
   names(logs) <- c("startTime", "thread", "logType", "package", "packageFunction", "comment")
   logs <- logs[grepl(pattern = "COMPLETE", x = logs$comment), ]
   logs$analysisId <- logs$runTime <- NA
 
   for (i in 1:nrow(logs)) {
-    logs[i, ]$analysisId <- .getAnalysisId(logs[i, ]$comment)
-    logs[i, ]$runTime <- .getRunTime(logs[i, ]$comment)
+      logs[i, ]$analysisId <- .parseAnalysisId(logs[i, ]$comment)
+      logs[i, ]$runTime <- .parseRunTime(logs[i, ]$comment)
   }
-
-  logs <- logs[logs$analysisId == analysisId, ]
-  if (nrow(logs) == 1) {
-    round(as.numeric(strsplit(logs[1, ]$runTime, " ")[[1]][1]), 2)
-  } else {
-    "ERROR: check log files"
-  }
+  logs
 }
 
 .formatName <- function(name) {
   gsub("_", " ", gsub("\\[(.*?)\\]_", "", gsub(" ", "_", name)))
 }
 
-.getAnalysisId <- function(comment) {
+.parseAnalysisId <- function(comment) {
   comment <- .formatName(comment)
   as.integer(gsub("\\s*\\([^\\)]+\\)", "", as.character(comment)))
 }
 
-.getRunTime <- function(comment) {
+.parseRunTime <- function(comment) {
   comment <- .formatName(comment)
   gsub("[\\(\\)]", "", regmatches(comment, gregexpr("\\(.*?\\)", comment))[[1]])
 }
