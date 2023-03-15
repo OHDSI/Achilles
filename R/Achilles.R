@@ -197,7 +197,7 @@ achilles <- function(connectionDetails,
   # ----------------------------------------------------------------------------------------------
 
   if (missing(sourceName) & !sqlOnly) {
-    .getSourceName(connectionDetails, cdmDatabaseSchema)
+    sourceName <- .getSourceName(connectionDetails, cdmDatabaseSchema)
   }
 
   # Obtain analyses to run
