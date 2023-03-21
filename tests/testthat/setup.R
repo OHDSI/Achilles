@@ -5,6 +5,8 @@ if (dir.exists(Sys.getenv("DATABASECONNECTOR_JAR_FOLDER"))) {
   dir.create(jdbcDriverFolder, showWarnings = FALSE)
   DatabaseConnector::downloadJdbcDrivers("all", pathToDriver = jdbcDriverFolder)
   
+  Sys.setenv(DATABASECONNECTOR_JAR_FOLDER=jdbcDriverFolder)
+  
   withr::defer(
     {
       unlink(jdbcDriverFolder, recursive = TRUE, force = TRUE)
