@@ -31,16 +31,17 @@ Imports:
     data.table,
     lubridate
 Suggests:
-  DT,
-  magrittr,
-  tidyr,
-  knitr, 
-  rmarkdown,
-  Castor
+    DT,
+    magrittr,
+    tidyr,
+    knitr,
+    rmarkdown,
+    testthat (>= 3.0.0)
 Remotes:
   github::OHDSI/Castor
 VignetteBuilder: knitr
 License: Apache License
 Roxygen: list()
-RoxygenNote: 7.2.1
+RoxygenNote: 7.2.3
 Encoding: UTF-8
+Config/testthat/edition: 3
