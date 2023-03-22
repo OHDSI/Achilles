@@ -57,37 +57,37 @@ cnt as count_value
   select 'specimen' as table_name, 'anatomic_site_source_value' as column_name, anatomic_site_source_value as source_value, count_big(*) as cnt from @cdmDatabaseSchema.specimen where anatomic_site_concept_id = 0 group by anatomic_site_source_value                    
   union
   select 'specimen' as table_name, 'disease_status_source_value' as column_name, disease_status_source_value as source_value, count_big(*) as cnt from @cdmDatabaseSchema.specimen where disease_status_concept_id = 0 group by disease_status_source_value                    
-  {@cdmVersion not in ('5', '5.0', '5.0.0', '5.1', '5.1.0', '5.2', '5.2.0')}?{
+  {@cdmVersion in ('5.3', '5.4')}?{
   union
   select 'visit_detail' as table_name, 'visit_detail_source_value' as column_name, visit_detail_source_value as source_value, count_big(*) as cnt from @cdmDatabaseSchema.visit_detail where visit_detail_concept_id = 0 group by visit_detail_source_value
   union
-  {@cdmVersion in ('5.4','5.4.0')} ? 
+  {@cdmVersion in ('5.4')} ? 
 	{
-	select 'visit_detail' as table_name, 'admitted_from_source_value' as column_name, admitted_from_source_value as source_value, count_big(*) as cnt from @cdmDatabaseSchema.visit_detail where admitted_from_concept_id = 0 group by admitted_from_source_value
-	union
-	select 'visit_detail' as table_name, 'discharged_to_source_value' as column_name, discharged_to_source_value as source_value, count_big(*) as cnt from @cdmDatabaseSchema.visit_detail where discharged_to_concept_id = 0 group by discharged_to_source_value
+  select 'visit_detail' as table_name, 'admitted_from_source_value' as column_name, admitted_from_source_value as source_value, count_big(*) as cnt from @cdmDatabaseSchema.visit_detail where admitted_from_concept_id = 0 group by admitted_from_source_value
+  union
+  select 'visit_detail' as table_name, 'discharged_to_source_value' as column_name, discharged_to_source_value as source_value, count_big(*) as cnt from @cdmDatabaseSchema.visit_detail where discharged_to_concept_id = 0 group by discharged_to_source_value
 	}
 	:
 	{
-	select 'visit_detail' as table_name, 'admitting_source_value' as column_name, admitting_source_value as source_value, count_big(*) as cnt from @cdmDatabaseSchema.visit_detail where admitting_source_concept_id = 0 group by admitting_source_value
-	union
-	select 'visit_detail' as table_name, 'discharge_to_source_value' as column_name, discharge_to_source_value as source_value, count_big(*) as cnt from @cdmDatabaseSchema.visit_detail where discharge_to_concept_id = 0 group by discharge_to_source_value
+  select 'visit_detail' as table_name, 'admitting_source_value' as column_name, admitting_source_value as source_value, count_big(*) as cnt from @cdmDatabaseSchema.visit_detail where admitting_source_concept_id = 0 group by admitting_source_value
+  union
+  select 'visit_detail' as table_name, 'discharge_to_source_value' as column_name, discharge_to_source_value as source_value, count_big(*) as cnt from @cdmDatabaseSchema.visit_detail where discharge_to_concept_id = 0 group by discharge_to_source_value
 	}
   }
   union
   select 'visit_occurrence' as table_name, 'visit_source_value' as column_name, visit_source_value as source_value, count_big(*) as cnt from @cdmDatabaseSchema.visit_occurrence where visit_concept_id = 0 group by visit_source_value
   union
-  {@cdmVersion in ('5.4','5.4.0')} ?
+  {@cdmVersion in ('5.4')} ?
 	{
 	select 'visit_occurrence' as table_name, 'admitted_from_source_value' as column_name, admitted_from_source_value as source_value, count_big(*) as cnt from @cdmDatabaseSchema.visit_occurrence where  admitted_from_concept_id = 0 group by admitted_from_source_value
-    union
-    select 'visit_occurrence' as table_name, 'discharged_to_source_value' as column_name, discharged_to_source_value as source_value, count_big(*) as cnt from @cdmDatabaseSchema.visit_occurrence where discharged_to_concept_id = 0 group by discharged_to_source_value
+  union
+  select 'visit_occurrence' as table_name, 'discharged_to_source_value' as column_name, discharged_to_source_value as source_value, count_big(*) as cnt from @cdmDatabaseSchema.visit_occurrence where discharged_to_concept_id = 0 group by discharged_to_source_value
 	}
 	:
 	{
 	select 'visit_occurrence' as table_name, 'admitting_source_value' as column_name, admitting_source_value as source_value, count_big(*) as cnt from @cdmDatabaseSchema.visit_occurrence where admitting_source_concept_id = 0 group by admitting_source_value
-    union
-    select 'visit_occurrence' as table_name, 'discharge_to_source_value' as column_name, discharge_to_source_value as source_value, count_big(*) as cnt from @cdmDatabaseSchema.visit_occurrence where discharge_to_concept_id = 0 group by discharge_to_source_value
+  union
+  select 'visit_occurrence' as table_name, 'discharge_to_source_value' as column_name, discharge_to_source_value as source_value, count_big(*) as cnt from @cdmDatabaseSchema.visit_occurrence where discharge_to_concept_id = 0 group by discharge_to_source_value
 	}		
   union
   select 'device_exposure' as table_name, 'device_source_value' as column_name, device_source_value as source_value, count_big(*) as cnt from @cdmDatabaseSchema.device_exposure where device_concept_id = 0 group by device_source_value
