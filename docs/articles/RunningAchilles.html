@@ -57,6 +57,9 @@
     </li>
   </ul>
 </li>
+<li>
+  <a href="../news/index.html">Changelog</a>
+</li>
       </ul>
 <ul class="nav navbar-nav navbar-right"></ul>
 </div>
@@ -73,7 +76,7 @@
     <div class="page-header toc-ignore">
       <h1 data-toc-skip>Running Achilles on Your CDM</h1>
             
-            <h4 data-toc-skip class="date">2022-04-27</h4>
+            <h4 data-toc-skip class="date">2023-03-22</h4>
       
       
       <div class="hidden name"><code>RunningAchilles.Rmd</code></div>
@@ -257,15 +260,15 @@ variable to it, so that no values are printed or returned.</p>
 <code>scratchDatabaseSchema</code>, as temporary tables will be
 used.</p>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="va">connectionDetails</span> <span class="op">&lt;-</span> <span class="fu">createConnectionDetails</span><span class="op">(</span>dbms <span class="op">=</span> <span class="st">"postgresql"</span>, 
-                                             server <span class="op">=</span> <span class="st">"localhost/synpuf"</span>, 
-                                             user <span class="op">=</span> <span class="st">"cdm_user"</span>, 
-                                             password <span class="op">=</span> <span class="st">"cdm_password"</span><span class="op">)</span>
-
-<span class="fu"><a href="../reference/achilles.html">achilles</a></span><span class="op">(</span>connectionDetails <span class="op">=</span> <span class="va">connectionDetails</span>, 
-         cdmDatabaseSchema <span class="op">=</span> <span class="st">"cdm"</span>, 
-         resultsDatabaseSchema <span class="op">=</span> <span class="st">"results"</span>, 
-         outputFolder <span class="op">=</span> <span class="st">"output"</span><span class="op">)</span></code></pre></div>
+<code class="sourceCode R"><span><span class="va">connectionDetails</span> <span class="op">&lt;-</span> <span class="fu">createConnectionDetails</span><span class="op">(</span>dbms <span class="op">=</span> <span class="st">"postgresql"</span>, </span>
+<span>                                             server <span class="op">=</span> <span class="st">"localhost/synpuf"</span>, </span>
+<span>                                             user <span class="op">=</span> <span class="st">"cdm_user"</span>, </span>
+<span>                                             password <span class="op">=</span> <span class="st">"cdm_password"</span><span class="op">)</span></span>
+<span></span>
+<span><span class="fu"><a href="../reference/achilles.html">achilles</a></span><span class="op">(</span>connectionDetails <span class="op">=</span> <span class="va">connectionDetails</span>, </span>
+<span>         cdmDatabaseSchema <span class="op">=</span> <span class="st">"cdm"</span>, </span>
+<span>         resultsDatabaseSchema <span class="op">=</span> <span class="st">"results"</span>, </span>
+<span>         outputFolder <span class="op">=</span> <span class="st">"output"</span><span class="op">)</span></span></code></pre></div>
 </div>
 <div class="section level2">
 <h2 id="running-achilles-multi-threaded-mode">Running Achilles: Multi-Threaded Mode<a class="anchor" aria-label="anchor" href="#running-achilles-multi-threaded-mode"></a>
@@ -274,17 +277,17 @@ used.</p>
 <code>scratchDatabaseSchema</code> and use &gt; 1 for
 <code>numThreads</code>.</p>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="va">connectionDetails</span> <span class="op">&lt;-</span> <span class="fu">createConnectionDetails</span><span class="op">(</span>dbms <span class="op">=</span> <span class="st">"postgresql"</span>, 
-                                             server <span class="op">=</span> <span class="st">"localhost/synpuf"</span>, 
-                                             user <span class="op">=</span> <span class="st">"cdm_user"</span>, 
-                                             password <span class="op">=</span> <span class="st">"cdm_password"</span><span class="op">)</span>
-
-<span class="fu"><a href="../reference/achilles.html">achilles</a></span><span class="op">(</span>connectionDetails <span class="op">=</span> <span class="va">connectionDetails</span>, 
-         cdmDatabaseSchema <span class="op">=</span> <span class="st">"cdm"</span>, 
-         resultsDatabaseSchema <span class="op">=</span> <span class="st">"results"</span>, 
-         scratchDatabaseSchema <span class="op">=</span> <span class="st">"scratch"</span>, 
-         numThreads <span class="op">=</span> <span class="fl">5</span>,
-         outputFolder <span class="op">=</span> <span class="st">"output"</span><span class="op">)</span></code></pre></div>
+<code class="sourceCode R"><span><span class="va">connectionDetails</span> <span class="op">&lt;-</span> <span class="fu">createConnectionDetails</span><span class="op">(</span>dbms <span class="op">=</span> <span class="st">"postgresql"</span>, </span>
+<span>                                             server <span class="op">=</span> <span class="st">"localhost/synpuf"</span>, </span>
+<span>                                             user <span class="op">=</span> <span class="st">"cdm_user"</span>, </span>
+<span>                                             password <span class="op">=</span> <span class="st">"cdm_password"</span><span class="op">)</span></span>
+<span></span>
+<span><span class="fu"><a href="../reference/achilles.html">achilles</a></span><span class="op">(</span>connectionDetails <span class="op">=</span> <span class="va">connectionDetails</span>, </span>
+<span>         cdmDatabaseSchema <span class="op">=</span> <span class="st">"cdm"</span>, </span>
+<span>         resultsDatabaseSchema <span class="op">=</span> <span class="st">"results"</span>, </span>
+<span>         scratchDatabaseSchema <span class="op">=</span> <span class="st">"scratch"</span>, </span>
+<span>         numThreads <span class="op">=</span> <span class="fl">5</span>,</span>
+<span>         outputFolder <span class="op">=</span> <span class="st">"output"</span><span class="op">)</span></span></code></pre></div>
 </div>
 <div class="section level2">
 <h2 id="post-processing">Post-Processing<a class="anchor" aria-label="anchor" href="#post-processing"></a>
@@ -300,14 +303,14 @@ skip this step if using those platforms</em></p>
 <p>To improve query performance of the Achilles results tables, run the
 <strong>createIndices</strong> function.</p>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="va">connectionDetails</span> <span class="op">&lt;-</span> <span class="fu">createConnectionDetails</span><span class="op">(</span>dbms <span class="op">=</span> <span class="st">"postgresql"</span>, 
-                                             server <span class="op">=</span> <span class="st">"localhost/synpuf"</span>, 
-                                             user <span class="op">=</span> <span class="st">"cdm_user"</span>, 
-                                             password <span class="op">=</span> <span class="st">"cdm_password"</span><span class="op">)</span>
-
-<span class="fu"><a href="../reference/createIndices.html">createIndices</a></span><span class="op">(</span>connectionDetails <span class="op">=</span> <span class="va">connectionDetails</span>, 
-              resultsDatabaseSchema <span class="op">=</span> <span class="st">"results"</span>, 
-              outputFolder <span class="op">=</span> <span class="st">"output"</span><span class="op">)</span></code></pre></div>
+<code class="sourceCode R"><span><span class="va">connectionDetails</span> <span class="op">&lt;-</span> <span class="fu">createConnectionDetails</span><span class="op">(</span>dbms <span class="op">=</span> <span class="st">"postgresql"</span>, </span>
+<span>                                             server <span class="op">=</span> <span class="st">"localhost/synpuf"</span>, </span>
+<span>                                             user <span class="op">=</span> <span class="st">"cdm_user"</span>, </span>
+<span>                                             password <span class="op">=</span> <span class="st">"cdm_password"</span><span class="op">)</span></span>
+<span></span>
+<span><span class="fu"><a href="../reference/createIndices.html">createIndices</a></span><span class="op">(</span>connectionDetails <span class="op">=</span> <span class="va">connectionDetails</span>, </span>
+<span>              resultsDatabaseSchema <span class="op">=</span> <span class="st">"results"</span>, </span>
+<span>              outputFolder <span class="op">=</span> <span class="st">"output"</span><span class="op">)</span></span></code></pre></div>
 </div>
 <div class="section level3">
 <h3 id="dropping-all-staging-tables-multi-threaded-only">Dropping All Staging Tables (Multi-threaded only)<a class="anchor" aria-label="anchor" href="#dropping-all-staging-tables-multi-threaded-only"></a>
@@ -318,13 +321,13 @@ not enable this step in the call to these functions, use the
 <p>The <code>tableTypes</code> parameter can be used to specify which
 batch of staging tables to drop (“achilles”).</p>
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="va">connectionDetails</span> <span class="op">&lt;-</span> <span class="fu">createConnectionDetails</span><span class="op">(</span>dbms <span class="op">=</span> <span class="st">"postgresql"</span>, 
-                                             server <span class="op">=</span> <span class="st">"localhost/synpuf"</span>, 
-                                             user <span class="op">=</span> <span class="st">"cdm_user"</span>, 
-                                             password <span class="op">=</span> <span class="st">"cdm_password"</span><span class="op">)</span>
-
-<span class="fu"><a href="../reference/dropAllScratchTables.html">dropAllScratchTables</a></span><span class="op">(</span>connectionDetails <span class="op">=</span> <span class="va">connectionDetails</span>, 
-                     scratchDatabaseSchema <span class="op">=</span> <span class="st">"scratch"</span>, numThreads <span class="op">=</span> <span class="fl">5</span><span class="op">)</span></code></pre></div>
+<code class="sourceCode R"><span><span class="va">connectionDetails</span> <span class="op">&lt;-</span> <span class="fu">createConnectionDetails</span><span class="op">(</span>dbms <span class="op">=</span> <span class="st">"postgresql"</span>, </span>
+<span>                                             server <span class="op">=</span> <span class="st">"localhost/synpuf"</span>, </span>
+<span>                                             user <span class="op">=</span> <span class="st">"cdm_user"</span>, </span>
+<span>                                             password <span class="op">=</span> <span class="st">"cdm_password"</span><span class="op">)</span></span>
+<span></span>
+<span><span class="fu"><a href="../reference/dropAllScratchTables.html">dropAllScratchTables</a></span><span class="op">(</span>connectionDetails <span class="op">=</span> <span class="va">connectionDetails</span>, </span>
+<span>                     scratchDatabaseSchema <span class="op">=</span> <span class="st">"scratch"</span>, numThreads <span class="op">=</span> <span class="fl">5</span><span class="op">)</span></span></code></pre></div>
 </div>
 </div>
 <div class="section level2">
@@ -333,23 +336,22 @@ batch of staging tables to drop (“achilles”).</p>
 <p>Considerable work has been dedicated to provide the
 <code>Achilles</code> package.</p>
 <div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="fu"><a href="https://rdrr.io/r/utils/citation.html" class="external-link">citation</a></span><span class="op">(</span><span class="st">"Achilles"</span><span class="op">)</span></code></pre></div>
-<pre><code><span class="co">#&gt; </span>
-<span class="co">#&gt; To cite package 'Achilles' in publications use:</span>
-<span class="co">#&gt; </span>
-<span class="co">#&gt;   Frank DeFalco, Patrick Ryan, Martijn Schuemie, Vojtech Huser, Chris</span>
-<span class="co">#&gt;   Knoll, Ajit Londhe, Taha Abdul-Basser and Anthony Molinaro (2021).</span>
-<span class="co">#&gt;   Achilles: Generates descriptive statistics for an OMOP CDM instance.</span>
-<span class="co">#&gt;   R package version 1.7.</span>
-<span class="co">#&gt; </span>
-<span class="co">#&gt; A BibTeX entry for LaTeX users is</span>
-<span class="co">#&gt; </span>
-<span class="co">#&gt;   @Manual{,</span>
-<span class="co">#&gt;     title = {Achilles: Generates descriptive statistics for an OMOP CDM instance},</span>
-<span class="co">#&gt;     author = {Frank DeFalco and Patrick Ryan and Martijn Schuemie and Vojtech Huser and Chris Knoll and Ajit Londhe and Taha Abdul-Basser and Anthony Molinaro},</span>
-<span class="co">#&gt;     year = {2021},</span>
-<span class="co">#&gt;     note = {R package version 1.7},</span>
-<span class="co">#&gt;   }</span></code></pre>
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/citation.html" class="external-link">citation</a></span><span class="op">(</span><span class="st">"Achilles"</span><span class="op">)</span></span></code></pre></div>
+<pre><code><span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; To cite package 'Achilles' in publications use:</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt;   DeFalco F, Ryan P, Schuemie M, Huser V, Knoll C, Londhe A,</span></span>
+<span><span class="co">#&gt;   Abdul-Basser T, Molinaro A (2022). _Achilles: Generates descriptive</span></span>
+<span><span class="co">#&gt;   statistics for an OMOP CDM instance_. R package version 1.7.</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; A BibTeX entry for LaTeX users is</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt;   @Manual{,</span></span>
+<span><span class="co">#&gt;     title = {Achilles: Generates descriptive statistics for an OMOP CDM instance},</span></span>
+<span><span class="co">#&gt;     author = {Frank DeFalco and Patrick Ryan and Martijn Schuemie and Vojtech Huser and Chris Knoll and Ajit Londhe and Taha Abdul-Basser and Anthony Molinaro},</span></span>
+<span><span class="co">#&gt;     year = {2022},</span></span>
+<span><span class="co">#&gt;     note = {R package version 1.7},</span></span>
+<span><span class="co">#&gt;   }</span></span></code></pre>
 </div>
   </div>
 
@@ -370,7 +372,7 @@ batch of staging tables to drop (“achilles”).</p>
 
 <div class="pkgdown">
   <p></p>
-<p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.3.</p>
+<p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.7.</p>
 </div>
 
       </footer>

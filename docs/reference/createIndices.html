@@ -38,6 +38,9 @@
       <a href="../articles/RunningAchilles.html">Running Achilles on Your CDM</a>
     </li>
   </ul></li>
+<li>
+  <a href="../news/index.html">Changelog</a>
+</li>
       </ul><ul class="nav navbar-nav navbar-right"></ul></div><!--/.nav-collapse -->
   </div><!--/.container -->
 </div><!--/.navbar -->
@@ -57,14 +60,14 @@
     </div>
 
     <div id="ref-usage">
-    <div class="sourceCode"><pre class="sourceCode r"><code><span class="fu">createIndices</span><span class="op">(</span>
-  <span class="va">connectionDetails</span>,
-  <span class="va">resultsDatabaseSchema</span>,
-  <span class="va">outputFolder</span>,
-  sqlOnly <span class="op">=</span> <span class="cn">FALSE</span>,
-  verboseMode <span class="op">=</span> <span class="cn">TRUE</span>,
-  achillesTables <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"achilles_results"</span>, <span class="st">"achilles_results_dist"</span><span class="op">)</span>
-<span class="op">)</span></code></pre></div>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">createIndices</span><span class="op">(</span></span>
+<span>  <span class="va">connectionDetails</span>,</span>
+<span>  <span class="va">resultsDatabaseSchema</span>,</span>
+<span>  <span class="va">outputFolder</span>,</span>
+<span>  sqlOnly <span class="op">=</span> <span class="cn">FALSE</span>,</span>
+<span>  verboseMode <span class="op">=</span> <span class="cn">TRUE</span>,</span>
+<span>  achillesTables <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"achilles_results"</span>, <span class="st">"achilles_results_dist"</span><span class="op">)</span></span>
+<span><span class="op">)</span></span></code></pre></div>
     </div>
 
     <div id="arguments">
@@ -73,22 +76,33 @@
 <dd><p>An R object of type <code>connectionDetails</code> created using the
 function <code>createConnectionDetails</code> in the
 <code>DatabaseConnector</code> package.</p></dd>
+
+
 <dt>resultsDatabaseSchema</dt>
 <dd><p>Fully qualified name of database schema that we can write final
 results to. Default is cdmDatabaseSchema. On SQL Server, this should
 specifiy both the database and the schema, so for example, on SQL
 Server, 'cdm_results.dbo'.</p></dd>
+
+
 <dt>outputFolder</dt>
 <dd><p>Path to store logs and SQL files</p></dd>
+
+
 <dt>sqlOnly</dt>
 <dd><p>TRUE = just generate SQL files, don't actually run, FALSE = run
 Achilles</p></dd>
+
+
 <dt>verboseMode</dt>
 <dd><p>Boolean to determine if the console will show all execution steps.
 Default = TRUE</p></dd>
+
+
 <dt>achillesTables</dt>
 <dd><p>Which achilles tables should be indexed? Default is both
 achilles_results and achilles_results_dist.</p></dd>
+
 </dl></div>
     <div id="details">
     <h2>Details</h2>
@@ -107,7 +121,7 @@ achilles_results and achilles_results_dist.</p></dd>
 </div>
 
 <div class="pkgdown">
-  <p></p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.3.</p>
+  <p></p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.7.</p>
 </div>
 
       </footer></div>

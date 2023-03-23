@@ -38,6 +38,9 @@
       <a href="../articles/RunningAchilles.html">Running Achilles on Your CDM</a>
     </li>
   </ul></li>
+<li>
+  <a href="../news/index.html">Changelog</a>
+</li>
       </ul><ul class="nav navbar-nav navbar-right"></ul></div><!--/.nav-collapse -->
   </div><!--/.container -->
 </div><!--/.navbar -->
@@ -57,16 +60,16 @@
     </div>
 
     <div id="ref-usage">
-    <div class="sourceCode"><pre class="sourceCode r"><code><span class="fu">dropAllScratchTables</span><span class="op">(</span>
-  <span class="va">connectionDetails</span>,
-  <span class="va">scratchDatabaseSchema</span>,
-  tempAchillesPrefix <span class="op">=</span> <span class="st">"tmpach"</span>,
-  numThreads <span class="op">=</span> <span class="fl">1</span>,
-  tableTypes <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"achilles"</span><span class="op">)</span>,
-  <span class="va">outputFolder</span>,
-  verboseMode <span class="op">=</span> <span class="cn">TRUE</span>,
-  defaultAnalysesOnly <span class="op">=</span> <span class="cn">TRUE</span>
-<span class="op">)</span></code></pre></div>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">dropAllScratchTables</span><span class="op">(</span></span>
+<span>  <span class="va">connectionDetails</span>,</span>
+<span>  <span class="va">scratchDatabaseSchema</span>,</span>
+<span>  tempAchillesPrefix <span class="op">=</span> <span class="st">"tmpach"</span>,</span>
+<span>  numThreads <span class="op">=</span> <span class="fl">1</span>,</span>
+<span>  tableTypes <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"achilles"</span><span class="op">)</span>,</span>
+<span>  <span class="va">outputFolder</span>,</span>
+<span>  verboseMode <span class="op">=</span> <span class="cn">TRUE</span>,</span>
+<span>  defaultAnalysesOnly <span class="op">=</span> <span class="cn">TRUE</span></span>
+<span><span class="op">)</span></span></code></pre></div>
     </div>
 
     <div id="arguments">
@@ -75,26 +78,41 @@
 <dd><p>An R object of type <code>connectionDetails</code> created using the
 function <code>createConnectionDetails</code> in the
 <code>DatabaseConnector</code> package.</p></dd>
+
+
 <dt>scratchDatabaseSchema</dt>
 <dd><p>string name of database schema that Achilles scratch tables were
 written to.</p></dd>
+
+
 <dt>tempAchillesPrefix</dt>
 <dd><p>The prefix to use for the "temporary" (but actually permanent)
 Achilles analyses tables. Default is "tmpach"</p></dd>
+
+
 <dt>numThreads</dt>
 <dd><p>The number of threads to use to run this function. Default is 1
 thread.</p></dd>
+
+
 <dt>tableTypes</dt>
 <dd><p>The types of Achilles scratch tables to drop: achilles</p></dd>
+
+
 <dt>outputFolder</dt>
 <dd><p>Path to store logs and SQL files</p></dd>
+
+
 <dt>verboseMode</dt>
 <dd><p>Boolean to determine if the console will show all execution steps.
 Default = TRUE</p></dd>
+
+
 <dt>defaultAnalysesOnly</dt>
 <dd><p>Boolean to determine if only default analyses should be run.
 Including non-default analyses is substantially more resource
 intensive.  Default = TRUE</p></dd>
+
 </dl></div>
     <div id="details">
     <h2>Details</h2>
@@ -113,7 +131,7 @@ intensive.  Default = TRUE</p></dd>
 </div>
 
 <div class="pkgdown">
-  <p></p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.3.</p>
+  <p></p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.7.</p>
 </div>
 
       </footer></div>

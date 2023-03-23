@@ -38,6 +38,9 @@
       <a href="../articles/RunningAchilles.html">Running Achilles on Your CDM</a>
     </li>
   </ul></li>
+<li>
+  <a href="../news/index.html">Changelog</a>
+</li>
       </ul><ul class="nav navbar-nav navbar-right"></ul></div><!--/.nav-collapse -->
   </div><!--/.container -->
 </div><!--/.navbar -->
@@ -57,35 +60,48 @@
     </div>
 
     <div id="ref-usage">
-    <div class="sourceCode"><pre class="sourceCode r"><code><span class="fu">exportAO</span><span class="op">(</span>
-  <span class="va">connectionDetails</span>,
-  <span class="va">cdmDatabaseSchema</span>,
-  <span class="va">resultsDatabaseSchema</span>,
-  <span class="va">vocabDatabaseSchema</span>,
-  <span class="va">outputPath</span>,
-  reports <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="op">)</span>
-<span class="op">)</span></code></pre></div>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">exportAO</span><span class="op">(</span></span>
+<span>  <span class="va">connectionDetails</span>,</span>
+<span>  <span class="va">cdmDatabaseSchema</span>,</span>
+<span>  <span class="va">resultsDatabaseSchema</span>,</span>
+<span>  <span class="va">vocabDatabaseSchema</span>,</span>
+<span>  <span class="va">outputPath</span>,</span>
+<span>  reports <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="op">)</span></span>
+<span><span class="op">)</span></span></code></pre></div>
     </div>
 
     <div id="arguments">
     <h2>Arguments</h2>
     <dl><dt>connectionDetails</dt>
 <dd><p>An R object of type ConnectionDetail (details for the function that contains server info, database type, optionally username/password, port)</p></dd>
+
+
 <dt>cdmDatabaseSchema</dt>
 <dd><p>Name of the database schema that contains the OMOP CDM.</p></dd>
+
+
 <dt>resultsDatabaseSchema</dt>
 <dd><p>Name of the database schema that contains the Achilles analysis files. Default is cdmDatabaseSchema</p></dd>
+
+
 <dt>vocabDatabaseSchema</dt>
 <dd><p>string name of database schema that contains OMOP Vocabulary. Default is cdmDatabaseSchema. On SQL Server, this should specifiy both the database and the schema, so for example 'results.dbo'.</p></dd>
+
+
 <dt>outputPath</dt>
 <dd><p>A folder location to save the JSON files. Default is current working folder</p></dd>
+
+
 <dt>reports</dt>
 <dd><p>vector of reports to run, c() defaults to all reports</p>
 <p>See <code>showReportTypes</code> for a list of all report types</p></dd>
+
 </dl></div>
     <div id="value">
     <h2>Value</h2>
-    <p>none</p>
+    
+
+<p>none</p>
     </div>
     <div id="details">
     <h2>Details</h2>
@@ -104,7 +120,7 @@
 </div>
 
 <div class="pkgdown">
-  <p></p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.3.</p>
+  <p></p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.7.</p>
 </div>
 
       </footer></div>

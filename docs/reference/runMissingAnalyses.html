@@ -38,6 +38,9 @@
       <a href="../articles/RunningAchilles.html">Running Achilles on Your CDM</a>
     </li>
   </ul></li>
+<li>
+  <a href="../news/index.html">Changelog</a>
+</li>
       </ul><ul class="nav navbar-nav navbar-right"></ul></div><!--/.nav-collapse -->
   </div><!--/.container -->
 </div><!--/.navbar -->
@@ -57,16 +60,16 @@
     </div>
 
     <div id="ref-usage">
-    <div class="sourceCode"><pre class="sourceCode r"><code><span class="fu">runMissingAnalyses</span><span class="op">(</span>
-  <span class="va">connectionDetails</span>,
-  <span class="va">cdmDatabaseSchema</span>,
-  resultsDatabaseSchema <span class="op">=</span> <span class="va">cdmDatabaseSchema</span>,
-  scratchDatabaseSchema <span class="op">=</span> <span class="va">resultsDatabaseSchema</span>,
-  vocabDatabaseSchema <span class="op">=</span> <span class="va">cdmDatabaseSchema</span>,
-  tempEmulationSchema <span class="op">=</span> <span class="va">resultsDatabaseSchema</span>,
-  outputFolder <span class="op">=</span> <span class="st">"output"</span>,
-  defaultAnalysesOnly <span class="op">=</span> <span class="cn">TRUE</span>
-<span class="op">)</span></code></pre></div>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">runMissingAnalyses</span><span class="op">(</span></span>
+<span>  <span class="va">connectionDetails</span>,</span>
+<span>  <span class="va">cdmDatabaseSchema</span>,</span>
+<span>  resultsDatabaseSchema <span class="op">=</span> <span class="va">cdmDatabaseSchema</span>,</span>
+<span>  scratchDatabaseSchema <span class="op">=</span> <span class="va">resultsDatabaseSchema</span>,</span>
+<span>  vocabDatabaseSchema <span class="op">=</span> <span class="va">cdmDatabaseSchema</span>,</span>
+<span>  tempEmulationSchema <span class="op">=</span> <span class="va">resultsDatabaseSchema</span>,</span>
+<span>  outputFolder <span class="op">=</span> <span class="st">"output"</span>,</span>
+<span>  defaultAnalysesOnly <span class="op">=</span> <span class="cn">TRUE</span></span>
+<span><span class="op">)</span></span></code></pre></div>
     </div>
 
     <div id="arguments">
@@ -75,15 +78,21 @@
 <dd><p>An R object of type <code>connectionDetails</code> created using the
 function <code>createConnectionDetails</code> in the
 <code>DatabaseConnector</code> package.</p></dd>
+
+
 <dt>cdmDatabaseSchema</dt>
 <dd><p>Fully qualified name of database schema that contains OMOP CDM
 schema. On SQL Server, this should specifiy both the database and the
 schema, so for example, on SQL Server, 'cdm_instance.dbo'.</p></dd>
+
+
 <dt>resultsDatabaseSchema</dt>
 <dd><p>Fully qualified name of database schema that we can write final
 results to. Default is cdmDatabaseSchema. On SQL Server, this should
 specifiy both the database and the schema, so for example, on SQL
 Server, 'cdm_results.dbo'.</p></dd>
+
+
 <dt>scratchDatabaseSchema</dt>
 <dd><p>Fully qualified name of the database schema that will store all of
 the intermediate scratch tables, so for example, on SQL Server,
@@ -91,33 +100,42 @@ the intermediate scratch tables, so for example, on SQL Server,
 and the resultsDatabaseSchema. Default is resultsDatabaseSchema.
 Making this "#" will run Achilles in single-threaded mode and use
 temporary tables instead of permanent tables.</p></dd>
+
+
 <dt>vocabDatabaseSchema</dt>
 <dd><p>String name of database schema that contains OMOP Vocabulary. Default
 is cdmDatabaseSchema. On SQL Server, this should specifiy both the
 database and the schema, so for example 'results.dbo'.</p></dd>
+
+
 <dt>tempEmulationSchema</dt>
 <dd><p>Formerly tempEmulationSchema.  For databases like Oracle where you
 must specify the name of the database schema where you want all
 temporary tables to be managed. Requires create/insert permissions to
 this database.</p></dd>
+
+
 <dt>outputFolder</dt>
 <dd><p>Path to store logs and SQL files</p></dd>
+
+
 <dt>defaultAnalysesOnly</dt>
 <dd><p>Boolean to determine if only default analyses should be run.
 Including non-default analyses is substantially more resource
 intensive.  Default = TRUE</p></dd>
+
 </dl></div>
 
     <div id="ref-examples">
     <h2>Examples</h2>
-    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span class="kw">if</span> <span class="op">(</span><span class="cn">FALSE</span><span class="op">)</span> <span class="op">{</span></span>
-<span class="r-in"><span class="fu">Achilles</span><span class="fu">::</span><span class="fu">runMissingAnalyses</span><span class="op">(</span>connectionDetails <span class="op">=</span> <span class="va">connectionDetails</span>,</span>
-<span class="r-in">                             cdmDatabaseSchema <span class="op">=</span> <span class="st">"cdm"</span>,</span>
-<span class="r-in">                             resultsDatabaseSchema <span class="op">=</span> <span class="st">"results"</span>,</span>
-<span class="r-in"></span>
-<span class="r-in">  outputFolder <span class="op">=</span> <span class="st">"/tmp"</span><span class="op">)</span></span>
-<span class="r-in"><span class="op">}</span></span>
-<span class="r-in"></span>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="kw">if</span> <span class="op">(</span><span class="cn">FALSE</span><span class="op">)</span> <span class="op">{</span></span></span>
+<span class="r-in"><span><span class="fu">Achilles</span><span class="fu">::</span><span class="fu">runMissingAnalyses</span><span class="op">(</span>connectionDetails <span class="op">=</span> <span class="va">connectionDetails</span>,</span></span>
+<span class="r-in"><span>                             cdmDatabaseSchema <span class="op">=</span> <span class="st">"cdm"</span>,</span></span>
+<span class="r-in"><span>                             resultsDatabaseSchema <span class="op">=</span> <span class="st">"results"</span>,</span></span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span>  outputFolder <span class="op">=</span> <span class="st">"/tmp"</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="op">}</span></span></span>
+<span class="r-in"><span></span></span>
 </code></pre></div>
     </div>
   </div>
@@ -132,7 +150,7 @@ intensive.  Default = TRUE</p></dd>
 </div>
 
 <div class="pkgdown">
-  <p></p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.3.</p>
+  <p></p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.7.</p>
 </div>
 
       </footer></div>
