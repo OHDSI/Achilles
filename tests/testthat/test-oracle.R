@@ -11,6 +11,7 @@ test_that("Achilles Oracle Execution", {
       connectionDetails = details, 
       cdmDatabaseSchema = Sys.getenv("CDM5_ORACLE_CDM54_SCHEMA"),
       resultsDatabaseSchema = Sys.getenv("CDM5_ORACLE_OHDSI_SCHEMA"),
+      cdmVersion = "5.4",
       createTable = T
     )
   )

@@ -11,6 +11,7 @@ test_that("Achilles MS SQL Execution", {
       connectionDetails = details, 
       cdmDatabaseSchema = Sys.getenv("CDM5_SQL_SERVER_CDM54_SCHEMA"),
       resultsDatabaseSchema = Sys.getenv("CDM5_SQL_SERVER_OHDSI_SCHEMA"),
+      cdmVersion = "5.4",
       createTable = T
     )  
   )

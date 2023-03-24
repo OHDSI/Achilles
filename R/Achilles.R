@@ -177,30 +177,16 @@ achilles <- function(connectionDetails,
     dir.create(outputFolder)
   }
   
-  if (verboseMode) {
-    appenders <-
-      list(
-        ParallelLogger::createConsoleAppender(layout = ParallelLogger::layoutTimestamp),
-        ParallelLogger::createFileAppender(
-          layout = ParallelLogger::layoutParallel,
-          fileName = file.path(outputFolder, "log_achilles.txt")
-        )
-      )
-  } else {
-    appenders <-
-      list(
-        ParallelLogger::createFileAppender(
-          layout = ParallelLogger::layoutParallel,
-          fileName = file.path(outputFolder, "log_achilles.txt")
-        )
-      )
-  }
-  
-  logger <- ParallelLogger::createLogger(name = "achilles",
-                                         threshold = "INFO",
-                                         appenders = appenders)
-  ParallelLogger::registerLogger(logger)
+  ParallelLogger::addDefaultFileLogger(file.path(outputFolder, "log_achilles.txt"))
+  ParallelLogger::addDefaultErrorReportLogger(file.path(outputFolder, "errorReportR.txt"))
+  on.exit(ParallelLogger::unregisterLogger("DEFAULT_FILE_LOGGER", silent = TRUE))
+  on.exit(ParallelLogger::unregisterLogger("DEFAULT_ERRORREPORT_LOGGER", silent = TRUE), add = TRUE)
 
+  if (verboseMode) {
+    ParallelLogger::addDefaultConsoleLogger()
+    on.exit(ParallelLogger::unregisterLogger("DEFAULT_CONSOLE_LOGGER"))
+  }  
+  
   # Try to get CDM Version if not provided
   if (!missing(cdmVersion)) {
     ParallelLogger::logInfo(paste("CDM Version", cdmVersion, "passed as parameter."))
