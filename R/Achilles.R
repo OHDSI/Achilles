@@ -127,12 +127,27 @@
 achilles <- function(connectionDetails,
                      cdmDatabaseSchema,
                      resultsDatabaseSchema = cdmDatabaseSchema,
-
-  scratchDatabaseSchema = resultsDatabaseSchema, vocabDatabaseSchema = cdmDatabaseSchema, tempEmulationSchema = resultsDatabaseSchema,
-  sourceName = "", analysisIds, createTable = TRUE, smallCellCount = 5, cdmVersion = "5", 
-  createIndices = TRUE, numThreads = 1, tempAchillesPrefix = "tmpach", dropScratchTables = TRUE, sqlOnly = FALSE,
-  outputFolder = "output", verboseMode = TRUE, optimizeAtlasCache = FALSE, defaultAnalysesOnly = TRUE,
-  updateGivenAnalysesOnly = FALSE, excludeAnalysisIds, sqlDialect = NULL) {
+                     scratchDatabaseSchema = resultsDatabaseSchema,
+                     vocabDatabaseSchema = cdmDatabaseSchema,
+                     tempEmulationSchema = resultsDatabaseSchema,
+                     sourceName = "",
+                     analysisIds,
+                     createTable = TRUE,
+                     smallCellCount = 5,
+                     cdmVersion = "5",
+                     createIndices = TRUE,
+                     numThreads = 1,
+                     tempAchillesPrefix = "tmpach",
+                     dropScratchTables = TRUE,
+                     sqlOnly = FALSE,
+                     outputFolder = "output",
+                     verboseMode = TRUE,
+                     optimizeAtlasCache = FALSE,
+                     defaultAnalysesOnly = TRUE,
+                     updateGivenAnalysesOnly = FALSE,
+                     excludeAnalysisIds,
+                     sqlDialect = NULL) {
+  
   totalStart <- Sys.time()
   achillesSql <- c()
 
@@ -148,6 +163,7 @@ achilles <- function(connectionDetails,
       "Running Achilles in SQL ONLY mode.  Using connectionDetails, sqlDialect is ignored.  Please wait for script generation."
     )
   }
+  
   if (sqlOnly &&
       missing(connectionDetails) && !is.null(sqlDialect)) {
     connectionDetails <-
@@ -157,6 +173,10 @@ achilles <- function(connectionDetails,
     )
   }
 
+  if (!dir.exists(outputFolder)) {
+    dir.create(outputFolder)
+  }
+  
   if (verboseMode) {
     appenders <-
       list(
@@ -182,8 +202,11 @@ achilles <- function(connectionDetails,
   ParallelLogger::registerLogger(logger)
 
   # Try to get CDM Version if not provided
-    if (missing(cdmVersion) && !sqlOnly) {
+  if (!missing(cdmVersion)) {
+    ParallelLogger::logInfo(paste("CDM Version", cdmVersion, "passed as parameter."))
+  } else if (missing(cdmVersion) && !sqlOnly) {
     cdmVersion <- .getCdmVersion(connectionDetails, cdmDatabaseSchema)
+    ParallelLogger::logInfo(paste("CDM Version", cdmVersion, "found in cdm_source table."))
   }
 
   cdmVersion <- as.character(cdmVersion)
@@ -304,46 +327,49 @@ achilles <- function(connectionDetails,
   
   # Create and populate the achilles_analysis table (assumes inst/csv/achilles_analysis_details.csv exists) 
 
-  if (createTable) {
-  
-    sql <- SqlRender::loadRenderTranslateSql(
-		sqlFilename = "analyses/achilles_analysis_ddl.sql",
-		packageName = "Achilles", 
-		dbms        = connectionDetails$dbms, 
-        resultsDatabaseSchema   = resultsDatabaseSchema)
-
-	# Populate achilles_analysis without the "distribution" and "distributed_field"
-	# columns from achilles_analysis_details.csv
-
-	analysisDetailsCsv <- Achilles::getAnalysisDetails()
-	analysisDetailsCsv <- analysisDetailsCsv[,-c(2,3)]
-
-    if (!sqlOnly) {
-	  if (numThreads != 1) {
-        connection <- DatabaseConnector::connect(connectionDetails = connectionDetails)
-	  }
-	  
-	  # Create empty achilles_analysis
-      DatabaseConnector::executeSql(
-		connection = connection,
-        sql = sql,
-        errorReportFile = file.path(getwd(),"achillesErrorCreateAchillesAnalysis.txt"))
-		
-	  # Populate achilles_analysis with data from achilles_analysis_details.csv from above 
-	  DatabaseConnector::insertTable(
-		connection        = connection,
-        databaseSchema    = resultsDatabaseSchema,
-        tableName         = "ACHILLES_ANALYSIS",
-        data              = analysisDetailsCsv,
-		dropTableIfExists = FALSE,
-		createTable       = FALSE,
-		tempTable         = FALSE)
-		
-	  if (numThreads != 1) {
-        DatabaseConnector::disconnect(connection)
-	  }
+    if (createTable) {
+      sql <- SqlRender::loadRenderTranslateSql(
+        sqlFilename = "analyses/achilles_analysis_ddl.sql",
+        packageName = "Achilles",
+        dbms        = connectionDetails$dbms,
+        resultsDatabaseSchema   = resultsDatabaseSchema
+      )
+      
+      # Populate achilles_analysis without the "distribution" and "distributed_field"
+      # columns from achilles_analysis_details.csv
+      
+      analysisDetailsCsv <- Achilles::getAnalysisDetails()
+      analysisDetailsCsv <- analysisDetailsCsv[, -c(2, 3)]
+      
+      if (!sqlOnly) {
+        if (numThreads != 1) {
+          connection <-
+            DatabaseConnector::connect(connectionDetails = connectionDetails)
+        }
+        
+        # Create empty achilles_analysis
+        DatabaseConnector::executeSql(
+          connection = connection,
+          sql = sql,
+          errorReportFile = file.path(getwd(), "achillesErrorCreateAchillesAnalysis.txt")
+        )
+        
+        # Populate achilles_analysis with data from achilles_analysis_details.csv from above
+        DatabaseConnector::insertTable(
+          connection        = connection,
+          databaseSchema    = resultsDatabaseSchema,
+          tableName         = "ACHILLES_ANALYSIS",
+          data              = analysisDetailsCsv,
+          dropTableIfExists = FALSE,
+          createTable       = FALSE,
+          tempTable         = FALSE
+        )
+        
+        if (numThreads != 1) {
+          DatabaseConnector::disconnect(connection)
+        }
+      }
     }
-  }
 
   # Clean up existing scratch tables 
   if ((numThreads > 1 || !.supportsTempTables(connectionDetails)) && !sqlOnly) {
@@ -365,12 +391,24 @@ achilles <- function(connectionDetails,
   mainAnalysisIds <- analysisDetails$ANALYSIS_ID
   
   mainSqls <- lapply(mainAnalysisIds, function(analysisId) {
-    list(analysisId = analysisId,
-         sql = .getAnalysisSql(analysisId = analysisId, connectionDetails = connectionDetails,
-      schemaDelim = schemaDelim, scratchDatabaseSchema = scratchDatabaseSchema, cdmDatabaseSchema = cdmDatabaseSchema,
-      resultsDatabaseSchema = resultsDatabaseSchema, tempEmulationSchema = tempEmulationSchema,
-      cdmVersion = cdmVersion, tempAchillesPrefix = tempAchillesPrefix, resultsTables = resultsTables,
-      sourceName = sourceName, numThreads = numThreads, outputFolder = outputFolder))
+    list(
+      analysisId = analysisId,
+      sql = .getAnalysisSql(
+        analysisId = analysisId,
+        connectionDetails = connectionDetails,
+        schemaDelim = schemaDelim,
+        scratchDatabaseSchema = scratchDatabaseSchema,
+        cdmDatabaseSchema = cdmDatabaseSchema,
+        resultsDatabaseSchema = resultsDatabaseSchema,
+        tempEmulationSchema = tempEmulationSchema,
+        cdmVersion = cdmVersion,
+        tempAchillesPrefix = tempAchillesPrefix,
+        resultsTables = resultsTables,
+        sourceName = sourceName,
+        numThreads = numThreads,
+        outputFolder = outputFolder
+      )
+    )
   })
 
   achillesSql <- c(achillesSql, lapply(mainSqls, function(s) s$sql))
@@ -439,14 +477,22 @@ achilles <- function(connectionDetails,
   resultsTablesToMerge <- resultsTables[include]
 
   mergeSqls <- lapply(resultsTablesToMerge, function(table) {
-    .mergeAchillesScratchTables(resultsTable = table,
-                                connectionDetails = connectionDetails,
-                                analysisIds = analysisDetails$ANALYSIS_ID,
-
-      createTable = createTable, schemaDelim = schemaDelim, scratchDatabaseSchema = scratchDatabaseSchema,
-      resultsDatabaseSchema = resultsDatabaseSchema, tempEmulationSchema = tempEmulationSchema,
-      cdmVersion = cdmVersion, tempAchillesPrefix = tempAchillesPrefix, numThreads = numThreads,
-      smallCellCount = smallCellCount, outputFolder = outputFolder, sqlOnly = sqlOnly)
+    .mergeAchillesScratchTables(
+      resultsTable = table,
+      connectionDetails = connectionDetails,
+      analysisIds = analysisDetails$ANALYSIS_ID,
+      createTable = createTable,
+      schemaDelim = schemaDelim,
+      scratchDatabaseSchema = scratchDatabaseSchema,
+      resultsDatabaseSchema = resultsDatabaseSchema,
+      tempEmulationSchema = tempEmulationSchema,
+      cdmVersion = cdmVersion,
+      tempAchillesPrefix = tempAchillesPrefix,
+      numThreads = numThreads,
+      smallCellCount = smallCellCount,
+      outputFolder = outputFolder,
+      sqlOnly = sqlOnly
+    )
   })
 
   achillesSql <- c(achillesSql, mergeSqls)

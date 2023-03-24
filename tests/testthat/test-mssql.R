@@ -9,8 +9,10 @@ test_that("Achilles MS SQL Execution", {
   expect_no_error(
     Achilles::achilles(
       connectionDetails = details, 
-      cdmDatabaseSchema = Sys.getenv("CDM5_SQL_SERVER_CDM_SCHEMA"),
+      cdmDatabaseSchema = Sys.getenv("CDM5_SQL_SERVER_CDM54_SCHEMA"),
+      resultsDatabaseSchema = Sys.getenv("CDM5_SQL_SERVER_OHDSI_SCHEMA"),
       createTable = T
     )  
   )
 })  
+

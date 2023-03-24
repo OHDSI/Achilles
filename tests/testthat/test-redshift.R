@@ -9,7 +9,8 @@ test_that("Achilles Redshift Execution", {
   expect_no_error(
     Achilles::achilles(
       connectionDetails = details, 
-      cdmDatabaseSchema = Sys.getenv("CDM5_REDSHIFT_CDM_SCHEMA"),
+      cdmDatabaseSchema = Sys.getenv("CDM5_REDSHIFT_CDM54_SCHEMA"),
+      resultsDatabaseSchema = Sys.getenv("CDM5_REDSHIFT_OHDSI_SCHEMA"),
       createTable = T
     )  
   )

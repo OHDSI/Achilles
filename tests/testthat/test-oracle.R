@@ -9,7 +9,8 @@ test_that("Achilles Oracle Execution", {
   expect_no_error(
     Achilles::achilles(
       connectionDetails = details, 
-      cdmDatabaseSchema = Sys.getenv("CDM5_ORACLE_CDM_SCHEMA"),
+      cdmDatabaseSchema = Sys.getenv("CDM5_ORACLE_CDM54_SCHEMA"),
+      resultsDatabaseSchema = Sys.getenv("CDM5_ORACLE_OHDSI_SCHEMA"),
       createTable = T
     )
   )
