@@ -184,7 +184,7 @@ achilles <- function(connectionDetails,
 
   if (verboseMode) {
     ParallelLogger::addDefaultConsoleLogger()
-    on.exit(ParallelLogger::unregisterLogger("DEFAULT_CONSOLE_LOGGER"))
+    on.exit(ParallelLogger::unregisterLogger("DEFAULT_CONSOLE_LOGGER"), add = TRUE)
   }  
   
   # Try to get CDM Version if not provided
@@ -429,7 +429,7 @@ achilles <- function(connectionDetails,
       results <- ParallelLogger::clusterApply(cluster = cluster, x = mainSqls, function(mainSql) {
         start <- Sys.time()
         connection <- DatabaseConnector::connect(connectionDetails = connectionDetails)
-        on.exit(DatabaseConnector::disconnect(connection = connection))
+        on.exit(DatabaseConnector::disconnect(connection = connection), add = TRUE)
         ParallelLogger::logInfo(sprintf("[Main Analysis] [START] %d (%s)",
                                         as.integer(mainSql$analysisId),
 
@@ -500,7 +500,7 @@ achilles <- function(connectionDetails,
       tryCatch({
         dummy <- ParallelLogger::clusterApply(cluster = cluster, x = mergeSqls, function(sql) {
           connection <- DatabaseConnector::connect(connectionDetails = connectionDetails)
-          on.exit(DatabaseConnector::disconnect(connection = connection))
+          on.exit(DatabaseConnector::disconnect(connection = connection), add = TRUE)
           DatabaseConnector::executeSql(connection = connection, sql = sql)
         })
       }, error = function(e) {
@@ -594,8 +594,6 @@ achilles <- function(connectionDetails,
 
     achillesSql <- c(achillesSql, optimizeAtlasCacheSql)
   }
-
-  ParallelLogger::unregisterLogger("achilles")
 
   if (sqlOnly) {
     SqlRender::writeSql(sql = paste(achillesSql, collapse = "\n\n"),
@@ -707,7 +705,7 @@ createIndices <- function(connectionDetails,
 
   if (!sqlOnly) {
     connection <- DatabaseConnector::connect(connectionDetails = connectionDetails)
-    on.exit(DatabaseConnector::disconnect(connection = connection))
+    on.exit(DatabaseConnector::disconnect(connection = connection), add = TRUE)
 
     try(DatabaseConnector::executeSql(connection = connection,
                                       sql = paste(dropIndicesSql, collapse = "\n\n")),
