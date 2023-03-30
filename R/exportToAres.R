@@ -1166,10 +1166,10 @@ generateAOConditionEraReports <- function(connectionDetails, dataConditionEra, c
   x <- lapply(uniqueConcepts, buildConditionEraReport)
 }
 
-#' @title exportAO
+#' @title exportToAres
 #'
 #' @description
-#' \code{exportAO} Exports Achilles statistics - ares option
+#' \code{exportToAres} Exports Achilles statistics for ARES
 #'
 #' @details
 #' Creates export files 
@@ -1187,11 +1187,10 @@ generateAOConditionEraReports <- function(connectionDetails, dataConditionEra, c
 #' @return none 
 #' 
 #'@importFrom data.table fwrite
-#'@import lubridate
 #'@importFrom dplyr ntile desc
 #'@export
 #'
-exportAO <- function(
+exportToAres <- function(
   connectionDetails, 
   cdmDatabaseSchema, 
   resultsDatabaseSchema, 
@@ -1200,6 +1199,7 @@ exportAO <- function(
   reports = c())
 {
   conn <- DatabaseConnector::connect(connectionDetails)
+  on.exit(DatabaseConnector::disconnect(connection = conn))  
   
   # generate a folder name for this release of the cdm characterization
   sql <- SqlRender::render(sql = "select * from @cdmDatabaseSchema.cdm_source;",cdmDatabaseSchema = cdmDatabaseSchema)

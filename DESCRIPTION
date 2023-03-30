@@ -1,8 +1,8 @@
 Package: Achilles
 Type: Package
-Title: Generates descriptive statistics for an OMOP CDM instance
-Version: 1.7
-Date: 2022-08-02
+Title: Automated Characterization of Health Information at Large-scale Longitudinal Evidence Systems
+Version: 1.7.1
+Date: 2023-03-30
 Authors@R: c(
   person("Frank", "DeFalco", email = "fdefalco@ohdsi.org", role = c("aut","cre")),  
   person("Patrick", "Ryan", email = "ryan@ohdsi.org", role = c("aut")),  
@@ -36,9 +36,8 @@ Suggests:
     tidyr,
     knitr,
     rmarkdown,
-    testthat (>= 3.0.0)
-Remotes:
-  github::OHDSI/Castor
+    testthat (>= 3.0.0),
+    withr
 VignetteBuilder: knitr
 License: Apache License
 Roxygen: list()

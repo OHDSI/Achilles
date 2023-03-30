@@ -1,6 +1,6 @@
 # @file Achilles
 #
-# Copyright 2022 Observational Health Data Sciences and Informatics
+# Copyright 2023 Observational Health Data Sciences and Informatics
 #
 # This file is part of Achilles
 #
@@ -273,6 +273,8 @@ achilles <- function(connectionDetails,
 
 		# first invocation of the connection, to persist throughout to maintain temp tables
 		connection <- DatabaseConnector::connect(connectionDetails = connectionDetails)
+		on.exit(DatabaseConnector::disconnect(connection), add = TRUE)
+		
 	  } else if (!requireNamespace("ParallelLogger", quietly = TRUE)) {
 		stop("Multi-threading support requires package 'ParallelLogger'.",
 			 " Consider running single-threaded by setting",
@@ -329,8 +331,8 @@ achilles <- function(connectionDetails,
       
       if (!sqlOnly) {
         if (numThreads != 1) {
-          connection <-
-            DatabaseConnector::connect(connectionDetails = connectionDetails)
+          connection <- DatabaseConnector::connect(connectionDetails = connectionDetails)
+          on.exit(DatabaseConnector::disconnect(connection), add = TRUE)
         }
         
         # Create empty achilles_analysis
@@ -1067,7 +1069,8 @@ optimizeAtlasCache <- function(connectionDetails,
 
 .deleteGivenAnalyses <- function(connectionDetails, resultsDatabaseSchema, analysisIds) {
   conn <- DatabaseConnector::connect(connectionDetails)
-
+  on.exit(DatabaseConnector::disconnect(conn))
+  
   sql <- "delete from @resultsDatabaseSchema.achilles_results where analysis_id in (@analysisIds);"
   sql <- SqlRender::render(sql,
                            resultsDatabaseSchema = resultsDatabaseSchema,
@@ -1085,8 +1088,6 @@ optimizeAtlasCache <- function(connectionDetails,
   sql <- SqlRender::translate(sql, targetDialect = connectionDetails$dbms)
 
   DatabaseConnector::executeSql(conn, sql)
-
-  on.exit(DatabaseConnector::disconnect(conn))
 }
 
 .getAchillesResultBenchmark <- function(analysisId, logs) {

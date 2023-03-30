@@ -25,27 +25,13 @@ generateDomainOverlapSql <- function() {
   write(x = "", sqlFile, append = TRUE)
 
   # Creates temp tables for each specific domain
-  write(x = "select distinct person_id into #conoc from @cdmDatabaseSchema.condition_occurrence;",
-    sqlFile, append = TRUE)
-  write(x = "select distinct person_id into #drexp from @cdmDatabaseSchema.drug_exposure;", sqlFile,
-    append = TRUE)
-  write(x = "select distinct person_id into #dvexp from @cdmDatabaseSchema.device_exposure;",
-        sqlFile,
-
-    append = TRUE)
-  write(x = "select distinct person_id into #msmt from @cdmDatabaseSchema.measurement;",
-        sqlFile,
-        append = TRUE)
-  write(x = "select distinct person_id into #death from @cdmDatabaseSchema.death;",
-        sqlFile,
-        append = TRUE)
-  write(x = "select distinct person_id into #prococ from @cdmDatabaseSchema.procedure_occurrence;",
-    sqlFile, append = TRUE)
-  write(x = "select distinct person_id into #obs from @cdmDatabaseSchema.observation;",
-        sqlFile,
-
-    append = TRUE)
-
+  write(x = "select distinct person_id into #conoc from @cdmDatabaseSchema.condition_occurrence;", sqlFile, append = TRUE)
+  write(x = "select distinct person_id into #drexp from @cdmDatabaseSchema.drug_exposure;", sqlFile, append = TRUE)
+  write(x = "select distinct person_id into #dvexp from @cdmDatabaseSchema.device_exposure;", sqlFile, append = TRUE)
+  write(x = "select distinct person_id into #msmt from @cdmDatabaseSchema.measurement;", sqlFile, append = TRUE)
+  write(x = "select distinct person_id into #death from @cdmDatabaseSchema.death;", sqlFile,append = TRUE)
+  write(x = "select distinct person_id into #prococ from @cdmDatabaseSchema.procedure_occurrence;", sqlFile, append = TRUE)
+  write(x = "select distinct person_id into #obs from @cdmDatabaseSchema.observation;", sqlFile, append = TRUE)
   write(x = "", sqlFile, append = TRUE)
 
   write(x = "with rawData as (", sqlFile, append = TRUE)
@@ -171,4 +157,16 @@ generateDomainOverlapSql <- function() {
     }
 
   }  # End for loop for domainMatrix by row
+  
+  
+  # clean up temp tables
+  # Creates temp tables for each specific domain
+  write(x = "drop table #conoc;", sqlFile, append = TRUE)
+  write(x = "drop table #drexp;", sqlFile, append = TRUE)
+  write(x = "drop table #dvexp;", sqlFile, append = TRUE)
+  write(x = "drop table #msmt;", sqlFile, append = TRUE)
+  write(x = "drop table #death;", sqlFile, append = TRUE)
+  write(x = "drop table #prococ;", sqlFile, append = TRUE)
+  write(x = "drop table #obs;", sqlFile, append = TRUE)
+  write(x = "", sqlFile, append = TRUE)  
 }  # End function

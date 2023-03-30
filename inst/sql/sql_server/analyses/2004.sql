@@ -1280,3 +1280,11 @@ select 2004 as analysis_id,
       from
       (select count(*) as count_value from(select person_id from #conoc intersect select person_id from #drexp intersect select person_id from #dvexp intersect select person_id from #msmt intersect select person_id from #death intersect select person_id from #prococ intersect select person_id from #obs) subquery) personIntersection,
   (select count(distinct(person_id)) as totalPersons from @cdmDatabaseSchema.person) as totalPersonsDb) select * INTO @scratchDatabaseSchema@schemaDelim@tempAchillesPrefix_2004 from rawData;
+
+drop table #conoc;
+drop table #drexp;
+drop table #dvexp;
+drop table #msmt;
+drop table #death;
+drop table #prococ;
+drop table #obs;
