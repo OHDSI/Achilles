@@ -89,9 +89,6 @@
 #'  outputFolder          = "output/CompleteTemporalChar.csv")
 #' }
 #'
-#'@importFrom dplyr left_join
-#'@import stats
-#'@import utils
 #'@export
 
 performTemporalCharacterization <- function(
@@ -124,15 +121,17 @@ performTemporalCharacterization <- function(
 		IS_STATIONARY     = logical(),
 		stringsAsFactors  = FALSE )
 		
+	print(paste0("Attempting temporal characterization on ", length(allConceptIds), " individual concepts"))
+	
 	# Loop through temporal data, perform temporal characterization, and write out results
 	for (conceptId in allConceptIds) {
 		tempData <- temporalData[temporalData$CONCEPT_ID == conceptId,]
 		tempData.ts <- Achilles::createTimeSeries(tempData)
 		tempData.ts <- tempData.ts[,"PREVALENCE"]
-		tempData.ts <- Castor::tsCompleteYears(tempData.ts)
+		tempData.ts <- Achilles::tsCompleteYears(tempData.ts)
 		if (length(tempData.ts) >= minMonths) {
-			tempData.ts.ss <- Castor::getSeasonalityScore(tempData.ts)
-			tempData.ts.is <- Castor::isStationary(tempData.ts)
+			tempData.ts.ss <- Achilles::getSeasonalityScore(tempData.ts)
+			tempData.ts.is <- Achilles::isStationary(tempData.ts)
 			rowData[nrow(rowData)+1,] <- c( tempData$DB_NAME[1],
 											tempData$CDM_TABLE_NAME[1],
 											tempData$CONCEPT_ID[1],
@@ -142,5 +141,6 @@ performTemporalCharacterization <- function(
 		}
 	}
 	write.csv(rowData,outputFile,row.names = FALSE)
+	print(paste0("Temporal characterization complete.  Results can be found in ", outputFile))
 	invisible(rowData)
 }
