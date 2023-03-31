@@ -29,7 +29,8 @@ Imports:
     ParallelLogger,
     readr,
     data.table,
-    lubridate
+    lubridate,
+	tseries
 Suggests:
     DT,
     magrittr,
