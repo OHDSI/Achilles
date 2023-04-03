@@ -669,7 +669,7 @@ createIndices <- function(connectionDetails,
   indicesSql <- c()
 
   # dbms specific index operations
-  if (connectionDetails$dbms %in% c("redshift", "netezza", "bigquery", "snowflake")) {
+  if (connectionDetails$dbms %in% c("redshift", "netezza", "bigquery", "snowflake", "spark")) {
     return(sprintf("/* INDEX CREATION SKIPPED, INDICES NOT SUPPORTED IN %s */",
                    toupper(connectionDetails$dbms)))
   }
