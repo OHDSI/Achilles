@@ -528,7 +528,7 @@ generateAOVisitDetailReports <- function(connectionDetails, cdmDatabaseSchema, r
 generateAOMetadataReport <- function(connectionDetails, cdmDatabaseSchema, outputPath)
 {
   conn <- DatabaseConnector::connect(connectionDetails)
-  if ("METADATA" %in% DatabaseConnector::getTableNames(connection = conn, databaseSchema = cdmDatabaseSchema))
+  if ("METADATA" %in% toupper(DatabaseConnector::getTableNames(connection = conn, databaseSchema = cdmDatabaseSchema)))
   {
     writeLines("Generating metadata report")    
     queryMetadata <- SqlRender::loadRenderTranslateSql(
@@ -621,7 +621,7 @@ generateAOObservationReports <- function(connectionDetails, observationsData, cd
 generateAOCdmSourceReport <- function(connectionDetails, cdmDatabaseSchema, outputPath)
 {
   conn <- DatabaseConnector::connect(connectionDetails)  
-  if ("CDM_SOURCE" %in% DatabaseConnector::getTableNames(connection = conn, databaseSchema = cdmDatabaseSchema))
+  if ("CDM_SOURCE" %in% toupper(DatabaseConnector::getTableNames(connection = conn, databaseSchema = cdmDatabaseSchema)))
   {
     writeLines("Generating cdm source report")    
     queryCdmSource <- SqlRender::loadRenderTranslateSql(
