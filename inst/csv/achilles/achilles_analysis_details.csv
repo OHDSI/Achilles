@@ -285,6 +285,7 @@ ANALYSIS_ID,DISTRIBUTION,DISTRIBUTED_FIELD,ANALYSIS_NAME,STRATUM_1_NAME,STRATUM_
 2105,0,,"Number of device exposure records, by device_concept_id by device_type_concept_id",device_concept_id,device_type_concept_id,,,,1,Device Exposure
 2106,1,,Distribution of age by device_concept_id,device_concept_id,gender_concept_id,,,,1,Device Exposure
 2110,0,,Number of device_exposure records outside valid observation period,,,,,,0,Observation Period
+2120,0,,Number of device_exposure records by device_exposure start month,calendar month,,,,,1,Device Exposure
 2125,0,,Number of device_exposure records by device_source_concept_id,device_source_concept_id,,,,,1,Device Exposure
 2130,0,,Number of device_exposure records inside a valid observation period,,,,,,0,Observation Period
 2131,0,,Proportion of people with at least one device_exposure record outside a valid observation period,Proportion,Number of people with a device_exposure record outside a valid observation period,Number of people in device_exposure,,,0,Observation Period
