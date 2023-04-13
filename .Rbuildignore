@@ -3,3 +3,5 @@
 ^.github
 ^docs$
 ^extras$
+compare_versions
+deploy.sh

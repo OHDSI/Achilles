@@ -1089,7 +1089,7 @@ generateAchillesPerformanceReport <- function(conn,
     results_database_schema = resultsDatabaseSchema, vocab_database_schema = vocabDatabaseSchema)
 
   output$MESSAGES <- DatabaseConnector::querySql(conn, queryAchillesPerformance)
-  jsonOutput <- rjson::toJSON(output)
+  jsonOutput <- jsonlite::toJSON(output)
   write(jsonOutput, file = paste(outputPath, "/achillesperformance.json", sep = ""))
 }
 
@@ -1104,7 +1104,7 @@ generateMetadataReport <- function(conn, dbms, cdmDatabaseSchema, resultsDatabas
 
   if ("METADATA" %in% DatabaseConnector::getTableNames(connection = conn, databaseSchema = cdmDatabaseSchema)) {
     output$MESSAGES <- DatabaseConnector::querySql(conn, queryMetadata)
-    jsonOutput <- rjson::toJSON(output)
+    jsonOutput <- jsonlite::toJSON(output)
     write(jsonOutput, file = paste(outputPath, "/metadata.json", sep = ""))
   } else {
     writeLines("No METADATA table found, skipping export")
@@ -1127,7 +1127,7 @@ generateCdmSourceReport <- function(conn,
 
   if ("CDM_SOURCE" %in% DatabaseConnector::getTableNames(connection = conn, databaseSchema = cdmDatabaseSchema)) {
     output$MESSAGES <- DatabaseConnector::querySql(conn, queryCdmSource)
-    jsonOutput <- rjson::toJSON(output)
+    jsonOutput <- jsonlite::toJSON(output)
     write(jsonOutput, file = paste(outputPath, "/cdm_source.json", sep = ""))
   } else {
     writeLines("No CDM_SOURCE table found, skipping export")
@@ -1146,7 +1146,7 @@ generateDrugEraTreemap <- function(conn, dbms, cdmDatabaseSchema, resultsDatabas
 
   dataDrugEraTreemap <- DatabaseConnector::querySql(conn, queryDrugEraTreemap)
 
-  write(rjson::toJSON(dataDrugEraTreemap, method = "C"), paste(outputPath, "/drugera_treemap.json",
+  write(jsonlite::toJSON(dataDrugEraTreemap, method = "C"), paste(outputPath, "/drugera_treemap.json",
     sep = ""))
   progress <- progress + 1
   utils::setTxtProgressBar(progressBar, progress)
@@ -1170,7 +1170,7 @@ generateDrugTreemap <- function(conn,
 
   dataDrugTreemap <- DatabaseConnector::querySql(conn, queryDrugTreemap)
 
-  write(rjson::toJSON(dataDrugTreemap, method = "C"),
+  write(jsonlite::toJSON(dataDrugTreemap, method = "C"),
         paste(outputPath, "/drug_treemap.json", sep = ""))
   progress <- progress + 1
   utils::setTxtProgressBar(progressBar, progress)
@@ -1195,7 +1195,7 @@ generateConditionTreemap <- function(conn,
 
   dataConditionTreemap <- DatabaseConnector::querySql(conn, queryConditionTreemap)
 
-  write(rjson::toJSON(dataConditionTreemap, method = "C"),
+  write(jsonlite::toJSON(dataConditionTreemap, method = "C"),
         paste(outputPath, "/condition_treemap.json",
     sep = ""))
   progress <- progress + 1
@@ -1221,7 +1221,7 @@ generateConditionEraTreemap <- function(conn,
 
   dataConditionEraTreemap <- DatabaseConnector::querySql(conn, queryConditionEraTreemap)
 
-  write(rjson::toJSON(dataConditionEraTreemap, method = "C"),
+  write(jsonlite::toJSON(dataConditionEraTreemap, method = "C"),
         paste(outputPath, "/conditionera_treemap.json",
     sep = ""))
   progress <- progress + 1
@@ -1247,7 +1247,7 @@ generateConditionReports <- function(conn,
     return()
   }
 
-  treemapData <- rjson::fromJSON(file = treemapFile)
+  treemapData <- jsonlite::fromJSON(file = treemapFile)
   uniqueConcepts <- unique(treemapData$CONCEPT_ID)
   totalCount <- length(uniqueConcepts)
 
@@ -1298,7 +1298,7 @@ generateConditionReports <- function(conn,
       concept_id, c(2, 3, 4, 5, 6, 7, 8, 9)]
     filename <- paste(outputPath, "/conditions/condition_", concept_id, ".json", sep = "")
 
-    write(rjson::toJSON(report, method = "C"), filename)
+    write(jsonlite::toJSON(report, method = "C"), filename)
 
     # Update progressbar:
     env <- parent.env(environment())
@@ -1331,7 +1331,7 @@ generateConditionEraReports <- function(conn,
     return()
   }
 
-  treemapData <- rjson::fromJSON(file = treemapFile)
+  treemapData <- jsonlite::fromJSON(file = treemapFile)
   uniqueConcepts <- unique(treemapData$CONCEPT_ID)
   totalCount <- length(uniqueConcepts)
 
@@ -1381,7 +1381,7 @@ generateConditionEraReports <- function(conn,
       concept_id, c(2, 3, 4, 5, 6, 7, 8, 9)]
     filename <- paste(outputPath, "/conditioneras/condition_", concept_id, ".json", sep = "")
 
-    write(rjson::toJSON(report, method = "C"), filename)
+    write(jsonlite::toJSON(report, method = "C"), filename)
 
     # Update progressbar:
     env <- parent.env(environment())
@@ -1410,7 +1410,7 @@ generateDrugEraReports <- function(conn, dbms, cdmDatabaseSchema, resultsDatabas
     return()
   }
 
-  treemapData <- rjson::fromJSON(file = treemapFile)
+  treemapData <- jsonlite::fromJSON(file = treemapFile)
   uniqueConcepts <- unique(treemapData$CONCEPT_ID)
   totalCount <- length(uniqueConcepts)
 
@@ -1460,7 +1460,7 @@ generateDrugEraReports <- function(conn, dbms, cdmDatabaseSchema, resultsDatabas
 
     filename <- paste(outputPath, "/drugeras/drug_", concept_id, ".json", sep = "")
 
-    write(rjson::toJSON(report, method = "C"), filename)
+    write(jsonlite::toJSON(report, method = "C"), filename)
 
     # Update progressbar:
     env <- parent.env(environment())
@@ -1492,7 +1492,7 @@ generateDrugReports <- function(conn,
     return()
   }
 
-  treemapData <- rjson::fromJSON(file = treemapFile)
+  treemapData <- jsonlite::fromJSON(file = treemapFile)
   uniqueConcepts <- unique(treemapData$CONCEPT_ID)
   totalCount <- length(uniqueConcepts)
 
@@ -1568,7 +1568,7 @@ generateDrugReports <- function(conn,
 
     filename <- paste(outputPath, "/drugs/drug_", concept_id, ".json", sep = "")
 
-    write(rjson::toJSON(report, method = "C"), filename)
+    write(jsonlite::toJSON(report, method = "C"), filename)
 
     # Update progressbar:
     env <- parent.env(environment())
@@ -1601,7 +1601,7 @@ generateProcedureTreemap <- function(conn,
 
   dataProcedureTreemap <- DatabaseConnector::querySql(conn, queryProcedureTreemap)
 
-  write(rjson::toJSON(dataProcedureTreemap, method = "C"),
+  write(jsonlite::toJSON(dataProcedureTreemap, method = "C"),
         paste(outputPath, "/procedure_treemap.json",
     sep = ""))
   progress <- progress + 1
@@ -1627,7 +1627,7 @@ generateProcedureReports <- function(conn,
     return()
   }
 
-  treemapData <- rjson::fromJSON(file = treemapFile)
+  treemapData <- jsonlite::fromJSON(file = treemapFile)
   uniqueConcepts <- unique(treemapData$CONCEPT_ID)
   totalCount <- length(uniqueConcepts)
 
@@ -1684,7 +1684,7 @@ generateProcedureReports <- function(conn,
       concept_id, c(2, 3, 4, 5, 6, 7, 8, 9)]
     filename <- paste(outputPath, "/procedures/procedure_", concept_id, ".json", sep = "")
 
-    write(rjson::toJSON(report, method = "C"), filename)
+    write(jsonlite::toJSON(report, method = "C"), filename)
 
     # Update progressbar:
     env <- parent.env(environment())
@@ -1795,7 +1795,7 @@ generatePersonReport <- function(conn,
   output$BIRTH_YEAR_HISTOGRAM <- birthYearHist
 
   # Convert to JSON and save file result
-  jsonOutput <- rjson::toJSON(output)
+  jsonOutput <- jsonlite::toJSON(output)
   write(jsonOutput, file = paste(outputPath, "/person.json", sep = ""))
   progress <- progress + 1
   utils::setTxtProgressBar(progressBar, progress)
@@ -1966,7 +1966,7 @@ generateObservationPeriodReport <- function(conn,
   output$PERSON_PERIODS_DATA <- personPeriodsData
 
   # Convert to JSON and save file result
-  jsonOutput <- rjson::toJSON(output)
+  jsonOutput <- jsonlite::toJSON(output)
   write(jsonOutput, file = paste(outputPath, "/observationperiod.json", sep = ""))
   close(progressBar)
 }
@@ -1982,14 +1982,14 @@ generateDashboardReport <- function(outputPath) {
   progress <- progress + 1
   utils::setTxtProgressBar(progressBar, progress)
 
-  personReport <- rjson::fromJSON(file = paste(outputPath, "/person.json", sep = ""))
+  personReport <- jsonlite::fromJSON(file = paste(outputPath, "/person.json", sep = ""))
   output$SUMMARY <- personReport$SUMMARY
   output$GENDER_DATA <- personReport$GENDER_DATA
 
   progress <- progress + 1
   utils::setTxtProgressBar(progressBar, progress)
 
-  opReport <- rjson::fromJSON(file = paste(outputPath, "/observationperiod.json", sep = ""))
+  opReport <- jsonlite::fromJSON(file = paste(outputPath, "/observationperiod.json", sep = ""))
 
   output$AGE_AT_FIRST_OBSERVATION_HISTOGRAM <- opReport$AGE_AT_FIRST_OBSERVATION_HISTOGRAM
   output$CUMULATIVE_DURATION <- opReport$CUMULATIVE_DURATION
@@ -1998,7 +1998,7 @@ generateDashboardReport <- function(outputPath) {
   progress <- progress + 1
   utils::setTxtProgressBar(progressBar, progress)
 
-  jsonOutput <- rjson::toJSON(output)
+  jsonOutput <- jsonlite::toJSON(output)
   write(jsonOutput, file = paste(outputPath, "/dashboard.json", sep = ""))
   progress <- progress + 1
   utils::setTxtProgressBar(progressBar, progress)
@@ -2057,7 +2057,7 @@ generateDataDensityReport <- function(conn,
   output$CONCEPTS_PER_PERSON <- conceptsPerPerson
 
   # Convert to JSON and save file result
-  jsonOutput <- rjson::toJSON(output)
+  jsonOutput <- jsonlite::toJSON(output)
   write(jsonOutput, file = paste(outputPath, "/datadensity.json", sep = ""))
   close(progressBar)
 
@@ -2080,7 +2080,7 @@ generateMeasurementTreemap <- function(conn,
 
   dataMeasurementTreemap <- DatabaseConnector::querySql(conn, queryMeasurementTreemap)
 
-  write(rjson::toJSON(dataMeasurementTreemap, method = "C"),
+  write(jsonlite::toJSON(dataMeasurementTreemap, method = "C"),
         paste(outputPath, "/measurement_treemap.json",
     sep = ""))
   progress <- progress + 1
@@ -2107,7 +2107,7 @@ generateMeasurementReports <- function(conn,
     return()
   }
 
-  treemapData <- rjson::fromJSON(file = treemapFile)
+  treemapData <- jsonlite::fromJSON(file = treemapFile)
   uniqueConcepts <- unique(treemapData$CONCEPT_ID)
   totalCount <- length(uniqueConcepts)
 
@@ -2201,7 +2201,7 @@ generateMeasurementReports <- function(conn,
 
     filename <- paste(outputPath, "/measurements/measurement_", concept_id, ".json", sep = "")
 
-    write(rjson::toJSON(report, method = "C"), filename)
+    write(jsonlite::toJSON(report, method = "C"), filename)
 
     # Update progressbar:
     env <- parent.env(environment())
@@ -2235,7 +2235,7 @@ generateObservationTreemap <- function(conn,
 
   dataObservationTreemap <- DatabaseConnector::querySql(conn, queryObservationTreemap)
 
-  write(rjson::toJSON(dataObservationTreemap, method = "C"),
+  write(jsonlite::toJSON(dataObservationTreemap, method = "C"),
         paste(outputPath, "/observation_treemap.json",
     sep = ""))
   progress <- progress + 1
@@ -2262,7 +2262,7 @@ generateObservationReports <- function(conn,
     return()
   }
 
-  treemapData <- rjson::fromJSON(file = treemapFile)
+  treemapData <- jsonlite::fromJSON(file = treemapFile)
   uniqueConcepts <- unique(treemapData$CONCEPT_ID)
   totalCount <- length(uniqueConcepts)
 
@@ -2322,7 +2322,7 @@ generateObservationReports <- function(conn,
 
     filename <- paste(outputPath, "/observations/observation_", concept_id, ".json", sep = "")
 
-    write(rjson::toJSON(report, method = "C"), filename)
+    write(jsonlite::toJSON(report, method = "C"), filename)
 
     # Update progressbar:
     env <- parent.env(environment())
@@ -2355,7 +2355,7 @@ generateVisitTreemap <- function(conn,
 
   dataVisitTreemap <- DatabaseConnector::querySql(conn, queryVisitTreemap)
 
-  write(rjson::toJSON(dataVisitTreemap, method = "C"),
+  write(jsonlite::toJSON(dataVisitTreemap, method = "C"),
         paste(outputPath, "/visit_treemap.json", sep = ""))
   progress <- progress + 1
   utils::setTxtProgressBar(progressBar, progress)
@@ -2379,7 +2379,7 @@ generateVisitReports <- function(conn,
     return()
   }
 
-  treemapData <- rjson::fromJSON(file = treemapFile)
+  treemapData <- jsonlite::fromJSON(file = treemapFile)
   uniqueConcepts <- unique(treemapData$CONCEPT_ID)
   totalCount <- length(uniqueConcepts)
 
@@ -2428,7 +2428,7 @@ generateVisitReports <- function(conn,
       concept_id, c(2, 3, 4, 5, 6, 7, 8, 9)]
     filename <- paste(outputPath, "/visits/visit_", concept_id, ".json", sep = "")
 
-    write(rjson::toJSON(report, method = "C"), filename)
+    write(jsonlite::toJSON(report, method = "C"), filename)
 
     # Update progressbar:
     env <- parent.env(environment())
@@ -2506,7 +2506,7 @@ generateDeathReports <- function(conn,
   output$AGE_AT_DEATH <- ageAtDeathData
 
   # Convert to JSON and save file result
-  jsonOutput <- rjson::toJSON(output)
+  jsonOutput <- jsonlite::toJSON(output)
   write(jsonOutput, file = paste(outputPath, "/death.json", sep = ""))
   close(progressBar)
 }
@@ -2528,7 +2528,7 @@ generateVisitDetailTreemap <- function(conn,
 
   dataVisitDetailTreemap <- DatabaseConnector::querySql(conn, queryVisitDetailTreemap)
 
-  write(rjson::toJSON(dataVisitDetailTreemap, method = "C"),
+  write(jsonlite::toJSON(dataVisitDetailTreemap, method = "C"),
         paste(outputPath, "/visitdetail_treemap.json",
     sep = ""))
   progress <- progress + 1
@@ -2554,7 +2554,7 @@ generateVisitDetailReports <- function(conn,
     return()
   }
 
-  treemapData <- rjson::fromJSON(file = treemapFile)
+  treemapData <- jsonlite::fromJSON(file = treemapFile)
   uniqueConcepts <- unique(treemapData$CONCEPT_ID)
   totalCount <- length(uniqueConcepts)
 
@@ -2603,7 +2603,7 @@ generateVisitDetailReports <- function(conn,
       concept_id, c(2, 3, 4, 5, 6, 7, 8, 9)]
     filename <- paste(outputPath, "/visitdetail/visitdetail_", concept_id, ".json", sep = "")
 
-    write(rjson::toJSON(report, method = "C"), filename)
+    write(jsonlite::toJSON(report, method = "C"), filename)
 
     # Update progressbar:
     env <- parent.env(environment())

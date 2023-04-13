@@ -24,7 +24,6 @@ Depends:
 Imports:
     SqlRender (>= 1.6.0),
     dplyr,
-    rjson,
     jsonlite,
     ParallelLogger,
     readr,

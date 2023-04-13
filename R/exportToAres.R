@@ -639,16 +639,16 @@ generateAOCdmSourceReport <- function(connectionDetails, cdmDatabaseSchema, outp
 generateAODashboardReport <- function(outputPath)
 {
   output <- {}
-  personReport <- rjson::fromJSON(file = paste(outputPath, "/person.json", sep=""))
+  personReport <- jsonlite::fromJSON(file = paste(outputPath, "/person.json", sep=""))
   output$SUMMARY <- personReport$SUMMARY
   output$GENDER_DATA <- personReport$GENDER_DATA
-  opReport <- rjson::fromJSON(file = paste(outputPath, "/observationperiod.json", sep=""))
+  opReport <- jsonlite::fromJSON(file = paste(outputPath, "/observationperiod.json", sep=""))
   
-  output$AGE_AT_FIRST_OBSERVATION_HISTOGRAM = opReport$AGE_AT_FIRST_OBSERVATION_HISTOGRAM
-  output$CUMULATIVE_DURATION = opReport$CUMULATIVE_DURATION
-  output$OBSERVED_BY_MONTH = opReport$OBSERVED_BY_MONTH
+  output$AGE_AT_FIRST_OBSERVATION_HISTOGRAM <- opReport$AGE_AT_FIRST_OBSERVATION_HISTOGRAM
+  output$CUMULATIVE_DURATION <- opReport$CUMULATIVE_DURATION
+  output$OBSERVED_BY_MONTH <- opReport$OBSERVED_BY_MONTH
 
-  jsonOutput =jsonlite::toJSON(output)
+  jsonOutput <- jsonlite::toJSON(output)
   write(jsonOutput, file=paste(outputPath, "/dashboard.json", sep=""))  
 }
 
