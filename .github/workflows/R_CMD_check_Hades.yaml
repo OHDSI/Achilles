@@ -8,10 +8,10 @@ on:
     branches:
       - '**'
 
-name: 'R check'
+name: R-CMD-check
 
 jobs:
-  R-CMD-check-main:
+  R-CMD-check:
     runs-on: ${{ matrix.config.os }}
 
     name: ${{ matrix.config.os }} (${{ matrix.config.r }})
@@ -83,7 +83,7 @@ jobs:
         shell: Rscript {0}          
 
   Release:
-    needs: R-CMD-Check
+    needs: R-CMD-check
 
     runs-on: macOS-latest
 
