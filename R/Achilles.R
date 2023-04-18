@@ -518,8 +518,8 @@ achilles <- function(connectionDetails,
                                     resultsDatabaseSchema))
   }
 
-  # Clean up scratch tables 
-  if (numThreads == 1 && .supportsTempTables(connectionDetails) && !sqlOnly) {
+  # Clean up scratch tables - single threaded, drop and disconnect. For multithreaded, do not disconnect
+  if (numThreads == 1 && dropScratchTables && !sqlOnly) {
     if (connectionDetails$dbms == "oracle") {
       ParallelLogger::logInfo(sprintf("Dropping scratch Achilles tables from schema %s",
                                       scratchDatabaseSchema))
@@ -547,12 +547,21 @@ achilles <- function(connectionDetails,
       ParallelLogger::logInfo(sprintf("Temporary Achilles tables removed from schema %s",
                                       scratchDatabaseSchema))
 
-    } else {
-      # For non-Oracle dbms, dropping the connection removes the temporary scratch tables if
-      # running in serial
       DatabaseConnector::disconnect(connection = connection)
-    }
+    } else {
+		ParallelLogger::logInfo(sprintf("Dropping scratch Achilles tables from schema %s",
+                                    scratchDatabaseSchema))
 
+		dropAllScratchTables(connectionDetails = connectionDetails,
+                         scratchDatabaseSchema = scratchDatabaseSchema,
+
+		tempAchillesPrefix = tempAchillesPrefix, numThreads = numThreads, tableTypes = c("achilles"),
+		outputFolder = outputFolder, defaultAnalysesOnly = defaultAnalysesOnly)
+
+		ParallelLogger::logInfo(sprintf("Temporary Achilles tables removed from schema %s", scratchDatabaseSchema))
+
+        DatabaseConnector::disconnect(connection = connection)
+	}
   } else if (dropScratchTables & !sqlOnly) {
     # Drop the scratch tables
     ParallelLogger::logInfo(sprintf("Dropping scratch Achilles tables from schema %s",
