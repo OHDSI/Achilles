@@ -94,6 +94,9 @@
     <loc>/reference/exportResultsToCSV.html</loc>
   </url>
   <url>
+    <loc>/reference/exportToAres.html</loc>
+  </url>
+  <url>
     <loc>/reference/exportToJson.html</loc>
   </url>
   <url>
@@ -115,10 +118,16 @@
     <loc>/reference/getAnalysisDetails.html</loc>
   </url>
   <url>
+    <loc>/reference/getSeasonalityScore.html</loc>
+  </url>
+  <url>
     <loc>/reference/getTemporalData.html</loc>
   </url>
   <url>
     <loc>/reference/index.html</loc>
+  </url>
+  <url>
+    <loc>/reference/isStationary.html</loc>
   </url>
   <url>
     <loc>/reference/launchHeelResultsViewer.html</loc>
@@ -137,6 +146,12 @@
   </url>
   <url>
     <loc>/reference/showReportTypes.html</loc>
+  </url>
+  <url>
+    <loc>/reference/sumAcrossYears.html</loc>
+  </url>
+  <url>
+    <loc>/reference/tsCompleteYears.html</loc>
   </url>
   <url>
     <loc>/reference/validateSchema.html</loc>
