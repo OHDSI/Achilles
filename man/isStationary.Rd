@@ -4,7 +4,7 @@
 \alias{isStationary}
 \title{Determine whether or not a time series is stationary in the mean}
 \usage{
-tsData.isStationary <- isStationary(tsData)
+isStationary(tsData)
 }
 \arguments{
 \item{tsData}{A time series object.}

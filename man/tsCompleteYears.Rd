@@ -4,7 +4,7 @@
 \alias{tsCompleteYears}
 \title{Trim a monthly time series object to so that partial years are removed}
 \usage{
-tsData <- tsCompleteYears(tsData)
+tsCompleteYears(tsData)
 }
 \arguments{
 \item{tsData}{A time series object}

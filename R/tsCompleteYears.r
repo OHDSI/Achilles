@@ -1,7 +1,5 @@
 #'@title  Trim a monthly time series object to so that partial years are removed
 #'
-#'@usage  tsData <- tsCompleteYears(tsData)
-#'
 #'@details This function is only supported for monthly time series
 #'
 #'@param tsData  A time series object

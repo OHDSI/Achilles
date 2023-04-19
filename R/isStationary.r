@@ -2,8 +2,6 @@
 #'
 #'@description Uses the Augmented Dickey-Fuller test to determine when the time series has a unit root.
 #'
-#'@usage  tsData.isStationary <- isStationary(tsData)
-#'
 #'@details
 #' A time series must have a minimum of three complete years of data.
 #' For details on the implementation of the Augmented Dickey-Fuller test, 

@@ -2,8 +2,6 @@
 #'
 #'@description The seasonality score of a monthly time series is computed as its departure from a uniform distribution.
 #'
-#'@usage  tsData.ss <- getSeasonalityScore(tsData)
-#'
 #'@details
 #' The degree of seasonality of a monthly time series is based on its departure from a uniform distribution.
 #' If the number of cases for a given concept is uniformly distributed across all time periods (in this case, all months), 

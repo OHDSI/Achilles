@@ -22,22 +22,23 @@ Depends:
   DatabaseConnector (>= 2.0.0),
   R (>= 4.0.0)
 Imports:
-    SqlRender (>= 1.6.0),
-    dplyr,
-    jsonlite,
-    ParallelLogger,
-    readr,
-    data.table,
-    lubridate,
-	tseries
+  SqlRender (>= 1.6.0),
+  dplyr,
+  jsonlite,
+  ParallelLogger,
+  readr,
+  data.table,
+  lubridate,
+  tseries,
+  rlang
 Suggests:
-    DT,
-    magrittr,
-    tidyr,
-    knitr,
-    rmarkdown,
-    testthat (>= 3.0.0),
-    withr
+  DT,
+  magrittr,
+  tidyr,
+  knitr,
+  rmarkdown,
+  testthat (>= 3.0.0),
+  withr
 VignetteBuilder: knitr
 License: Apache License
 Roxygen: list()

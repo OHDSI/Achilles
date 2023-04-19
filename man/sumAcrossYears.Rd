@@ -4,7 +4,7 @@
 \alias{sumAcrossYears}
 \title{For a monhtly time series, compute sum and proportion by month across all years}
 \usage{
-tsSum <- sumAcrossYears(tsData)
+sumAcrossYears(tsData)
 }
 \arguments{
 \item{tsData}{A time series object}

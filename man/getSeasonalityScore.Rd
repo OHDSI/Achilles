@@ -4,7 +4,7 @@
 \alias{getSeasonalityScore}
 \title{Get the seasonality score for a given monthly time series}
 \usage{
-tsData.ss <- getSeasonalityScore(tsData)
+getSeasonalityScore(tsData)
 }
 \arguments{
 \item{tsData}{A time series object.}
