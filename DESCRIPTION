@@ -1,8 +1,8 @@
 Package: Achilles
 Type: Package
-Title: Automated Characterization of Health Information at Large-scale Longitudinal Evidence Systems
+Title: Automated Characterization of Health Information at Large-Scale Longitudinal Evidence Systems
 Version: 1.7.1
-Date: 2023-03-30
+Date: 2023-04-23
 Authors@R: c(
   person("Frank", "DeFalco", email = "fdefalco@ohdsi.org", role = c("aut","cre")),  
   person("Patrick", "Ryan", email = "ryan@ohdsi.org", role = c("aut")),  
@@ -14,10 +14,10 @@ Authors@R: c(
   person("Anthony", "Molinaro", role = c("aut")),
   person("Observational Health Data Science and Informatics", role = c("cph"))
   )
-Maintainer: Frank J DeFalco <fdefalco@ohdsi.org>
+Maintainer: Frank DeFalco <fdefalco@ohdsi.org>
 LazyData: true
-Description: Creates descriptive statistics summary for an entire OMOP CDM
-  instance. Currently supports CDM 5.3 and 5.4.
+Description: Creates a descriptive statistics summary for an Observational 
+  Medical Outcomes Partnership Common Data Model standardized data source. 
 Depends:
   DatabaseConnector (>= 2.0.0),
   R (>= 4.0.0)

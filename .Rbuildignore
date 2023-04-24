@@ -6,3 +6,5 @@
 compare_versions
 deploy.sh
 _pkgdown.yml
+^CRAN-SUBMISSION$
+^cran-comments\.md$
