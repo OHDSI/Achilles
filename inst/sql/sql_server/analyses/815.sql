@@ -1,7 +1,8 @@
 -- 815  Distribution of numeric values, by observation_concept_id and unit_concept_id
 
 -- Compute concept+unit-level aggregations
-WITH agg AS (
+DROP TABLE IF EXISTS #tempAgg_815;
+--HINT DISTRIBUTE_ON_KEY(observation_concept_id)
   SELECT o.observation_concept_id
     , o.unit_concept_id
     , COUNT_BIG(*) AS num_recs
@@ -9,6 +10,7 @@ WITH agg AS (
     , MAX(o.value_as_number) AS max_value
     , CAST(AVG(1.0 * o.value_as_number) AS FLOAT) AS avg_value
     , CAST(STDDEV(o.value_as_number) AS FLOAT) AS stdev_value
+  INTO #tempAgg_815
   FROM 
     @cdmDatabaseSchema.observation o
   JOIN 
@@ -25,14 +27,17 @@ WITH agg AS (
     o.value_as_number IS NOT NULL
   GROUP BY o.observation_concept_id
     , o.unit_concept_id
-)
+;
+
 -- Compute concept+unit+value-level aggregations
-, byval AS (
+DROP TABLE IF EXISTS #tempByval_815;
+--HINT DISTRIBUTE_ON_KEY(observation_concept_id)
   SELECT 
     o.observation_concept_id
     , o.unit_concept_id
     , o.value_as_number
     , COUNT_BIG(*) AS num_recs
+  INTO #tempByval_815
   FROM 
     @cdmDatabaseSchema.observation o
   JOIN 
@@ -50,18 +55,23 @@ WITH agg AS (
   GROUP BY o.observation_concept_id
     , o.unit_concept_id
     , o.value_as_number
-)
+;
+
 -- Get cumulative # of rows BY ordered values (needed to determine quartiles & deciles)
-, ordbyval AS (
+DROP TABLE IF EXISTS #tempOrdbyval_815;
+--HINT DISTRIBUTE_ON_KEY(observation_concept_id)
   SELECT observation_concept_id
     , unit_concept_id
     , value_as_number
     , num_recs
     , SUM(num_recs) OVER (PARTITION BY observation_concept_id, unit_concept_id ORDER BY value_as_number) AS cum_num_recs
-  FROM byval
-)
+  INTO #tempOrdbyval_815
+  FROM #tempByval_815
+;
+
 -- Determine record-count cutpoints - cumulative # of records needed for quartiles & deciles
-, cutpoints AS (
+DROP TABLE IF EXISTS #tempCutpoints_815;
+--HINT DISTRIBUTE_ON_KEY(observation_concept_id)
   SELECT observation_concept_id
     , unit_concept_id
     , FLOOR(num_recs * 0.10) AS pct10_cutpoint
@@ -69,10 +79,13 @@ WITH agg AS (
     , FLOOR(num_recs * 0.50) AS pct50_cutpoint
     , FLOOR(num_recs * 0.75) AS pct75_cutpoint
     , FLOOR(num_recs * 0.90) AS pct90_cutpoint
-  FROM agg
-)
+  INTO #tempCutpoints_815
+  FROM #tempAgg_815
+;
+
 -- Compute quartiles & deciles (plus median) based upon those cutpoints
-, calc AS (
+DROP TABLE IF EXISTS #tempCalc_815;
+--HINT DISTRIBUTE_ON_KEY(observation_concept_id)
   SELECT ct.observation_concept_id
     , ct.unit_concept_id
     , MIN(CASE WHEN ov.cum_num_recs >= ct.pct10_cutpoint THEN ov.value_as_number ELSE NULL END) AS p10_value
@@ -80,14 +93,17 @@ WITH agg AS (
     , MIN(CASE WHEN ov.cum_num_recs >= ct.pct50_cutpoint THEN ov.value_as_number ELSE NULL END) AS median_value
     , MIN(CASE WHEN ov.cum_num_recs >= ct.pct75_cutpoint THEN ov.value_as_number ELSE NULL END) AS p75_value
     , MIN(CASE WHEN ov.cum_num_recs >= ct.pct90_cutpoint THEN ov.value_as_number ELSE NULL END) AS p90_value
-  FROM ordbyval ov
-  JOIN cutpoints ct
+  INTO  #tempCalc_815
+  FROM #tempOrdbyval_815 ov
+  JOIN #tempCutpoints_815 ct
     ON ov.observation_concept_id = ct.observation_concept_id
       AND ov.unit_concept_id = ct.unit_concept_id
   GROUP BY ct.observation_concept_id
     , ct.unit_concept_id
-)
+;
+
 -- Select final values for inclusion INTO achilles_results_dist
+-- HINT DISTRIBUTE_ON_RANDOM 
 SELECT 815 AS analysis_id
   , a.observation_concept_id AS stratum_1
   , a.unit_concept_id AS stratum_2
@@ -102,8 +118,8 @@ SELECT 815 AS analysis_id
   , CASE WHEN c.p75_value IS NULL THEN a.max_value ELSE c.p75_value END  as p75_value
   , CASE WHEN c.p90_value IS NULL THEN a.max_value ELSE c.p90_value END  as p90_value
 INTO #tempResults_815
-FROM agg a
-JOIN calc c
+FROM #tempAgg_815 a
+JOIN #tempCalc_815 c
   ON a.observation_concept_id = c.observation_concept_id
   AND a.unit_concept_id = c.unit_concept_id
 ORDER BY a.observation_concept_id
@@ -120,3 +136,18 @@ from #tempResults_815
 
 truncate table #tempResults_815;
 drop table #tempResults_815;
+
+truncate table #tempAgg_815;
+drop table #tempAgg_815;
+
+truncate table #tempByval_815;
+drop table #tempByval_815;
+
+truncate table #tempOrdbyval_815;
+drop table #tempOrdbyval_815;
+
+truncate table #tempCutpoints_815;
+drop table #tempCutpoints_815;
+
+truncate table #tempCalc_815;
+drop table #tempCalc_815;
