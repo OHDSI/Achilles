@@ -11,7 +11,6 @@ ANALYSIS_ID,DISTRIBUTION,DISTRIBUTED_FIELD,ANALYSIS_NAME,STRATUM_1_NAME,STRATUM_
 10,0,,Number of all persons by year of birth by gender,year_of_birth,gender_concept_id,,,,1,Person
 11,0,,Number of non-deceased persons by year of birth by gender,year_of_birth,gender_concept_id,,,,1,Person
 12,0,,Number of persons by race and ethnicity,race_concept_id,ethnicity_concept_id,,,,1,Person
-40,0,,Number of all persons by year of birth by gender,year_of_birth,gender_source_concept_id,,,,1,Person
 101,0,,"Number of persons by age, with age at first observation period",age,,,,,1,Person
 102,0,,"Number of persons by gender by age, with age at first observation period",gender_concept_id,age,,,,1,Person
 103,1,,Distribution of age at first observation period,,,,,,1,Observation Period
