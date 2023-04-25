@@ -191,7 +191,6 @@ ANALYSIS_ID,DISTRIBUTION,DISTRIBUTED_FIELD,ANALYSIS_NAME,STRATUM_1_NAME,STRATUM_
 1030,0,,Number of condition_era records inside a valid observation period,,,,,,0,Observation Period
 1031,0,,Proportion of people with at least one condition_era record outside a valid observation period,Proportion,Number of people with a condition_era record outside a valid observation period,Number of people in condition_era,,,0,Observation Period
 1032,0,,Proportion of condition_era records outside a valid observation period,Proportion,Number of records in condition_era outside a valid observation period,Number of condition_era records,,,0,Observation Period
-1040,0,,"Number of persons with at least one condition era, by condition_source_concept_id",condition_source_concept_id,,,,,1,Condition Era
 1100,0,,Number of persons by location 3-digit zip,3-digit zip,,,,,1,Location
 1101,0,,Number of persons by location state,state,,,,,1,Location
 1102,0,,Number of care sites by location 3-digit zip,3-digit zip,,,,,1,Location
