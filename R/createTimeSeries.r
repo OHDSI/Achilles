@@ -47,7 +47,6 @@
 #' A multivariate time series object
 #'
 #' @examples
-#' \dontrun{
 #' # Example 1:
 #' temporalData <- data.frame(START_DATE = seq.Date(as.Date("20210101", "%Y%m%d"),
 #'                                                  as.Date("20231201",
@@ -58,6 +57,7 @@
 #' dummyTs.pv <- dummyTs[, "PREVALENCE"]
 #' dummyTs.pwy <- dummyTs[, "PROPORTION_WITHIN_YEAR"]
 #'
+#' \dontrun{
 #' # Example 2:
 #' pneumonia <- 255848
 #' temporalData <- getTemporalData(connectionDetails = connectionDetails, cdmDatabaseSchema = "cdm",

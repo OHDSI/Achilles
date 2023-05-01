@@ -50,6 +50,7 @@ rmarkdown::render("vignettes/GettingStarted.Rmd",
   toc = TRUE, number_sections = TRUE)
 )
 
+devtools::document()
 pkgdown::build_site()
 OhdsiRTools::fixHadesLogo() # Required to fix the HADES logo in the website header
 

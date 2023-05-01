@@ -107,7 +107,7 @@ showReportTypes <- function() {
 exportToJson <- function(connectionDetails,
                          cdmDatabaseSchema,
                          resultsDatabaseSchema,
-                         outputPath = getwd(),
+                         outputPath,
 
   reports = getAllReports(), vocabDatabaseSchema = cdmDatabaseSchema, compressIntoOneFile = FALSE) {
 
@@ -324,7 +324,7 @@ exportToJson <- function(connectionDetails,
 exportConditionToJson <- function(connectionDetails,
                                   cdmDatabaseSchema,
                                   resultsDatabaseSchema,
-                                  outputPath = getwd(),
+                                  outputPath,
 
   vocabDatabaseSchema = cdmDatabaseSchema) {
   exportToJson(connectionDetails,
@@ -372,7 +372,7 @@ exportConditionToJson <- function(connectionDetails,
 exportConditionEraToJson <- function(connectionDetails,
                                      cdmDatabaseSchema,
                                      resultsDatabaseSchema,
-                                     outputPath = getwd(),
+                                     outputPath,
 
   vocabDatabaseSchema = cdmDatabaseSchema) {
   exportToJson(connectionDetails,
@@ -423,7 +423,7 @@ exportConditionEraToJson <- function(connectionDetails,
 exportDashboardToJson <- function(connectionDetails,
                                   cdmDatabaseSchema,
                                   resultsDatabaseSchema,
-                                  outputPath = getwd(),
+                                  outputPath,
 
   vocabDatabaseSchema = cdmDatabaseSchema) {
   exportToJson(connectionDetails,
@@ -472,7 +472,7 @@ exportDashboardToJson <- function(connectionDetails,
 exportDataDensityToJson <- function(connectionDetails,
                                     cdmDatabaseSchema,
                                     resultsDatabaseSchema,
-                                    outputPath = getwd(),
+                                    outputPath,
 
   vocabDatabaseSchema = cdmDatabaseSchema) {
   exportToJson(connectionDetails,
@@ -521,7 +521,7 @@ exportDataDensityToJson <- function(connectionDetails,
 exportDeathToJson <- function(connectionDetails,
                               cdmDatabaseSchema,
                               resultsDatabaseSchema,
-                              outputPath = getwd(),
+                              outputPath,
 
   vocabDatabaseSchema = cdmDatabaseSchema) {
   exportToJson(connectionDetails,
@@ -570,7 +570,7 @@ exportDeathToJson <- function(connectionDetails,
 exportDrugToJson <- function(connectionDetails,
                              cdmDatabaseSchema,
                              resultsDatabaseSchema,
-                             outputPath = getwd(),
+                             outputPath,
 
   vocabDatabaseSchema = cdmDatabaseSchema) {
   exportToJson(connectionDetails,
@@ -619,7 +619,7 @@ exportDrugToJson <- function(connectionDetails,
 exportDrugEraToJson <- function(connectionDetails,
                                 cdmDatabaseSchema,
                                 resultsDatabaseSchema,
-                                outputPath = getwd(),
+                                outputPath,
 
   vocabDatabaseSchema = cdmDatabaseSchema) {
   exportToJson(connectionDetails,
@@ -669,7 +669,7 @@ exportDrugEraToJson <- function(connectionDetails,
 exportMetaToJson <- function(connectionDetails,
                              cdmDatabaseSchema,
                              resultsDatabaseSchema,
-                             outputPath = getwd(),
+                             outputPath,
 
   vocabDatabaseSchema = cdmDatabaseSchema) {
   exportToJson(connectionDetails,
@@ -718,7 +718,7 @@ exportMetaToJson <- function(connectionDetails,
 exportMeasurementToJson <- function(connectionDetails,
                                     cdmDatabaseSchema,
                                     resultsDatabaseSchema,
-                                    outputPath = getwd(),
+                                    outputPath,
 
   vocabDatabaseSchema = cdmDatabaseSchema) {
   exportToJson(connectionDetails,
@@ -767,7 +767,7 @@ exportMeasurementToJson <- function(connectionDetails,
 exportObservationToJson <- function(connectionDetails,
                                     cdmDatabaseSchema,
                                     resultsDatabaseSchema,
-                                    outputPath = getwd(),
+                                    outputPath,
 
   vocabDatabaseSchema = cdmDatabaseSchema) {
   exportToJson(connectionDetails,
@@ -817,15 +817,16 @@ exportObservationToJson <- function(connectionDetails,
 exportObservationPeriodToJson <- function(connectionDetails,
                                           cdmDatabaseSchema,
                                           resultsDatabaseSchema,
-
-  outputPath = getwd(), vocabDatabaseSchema = cdmDatabaseSchema) {
-  exportToJson(connectionDetails,
-               cdmDatabaseSchema,
-               resultsDatabaseSchema,
-               outputPath,
-               reports = c("OBSERVATION_PERIOD"),
-
-    vocabDatabaseSchema)
+                                          outputPath,
+                                          vocabDatabaseSchema = cdmDatabaseSchema) {
+  exportToJson(
+    connectionDetails,
+    cdmDatabaseSchema,
+    resultsDatabaseSchema,
+    outputPath,
+    reports = c("OBSERVATION_PERIOD"),
+    vocabDatabaseSchema
+  )
 }
 
 #' @title
@@ -865,7 +866,7 @@ exportObservationPeriodToJson <- function(connectionDetails,
 exportPersonToJson <- function(connectionDetails,
                                cdmDatabaseSchema,
                                resultsDatabaseSchema,
-                               outputPath = getwd(),
+                               outputPath,
 
   vocabDatabaseSchema = cdmDatabaseSchema) {
   exportToJson(connectionDetails,
@@ -914,7 +915,7 @@ exportPersonToJson <- function(connectionDetails,
 exportProcedureToJson <- function(connectionDetails,
                                   cdmDatabaseSchema,
                                   resultsDatabaseSchema,
-                                  outputPath = getwd(),
+                                  outputPath,
 
   vocabDatabaseSchema = cdmDatabaseSchema) {
   exportToJson(connectionDetails,
@@ -962,16 +963,17 @@ exportProcedureToJson <- function(connectionDetails,
 exportVisitToJson <- function(connectionDetails,
                               cdmDatabaseSchema,
                               resultsDatabaseSchema,
-                              outputPath = getwd(),
-
-  vocabDatabaseSchema = cdmDatabaseSchema) {
-  exportToJson(connectionDetails,
-               cdmDatabaseSchema,
-               resultsDatabaseSchema,
-               outputPath,
-               reports = c("VISIT"),
-
-    vocabDatabaseSchema)
+                              outputPath,
+                              vocabDatabaseSchema = cdmDatabaseSchema) {
+  exportToJson(
+    connectionDetails,
+    cdmDatabaseSchema,
+    resultsDatabaseSchema,
+    outputPath,
+    reports = c("VISIT"),
+    
+    vocabDatabaseSchema
+  )
 }
 
 
@@ -1011,16 +1013,16 @@ exportVisitToJson <- function(connectionDetails,
 exportVisitDetailToJson <- function(connectionDetails,
                                     cdmDatabaseSchema,
                                     resultsDatabaseSchema,
-                                    outputPath = getwd(),
-
-  vocabDatabaseSchema = cdmDatabaseSchema) {
-  exportToJson(connectionDetails,
-               cdmDatabaseSchema,
-               resultsDatabaseSchema,
-               outputPath,
-               reports = c("VISIT_DETAIL"),
-
-    vocabDatabaseSchema)
+                                    outputPath,
+                                    vocabDatabaseSchema = cdmDatabaseSchema) {
+  exportToJson(
+    connectionDetails,
+    cdmDatabaseSchema,
+    resultsDatabaseSchema,
+    outputPath,
+    reports = c("VISIT_DETAIL"),
+    vocabDatabaseSchema
+  )
 }
 
 
@@ -1060,16 +1062,17 @@ exportVisitDetailToJson <- function(connectionDetails,
 exportPerformanceToJson <- function(connectionDetails,
                                     cdmDatabaseSchema,
                                     resultsDatabaseSchema,
-                                    outputPath = getwd(),
-
-  vocabDatabaseSchema = cdmDatabaseSchema) {
-  exportToJson(connectionDetails,
-               cdmDatabaseSchema,
-               resultsDatabaseSchema,
-               outputPath,
-               reports = c("PERFORMANCE"),
-
-    vocabDatabaseSchema)
+                                    outputPath,
+                                    vocabDatabaseSchema = cdmDatabaseSchema) {
+  exportToJson(
+    connectionDetails,
+    cdmDatabaseSchema,
+    resultsDatabaseSchema,
+    outputPath,
+    reports = c("PERFORMANCE"),
+    
+    vocabDatabaseSchema
+  )
 }
 
 

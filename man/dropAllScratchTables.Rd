@@ -40,6 +40,9 @@ Default = TRUE}
 Including non-default analyses is substantially more resource
 intensive.  Default = TRUE}
 }
+\value{
+No return value, called to drop interim scratch tables.
+}
 \description{
 Drop all possible scratch tables
 }

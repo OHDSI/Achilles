@@ -34,6 +34,10 @@ Default = TRUE}
 \item{achillesTables}{Which achilles tables should be indexed? Default is both
 achilles_results and achilles_results_dist.}
 }
+\value{
+A collection of queries that were executed to drop any existing indices and create new indicies as 
+specified.
+}
 \description{
 Create indicies
 }

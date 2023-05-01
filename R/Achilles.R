@@ -107,7 +107,7 @@
 #'                                  to translate properly.  \code{sqlDialect} takes the value normally 
 #'                                  supplied to connectionDetails$dbms.  Default = NULL.
 #'
-#' @return
+#' @returns 
 #' An object of type \code{achillesResults} containing details for connecting to the database
 #' containing the results
 #' @examples
@@ -339,7 +339,7 @@ achilles <- function(connectionDetails,
         DatabaseConnector::executeSql(
           connection = connection,
           sql = sql,
-          errorReportFile = file.path(getwd(), "achillesErrorCreateAchillesAnalysis.txt")
+          errorReportFile = file.path(outputFolder, "achillesErrorCreateAchillesAnalysis.txt")
         )
         
         # Populate achilles_analysis with data from achilles_analysis_details.csv from above
@@ -414,7 +414,7 @@ achilles <- function(connectionDetails,
         tryCatch({
           DatabaseConnector::executeSql(connection = connection,
                                         sql = mainSql$sql,
-                                        errorReportFile = file.path(getwd(),
+                                        errorReportFile = file.path(outputFolder,
           paste0("achillesError_", mainSql$analysisId, ".txt")))
           delta <- Sys.time() - start
           ParallelLogger::logInfo(sprintf("[Main Analysis] [COMPLETE] %d (%f %s)",
@@ -439,7 +439,7 @@ achilles <- function(connectionDetails,
         tryCatch({
           DatabaseConnector::executeSql(connection = connection,
                                         sql = mainSql$sql,
-                                        errorReportFile = file.path(getwd(),
+                                        errorReportFile = file.path(outputFolder,
           paste0("achillesError_", mainSql$analysisId, ".txt")))
           delta <- Sys.time() - start
           ParallelLogger::logInfo(sprintf("[Main Analysis] [COMPLETE] %d (%f %s)",
@@ -650,6 +650,9 @@ achilles <- function(connectionDetails,
 #'                                Default = TRUE
 #' @param achillesTables          Which achilles tables should be indexed? Default is both
 #'                                achilles_results and achilles_results_dist.
+#' @returns
+#' A collection of queries that were executed to drop any existing indices and create new indicies as 
+#' specified.
 #'
 #' @export
 createIndices <- function(connectionDetails,
@@ -735,7 +738,7 @@ createIndices <- function(connectionDetails,
 #' @details
 #' Get a list of all analyses with their analysis IDs and strata.
 #'
-#' @return
+#' @returns
 #' A data.frame with the analysis details.
 #'
 #' @export
@@ -765,6 +768,7 @@ getAnalysisDetails <- function() {
 #' @param defaultAnalysesOnly     Boolean to determine if only default analyses should be run.
 #'                                Including non-default analyses is substantially more resource
 #'                                intensive.  Default = TRUE
+#' @returns No return value, called to drop interim scratch tables.                            
 #'
 #' @export
 dropAllScratchTables <- function(connectionDetails,
@@ -865,7 +869,9 @@ dropAllScratchTables <- function(connectionDetails,
 #'                                Default = TRUE
 #' @param tempAchillesPrefix      The prefix to use for the "temporary" (but actually permanent)
 #'                                Achilles analyses tables. Default is "tmpach"
-#'
+#' @returns 
+#' The SQL statement executed to update cache tables is returned.
+#' 
 #' @export
 optimizeAtlasCache <- function(connectionDetails,
                                resultsDatabaseSchema,

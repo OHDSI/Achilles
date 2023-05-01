@@ -8,7 +8,7 @@ exportDataDensityToJson(
   connectionDetails,
   cdmDatabaseSchema,
   resultsDatabaseSchema,
-  outputPath = getwd(),
+  outputPath,
   vocabDatabaseSchema = cdmDatabaseSchema
 )
 }
