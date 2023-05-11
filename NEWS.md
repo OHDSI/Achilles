@@ -1,3 +1,7 @@
+# Achilles 1.7.2
+
+1. Improved test setup management
+
 # Achilles 1.7.1
 
 Changes
