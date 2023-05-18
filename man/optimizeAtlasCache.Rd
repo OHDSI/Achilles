@@ -39,6 +39,9 @@ Default = TRUE}
 \item{tempAchillesPrefix}{The prefix to use for the "temporary" (but actually permanent)
 Achilles analyses tables. Default is "tmpach"}
 }
+\value{
+The SQL statement executed to update cache tables is returned.
+}
 \description{
 Optimize atlas cache
 }

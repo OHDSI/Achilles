@@ -1,6 +1,6 @@
 # @file runMissingAnalyses
 #
-# Copyright 2022 Observational Health Data Sciences and Informatics
+# Copyright 2023 Observational Health Data Sciences and Informatics
 #
 # This file is part of Achilles
 #
@@ -59,6 +59,9 @@
 #' @param defaultAnalysesOnly     Boolean to determine if only default analyses should be run.
 #'                                Including non-default analyses is substantially more resource
 #'                                intensive.  Default = TRUE
+#' @returns 
+#' No return value.  Run to execute analyses currently missing from results.
+#' 
 #' @examples
 #' \dontrun{
 #' Achilles::runMissingAnalyses(connectionDetails = connectionDetails,

@@ -1,6 +1,6 @@
 # @file PackageMaintenance
 #
-# Copyright 2022 Observational Health Data Sciences and Informatics
+# Copyright 2023 Observational Health Data Sciences and Informatics
 #
 # This file is part of Achilles
 # 
@@ -24,39 +24,41 @@ folder
 unlink(folder, recursive = TRUE, force = TRUE)
 file.exists(folder)
 
-# Format and check code:
+# Format and check code --------------------------------------------------------
 OhdsiRTools::formatRFolder()
 OhdsiRTools::checkUsagePackage("Achilles")
 OhdsiRTools::updateCopyrightYearFolder()
 devtools::spell_check()
 
-# Create manual:
+devtools::check()
+# devtools::check(document = FALSE, args=c("--no-tests"))
+# codetools::checkUsagePackage("Achilles")
+
+# Regenerate manual, vignette PDFs, and website --------------------------------
 unlink("extras/Achilles.pdf")
 shell("R CMD Rd2pdf ./ --output=extras/Achilles.pdf")
 
 dir.create("inst/doc")
+rmarkdown::render("vignettes/RunningAchilles.Rmd",
+  output_file = "../inst/doc/RunningAchilles.pdf",
+  rmarkdown::pdf_document(latex_engine = "pdflatex",
+  toc = TRUE, number_sections = TRUE)
+)
+rmarkdown::render("vignettes/GettingStarted.Rmd",
+  output_file = "../inst/doc/GettingStarted.pdf",
+  rmarkdown::pdf_document(latex_engine = "pdflatex",
+  toc = TRUE, number_sections = TRUE)
+)
 
-# rmarkdown::render("vignettes/RunningAchilles.Rmd",
-#   output_file = "../inst/doc/RunningAchilles.pdf",
-#   rmarkdown::pdf_document(latex_engine = "pdflatex",
-#   toc = TRUE, number_sections = TRUE)
-# )
-# 
-# rmarkdown::render("vignettes/GettingStarted.Rmd",
-#   output_file = "../inst/doc/GettingStarted.pdf",
-#   rmarkdown::pdf_document(latex_engine = "pdflatex",
-#   toc = TRUE, number_sections = TRUE)
-# )
-
-devtools::check()
-
+devtools::document()
 pkgdown::build_site()
+OhdsiRTools::fixHadesLogo() # Required to fix the HADES logo in the website header
 
-# OhdsiRTools::fixHadesLogo()
-
-# Release package:
+# Release package to CRAN ------------------------------------------------------
 devtools::check_win_devel()
 
 devtools::check_rhub()
 
 devtools::release()
+
+devtools::check(cran=TRUE)

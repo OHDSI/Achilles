@@ -25,8 +25,6 @@ FROM (
 	AND 
 		m.measurement_date <= op.observation_period_end_date		
 	WHERE 
-		m.unit_concept_id IS NOT NULL
-	AND 
 		m.value_as_number IS NOT NULL
 	) m
 GROUP BY 

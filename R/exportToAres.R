@@ -43,6 +43,7 @@ generateAOProcedureReports <- function(connectionDetails, proceduresData, cdmDat
   )
   
   conn <- DatabaseConnector::connect(connectionDetails)
+  on.exit(DatabaseConnector::disconnect(connection = conn))  
   dataPrevalenceByGenderAgeYear <- DatabaseConnector::querySql(conn,queryPrevalenceByGenderAgeYear) 
   dataPrevalenceByMonth <- DatabaseConnector::querySql(conn,queryPrevalenceByMonth)  
   dataProceduresByType <- DatabaseConnector::querySql(conn,queryProceduresByType)    
@@ -78,6 +79,7 @@ generateAOPersonReport <- function(connectionDetails, cdmDatabaseSchema, results
   writeLines("Generating person report")
   output = {}
   conn <- DatabaseConnector::connect(connectionDetails)
+  on.exit(DatabaseConnector::disconnect(connection = conn))  
   renderedSql <- SqlRender::loadRenderTranslateSql(
     sqlFilename = "export/person/population.sql",
     packageName = "Achilles",
@@ -170,6 +172,7 @@ generateAOAchillesPerformanceReport <- function(connectionDetails, cdmDatabaseSc
   )  
   
   conn <- DatabaseConnector::connect(connectionDetails)
+  on.exit(DatabaseConnector::disconnect(connection = conn))  
   dataPerformance <- DatabaseConnector::querySql(conn,queryAchillesPerformance)
   names(dataPerformance) <- c("analysis_id", "analysis_name","category", "elapsed_seconds")
   dataPerformance$elapsed_seconds <- format(round(as.numeric(dataPerformance$elapsed_seconds),digits = 2),nsmall = 2)
@@ -212,7 +215,7 @@ generateAODeathReport <- function(connectionDetails, cdmDatabaseSchema, resultsD
   )  
   
   conn <- DatabaseConnector::connect(connectionDetails)
-  
+  on.exit(DatabaseConnector::disconnect(connection = conn))  
   deathByTypeData <- DatabaseConnector::querySql(conn,queryDeathByType)
   prevalenceByGenderAgeYearData <- DatabaseConnector::querySql(conn,queryPrevalenceByGenderAgeYear)
   prevalenceByMonthData <- DatabaseConnector::querySql(conn,queryPrevalenceByMonth)
@@ -232,7 +235,7 @@ generateAOObservationPeriodReport <- function(connectionDetails, cdmDatabaseSche
 {
   writeLines("Generating observation period reports")
   conn <- DatabaseConnector::connect(connectionDetails)
-  
+  on.exit(DatabaseConnector::disconnect(connection = conn))  
   output = {}
   renderedSql <- SqlRender::loadRenderTranslateSql(
     sqlFilename = "export/observationperiod/ageatfirst.sql",
@@ -495,6 +498,7 @@ generateAOVisitDetailReports <- function(connectionDetails, cdmDatabaseSchema, r
   )
   
   conn <- DatabaseConnector::connect(connectionDetails)
+  on.exit(DatabaseConnector::disconnect(connection = conn))  
   dataVisitDetails <- DatabaseConnector::querySql(conn,queryVisitDetails)
   names(dataVisitDetails)[names(dataVisitDetails) == 'CONCEPT_PATH'] <- 'CONCEPT_NAME'
   dataPrevalenceByGenderAgeYear <- DatabaseConnector::querySql(conn,queryPrevalenceByGenderAgeYear) 
@@ -528,7 +532,8 @@ generateAOVisitDetailReports <- function(connectionDetails, cdmDatabaseSchema, r
 generateAOMetadataReport <- function(connectionDetails, cdmDatabaseSchema, outputPath)
 {
   conn <- DatabaseConnector::connect(connectionDetails)
-  if ("METADATA" %in% DatabaseConnector::getTableNames(connection = conn, databaseSchema = cdmDatabaseSchema))
+  on.exit(DatabaseConnector::disconnect(connection = conn))  
+  if (DatabaseConnector::existsTable(connection = conn, databaseSchema = cdmDatabaseSchema, tableName = "METADATA"))
   {
     writeLines("Generating metadata report")    
     queryMetadata <- SqlRender::loadRenderTranslateSql(
@@ -587,6 +592,7 @@ generateAOObservationReports <- function(connectionDetails, observationsData, cd
   )
   
   conn <- DatabaseConnector::connect(connectionDetails)  
+  on.exit(DatabaseConnector::disconnect(connection = conn))  
   dataPrevalenceByGenderAgeYear <- DatabaseConnector::querySql(conn,queryPrevalenceByGenderAgeYear) 
   dataPrevalenceByMonth <- DatabaseConnector::querySql(conn,queryPrevalenceByMonth)  
   dataObservationsByType <- DatabaseConnector::querySql(conn,queryObservationsByType)    
@@ -621,7 +627,8 @@ generateAOObservationReports <- function(connectionDetails, observationsData, cd
 generateAOCdmSourceReport <- function(connectionDetails, cdmDatabaseSchema, outputPath)
 {
   conn <- DatabaseConnector::connect(connectionDetails)  
-  if ("CDM_SOURCE" %in% DatabaseConnector::getTableNames(connection = conn, databaseSchema = cdmDatabaseSchema))
+  on.exit(DatabaseConnector::disconnect(connection = conn))  
+  if (DatabaseConnector::existsTable(connection = conn, databaseSchema = cdmDatabaseSchema, tableName = "CDM_SOURCE"))
   {
     writeLines("Generating cdm source report")    
     queryCdmSource <- SqlRender::loadRenderTranslateSql(
@@ -639,16 +646,16 @@ generateAOCdmSourceReport <- function(connectionDetails, cdmDatabaseSchema, outp
 generateAODashboardReport <- function(outputPath)
 {
   output <- {}
-  personReport <- rjson::fromJSON(file = paste(outputPath, "/person.json", sep=""))
+  personReport <- jsonlite::fromJSON(file = paste(outputPath, "/person.json", sep=""))
   output$SUMMARY <- personReport$SUMMARY
   output$GENDER_DATA <- personReport$GENDER_DATA
-  opReport <- rjson::fromJSON(file = paste(outputPath, "/observationperiod.json", sep=""))
+  opReport <- jsonlite::fromJSON(file = paste(outputPath, "/observationperiod.json", sep=""))
   
-  output$AGE_AT_FIRST_OBSERVATION_HISTOGRAM = opReport$AGE_AT_FIRST_OBSERVATION_HISTOGRAM
-  output$CUMULATIVE_DURATION = opReport$CUMULATIVE_DURATION
-  output$OBSERVED_BY_MONTH = opReport$OBSERVED_BY_MONTH
+  output$AGE_AT_FIRST_OBSERVATION_HISTOGRAM <- opReport$AGE_AT_FIRST_OBSERVATION_HISTOGRAM
+  output$CUMULATIVE_DURATION <- opReport$CUMULATIVE_DURATION
+  output$OBSERVED_BY_MONTH <- opReport$OBSERVED_BY_MONTH
 
-  jsonOutput =jsonlite::toJSON(output)
+  jsonOutput <- jsonlite::toJSON(output)
   write(jsonOutput, file=paste(outputPath, "/dashboard.json", sep=""))  
 }
 
@@ -736,6 +743,7 @@ generateAOMeasurementReports <- function(connectionDetails, dataMeasurements, cd
   )
   
   conn <- DatabaseConnector::connect(connectionDetails)
+  on.exit(DatabaseConnector::disconnect(connection = conn))  
   dataPrevalenceByGenderAgeYear <- DatabaseConnector::querySql(conn,queryPrevalenceByGenderAgeYear) 
   dataPrevalenceByMonth <- DatabaseConnector::querySql(conn,queryPrevalenceByMonth)  
   dataMeasurementsByType <- DatabaseConnector::querySql(conn,queryMeasurementsByType)    
@@ -814,6 +822,7 @@ generateAODrugEraReports <- function(connectionDetails, dataDrugEra, cdmDatabase
   )
 
   conn <- DatabaseConnector::connect(connectionDetails)  
+  on.exit(DatabaseConnector::disconnect(connection = conn))  
   dataAgeAtFirstExposure <- DatabaseConnector::querySql(conn,queryAgeAtFirstExposure) 
   dataPrevalenceByGenderAgeYear <- DatabaseConnector::querySql(conn,queryPrevalenceByGenderAgeYear) 
   dataPrevalenceByMonth <- DatabaseConnector::querySql(conn,queryPrevalenceByMonth)
@@ -910,6 +919,7 @@ generateAODrugReports <- function(connectionDetails, dataDrugs, cdmDatabaseSchem
   )
   
   conn <- DatabaseConnector::connect(connectionDetails)  
+  on.exit(DatabaseConnector::disconnect(connection = conn))  
   dataAgeAtFirstExposure <- DatabaseConnector::querySql(conn,queryAgeAtFirstExposure) 
   dataDaysSupplyDistribution <- DatabaseConnector::querySql(conn,queryDaysSupplyDistribution) 
   dataDrugsByType <- DatabaseConnector::querySql(conn,queryDrugsByType) 
@@ -991,6 +1001,7 @@ generateAODeviceReports <- function(connectionDetails, dataDevices, cdmDatabaseS
   )
 
   conn <- DatabaseConnector::connect(connectionDetails)  
+  on.exit(DatabaseConnector::disconnect(connection = conn))  
   dataAgeAtFirstExposure <- DatabaseConnector::querySql(conn,queryAgeAtFirstExposure) 
   dataDevicesByType <- DatabaseConnector::querySql(conn,queryDevicesByType) 
   dataPrevalenceByGenderAgeYear <- DatabaseConnector::querySql(conn,queryPrevalenceByGenderAgeYear) 
@@ -1065,6 +1076,7 @@ generateAOConditionReports <- function(connectionDetails, dataConditions, cdmDat
   )
   
   conn <- DatabaseConnector::connect(connectionDetails)
+  on.exit(DatabaseConnector::disconnect(connection = conn))  
   dataPrevalenceByGenderAgeYear <- DatabaseConnector::querySql(conn,queryPrevalenceByGenderAgeYear) 
   dataPrevalenceByMonth <- DatabaseConnector::querySql(conn,queryPrevalenceByMonth)  
   dataConditionsByType <- DatabaseConnector::querySql(conn,queryConditionsByType)    
@@ -1138,6 +1150,7 @@ generateAOConditionEraReports <- function(connectionDetails, dataConditionEra, c
   )
   
   conn <- DatabaseConnector::connect(connectionDetails)  
+  on.exit(DatabaseConnector::disconnect(connection = conn))  
   dataPrevalenceByGenderAgeYear <- DatabaseConnector::querySql(conn, queryPrevalenceByGenderAgeYear)
   dataPrevalenceByMonth <- DatabaseConnector::querySql(conn, queryPrevalenceByMonth)
   dataLengthOfEra <- DatabaseConnector::querySql(conn, queryLengthOfEra)
@@ -1166,10 +1179,10 @@ generateAOConditionEraReports <- function(connectionDetails, dataConditionEra, c
   x <- lapply(uniqueConcepts, buildConditionEraReport)
 }
 
-#' @title exportAO
+#' @title exportToAres
 #'
 #' @description
-#' \code{exportAO} Exports Achilles statistics - ares option
+#' \code{exportToAres} Exports Achilles statistics for ARES
 #'
 #' @details
 #' Creates export files 
@@ -1187,11 +1200,10 @@ generateAOConditionEraReports <- function(connectionDetails, dataConditionEra, c
 #' @return none 
 #' 
 #'@importFrom data.table fwrite
-#'@import lubridate
 #'@importFrom dplyr ntile desc
 #'@export
 #'
-exportAO <- function(
+exportToAres <- function(
   connectionDetails, 
   cdmDatabaseSchema, 
   resultsDatabaseSchema, 
@@ -1200,6 +1212,7 @@ exportAO <- function(
   reports = c())
 {
   conn <- DatabaseConnector::connect(connectionDetails)
+  on.exit(DatabaseConnector::disconnect(connection = conn))  
   
   # generate a folder name for this release of the cdm characterization
   sql <- SqlRender::render(sql = "select * from @cdmDatabaseSchema.cdm_source;",cdmDatabaseSchema = cdmDatabaseSchema)

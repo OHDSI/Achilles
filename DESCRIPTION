@@ -1,8 +1,8 @@
 Package: Achilles
 Type: Package
-Title: Generates descriptive statistics for an OMOP CDM instance
-Version: 1.7
-Date: 2022-08-02
+Title: Achilles Data Source Characterization
+Version: 1.7.2
+Date: 2023-05-11
 Authors@R: c(
   person("Frank", "DeFalco", email = "fdefalco@ohdsi.org", role = c("aut","cre")),  
   person("Patrick", "Ryan", email = "ryan@ohdsi.org", role = c("aut")),  
@@ -14,33 +14,39 @@ Authors@R: c(
   person("Anthony", "Molinaro", role = c("aut")),
   person("Observational Health Data Science and Informatics", role = c("cph"))
   )
-Maintainer: Frank J DeFalco <fdefalco@ohdsi.org>
+Maintainer: Frank DeFalco <fdefalco@ohdsi.org>
 LazyData: true
-Description: Creates descriptive statistics summary for an entire OMOP CDM
-  instance. Currently supports CDM 5.3 and 5.4.
+Description: Automated Characterization of Health Information at Large-Scale 
+  Longitudinal Evidence Systems. Creates a descriptive statistics summary for 
+  an Observational Medical Outcomes Partnership Common Data Model standardized 
+  data source. This package includes functions for executing summary queries on 
+  the specified data source and exporting reporting content for use across a 
+  variety of Observational Health Data Sciences and Informatics community 
+  applications. 
 Depends:
   DatabaseConnector (>= 2.0.0),
   R (>= 4.0.0)
 Imports:
-    SqlRender (>= 1.6.0),
-    dplyr,
-    rjson,
-    jsonlite,
-    ParallelLogger,
-    readr,
-    data.table,
-    lubridate
+  SqlRender (>= 1.6.0),
+  dplyr,
+  jsonlite,
+  ParallelLogger,
+  readr,
+  data.table,
+  lubridate,
+  tseries,
+  rlang
 Suggests:
   DT,
   magrittr,
   tidyr,
-  knitr, 
+  knitr,
   rmarkdown,
-  Castor
-Remotes:
-  github::OHDSI/Castor
+  testthat (>= 3.0.0),
+  withr
 VignetteBuilder: knitr
 License: Apache License
 Roxygen: list()
-RoxygenNote: 7.2.1
+RoxygenNote: 7.2.3
 Encoding: UTF-8
+Config/testthat/edition: 3

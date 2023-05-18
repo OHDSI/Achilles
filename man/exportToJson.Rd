@@ -8,7 +8,7 @@ exportToJson(
   connectionDetails,
   cdmDatabaseSchema,
   resultsDatabaseSchema,
-  outputPath = getwd(),
+  outputPath,
   reports = getAllReports(),
   vocabDatabaseSchema = cdmDatabaseSchema,
   compressIntoOneFile = FALSE

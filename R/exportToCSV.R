@@ -22,6 +22,8 @@
 #'                                minCellCount) are deleted. Set to 0 for complete summary without
 #'                                small cell count restrictions.
 #' @param exportFolder            Path to store results
+#' @returns 
+#' No return value.  Called to export CSV file to the file system.
 
 #' @export
 exportResultsToCSV <- function(connectionDetails,
