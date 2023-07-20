@@ -218,7 +218,7 @@ achilles <- function(connectionDetails,
   if (!missing(analysisIds)) {
     # If specific analysis_ids are given, run only those
     analysisDetails <-
-      analysisDetails[analysisDetails$ANALYSIS_ID %in% analysisIds,]
+      analysisDetails[analysisDetails$analysis_id %in% analysisIds,]
   } else if (defaultAnalysesOnly) {
     # If specific analyses are not given, determine whether or not to run only default analyses
     analysisDetails <-
@@ -226,8 +226,8 @@ achilles <- function(connectionDetails,
   }
 
   # Remove unwanted analyses that have not already been excluded, if any are specified
-  if (!missing(excludeAnalysisIds) && any(analysisDetails$ANALYSIS_ID %in% excludeAnalysisIds)) {
-    analysisDetails <- analysisDetails[-which(analysisDetails$ANALYSIS_ID %in% excludeAnalysisIds),]
+  if (!missing(excludeAnalysisIds) && any(analysisDetails$analysis_id %in% excludeAnalysisIds)) {
+    analysisDetails <- analysisDetails[-which(analysisDetails$analysis_id %in% excludeAnalysisIds),]
   }
 
   resultsTables <- list(
@@ -238,7 +238,7 @@ achilles <- function(connectionDetails,
         file = system.file("csv", "schemas", "schema_achilles_results.csv", package = "Achilles"),
         header = TRUE
       ),
-      analysisIds = analysisDetails[analysisDetails$DISTRIBUTION <=0, ]$ANALYSIS_ID
+      analysisIds = analysisDetails[analysisDetails$distribution <=0, ]$analysis_id
     ),
     list(
       detailType = "results_dist",
@@ -247,7 +247,7 @@ achilles <- function(connectionDetails,
         file = system.file("csv","schemas","schema_achilles_results_dist.csv",package = "Achilles"),
         header = TRUE
       ),
-      analysisIds = analysisDetails[abs(analysisDetails$DISTRIBUTION) == 1, ]$ANALYSIS_ID
+      analysisIds = analysisDetails[abs(analysisDetails$distribution) == 1, ]$analysis_id
     )
   )
   
@@ -376,7 +376,7 @@ achilles <- function(connectionDetails,
   }
 
   # Generate Main Analyses
-  mainAnalysisIds <- analysisDetails$ANALYSIS_ID
+  mainAnalysisIds <- analysisDetails$analysis_id
   
   mainSqls <- lapply(mainAnalysisIds, function(analysisId) {
     list(
@@ -409,7 +409,7 @@ achilles <- function(connectionDetails,
         start <- Sys.time()
         ParallelLogger::logInfo(sprintf("Analysis %d (%s) -- START",
                                         mainSql$analysisId,
-                                        analysisDetails$ANALYSIS_NAME[analysisDetails$ANALYSIS_ID ==
+                                        analysisDetails$analysis_name[analysisDetails$analysis_id ==
           mainSql$analysisId]))
         tryCatch({
           DatabaseConnector::executeSql(connection = connection,
@@ -435,7 +435,7 @@ achilles <- function(connectionDetails,
         ParallelLogger::logInfo(sprintf("[Main Analysis] [START] %d (%s)",
                                         as.integer(mainSql$analysisId),
 
-          analysisDetails$ANALYSIS_NAME[analysisDetails$ANALYSIS_ID == mainSql$analysisId]))
+          analysisDetails$ANALYSIS_NAME[analysisDetails$analysis_id == mainSql$analysisId]))
         tryCatch({
           DatabaseConnector::executeSql(connection = connection,
                                         sql = mainSql$sql,
@@ -460,7 +460,7 @@ achilles <- function(connectionDetails,
 
   # Merge scratch tables into final analysis tables
   include <- sapply(resultsTables, function(d) {
-    any(d$analysisIds %in% analysisDetails$ANALYSIS_ID)
+    any(d$analysisIds %in% analysisDetails$analysis_id)
   })
   resultsTablesToMerge <- resultsTables[include]
 
@@ -468,7 +468,7 @@ achilles <- function(connectionDetails,
     .mergeAchillesScratchTables(
       resultsTable = table,
       connectionDetails = connectionDetails,
-      analysisIds = analysisDetails$ANALYSIS_ID,
+      analysisIds = analysisDetails$analysis_id,
       createTable = createTable,
       schemaDelim = schemaDelim,
       scratchDatabaseSchema = scratchDatabaseSchema,
@@ -581,7 +581,7 @@ achilles <- function(connectionDetails,
   indicesSql <- "/* INDEX CREATION SKIPPED PER USER REQUEST */"
 
   if (createIndices) {
-    achillesTables <- lapply(unique(analysisDetails$DISTRIBUTION), function(a) {
+    achillesTables <- lapply(unique(analysisDetails$distribution), function(a) {
       if (a == 0) {
         "achilles_results"
       } else {
@@ -619,7 +619,7 @@ achilles <- function(connectionDetails,
                           resultsTable = "achilles_results",
 
     resultsDistributionTable = "achilles_results_dist", analysis_table = "achilles_analysis", sourceName = sourceName,
-    analysisIds = analysisDetails$ANALYSIS_ID, achillesSql = paste(achillesSql, collapse = "\n\n"),
+    analysisIds = analysisDetails$analysis_id, achillesSql = paste(achillesSql, collapse = "\n\n"),
     indicesSql = indicesSql, call = match.call())
 
   class(achillesResults) <- "achillesResults"
@@ -807,18 +807,18 @@ dropAllScratchTables <- function(connectionDetails,
     analysisDetails <- getAnalysisDetails()
 
     if (defaultAnalysesOnly) {
-      resultsTables <- lapply(analysisDetails$ANALYSIS_ID[analysisDetails$DISTRIBUTION <= 0 & analysisDetails$IS_DEFAULT ==
+      resultsTables <- lapply(analysisDetails$analysis_id[analysisDetails$distribution <= 0 & analysisDetails$IS_DEFAULT ==
         1], function(id) {
         sprintf("%s_%d", tempAchillesPrefix, id)
       })
     } else {
-      resultsTables <- lapply(analysisDetails$ANALYSIS_ID[analysisDetails$DISTRIBUTION <= 0],
+      resultsTables <- lapply(analysisDetails$analysis_id[analysisDetails$distribution <= 0],
                               function(id) {
         sprintf("%s_%d", tempAchillesPrefix, id)
       })
     }
 
-    resultsDistTables <- lapply(analysisDetails$ANALYSIS_ID[abs(analysisDetails$DISTRIBUTION) ==
+    resultsDistTables <- lapply(analysisDetails$analysis_id[abs(analysisDetails$distribution) ==
       1], function(id) {
       sprintf("%s_dist_%d", tempAchillesPrefix, id)
     })
@@ -1059,8 +1059,8 @@ optimizeAtlasCache <- function(connectionDetails,
 }
 
 .deleteExistingResults <- function(connectionDetails, resultsDatabaseSchema, analysisDetails) {
-  resultIds <- analysisDetails$ANALYSIS_ID[analysisDetails$DISTRIBUTION == 0]
-  distIds <- analysisDetails$ANALYSIS_ID[analysisDetails$DISTRIBUTION == 1]
+  resultIds <- analysisDetails$analysis_id[analysisDetails$distribution == 0]
+  distIds <- analysisDetails$analysis_id[analysisDetails$distribution == 1]
 
   if (length(resultIds) > 0) {
     sql <- SqlRender::render(sql = "delete from @resultsDatabaseSchema.achilles_results where analysis_id in (@analysisIds);",

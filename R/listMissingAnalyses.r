@@ -73,11 +73,7 @@ listMissingAnalyses <- function(connectionDetails, resultsDatabaseSchema) {
 
   missingAnalysisIds <- setdiff(allAnalysisIds, existingAnalysisIds)
 
-  colsToDisplay <- c("ANALYSIS_ID",
-                     "DISTRIBUTION",
-                     "CATEGORY",
-                     "IS_DEFAULT",
-                     "ANALYSIS_NAME")
+  colsToDisplay <- c("analysis_id","distribution","category","is_default","analysis_name")
   retVal <- analysisDetails[analysisDetails$ANALYSIS_ID %in% missingAnalysisIds, colsToDisplay]
   retVal <- retVal[order(retVal$ANALYSIS_ID), ]
 

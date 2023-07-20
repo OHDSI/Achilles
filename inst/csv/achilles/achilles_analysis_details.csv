@@ -1,4 +1,4 @@
-ANALYSIS_ID,DISTRIBUTION,DISTRIBUTED_FIELD,ANALYSIS_NAME,STRATUM_1_NAME,STRATUM_2_NAME,STRATUM_3_NAME,STRATUM_4_NAME,STRATUM_5_NAME,IS_DEFAULT,CATEGORY
+analysis_id,distribution,distributed_field,analysis_name,stratum_1_name,stratum_2_name,stratum_3_name,stratum_4_name,stratum_5_name,is_default,category
 0,-1,,Source name,,,,,,1,General
 1,0,,Number of persons,,,,,,1,Person
 2,0,,Number of persons by gender,gender_concept_id,,,,,1,Person
