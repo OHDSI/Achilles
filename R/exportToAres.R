@@ -1473,10 +1473,10 @@ generateAODeviceReports <- function(connectionDetails, dataDevices, cdmDatabaseS
     dplyr::left_join(
       (
         dataDevicesByType %>%
-        dplyr::select(c(3,4)) %>%
+        dplyr::select(c(1,4,5)) %>%
         tidyr::nest(DEVICES_BY_TYPE = c(-1))
       ),
-      by = c("CONCEPT_ID" = "CONCEPT_ID")
+      by = c("CONCEPT_ID" = "DEVICE_CONCEPT_ID")
     ) %>%
     dplyr::left_join(
       (
