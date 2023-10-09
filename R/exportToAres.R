@@ -57,6 +57,9 @@ generateAOProcedureReports <- function(connectionDetails, proceduresData, cdmDat
   dataAgeAtFirstOccurrence <- DatabaseConnector::querySql(conn,queryAgeAtFirstOccurrence)    
   dataProcedureFrequencyDistribution <- DatabaseConnector::querySql(conn,queryProcedureFrequencyDistribution)
 
+  if (nrow(proceduresData) == 0) {
+    return()
+  }
   uniqueConcepts <- data.frame(
     CONCEPT_ID = unique(proceduresData$CONCEPT_ID),
     CDM_TABLE_NAME = "PROCEDURE_OCCURRENCE"
@@ -483,7 +486,10 @@ generateAOVisitReports <- function(connectionDetails, cdmDatabaseSchema, results
   dataPrevalenceByMonth <- DatabaseConnector::querySql(conn,queryPrevalenceByMonth)  
   dataVisitDurationByType <- DatabaseConnector::querySql(conn,queryVisitDurationByType)    
   dataAgeAtFirstOccurrence <- DatabaseConnector::querySql(conn,queryAgeAtFirstOccurrence)    
-  
+
+  if (nrow(dataVisits) == 0) {
+    return()
+  }
   uniqueConcepts <- data.frame(
     CONCEPT_ID = unique(dataVisits$CONCEPT_ID),
     CDM_TABLE_NAME = "VISIT_OCCURRENCE"
@@ -617,6 +623,9 @@ generateAOVisitDetailReports <- function(connectionDetails, cdmDatabaseSchema, r
   dataVisitDetailDurationByType <- DatabaseConnector::querySql(conn,queryVisitDetailDurationByType)    
   dataAgeAtFirstOccurrence <- DatabaseConnector::querySql(conn,queryAgeAtFirstOccurrence)    
 
+  if (nrow(dataVisitDetails) == 0) {
+    return()
+  }
   uniqueConcepts <- data.frame(
     CONCEPT_ID = unique(dataVisitDetails$CONCEPT_ID),
     CDM_TABLE_NAME = "VISIT_DETAIL"
@@ -759,6 +768,9 @@ generateAOObservationReports <- function(connectionDetails, observationsData, cd
   dataAgeAtFirstOccurrence <- DatabaseConnector::querySql(conn,queryAgeAtFirstOccurrence)
   dataObsFrequencyDistribution <- DatabaseConnector::querySql(conn,queryObsFrequencyDistribution)
 
+  if (nrow(observationsData) == 0) {
+    return()
+  }
   uniqueConcepts <- data.frame(
     CONCEPT_ID = unique(observationsData$CONCEPT_ID),
     CDM_TABLE_NAME = "OBSERVATION"
@@ -969,6 +981,9 @@ generateAOMeasurementReports <- function(connectionDetails, dataMeasurements, cd
   dataValuesRelativeToNorm <- DatabaseConnector::querySql(conn,queryValuesRelativeToNorm)
   dataFrequencyDistribution <- DatabaseConnector::querySql(conn,queryFrequencyDistribution)
 
+  if (nrow(dataPrevalenceByMonth) == 0) {
+    return()
+  }
   uniqueConcepts <- data.frame(
     CONCEPT_ID = unique(dataPrevalenceByMonth$CONCEPT_ID),
     CDM_TABLE_NAME = "MEASUREMENT"
@@ -1138,6 +1153,9 @@ generateAODrugEraReports <- function(connectionDetails, dataDrugEra, cdmDatabase
   dataPrevalenceByMonth <- DatabaseConnector::querySql(conn,queryPrevalenceByMonth)
   dataLengthOfEra <- DatabaseConnector::querySql(conn,queryLengthOfEra)
 
+  if (nrow(dataDrugEra) == 0) {
+    return()
+  }
   uniqueConcepts <- data.frame(
     CONCEPT_ID = unique(dataDrugEra$CONCEPT_ID),
     CDM_TABLE_NAME = "DRUG_ERA"
@@ -1289,6 +1307,9 @@ generateAODrugReports <- function(connectionDetails, dataDrugs, cdmDatabaseSchem
   dataRefillsDistribution <- DatabaseConnector::querySql(conn,queryRefillsDistribution) 
   dataDrugFrequencyDistribution <- DatabaseConnector::querySql(conn,queryDrugFrequencyDistribution)
 
+  if (nrow(dataPrevalenceByMonth) == 0) {
+    return()
+  }
   uniqueConcepts <- data.frame(
     CONCEPT_ID = unique(dataPrevalenceByMonth$CONCEPT_ID),
     CDM_TABLE_NAME = "DRUG_EXPOSURE"
@@ -1449,6 +1470,9 @@ generateAODeviceReports <- function(connectionDetails, dataDevices, cdmDatabaseS
   dataPrevalenceByMonth <- DatabaseConnector::querySql(conn,queryPrevalenceByMonth)
   dataDeviceFrequencyDistribution <- DatabaseConnector::querySql(conn,queryDeviceFrequencyDistribution)
 
+  if (nrow(dataDevices) == 0) {
+    return()
+  }
   uniqueConcepts <- data.frame(
     CONCEPT_ID = unique(dataDevices$CONCEPT_ID),
     CDM_TABLE_NAME = "DEVICE_EXPOSURE"
@@ -1580,6 +1604,9 @@ generateAOConditionReports <- function(connectionDetails, dataConditions, cdmDat
   dataConditionsByType <- DatabaseConnector::querySql(conn,queryConditionsByType)    
   dataAgeAtFirstDiagnosis <- DatabaseConnector::querySql(conn,queryAgeAtFirstDiagnosis)      
 
+  if (nrow(dataPrevalenceByMonth) == 0) {
+    return()
+  }
   uniqueConcepts <- data.frame(
     CONCEPT_ID = unique(dataPrevalenceByMonth$CONCEPT_ID),
     CDM_TABLE_NAME = "CONDITION_OCCURRENCE"
@@ -1703,6 +1730,9 @@ generateAOConditionEraReports <- function(connectionDetails, dataConditionEra, c
   dataLengthOfEra <- DatabaseConnector::querySql(conn, queryLengthOfEra)
   dataAgeAtFirstDiagnosis <- DatabaseConnector::querySql(conn, queryAgeAtFirstDiagnosis)
 
+  if (nrow(dataConditionEra) == 0) {
+    return()
+  }
   uniqueConcepts <- data.frame(
     CONCEPT_ID = unique(dataConditionEra$CONCEPT_ID),
     CDM_TABLE_NAME = "CONDITION_ERA"
