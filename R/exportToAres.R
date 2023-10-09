@@ -1,3 +1,10 @@
+normalizeEmptyValue <- function(x) {
+  if (is.null(x) || is.na(x) || "NA" == x || "NULL" == x) {
+    character()
+  } else {
+    x
+  }
+}
 
 generateAOProcedureReports <- function(connectionDetails, proceduresData, cdmDatabaseSchema, resultsDatabaseSchema, vocabDatabaseSchema, outputPath)
 {
@@ -49,29 +56,87 @@ generateAOProcedureReports <- function(connectionDetails, proceduresData, cdmDat
   dataProceduresByType <- DatabaseConnector::querySql(conn,queryProceduresByType)    
   dataAgeAtFirstOccurrence <- DatabaseConnector::querySql(conn,queryAgeAtFirstOccurrence)    
   dataProcedureFrequencyDistribution <- DatabaseConnector::querySql(conn,queryProcedureFrequencyDistribution)
-  
-  buildProcedureReport <- function(concept_id) {
-    summaryRecord <- proceduresData[proceduresData$CONCEPT_ID==concept_id,]
-    report <- {}
-    report$CONCEPT_ID <- concept_id
-    report$CONCEPT_NAME <- summaryRecord$CONCEPT_NAME
-    report$CDM_TABLE_NAME <- "PROCEDURE_OCCURRENCE"
-    report$NUM_PERSONS <- summaryRecord$NUM_PERSONS
-    report$PERCENT_PERSONS <-summaryRecord$PERCENT_PERSONS
-    report$RECORDS_PER_PERSON <- summaryRecord$RECORDS_PER_PERSON    
-    report$PREVALENCE_BY_GENDER_AGE_YEAR <- dataPrevalenceByGenderAgeYear[dataPrevalenceByGenderAgeYear$CONCEPT_ID == concept_id,c(3,4,5,6)]    
-    report$PREVALENCE_BY_MONTH <- dataPrevalenceByMonth[dataPrevalenceByMonth$CONCEPT_ID == concept_id,c(3,4)]
-    report$PROCEDURE_FREQUENCY_DISTRIBUTION <- dataProcedureFrequencyDistribution[dataProcedureFrequencyDistribution$CONCEPT_ID == concept_id,c(3,4)]
-    report$PROCEDURES_BY_TYPE <- dataProceduresByType[dataProceduresByType$PROCEDURE_CONCEPT_ID == concept_id,c(4,5)]
-    report$AGE_AT_FIRST_OCCURRENCE <- dataAgeAtFirstOccurrence[dataAgeAtFirstOccurrence$CONCEPT_ID == concept_id,c(2,3,4,5,6,7,8,9)]
 
-    dir.create(paste0(outputPath,"/concepts/procedure_occurrence"),recursive=T,showWarnings = F)        
-    filename <- paste(outputPath, "/concepts/procedure_occurrence/concept_" , concept_id , ".json", sep='')  
-    write(jsonlite::toJSON(report),filename)  
+  if (nrow(proceduresData) == 0) {
+    return()
   }
+  uniqueConcepts <- data.frame(
+    CONCEPT_ID = unique(proceduresData$CONCEPT_ID),
+    CDM_TABLE_NAME = "PROCEDURE_OCCURRENCE"
+  )
+  reports <-
+    uniqueConcepts %>%
+    dplyr::left_join(
+      proceduresData,
+      by = c("CONCEPT_ID" = "CONCEPT_ID")
+    ) %>%
+    dplyr::select("CONCEPT_ID", "CONCEPT_NAME", "CDM_TABLE_NAME", "NUM_PERSONS", "PERCENT_PERSONS", "RECORDS_PER_PERSON") %>%
+    dplyr::left_join(
+      (
+        dataPrevalenceByGenderAgeYear %>%
+        dplyr::select(c(1,3,4,5,6)) %>%
+        tidyr::nest(PREVALENCE_BY_GENDER_AGE_YEAR = c(-1))
+      ),
+      by = c("CONCEPT_ID" = "CONCEPT_ID")
+    ) %>%
+    dplyr::left_join(
+      (
+        dataPrevalenceByMonth %>%
+        dplyr::select(c(1,3,4)) %>%
+        tidyr::nest(PREVALENCE_BY_MONTH = c(-1))
+      ),
+      by = c("CONCEPT_ID" = "CONCEPT_ID")
+    ) %>%
+    dplyr::left_join(
+      (
+        dataProcedureFrequencyDistribution %>%
+        dplyr::select(c(1,3,4)) %>%
+        tidyr::nest(PROCEDURE_FREQUENCY_DISTRIBUTION = c(-1))
+      ),
+      by = c("CONCEPT_ID" = "CONCEPT_ID")
+    ) %>%
+    dplyr::left_join(
+      (
+        dataProceduresByType %>%
+        dplyr::select(c(1,4,5)) %>%
+        tidyr::nest(PROCEDURES_BY_TYPE = c(-1))
+      ),
+      by = c("CONCEPT_ID" = "PROCEDURE_CONCEPT_ID")
+    ) %>%
+    dplyr::left_join(
+      (
+        dataAgeAtFirstOccurrence %>%
+        dplyr::select(c(1,2,3,4,5,6,7,8,9)) %>%
+        tidyr::nest(AGE_AT_FIRST_OCCURRENCE = c(-1))
+      ),
+      by = c("CONCEPT_ID" = "CONCEPT_ID")
+    ) %>%
+    dplyr::collect()
 
-  uniqueConcepts <- unique(proceduresData$CONCEPT_ID)
-  x <- lapply(uniqueConcepts, buildProcedureReport)  
+  dir.create(paste0(outputPath,"/concepts/procedure_occurrence"),recursive=T,showWarnings = F)
+  x <- lapply(
+    uniqueConcepts$CONCEPT_ID,
+    function(concept_id, outputPath, reports) {
+      report <- reports[reports$CONCEPT_ID == concept_id, ]
+      report <- as.list(report)
+
+      report$CONCEPT_NAME <- normalizeEmptyValue(report$CONCEPT_NAME)
+      report$NUM_PERSONS <- normalizeEmptyValue(report$NUM_PERSONS)
+      report$PERCENT_PERSONS <- normalizeEmptyValue(report$PERCENT_PERSONS)
+      report$RECORDS_PER_PERSON <- normalizeEmptyValue(report$RECORDS_PER_PERSON)
+
+      report$PREVALENCE_BY_GENDER_AGE_YEAR <- as.data.frame(report$PREVALENCE_BY_GENDER_AGE_YEAR)
+      report$PREVALENCE_BY_MONTH <- as.data.frame(report$PREVALENCE_BY_MONTH)
+      report$PROCEDURE_FREQUENCY_DISTRIBUTION <- as.data.frame(report$PROCEDURE_FREQUENCY_DISTRIBUTION)
+      report$PROCEDURES_BY_TYPE <- as.data.frame(report$PROCEDURES_BY_TYPE)
+      report$AGE_AT_FIRST_OCCURRENCE <- as.data.frame(report$AGE_AT_FIRST_OCCURRENCE)
+
+      filename <- paste(outputPath, "/concepts/procedure_occurrence/concept_" , report$CONCEPT_ID , ".json", sep='')
+      write(jsonlite::toJSON(report), filename)
+    },
+    outputPath,
+    reports
+  )
 }
 
 generateAOPersonReport <- function(connectionDetails, cdmDatabaseSchema, resultsDatabaseSchema, vocabDatabaseSchema, outputPath)
@@ -421,28 +486,80 @@ generateAOVisitReports <- function(connectionDetails, cdmDatabaseSchema, results
   dataPrevalenceByMonth <- DatabaseConnector::querySql(conn,queryPrevalenceByMonth)  
   dataVisitDurationByType <- DatabaseConnector::querySql(conn,queryVisitDurationByType)    
   dataAgeAtFirstOccurrence <- DatabaseConnector::querySql(conn,queryAgeAtFirstOccurrence)    
-  
-  buildVisitReport <- function(concept_id) {
-    summaryRecord <- dataVisits[dataVisits$CONCEPT_ID==concept_id,]
-    report <- {}
-    report$CONCEPT_ID <- concept_id
-    report$CDM_TABLE_NAME <- "VISIT_OCCURRENCE"    
-    report$CONCEPT_NAME <- summaryRecord$CONCEPT_NAME
-    report$NUM_PERSONS <- summaryRecord$NUM_PERSONS
-    report$PERCENT_PERSONS <-summaryRecord$PERCENT_PERSONS
-    report$RECORDS_PER_PERSON <- summaryRecord$RECORDS_PER_PERSON    
-    report$PREVALENCE_BY_GENDER_AGE_YEAR <- dataPrevalenceByGenderAgeYear[dataPrevalenceByGenderAgeYear$CONCEPT_ID == concept_id,c(3,4,5,6)]    
-    report$PREVALENCE_BY_MONTH <- dataPrevalenceByMonth[dataPrevalenceByMonth$CONCEPT_ID == concept_id,c(3,4)]
-    report$VISIT_DURATION_BY_TYPE <- dataVisitDurationByType[dataVisitDurationByType$CONCEPT_ID == concept_id,c(2,3,4,5,6,7,8,9)]
-    report$AGE_AT_FIRST_OCCURRENCE <- dataAgeAtFirstOccurrence[dataAgeAtFirstOccurrence$CONCEPT_ID == concept_id,c(2,3,4,5,6,7,8,9)]
-    
-    dir.create(paste0(outputPath,"/concepts/visit_occurrence"),recursive=T,showWarnings = F)
-    filename <- paste(outputPath, "/concepts/visit_occurrence/concept_" , concept_id , ".json", sep='')  
-    write(jsonlite::toJSON(report),filename)  
+
+  if (nrow(dataVisits) == 0) {
+    return()
   }
-  
-  uniqueConcepts <- unique(dataVisits$CONCEPT_ID)
-  x <- lapply(uniqueConcepts, buildVisitReport)  
+  uniqueConcepts <- data.frame(
+    CONCEPT_ID = unique(dataVisits$CONCEPT_ID),
+    CDM_TABLE_NAME = "VISIT_OCCURRENCE"
+  )
+  reports <-
+    uniqueConcepts %>%
+    dplyr::left_join(
+      (
+        dataVisits %>%
+        dplyr::select("CONCEPT_ID", "CONCEPT_NAME", "NUM_PERSONS", "PERCENT_PERSONS", "RECORDS_PER_PERSON")
+      ),
+      by = c("CONCEPT_ID" = "CONCEPT_ID")
+    ) %>%
+    dplyr::left_join(
+      (
+        dataPrevalenceByGenderAgeYear %>%
+        dplyr::select(c(1,3,4,5,6)) %>%
+        tidyr::nest(PREVALENCE_BY_GENDER_AGE_YEAR = c(-1))
+      ),
+      by = c("CONCEPT_ID" = "CONCEPT_ID")
+    ) %>%
+    dplyr::left_join(
+      (
+        dataPrevalenceByMonth %>%
+        dplyr::select(c(1,3,4)) %>%
+        tidyr::nest(PREVALENCE_BY_MONTH = c(-1))
+      ),
+      by = c("CONCEPT_ID" = "CONCEPT_ID")
+    ) %>%
+    dplyr::left_join(
+      (
+        dataVisitDurationByType %>%
+        dplyr::select(c(1,2,3,4,5,6,7,8,9)) %>%
+        tidyr::nest(VISIT_DURATION_BY_TYPE = c(-1))
+      ),
+      by = c("CONCEPT_ID" = "CONCEPT_ID")
+    ) %>%
+    dplyr::left_join(
+      (
+        dataAgeAtFirstOccurrence %>%
+        dplyr::select(c(1,2,3,4,5,6,7,8,9)) %>%
+        tidyr::nest(AGE_AT_FIRST_OCCURRENCE = c(-1))
+      ),
+      by = c("CONCEPT_ID" = "CONCEPT_ID")
+    ) %>%
+    dplyr::collect()
+
+  dir.create(paste0(outputPath,"/concepts/visit_occurrence"),recursive=T,showWarnings = F)
+  x <- lapply(
+    uniqueConcepts$CONCEPT_ID,
+    function(concept_id, outputPath, reports) {
+      report <- reports[reports$CONCEPT_ID == concept_id, ]
+      report <- as.list(report)
+
+      report$CONCEPT_NAME <- normalizeEmptyValue(report$CONCEPT_NAME)
+      report$NUM_PERSONS <- normalizeEmptyValue(report$NUM_PERSONS)
+      report$PERCENT_PERSONS <- normalizeEmptyValue(report$PERCENT_PERSONS)
+      report$RECORDS_PER_PERSON <- normalizeEmptyValue(report$RECORDS_PER_PERSON)
+
+      report$PREVALENCE_BY_GENDER_AGE_YEAR <- as.data.frame(report$PREVALENCE_BY_GENDER_AGE_YEAR)
+      report$PREVALENCE_BY_MONTH <- as.data.frame(report$PREVALENCE_BY_MONTH)
+      report$VISIT_DURATION_BY_TYPE <- as.data.frame(report$VISIT_DURATION_BY_TYPE)
+      report$AGE_AT_FIRST_OCCURRENCE <- as.data.frame(report$AGE_AT_FIRST_OCCURRENCE)
+
+      filename <- paste(outputPath, "/concepts/visit_occurrence/concept_" , report$CONCEPT_ID , ".json", sep='')
+      write(jsonlite::toJSON(report), filename)
+    },
+    outputPath,
+    reports
+  )
 }
 
 generateAOVisitDetailReports <- function(connectionDetails, cdmDatabaseSchema, resultsDatabaseSchema, vocabDatabaseSchema, outputPath)
@@ -505,28 +622,80 @@ generateAOVisitDetailReports <- function(connectionDetails, cdmDatabaseSchema, r
   dataPrevalenceByMonth <- DatabaseConnector::querySql(conn,queryPrevalenceByMonth)  
   dataVisitDetailDurationByType <- DatabaseConnector::querySql(conn,queryVisitDetailDurationByType)    
   dataAgeAtFirstOccurrence <- DatabaseConnector::querySql(conn,queryAgeAtFirstOccurrence)    
-  
-  buildVisitDetailReport <- function(concept_id) {
-    summaryRecord <- dataVisitDetails[dataVisitDetails$CONCEPT_ID==concept_id,]
-    report <- {}
-    report$CONCEPT_ID <- concept_id
-    report$CDM_TABLE_NAME <- "VISIT_DETAIL"    
-    report$CONCEPT_NAME <- summaryRecord$CONCEPT_NAME
-    report$NUM_PERSONS <- summaryRecord$NUM_PERSONS
-    report$PERCENT_PERSONS <-summaryRecord$PERCENT_PERSONS
-    report$RECORDS_PER_PERSON <- summaryRecord$RECORDS_PER_PERSON  
-    report$PREVALENCE_BY_GENDER_AGE_YEAR <- dataPrevalenceByGenderAgeYear[dataPrevalenceByGenderAgeYear$CONCEPT_ID == concept_id,c(3,4,5,6)]    
-    report$PREVALENCE_BY_MONTH <- dataPrevalenceByMonth[dataPrevalenceByMonth$CONCEPT_ID == concept_id,c(3,4)]
-    report$VISIT_DETAIL_DURATION_BY_TYPE <- dataVisitDetailDurationByType[dataVisitDetailDurationByType$CONCEPT_ID == concept_id,c(2,3,4,5,6,7,8,9)]
-    report$AGE_AT_FIRST_OCCURRENCE <- dataAgeAtFirstOccurrence[dataAgeAtFirstOccurrence$CONCEPT_ID == concept_id,c(2,3,4,5,6,7,8,9)]
 
-    dir.create(paste0(outputPath,"/concepts/visit_detail"),recursive=T,showWarnings = F)    
-    filename <- paste(outputPath, "/concepts/visit_detail/concept_" , concept_id , ".json", sep='')  
-    write(jsonlite::toJSON(report),filename)      
+  if (nrow(dataVisitDetails) == 0) {
+    return()
   }
-  
-  uniqueConcepts <- unique(dataVisitDetails$CONCEPT_ID)  
-  x <- lapply(uniqueConcepts, buildVisitDetailReport)  
+  uniqueConcepts <- data.frame(
+    CONCEPT_ID = unique(dataVisitDetails$CONCEPT_ID),
+    CDM_TABLE_NAME = "VISIT_DETAIL"
+  )
+  reports <-
+    uniqueConcepts %>%
+    dplyr::left_join(
+      (
+        dataVisitDetails %>%
+        dplyr::select("CONCEPT_ID", "CONCEPT_NAME", "NUM_PERSONS", "PERCENT_PERSONS", "RECORDS_PER_PERSON")
+      ),
+      by = c("CONCEPT_ID" = "CONCEPT_ID")
+    ) %>%
+    dplyr::left_join(
+      (
+        dataPrevalenceByGenderAgeYear %>%
+        dplyr::select(c(1,3,4,5,6)) %>%
+        tidyr::nest(PREVALENCE_BY_GENDER_AGE_YEAR = c(-1))
+      ),
+      by = c("CONCEPT_ID" = "CONCEPT_ID")
+    ) %>%
+    dplyr::left_join(
+      (
+        dataPrevalenceByMonth %>%
+        dplyr::select(c(1,3,4)) %>%
+        tidyr::nest(PREVALENCE_BY_MONTH = c(-1))
+      ),
+      by = c("CONCEPT_ID" = "CONCEPT_ID")
+    ) %>%
+    dplyr::left_join(
+      (
+        dataVisitDetailDurationByType %>%
+        dplyr::select(c(1,2,3,4,5,6,7,8,9)) %>%
+        tidyr::nest(VISIT_DETAIL_DURATION_BY_TYPE = c(-1))
+      ),
+      by = c("CONCEPT_ID" = "CONCEPT_ID")
+    ) %>%
+    dplyr::left_join(
+      (
+        dataAgeAtFirstOccurrence %>%
+        dplyr::select(c(1,2,3,4,5,6,7,8,9)) %>%
+        tidyr::nest(AGE_AT_FIRST_OCCURRENCE = c(-1))
+      ),
+      by = c("CONCEPT_ID" = "CONCEPT_ID")
+    ) %>%
+    dplyr::collect()
+
+  dir.create(paste0(outputPath,"/concepts/visit_detail"),recursive=T,showWarnings = F)
+  x <- lapply(
+    uniqueConcepts$CONCEPT_ID,
+    function(concept_id, outputPath, reports) {
+      report <- reports[reports$CONCEPT_ID == concept_id, ]
+      report <- as.list(report)
+
+      report$CONCEPT_NAME <- normalizeEmptyValue(report$CONCEPT_NAME)
+      report$NUM_PERSONS <- normalizeEmptyValue(report$NUM_PERSONS)
+      report$PERCENT_PERSONS <- normalizeEmptyValue(report$PERCENT_PERSONS)
+      report$RECORDS_PER_PERSON <- normalizeEmptyValue(report$RECORDS_PER_PERSON)
+
+      report$PREVALENCE_BY_GENDER_AGE_YEAR <- as.data.frame(report$PREVALENCE_BY_GENDER_AGE_YEAR)
+      report$PREVALENCE_BY_MONTH <- as.data.frame(report$PREVALENCE_BY_MONTH)
+      report$VISIT_DETAIL_DURATION_BY_TYPE <- as.data.frame(report$VISIT_DETAIL_DURATION_BY_TYPE)
+      report$AGE_AT_FIRST_OCCURRENCE <- as.data.frame(report$AGE_AT_FIRST_OCCURRENCE)
+
+      filename <- paste(outputPath, "/concepts/visit_detail/concept_" , report$CONCEPT_ID , ".json", sep='')
+      write(jsonlite::toJSON(report), filename)
+    },
+    outputPath,
+    reports
+  )
 }
 
 generateAOMetadataReport <- function(connectionDetails, cdmDatabaseSchema, outputPath)
@@ -598,30 +767,87 @@ generateAOObservationReports <- function(connectionDetails, observationsData, cd
   dataObservationsByType <- DatabaseConnector::querySql(conn,queryObservationsByType)    
   dataAgeAtFirstOccurrence <- DatabaseConnector::querySql(conn,queryAgeAtFirstOccurrence)
   dataObsFrequencyDistribution <- DatabaseConnector::querySql(conn,queryObsFrequencyDistribution)
-  
-  uniqueConcepts <- unique(observationsData$CONCEPT_ID)  
-  buildObservationReport <- function(concept_id) {
-    summaryRecord <- observationsData[observationsData$CONCEPT_ID==concept_id,]
-    report <- {}
-    report$CONCEPT_ID <- concept_id
-    report$CONCEPT_NAME <- summaryRecord$CONCEPT_NAME
-    report$CDM_TABLE_NAME <- "OBSERVATION"
-    report$NUM_PERSONS <- summaryRecord$NUM_PERSONS
-    report$PERCENT_PERSONS <-summaryRecord$PERCENT_PERSONS
-    report$RECORDS_PER_PERSON <- summaryRecord$RECORDS_PER_PERSON  
-    report$PREVALENCE_BY_GENDER_AGE_YEAR <- dataPrevalenceByGenderAgeYear[dataPrevalenceByGenderAgeYear$CONCEPT_ID == concept_id,c(3,4,5,6)]    
-    report$PREVALENCE_BY_MONTH <- dataPrevalenceByMonth[dataPrevalenceByMonth$CONCEPT_ID == concept_id,c(3,4)]
-    report$OBS_FREQUENCY_DISTRIBUTION <- dataObsFrequencyDistribution[dataObsFrequencyDistribution$CONCEPT_ID == concept_id,c(3,4)]
-    report$OBSERVATIONS_BY_TYPE <- dataObservationsByType[dataObservationsByType$OBSERVATION_CONCEPT_ID == concept_id,c(4,5)]
-    report$AGE_AT_FIRST_OCCURRENCE <- dataAgeAtFirstOccurrence[dataAgeAtFirstOccurrence$CONCEPT_ID == concept_id,c(2,3,4,5,6,7,8,9)]
-    
-    dir.create(paste0(outputPath,"/concepts/observation"),recursive=T,showWarnings = F)    
-    filename <- paste(outputPath, "/concepts/observation/concept_" , concept_id , ".json", sep='')  
-    write(jsonlite::toJSON(report),filename)  
+
+  if (nrow(observationsData) == 0) {
+    return()
   }
-  
-  uniqueConcepts <- unique(observationsData$CONCEPT_ID)
-  x <- lapply(uniqueConcepts, buildObservationReport)  
+  uniqueConcepts <- data.frame(
+    CONCEPT_ID = unique(observationsData$CONCEPT_ID),
+    CDM_TABLE_NAME = "OBSERVATION"
+  )
+  reports <-
+    uniqueConcepts %>%
+    dplyr::left_join(
+      observationsData,
+      by = c("CONCEPT_ID" = "CONCEPT_ID")
+    ) %>%
+    dplyr::select("CONCEPT_ID", "CONCEPT_NAME", "CDM_TABLE_NAME", "NUM_PERSONS", "PERCENT_PERSONS", "RECORDS_PER_PERSON") %>%
+    dplyr::left_join(
+      (
+        dataPrevalenceByGenderAgeYear %>%
+        dplyr::select(c(1,3,4,5,6)) %>%
+        tidyr::nest(PREVALENCE_BY_GENDER_AGE_YEAR = c(-1))
+      ),
+      by = c("CONCEPT_ID" = "CONCEPT_ID")
+    ) %>%
+    dplyr::left_join(
+      (
+        dataPrevalenceByMonth %>%
+        dplyr::select(c(1,3,4)) %>%
+        tidyr::nest(PREVALENCE_BY_MONTH = c(-1))
+      ),
+      by = c("CONCEPT_ID" = "CONCEPT_ID")
+    ) %>%
+    dplyr::left_join(
+      (
+        dataObsFrequencyDistribution %>%
+        dplyr::select(c(1,3,4)) %>%
+        tidyr::nest(OBS_FREQUENCY_DISTRIBUTION = c(-1))
+      ),
+      by = c("CONCEPT_ID" = "CONCEPT_ID")
+    ) %>%
+    dplyr::left_join(
+      (
+        dataObservationsByType %>%
+        dplyr::select(c(1,4,5)) %>%
+        tidyr::nest(OBSERVATIONS_BY_TYPE = c(-1))
+      ),
+      by = c("CONCEPT_ID" = "OBSERVATION_CONCEPT_ID")
+    ) %>%
+    dplyr::left_join(
+      (
+        dataAgeAtFirstOccurrence %>%
+        dplyr::select(c(1,2,3,4,5,6,7,8,9)) %>%
+        tidyr::nest(AGE_AT_FIRST_OCCURRENCE = c(-1))
+      ),
+      by = c("CONCEPT_ID" = "CONCEPT_ID")
+    ) %>%
+    dplyr::collect()
+
+  dir.create(paste0(outputPath,"/concepts/observation"),recursive=T,showWarnings = F)
+  x <- lapply(
+    uniqueConcepts$CONCEPT_ID,
+    function(concept_id, outputPath, reports) {
+      report <- reports[reports$CONCEPT_ID == concept_id, ]
+      report <- as.list(report)
+
+      report$CONCEPT_NAME <- normalizeEmptyValue(report$CONCEPT_NAME)
+      report$NUM_PERSONS <- normalizeEmptyValue(report$NUM_PERSONS)
+      report$PERCENT_PERSONS <- normalizeEmptyValue(report$PERCENT_PERSONS)
+      report$RECORDS_PER_PERSON <- normalizeEmptyValue(report$RECORDS_PER_PERSON)
+
+      report$PREVALENCE_BY_GENDER_AGE_YEAR <- as.data.frame(report$PREVALENCE_BY_GENDER_AGE_YEAR)
+      report$PREVALENCE_BY_MONTH <- as.data.frame(report$PREVALENCE_BY_MONTH)
+      report$OBS_FREQUENCY_DISTRIBUTION <- as.data.frame(report$OBS_FREQUENCY_DISTRIBUTION)
+      report$OBSERVATIONS_BY_TYPE <- as.data.frame(report$OBSERVATIONS_BY_TYPE)
+      report$AGE_AT_FIRST_OCCURRENCE <- as.data.frame(report$AGE_AT_FIRST_OCCURRENCE)
+
+      filename <- paste(outputPath, "/concepts/observation/concept_" , report$CONCEPT_ID , ".json", sep='')
+      write(jsonlite::toJSON(report), filename)
+    },
+    outputPath,
+    reports
+  )
 }
 
 generateAOCdmSourceReport <- function(connectionDetails, cdmDatabaseSchema, outputPath)
@@ -754,35 +980,134 @@ generateAOMeasurementReports <- function(connectionDetails, dataMeasurements, cd
   dataUpperLimitDistribution <- DatabaseConnector::querySql(conn,queryUpperLimitDistribution)
   dataValuesRelativeToNorm <- DatabaseConnector::querySql(conn,queryValuesRelativeToNorm)
   dataFrequencyDistribution <- DatabaseConnector::querySql(conn,queryFrequencyDistribution)
-  
-  uniqueConcepts <- unique(dataPrevalenceByMonth$CONCEPT_ID)
-  buildMeasurementReport <- function(concept_id) {
-    summaryRecord <- dataMeasurements[dataMeasurements$CONCEPT_ID==concept_id,]
-    report <- {}
-    report$CONCEPT_ID <- concept_id
-    report$CDM_TABLE_NAME <- "MEASUREMENT"    
-    report$CONCEPT_NAME <- summaryRecord$CONCEPT_NAME
-    report$NUM_PERSONS <- summaryRecord$NUM_PERSONS
-    report$PERCENT_PERSONS <-summaryRecord$PERCENT_PERSONS
-    report$RECORDS_PER_PERSON <- summaryRecord$RECORDS_PER_PERSON
-    report$PREVALENCE_BY_GENDER_AGE_YEAR <- dataPrevalenceByGenderAgeYear[dataPrevalenceByGenderAgeYear$CONCEPT_ID == concept_id,c(3,4,5,6)]    
-    report$PREVALENCE_BY_MONTH <- dataPrevalenceByMonth[dataPrevalenceByMonth$CONCEPT_ID == concept_id,c(3,4)]
-    report$FREQUENCY_DISTRIBUTION <- dataFrequencyDistribution[dataFrequencyDistribution$CONCEPT_ID == concept_id,c(3,4)]
-    report$MEASUREMENTS_BY_TYPE <- dataMeasurementsByType[dataMeasurementsByType$MEASUREMENT_CONCEPT_ID == concept_id,c(4,5)]
-    report$AGE_AT_FIRST_OCCURRENCE <- dataAgeAtFirstOccurrence[dataAgeAtFirstOccurrence$CONCEPT_ID == concept_id,c(2,3,4,5,6,7,8,9)]
-    
-    report$RECORDS_BY_UNIT <- dataRecordsByUnit[dataRecordsByUnit$MEASUREMENT_CONCEPT_ID == concept_id,c(4,5)]
-    report$MEASUREMENT_VALUE_DISTRIBUTION <- dataMeasurementValueDistribution[dataMeasurementValueDistribution$CONCEPT_ID == concept_id,c(2,3,4,5,6,7,8,9)]
-    report$LOWER_LIMIT_DISTRIBUTION <- dataLowerLimitDistribution[dataLowerLimitDistribution$CONCEPT_ID == concept_id,c(2,3,4,5,6,7,8,9)]
-    report$UPPER_LIMIT_DISTRIBUTION <- dataUpperLimitDistribution[dataUpperLimitDistribution$CONCEPT_ID == concept_id,c(2,3,4,5,6,7,8,9)]
-    report$VALUES_RELATIVE_TO_NORM <- dataValuesRelativeToNorm[dataValuesRelativeToNorm$MEASUREMENT_CONCEPT_ID == concept_id,c(4,5)]
-    
-    dir.create(paste0(outputPath,"/concepts/measurement"),recursive=T,showWarnings = F)    
-    filename <- paste(outputPath, "/concepts/measurement/concept_" , concept_id , ".json", sep='')  
-    write(jsonlite::toJSON(report),filename)  
+
+  if (nrow(dataPrevalenceByMonth) == 0) {
+    return()
   }
-  
-  x <- lapply(uniqueConcepts, buildMeasurementReport)  
+  uniqueConcepts <- data.frame(
+    CONCEPT_ID = unique(dataPrevalenceByMonth$CONCEPT_ID),
+    CDM_TABLE_NAME = "MEASUREMENT"
+  )
+  reports <-
+    uniqueConcepts %>%
+    dplyr::left_join(
+      (
+        dataMeasurements %>%
+        dplyr::select("CONCEPT_ID", "CONCEPT_NAME", "NUM_PERSONS", "PERCENT_PERSONS", "RECORDS_PER_PERSON")
+      ),
+      by = c("CONCEPT_ID" = "CONCEPT_ID")
+    ) %>%
+    dplyr::left_join(
+      (
+        dataPrevalenceByGenderAgeYear %>%
+        dplyr::select(c(1,3,4,5,6)) %>%
+        tidyr::nest(PREVALENCE_BY_GENDER_AGE_YEAR = c(-1))
+      ),
+      by = c("CONCEPT_ID" = "CONCEPT_ID")
+    ) %>%
+    dplyr::left_join(
+      (
+        dataPrevalenceByMonth %>%
+        dplyr::select(c(1,3,4)) %>%
+        tidyr::nest(PREVALENCE_BY_MONTH = c(-1))
+      ),
+      by = c("CONCEPT_ID" = "CONCEPT_ID")
+    ) %>%
+    dplyr::left_join(
+      (
+        dataFrequencyDistribution %>%
+        dplyr::select(c(1,3,4)) %>%
+        tidyr::nest(FREQUENCY_DISTRIBUTION = c(-1))
+      ),
+      by = c("CONCEPT_ID" = "CONCEPT_ID")
+    ) %>%
+    dplyr::left_join(
+      (
+        dataMeasurementsByType %>%
+        dplyr::select(c(1,4,5)) %>%
+        tidyr::nest(MEASUREMENTS_BY_TYPE = c(-1))
+      ),
+      by = c("CONCEPT_ID" = "MEASUREMENT_CONCEPT_ID")
+    ) %>%
+    dplyr::left_join(
+      (
+        dataAgeAtFirstOccurrence %>%
+        dplyr::select(c(1,2,3,4,5,6,7,8,9)) %>%
+        tidyr::nest(AGE_AT_FIRST_OCCURRENCE = c(-1))
+      ),
+      by = c("CONCEPT_ID" = "CONCEPT_ID")
+    ) %>%
+    dplyr::left_join(
+      (
+        dataRecordsByUnit %>%
+        dplyr::select(c(1,4,5)) %>%
+        tidyr::nest(RECORDS_BY_UNIT = c(-1))
+      ),
+      by = c("CONCEPT_ID" = "MEASUREMENT_CONCEPT_ID")
+    ) %>%
+    dplyr::left_join(
+      (
+        dataMeasurementValueDistribution %>%
+        dplyr::select(c(1,2,3,4,5,6,7,8,9)) %>%
+        tidyr::nest(MEASUREMENT_VALUE_DISTRIBUTION = c(-1))
+      ),
+      by = c("CONCEPT_ID" = "CONCEPT_ID")
+    ) %>%
+    dplyr::left_join(
+      (
+        dataLowerLimitDistribution %>%
+        dplyr::select(c(1,2,3,4,5,6,7,8,9)) %>%
+        tidyr::nest(LOWER_LIMIT_DISTRIBUTION = c(-1))
+      ),
+      by = c("CONCEPT_ID" = "CONCEPT_ID")
+    ) %>%
+    dplyr::left_join(
+      (
+        dataUpperLimitDistribution %>%
+        dplyr::select(c(1,2,3,4,5,6,7,8,9)) %>%
+        tidyr::nest(UPPER_LIMIT_DISTRIBUTION = c(-1))
+      ),
+      by = c("CONCEPT_ID" = "CONCEPT_ID")
+    ) %>%
+    dplyr::left_join(
+      (
+        dataValuesRelativeToNorm %>%
+        dplyr::select(c(1,4,5)) %>%
+        tidyr::nest(VALUES_RELATIVE_TO_NORM = c(-1))
+      ),
+      by = c("CONCEPT_ID" = "MEASUREMENT_CONCEPT_ID")
+    ) %>%
+    dplyr::collect()
+
+  dir.create(paste0(outputPath,"/concepts/measurement"),recursive=T,showWarnings = F)
+  x <- lapply(
+    uniqueConcepts$CONCEPT_ID,
+    function(concept_id, outputPath, reports) {
+      report <- reports[reports$CONCEPT_ID == concept_id, ]
+      report <- as.list(report)
+
+      report$CONCEPT_NAME <- normalizeEmptyValue(report$CONCEPT_NAME)
+      report$NUM_PERSONS <- normalizeEmptyValue(report$NUM_PERSONS)
+      report$PERCENT_PERSONS <- normalizeEmptyValue(report$PERCENT_PERSONS)
+      report$RECORDS_PER_PERSON <- normalizeEmptyValue(report$RECORDS_PER_PERSON)
+
+      report$PREVALENCE_BY_GENDER_AGE_YEAR <- as.data.frame(report$PREVALENCE_BY_GENDER_AGE_YEAR)
+      report$PREVALENCE_BY_MONTH <- as.data.frame(report$PREVALENCE_BY_MONTH)
+      report$FREQUENCY_DISTRIBUTION <- as.data.frame(report$FREQUENCY_DISTRIBUTION)
+      report$MEASUREMENTS_BY_TYPE <- as.data.frame(report$MEASUREMENTS_BY_TYPE)
+      report$AGE_AT_FIRST_OCCURRENCE <- as.data.frame(report$AGE_AT_FIRST_OCCURRENCE)
+      report$RECORDS_BY_UNIT <- as.data.frame(report$RECORDS_BY_UNIT)
+      report$MEASUREMENT_VALUE_DISTRIBUTION <- as.data.frame(report$MEASUREMENT_VALUE_DISTRIBUTION)
+      report$LOWER_LIMIT_DISTRIBUTION <- as.data.frame(report$LOWER_LIMIT_DISTRIBUTION)
+      report$UPPER_LIMIT_DISTRIBUTION <- as.data.frame(report$UPPER_LIMIT_DISTRIBUTION)
+      report$VALUES_RELATIVE_TO_NORM <- as.data.frame(report$VALUES_RELATIVE_TO_NORM)
+
+      filename <- paste(outputPath, "/concepts/measurement/concept_" , report$CONCEPT_ID , ".json", sep='')
+      write(jsonlite::toJSON(report), filename)
+    },
+    outputPath,
+    reports
+  )
 }
 
 generateAODrugEraReports <- function(connectionDetails, dataDrugEra, cdmDatabaseSchema, resultsDatabaseSchema, vocabDatabaseSchema, outputPath) 
@@ -827,27 +1152,80 @@ generateAODrugEraReports <- function(connectionDetails, dataDrugEra, cdmDatabase
   dataPrevalenceByGenderAgeYear <- DatabaseConnector::querySql(conn,queryPrevalenceByGenderAgeYear) 
   dataPrevalenceByMonth <- DatabaseConnector::querySql(conn,queryPrevalenceByMonth)
   dataLengthOfEra <- DatabaseConnector::querySql(conn,queryLengthOfEra)
-  uniqueConcepts <- unique(dataDrugEra$CONCEPT_ID)
-  buildDrugEraReport <- function(concept_id) {
-    summaryRecord <- dataDrugEra[dataDrugEra$CONCEPT_ID==concept_id,]
-    report <- {}
-    report$CONCEPT_ID <- concept_id
-    report$CDM_TABLE_NAME <- "DRUG_ERA"
-    report$CONCEPT_NAME <- summaryRecord$CONCEPT_NAME
-    report$NUM_PERSONS <- summaryRecord$NUM_PERSONS
-    report$PERCENT_PERSONS <-summaryRecord$PERCENT_PERSONS
-    report$RECORDS_PER_PERSON <- summaryRecord$RECORDS_PER_PERSON
-    report$AGE_AT_FIRST_EXPOSURE <- dataAgeAtFirstExposure[dataAgeAtFirstExposure$CONCEPT_ID == concept_id,c(2,3,4,5,6,7,8,9)]
-    report$PREVALENCE_BY_GENDER_AGE_YEAR <- dataPrevalenceByGenderAgeYear[dataPrevalenceByGenderAgeYear$CONCEPT_ID == concept_id,c(2,3,4,5)]  
-    report$PREVALENCE_BY_MONTH <- dataPrevalenceByMonth[dataPrevalenceByMonth$CONCEPT_ID == concept_id,c(2,3)]
-    report$LENGTH_OF_ERA <- dataLengthOfEra[dataLengthOfEra$CONCEPT_ID == concept_id, c(2,3,4,5,6,7,8,9)]
-    
-    dir.create(paste0(outputPath,"/concepts/drug_era"),recursive=T,showWarnings = F)        
-    filename <- paste(outputPath, "/concepts/drug_era/concept_" , concept_id , ".json", sep='')  
-    write(jsonlite::toJSON(report),filename)  
+
+  if (nrow(dataDrugEra) == 0) {
+    return()
   }
-  
-  x <- lapply(uniqueConcepts, buildDrugEraReport)  
+  uniqueConcepts <- data.frame(
+    CONCEPT_ID = unique(dataDrugEra$CONCEPT_ID),
+    CDM_TABLE_NAME = "DRUG_ERA"
+  )
+  reports <-
+    uniqueConcepts %>%
+    dplyr::left_join(
+      (
+        dataDrugEra %>%
+        dplyr::select("CONCEPT_ID", "CONCEPT_NAME", "NUM_PERSONS", "PERCENT_PERSONS", "RECORDS_PER_PERSON")
+      ),
+      by = c("CONCEPT_ID" = "CONCEPT_ID")
+    ) %>%
+    dplyr::left_join(
+      (
+        dataAgeAtFirstExposure %>%
+        dplyr::select(c(1,2,3,4,5,6,7,8,9)) %>%
+        tidyr::nest(AGE_AT_FIRST_EXPOSURE = c(-1))
+      ),
+      by = c("CONCEPT_ID" = "CONCEPT_ID")
+    ) %>%
+    dplyr::left_join(
+      (
+        dataPrevalenceByGenderAgeYear %>%
+        dplyr::select(c(1,2,3,4,5)) %>%
+        tidyr::nest(PREVALENCE_BY_GENDER_AGE_YEAR = c(-1))
+      ),
+      by = c("CONCEPT_ID" = "CONCEPT_ID")
+    ) %>%
+    dplyr::left_join(
+      (
+        dataPrevalenceByMonth %>%
+        dplyr::select(c(1,2,3)) %>%
+        tidyr::nest(PREVALENCE_BY_MONTH = c(-1))
+      ),
+      by = c("CONCEPT_ID" = "CONCEPT_ID")
+    ) %>%
+    dplyr::left_join(
+      (
+        dataLengthOfEra %>%
+        dplyr::select(c(1,2,3,4,5,6,7,8,9)) %>%
+        tidyr::nest(LENGTH_OF_ERA = c(-1))
+      ),
+      by = c("CONCEPT_ID" = "CONCEPT_ID")
+    ) %>%
+    dplyr::collect()
+
+  dir.create(paste0(outputPath,"/concepts/drug_era"),recursive=T,showWarnings = F)
+  x <- lapply(
+    uniqueConcepts$CONCEPT_ID,
+    function(concept_id, outputPath, reports) {
+      report <- reports[reports$CONCEPT_ID == concept_id, ]
+      report <- as.list(report)
+
+      report$CONCEPT_NAME <- normalizeEmptyValue(report$CONCEPT_NAME)
+      report$NUM_PERSONS <- normalizeEmptyValue(report$NUM_PERSONS)
+      report$PERCENT_PERSONS <- normalizeEmptyValue(report$PERCENT_PERSONS)
+      report$RECORDS_PER_PERSON <- normalizeEmptyValue(report$RECORDS_PER_PERSON)
+
+      report$AGE_AT_FIRST_EXPOSURE <- as.data.frame(report$AGE_AT_FIRST_EXPOSURE)
+      report$PREVALENCE_BY_GENDER_AGE_YEAR <- as.data.frame(report$PREVALENCE_BY_GENDER_AGE_YEAR)
+      report$PREVALENCE_BY_MONTH <- as.data.frame(report$PREVALENCE_BY_MONTH)
+      report$LENGTH_OF_ERA <- as.data.frame(report$LENGTH_OF_ERA)
+
+      filename <- paste(outputPath, "/concepts/drug_era/concept_" , report$CONCEPT_ID , ".json", sep='')
+      write(jsonlite::toJSON(report), filename)
+    },
+    outputPath,
+    reports
+  )
 }
 
 generateAODrugReports <- function(connectionDetails, dataDrugs, cdmDatabaseSchema, resultsDatabaseSchema, vocabDatabaseSchema, outputPath) 
@@ -928,32 +1306,116 @@ generateAODrugReports <- function(connectionDetails, dataDrugs, cdmDatabaseSchem
   dataQuantityDistribution <- DatabaseConnector::querySql(conn,queryQuantityDistribution) 
   dataRefillsDistribution <- DatabaseConnector::querySql(conn,queryRefillsDistribution) 
   dataDrugFrequencyDistribution <- DatabaseConnector::querySql(conn,queryDrugFrequencyDistribution)
-  
-  uniqueConcepts <- unique(dataPrevalenceByMonth$CONCEPT_ID)
-  buildDrugReport <- function(concept_id) {
-    summaryRecord <- dataDrugs[dataDrugs$CONCEPT_ID==concept_id,]
-    report <- {}
-    report$CONCEPT_ID <- concept_id
-    report$CDM_TABLE_NAME <- "DRUG_EXPOSURE"
-    report$CONCEPT_NAME <- summaryRecord$CONCEPT_NAME
-    report$NUM_PERSONS <- summaryRecord$NUM_PERSONS
-    report$PERCENT_PERSONS <-summaryRecord$PERCENT_PERSONS
-    report$RECORDS_PER_PERSON <- summaryRecord$RECORDS_PER_PERSON    
-    report$AGE_AT_FIRST_EXPOSURE <- dataAgeAtFirstExposure[dataAgeAtFirstExposure$DRUG_CONCEPT_ID == concept_id,c(2,3,4,5,6,7,8,9)]
-    report$DAYS_SUPPLY_DISTRIBUTION <- dataDaysSupplyDistribution[dataDaysSupplyDistribution$DRUG_CONCEPT_ID == concept_id, c(2,3,4,5,6,7,8,9)]
-    report$DRUGS_BY_TYPE <- dataDrugsByType[dataDrugsByType$DRUG_CONCEPT_ID == concept_id, c(3,4)]
-    report$PREVALENCE_BY_GENDER_AGE_YEAR <- dataPrevalenceByGenderAgeYear[dataPrevalenceByGenderAgeYear$CONCEPT_ID == concept_id,c(3,4,5,6)]  
-    report$PREVALENCE_BY_MONTH <- dataPrevalenceByMonth[dataPrevalenceByMonth$CONCEPT_ID == concept_id,c(3,4)]
-    report$DRUG_FREQUENCY_DISTRIBUTION <- dataDrugFrequencyDistribution[dataDrugFrequencyDistribution$CONCEPT_ID == concept_id,c(3,4)]
-    report$QUANTITY_DISTRIBUTION <- dataQuantityDistribution[dataQuantityDistribution$DRUG_CONCEPT_ID == concept_id, c(2,3,4,5,6,7,8,9)]
-    report$REFILLS_DISTRIBUTION <- dataRefillsDistribution[dataRefillsDistribution$DRUG_CONCEPT_ID == concept_id, c(2,3,4,5,6,7,8,9)]
 
-    dir.create(paste0(outputPath,"/concepts/drug_exposure"),recursive=T,showWarnings = F)        
-    filename <- paste(outputPath, "/concepts/drug_exposure/concept_" , concept_id , ".json", sep='')  
-    write(jsonlite::toJSON(report),filename)  
+  if (nrow(dataPrevalenceByMonth) == 0) {
+    return()
   }
-  
-  x <- lapply(uniqueConcepts, buildDrugReport)  
+  uniqueConcepts <- data.frame(
+    CONCEPT_ID = unique(dataPrevalenceByMonth$CONCEPT_ID),
+    CDM_TABLE_NAME = "DRUG_EXPOSURE"
+  )
+  reports <-
+    uniqueConcepts %>%
+    dplyr::left_join(
+      (
+        dataDrugs %>%
+        dplyr::select("CONCEPT_ID", "CONCEPT_NAME", "NUM_PERSONS", "PERCENT_PERSONS", "RECORDS_PER_PERSON")
+      ),
+      by = c("CONCEPT_ID" = "CONCEPT_ID")
+    ) %>%
+    dplyr::left_join(
+      (
+        dataAgeAtFirstExposure %>%
+        dplyr::select(c(1,2,3,4,5,6,7,8,9)) %>%
+        tidyr::nest(AGE_AT_FIRST_EXPOSURE = c(-1))
+      ),
+      by = c("CONCEPT_ID" = "DRUG_CONCEPT_ID")
+    ) %>%
+    dplyr::left_join(
+      (
+        dataDaysSupplyDistribution %>%
+        dplyr::select(c(1,2,3,4,5,6,7,8,9)) %>%
+        tidyr::nest(DAYS_SUPPLY_DISTRIBUTION = c(-1))
+      ),
+      by = c("CONCEPT_ID" = "DRUG_CONCEPT_ID")
+    ) %>%
+    dplyr::left_join(
+      (
+        dataDrugsByType %>%
+        dplyr::select(c(1,3,4)) %>%
+        tidyr::nest(DRUGS_BY_TYPE = c(-1))
+      ),
+      by = c("CONCEPT_ID" = "DRUG_CONCEPT_ID")
+    ) %>%
+    dplyr::left_join(
+      (
+        dataPrevalenceByGenderAgeYear %>%
+        dplyr::select(c(1,3,4,5,6)) %>%
+        tidyr::nest(PREVALENCE_BY_GENDER_AGE_YEAR = c(-1))
+      ),
+      by = c("CONCEPT_ID" = "CONCEPT_ID")
+    ) %>%
+    dplyr::left_join(
+      (
+        dataPrevalenceByMonth %>%
+        dplyr::select(c(1,3,4)) %>%
+        tidyr::nest(PREVALENCE_BY_MONTH = c(-1))
+      ),
+      by = c("CONCEPT_ID" = "CONCEPT_ID")
+    ) %>%
+    dplyr::left_join(
+      (
+        dataDrugFrequencyDistribution %>%
+        dplyr::select(c(1,3,4)) %>%
+        tidyr::nest(DRUG_FREQUENCY_DISTRIBUTION = c(-1))
+      ),
+      by = c("CONCEPT_ID" = "CONCEPT_ID")
+    ) %>%
+    dplyr::left_join(
+      (
+        dataQuantityDistribution %>%
+        dplyr::select(c(1,2,3,4,5,6,7,8,9)) %>%
+        tidyr::nest(QUANTITY_DISTRIBUTION = c(-1))
+      ),
+      by = c("CONCEPT_ID" = "DRUG_CONCEPT_ID")
+    ) %>%
+    dplyr::left_join(
+      (
+        dataRefillsDistribution %>%
+        dplyr::select(c(1,2,3,4,5,6,7,8,9)) %>%
+        tidyr::nest(REFILLS_DISTRIBUTION = c(-1))
+      ),
+      by = c("CONCEPT_ID" = "DRUG_CONCEPT_ID")
+    ) %>%
+    dplyr::collect()
+
+  dir.create(paste0(outputPath,"/concepts/drug_exposure"),recursive=T,showWarnings = F)
+  x <- lapply(
+    uniqueConcepts$CONCEPT_ID,
+    function(concept_id, outputPath, reports) {
+      report <- reports[reports$CONCEPT_ID == concept_id, ]
+      report <- as.list(report)
+
+      report$CONCEPT_NAME <- normalizeEmptyValue(report$CONCEPT_NAME)
+      report$NUM_PERSONS <- normalizeEmptyValue(report$NUM_PERSONS)
+      report$PERCENT_PERSONS <- normalizeEmptyValue(report$PERCENT_PERSONS)
+      report$RECORDS_PER_PERSON <- normalizeEmptyValue(report$RECORDS_PER_PERSON)
+
+      report$AGE_AT_FIRST_EXPOSURE <- as.data.frame(report$AGE_AT_FIRST_EXPOSURE)
+      report$DAYS_SUPPLY_DISTRIBUTION <- as.data.frame(report$DAYS_SUPPLY_DISTRIBUTION)
+      report$DRUGS_BY_TYPE <- as.data.frame(report$DRUGS_BY_TYPE)
+      report$PREVALENCE_BY_GENDER_AGE_YEAR <- as.data.frame(report$PREVALENCE_BY_GENDER_AGE_YEAR)
+      report$PREVALENCE_BY_MONTH <- as.data.frame(report$PREVALENCE_BY_MONTH)
+      report$DRUG_FREQUENCY_DISTRIBUTION <- as.data.frame(report$DRUG_FREQUENCY_DISTRIBUTION)
+      report$QUANTITY_DISTRIBUTION <- as.data.frame(report$QUANTITY_DISTRIBUTION)
+      report$REFILLS_DISTRIBUTION <- as.data.frame(report$REFILLS_DISTRIBUTION)
+
+      filename <- paste(outputPath, "/concepts/drug_exposure/concept_" , report$CONCEPT_ID , ".json", sep='')
+      write(jsonlite::toJSON(report), filename)
+    },
+    outputPath,
+    reports
+  )
 }
 
 generateAODeviceReports <- function(connectionDetails, dataDevices, cdmDatabaseSchema, resultsDatabaseSchema, vocabDatabaseSchema, outputPath) 
@@ -1007,29 +1469,89 @@ generateAODeviceReports <- function(connectionDetails, dataDevices, cdmDatabaseS
   dataPrevalenceByGenderAgeYear <- DatabaseConnector::querySql(conn,queryPrevalenceByGenderAgeYear) 
   dataPrevalenceByMonth <- DatabaseConnector::querySql(conn,queryPrevalenceByMonth)
   dataDeviceFrequencyDistribution <- DatabaseConnector::querySql(conn,queryDeviceFrequencyDistribution)
-  
-  uniqueConcepts <- unique(dataDevices$CONCEPT_ID)
-  buildDeviceReport <- function(concept_id) {
-    summaryRecord <- dataDevices[dataDevices$CONCEPT_ID==concept_id,]
-    report <- {}
-    report$CONCEPT_ID <- concept_id
-    report$CDM_TABLE_NAME <- "DEVICE_EXPOSURE"
-    report$CONCEPT_NAME <- summaryRecord$CONCEPT_NAME
-    report$NUM_PERSONS <- summaryRecord$NUM_PERSONS
-    report$PERCENT_PERSONS <-summaryRecord$PERCENT_PERSONS
-    report$RECORDS_PER_PERSON <- summaryRecord$RECORDS_PER_PERSON    
-    report$AGE_AT_FIRST_EXPOSURE <- dataAgeAtFirstExposure[dataAgeAtFirstExposure$CONCEPT_ID == concept_id,c(2,3,4,5,6,7,8,9)]
-    report$DEVICES_BY_TYPE <- dataDevicesByType[dataDevicesByType$CONCEPT_ID == concept_id, c(3,4)]
-    report$PREVALENCE_BY_GENDER_AGE_YEAR <- dataPrevalenceByGenderAgeYear[dataPrevalenceByGenderAgeYear$CONCEPT_ID == concept_id,c(3,4,5,6)]  
-    report$PREVALENCE_BY_MONTH <- dataPrevalenceByMonth[dataPrevalenceByMonth$CONCEPT_ID == concept_id,c(3,4)]
-    report$DEVICE_FREQUENCY_DISTRIBUTION <- dataDeviceFrequencyDistribution[dataDeviceFrequencyDistribution$CONCEPT_ID == concept_id,c(3,4)]
 
-    dir.create(paste0(outputPath,"/concepts/device_exposure"),recursive=T,showWarnings = F)        
-    filename <- paste(outputPath, "/concepts/device_exposure/concept_" , concept_id , ".json", sep='')  
-    write(jsonlite::toJSON(report),filename)  
+  if (nrow(dataDevices) == 0) {
+    return()
   }
-  
-  x <- lapply(uniqueConcepts, buildDeviceReport)  
+  uniqueConcepts <- data.frame(
+    CONCEPT_ID = unique(dataDevices$CONCEPT_ID),
+    CDM_TABLE_NAME = "DEVICE_EXPOSURE"
+  )
+  reports <-
+    uniqueConcepts %>%
+    dplyr::left_join(
+      (
+        dataDevices %>%
+        dplyr::select("CONCEPT_ID", "CONCEPT_NAME", "NUM_PERSONS", "PERCENT_PERSONS", "RECORDS_PER_PERSON")
+      ),
+      by = c("CONCEPT_ID" = "CONCEPT_ID")
+    ) %>%
+    dplyr::left_join(
+      (
+        dataAgeAtFirstExposure %>%
+        dplyr::select(c(1,2,3,4,5,6,7,8,9)) %>%
+        tidyr::nest(AGE_AT_FIRST_EXPOSURE = c(-1))
+      ),
+      by = c("CONCEPT_ID" = "CONCEPT_ID")
+    ) %>%
+    dplyr::left_join(
+      (
+        dataDevicesByType %>%
+        dplyr::select(c(1,4,5)) %>%
+        tidyr::nest(DEVICES_BY_TYPE = c(-1))
+      ),
+      by = c("CONCEPT_ID" = "DEVICE_CONCEPT_ID")
+    ) %>%
+    dplyr::left_join(
+      (
+        dataPrevalenceByGenderAgeYear %>%
+        dplyr::select(c(1,3,4,5,6)) %>%
+        tidyr::nest(PREVALENCE_BY_GENDER_AGE_YEAR = c(-1))
+      ),
+      by = c("CONCEPT_ID" = "CONCEPT_ID")
+    ) %>%
+    dplyr::left_join(
+      (
+        dataPrevalenceByMonth %>%
+        dplyr::select(c(1,3,4)) %>%
+        tidyr::nest(PREVALENCE_BY_MONTH = c(-1))
+      ),
+      by = c("CONCEPT_ID" = "CONCEPT_ID")
+    ) %>%
+    dplyr::left_join(
+      (
+        dataDeviceFrequencyDistribution %>%
+        dplyr::select(c(1,3,4)) %>%
+        tidyr::nest(DEVICE_FREQUENCY_DISTRIBUTION = c(-1))
+      ),
+      by = c("CONCEPT_ID" = "CONCEPT_ID")
+    ) %>%
+    dplyr::collect()
+
+  dir.create(paste0(outputPath,"/concepts/device_exposure"),recursive=T,showWarnings = F)
+  x <- lapply(
+    uniqueConcepts$CONCEPT_ID,
+    function(concept_id, outputPath, reports) {
+      report <- reports[reports$CONCEPT_ID == concept_id, ]
+      report <- as.list(report)
+
+      report$CONCEPT_NAME <- normalizeEmptyValue(report$CONCEPT_NAME)
+      report$NUM_PERSONS <- normalizeEmptyValue(report$NUM_PERSONS)
+      report$PERCENT_PERSONS <- normalizeEmptyValue(report$PERCENT_PERSONS)
+      report$RECORDS_PER_PERSON <- normalizeEmptyValue(report$RECORDS_PER_PERSON)
+
+      report$AGE_AT_FIRST_EXPOSURE <- as.data.frame(report$AGE_AT_FIRST_EXPOSURE)
+      report$DEVICES_BY_TYPE <- as.data.frame(report$DEVICES_BY_TYPE)
+      report$PREVALENCE_BY_GENDER_AGE_YEAR <- as.data.frame(report$PREVALENCE_BY_GENDER_AGE_YEAR)
+      report$PREVALENCE_BY_MONTH <- as.data.frame(report$PREVALENCE_BY_MONTH)
+      report$DEVICE_FREQUENCY_DISTRIBUTION <- as.data.frame(report$DEVICE_FREQUENCY_DISTRIBUTION)
+
+      filename <- paste(outputPath, "/concepts/device_exposure/concept_" , report$CONCEPT_ID , ".json", sep='')
+      write(jsonlite::toJSON(report), filename)
+    },
+    outputPath,
+    reports
+  )
 }
 
 generateAOConditionReports <- function(connectionDetails, dataConditions, cdmDatabaseSchema, resultsDatabaseSchema, vocabDatabaseSchema, outputPath) 
@@ -1081,28 +1603,80 @@ generateAOConditionReports <- function(connectionDetails, dataConditions, cdmDat
   dataPrevalenceByMonth <- DatabaseConnector::querySql(conn,queryPrevalenceByMonth)  
   dataConditionsByType <- DatabaseConnector::querySql(conn,queryConditionsByType)    
   dataAgeAtFirstDiagnosis <- DatabaseConnector::querySql(conn,queryAgeAtFirstDiagnosis)      
-  uniqueConcepts <- unique(dataPrevalenceByMonth$CONCEPT_ID)
-  
-  buildConditionReport <- function(concept_id) {
-    summaryRecord <- dataConditions[dataConditions$CONCEPT_ID==concept_id,]
-    report <- {}
-    report$CONCEPT_ID <- concept_id
-    report$CDM_TABLE_NAME <- "CONDITION_OCCURRENCE"
-    report$CONCEPT_NAME <- summaryRecord$CONCEPT_NAME
-    report$NUM_PERSONS <- summaryRecord$NUM_PERSONS
-    report$PERCENT_PERSONS <-summaryRecord$PERCENT_PERSONS
-    report$RECORDS_PER_PERSON <- summaryRecord$RECORDS_PER_PERSON
-    report$PREVALENCE_BY_GENDER_AGE_YEAR <- dataPrevalenceByGenderAgeYear[dataPrevalenceByGenderAgeYear$CONCEPT_ID == concept_id,c(3,4,5,6)]    
-    report$PREVALENCE_BY_MONTH <- dataPrevalenceByMonth[dataPrevalenceByMonth$CONCEPT_ID == concept_id,c(3,4)]
-    report$CONDITIONS_BY_TYPE <- dataConditionsByType[dataConditionsByType$CONDITION_CONCEPT_ID == concept_id,c(2,3)]
-    report$AGE_AT_FIRST_DIAGNOSIS <- dataAgeAtFirstDiagnosis[dataAgeAtFirstDiagnosis$CONCEPT_ID == concept_id,c(2,3,4,5,6,7,8,9)]
-    
-    dir.create(paste0(outputPath,"/concepts/condition_occurrence"),recursive=T,showWarnings = F)        
-    filename <- paste(outputPath, "/concepts/condition_occurrence/concept_" , concept_id , ".json", sep='')  
-    write(jsonlite::toJSON(report),filename)  
+
+  if (nrow(dataPrevalenceByMonth) == 0) {
+    return()
   }
-  
-  x <- lapply(uniqueConcepts, buildConditionReport)  
+  uniqueConcepts <- data.frame(
+    CONCEPT_ID = unique(dataPrevalenceByMonth$CONCEPT_ID),
+    CDM_TABLE_NAME = "CONDITION_OCCURRENCE"
+  )
+  reports <-
+    uniqueConcepts %>%
+    dplyr::left_join(
+      (
+        dataConditions %>%
+        dplyr::select("CONCEPT_ID", "CONCEPT_NAME", "NUM_PERSONS", "PERCENT_PERSONS", "RECORDS_PER_PERSON")
+      ),
+      by = c("CONCEPT_ID" = "CONCEPT_ID")
+    ) %>%
+    dplyr::left_join(
+      (
+        dataPrevalenceByGenderAgeYear %>%
+        dplyr::select(c(1,3,4,5,6)) %>%
+        tidyr::nest(PREVALENCE_BY_GENDER_AGE_YEAR = c(-1))
+      ),
+      by = c("CONCEPT_ID" = "CONCEPT_ID")
+    ) %>%
+    dplyr::left_join(
+      (
+        dataPrevalenceByMonth %>%
+        dplyr::select(c(1,3,4)) %>%
+        tidyr::nest(PREVALENCE_BY_MONTH = c(-1))
+      ),
+      by = c("CONCEPT_ID" = "CONCEPT_ID")
+    ) %>%
+    dplyr::left_join(
+      (
+        dataConditionsByType %>%
+        dplyr::select(c(1,2,3)) %>%
+        tidyr::nest(CONDITIONS_BY_TYPE = c(-1))
+      ),
+      by = c("CONCEPT_ID" = "CONDITION_CONCEPT_ID")
+    ) %>%
+    dplyr::left_join(
+      (
+        dataAgeAtFirstDiagnosis %>%
+        dplyr::select(c(1,2,3,4,5,6,7,8,9)) %>%
+        tidyr::nest(AGE_AT_FIRST_DIAGNOSIS = c(-1))
+      ),
+      by = c("CONCEPT_ID" = "CONCEPT_ID")
+    ) %>%
+    dplyr::collect()
+
+  dir.create(paste0(outputPath,"/concepts/condition_occurrence"),recursive=T,showWarnings = F)
+  x <- lapply(
+    uniqueConcepts$CONCEPT_ID,
+    function(concept_id, outputPath, reports) {
+      report <- reports[reports$CONCEPT_ID == concept_id, ]
+      report <- as.list(report)
+
+      report$CONCEPT_NAME <- normalizeEmptyValue(report$CONCEPT_NAME)
+      report$NUM_PERSONS <- normalizeEmptyValue(report$NUM_PERSONS)
+      report$PERCENT_PERSONS <- normalizeEmptyValue(report$PERCENT_PERSONS)
+      report$RECORDS_PER_PERSON <- normalizeEmptyValue(report$RECORDS_PER_PERSON)
+
+      report$PREVALENCE_BY_GENDER_AGE_YEAR <- as.data.frame(report$PREVALENCE_BY_GENDER_AGE_YEAR)
+      report$PREVALENCE_BY_MONTH <- as.data.frame(report$PREVALENCE_BY_MONTH)
+      report$CONDITIONS_BY_TYPE <- as.data.frame(report$CONDITIONS_BY_TYPE)
+      report$AGE_AT_FIRST_DIAGNOSIS <- as.data.frame(report$AGE_AT_FIRST_DIAGNOSIS)
+
+      filename <- paste(outputPath, "/concepts/condition_occurrence/concept_" , report$CONCEPT_ID , ".json", sep='')
+      write(jsonlite::toJSON(report), filename)
+    },
+    outputPath,
+    reports
+  )
 }
 
 generateAOConditionEraReports <- function(connectionDetails, dataConditionEra, cdmDatabaseSchema, resultsDatabaseSchema, vocabDatabaseSchema, outputPath)
@@ -1155,28 +1729,80 @@ generateAOConditionEraReports <- function(connectionDetails, dataConditionEra, c
   dataPrevalenceByMonth <- DatabaseConnector::querySql(conn, queryPrevalenceByMonth)
   dataLengthOfEra <- DatabaseConnector::querySql(conn, queryLengthOfEra)
   dataAgeAtFirstDiagnosis <- DatabaseConnector::querySql(conn, queryAgeAtFirstDiagnosis)
-  uniqueConcepts <- unique(dataConditionEra$CONCEPT_ID)
 
-  buildConditionEraReport <- function(concept_id) {
-    summaryRecord <- dataConditionEra[dataConditionEra$CONCEPT_ID==concept_id,]
-    report <- {}
-    report$CONCEPT_ID <- concept_id
-    report$CDM_TABLE_NAME <- "CONDITION_ERA"
-    report$CONCEPT_NAME <- summaryRecord$CONCEPT_NAME
-    report$NUM_PERSONS <- summaryRecord$NUM_PERSONS
-    report$PERCENT_PERSONS <-summaryRecord$PERCENT_PERSONS
-    report$RECORDS_PER_PERSON <- summaryRecord$RECORDS_PER_PERSON
-    report$AGE_AT_FIRST_EXPOSURE <- dataAgeAtFirstDiagnosis[dataAgeAtFirstDiagnosis$CONCEPT_ID == concept_id,c(2,3,4,5,6,7,8,9)]
-    report$PREVALENCE_BY_GENDER_AGE_YEAR <- dataPrevalenceByGenderAgeYear[dataPrevalenceByGenderAgeYear$CONCEPT_ID == concept_id,c(2,3,4,5)]  
-    report$PREVALENCE_BY_MONTH <- dataPrevalenceByMonth[dataPrevalenceByMonth$CONCEPT_ID == concept_id,c(2,3)]
-    report$LENGTH_OF_ERA <- dataLengthOfEra[dataLengthOfEra$CONCEPT_ID == concept_id, c(2,3,4,5,6,7,8,9)]
-    
-    dir.create(paste0(outputPath,"/concepts/condition_era"),recursive=T,showWarnings = F)        
-    filename <- paste(outputPath, "/concepts/condition_era/concept_" , concept_id , ".json", sep='')  
-    write(jsonlite::toJSON(report),filename)  
+  if (nrow(dataConditionEra) == 0) {
+    return()
   }
-  
-  x <- lapply(uniqueConcepts, buildConditionEraReport)
+  uniqueConcepts <- data.frame(
+    CONCEPT_ID = unique(dataConditionEra$CONCEPT_ID),
+    CDM_TABLE_NAME = "CONDITION_ERA"
+  )
+  reports <-
+    uniqueConcepts %>%
+    dplyr::left_join(
+      (
+        dataConditionEra %>%
+        dplyr::select("CONCEPT_ID", "CONCEPT_NAME", "NUM_PERSONS", "PERCENT_PERSONS", "RECORDS_PER_PERSON")
+      ),
+      by = c("CONCEPT_ID" = "CONCEPT_ID")
+    ) %>%
+    dplyr::left_join(
+      (
+        dataAgeAtFirstDiagnosis %>%
+        dplyr::select(c(1,2,3,4,5,6,7,8,9)) %>%
+        tidyr::nest(AGE_AT_FIRST_EXPOSURE = c(-1))
+      ),
+      by = c("CONCEPT_ID" = "CONCEPT_ID")
+    ) %>%
+    dplyr::left_join(
+      (
+        dataPrevalenceByGenderAgeYear %>%
+        dplyr::select(c(1,2,3,4,5)) %>%
+        tidyr::nest(PREVALENCE_BY_GENDER_AGE_YEAR = c(-1))
+      ),
+      by = c("CONCEPT_ID" = "CONCEPT_ID")
+    ) %>%
+    dplyr::left_join(
+      (
+        dataPrevalenceByMonth %>%
+        dplyr::select(c(1,2,3)) %>%
+        tidyr::nest(PREVALENCE_BY_MONTH = c(-1))
+      ),
+      by = c("CONCEPT_ID" = "CONCEPT_ID")
+    ) %>%
+    dplyr::left_join(
+      (
+        dataLengthOfEra %>%
+        dplyr::select(c(1,2,3,4,5,6,7,8,9)) %>%
+        tidyr::nest(LENGTH_OF_ERA = c(-1))
+      ),
+      by = c("CONCEPT_ID" = "CONCEPT_ID")
+    ) %>%
+    dplyr::collect()
+
+  dir.create(paste0(outputPath,"/concepts/condition_era"),recursive=T,showWarnings = F)
+  x <- lapply(
+    uniqueConcepts$CONCEPT_ID,
+    function(concept_id, outputPath, reports) {
+      report <- reports[reports$CONCEPT_ID == concept_id, ]
+      report <- as.list(report)
+
+      report$CONCEPT_NAME <- normalizeEmptyValue(report$CONCEPT_NAME)
+      report$NUM_PERSONS <- normalizeEmptyValue(report$NUM_PERSONS)
+      report$PERCENT_PERSONS <- normalizeEmptyValue(report$PERCENT_PERSONS)
+      report$RECORDS_PER_PERSON <- normalizeEmptyValue(report$RECORDS_PER_PERSON)
+
+      report$AGE_AT_FIRST_EXPOSURE <- as.data.frame(report$AGE_AT_FIRST_EXPOSURE)
+      report$PREVALENCE_BY_GENDER_AGE_YEAR <- as.data.frame(report$PREVALENCE_BY_GENDER_AGE_YEAR)
+      report$PREVALENCE_BY_MONTH <- as.data.frame(report$PREVALENCE_BY_MONTH)
+      report$LENGTH_OF_ERA <- as.data.frame(report$LENGTH_OF_ERA)
+
+      filename <- paste(outputPath, "/concepts/condition_era/concept_" , report$CONCEPT_ID , ".json", sep='')
+      write(jsonlite::toJSON(report), filename)
+    },
+    outputPath,
+    reports
+  )
 }
 
 #' @title exportToAres
