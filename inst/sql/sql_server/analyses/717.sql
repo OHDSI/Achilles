@@ -1,68 +1,118 @@
 -- 717	Distribution of quantity by drug_concept_id
 
---HINT DISTRIBUTE_ON_KEY(stratum_id)
-WITH rawData(stratum_id, count_value) AS (
-SELECT 
-	de.drug_concept_id AS stratum_id,
-	CAST(de.quantity AS FLOAT) AS count_value
-FROM 
-	@cdmDatabaseSchema.drug_exposure de
-JOIN 
-	@cdmDatabaseSchema.observation_period op 
-ON 
-	de.person_id = op.person_id
-AND 
-	de.drug_exposure_start_date >= op.observation_period_start_date
-AND 
-	de.drug_exposure_start_date <= op.observation_period_end_date
-WHERE 
-	de.quantity IS NOT NULL
-),
-overallStats (stratum_id, avg_value, stdev_value, min_value, max_value, total) as
-(
-  select stratum_id,
-    CAST(avg(1.0 * count_value) AS FLOAT) as avg_value,
-    CAST(stdev(count_value) AS FLOAT) as stdev_value,
-    min(count_value) as min_value,
-    max(count_value) as max_value,
-    count_big(*) as total
-  FROM rawData
-	group by stratum_id
-),
-statsView (stratum_id, count_value, total, rn) as
-(
-  select stratum_id, count_value, count_big(*) as total, row_number() over (order by count_value) as rn
-  FROM rawData
-  group by stratum_id, count_value
-),
-priorStats (stratum_id, count_value, total, accumulated) as
-(
-  select s.stratum_id, s.count_value, s.total, sum(p.total) as accumulated
-  from statsView s
-  join statsView p on s.stratum_id = p.stratum_id and p.rn <= s.rn
-  group by s.stratum_id, s.count_value, s.total, s.rn
-)
-select 717 as analysis_id,
-  CAST(o.stratum_id AS VARCHAR(255)) AS stratum_id,
-  o.total as count_value,
-  o.min_value,
-	o.max_value,
-	o.avg_value,
-	o.stdev_value,
-	MIN(case when p.accumulated >= .50 * o.total then count_value else o.max_value end) as median_value,
-	MIN(case when p.accumulated >= .10 * o.total then count_value else o.max_value end) as p10_value,
-	MIN(case when p.accumulated >= .25 * o.total then count_value else o.max_value end) as p25_value,
-	MIN(case when p.accumulated >= .75 * o.total then count_value else o.max_value end) as p75_value,
-	MIN(case when p.accumulated >= .90 * o.total then count_value else o.max_value end) as p90_value
-into #tempResults_717
-from priorStats p
-join overallStats o on p.stratum_id = o.stratum_id
-GROUP BY o.stratum_id, o.total, o.min_value, o.max_value, o.avg_value, o.stdev_value
+-- Compute concept-level aggregations
+DROP TABLE IF EXISTS #tempAgg_717;
+--HINT DISTRIBUTE_ON_KEY(drug_concept_id)
+  SELECT o.drug_concept_id
+    , COUNT_BIG(*) AS num_recs
+    , MIN(o.quantity) AS min_value
+    , MAX(o.quantity) AS max_value
+    , CAST(AVG(1.0 * o.quantity) AS FLOAT) AS avg_value
+    , CAST(STDDEV(o.quantity) AS FLOAT) AS stdev_value
+  INTO #tempAgg_717
+  FROM 
+    @cdmDatabaseSchema.drug_exposure o
+  JOIN 
+    @cdmDatabaseSchema.observation_period op 
+  ON 
+    o.person_id = op.person_id
+  AND 
+    o.drug_exposure_start_date >= op.observation_period_start_date
+  AND 
+    o.drug_exposure_start_date <= op.observation_period_end_date
+  WHERE 
+    o.quantity IS NOT NULL
+  GROUP BY o.drug_concept_id
+;
+
+-- Compute concept+quantity-level aggregations
+DROP TABLE IF EXISTS #tempByval_717;
+--HINT DISTRIBUTE_ON_KEY(drug_concept_id)
+  SELECT 
+    o.drug_concept_id
+    , o.quantity
+    , COUNT_BIG(*) AS num_recs
+  INTO #tempByval_717
+  FROM 
+    @cdmDatabaseSchema.drug_exposure o
+  JOIN 
+    @cdmDatabaseSchema.observation_period op 
+  ON 
+    o.person_id = op.person_id
+  AND 
+    o.drug_exposure_start_date >= op.observation_period_start_date
+  AND 
+    o.drug_exposure_start_date <= op.observation_period_end_date
+  WHERE 
+    o.quantity IS NOT NULL
+  GROUP BY o.drug_concept_id
+    , o.quantity
+;
+
+-- Get cumulative # of rows BY ordered values (needed to determine quartiles & deciles)
+DROP TABLE IF EXISTS #tempOrdbyval_717;
+--HINT DISTRIBUTE_ON_KEY(drug_concept_id)
+  SELECT drug_concept_id
+    , quantity
+    , num_recs
+    , SUM(num_recs) OVER (PARTITION BY drug_concept_id ORDER BY quantity) AS cum_num_recs
+  INTO #tempOrdbyval_717
+  FROM #tempByval_717
+;
+
+-- Determine record-count cutpoints - cumulative # of records needed for quartiles & deciles
+DROP TABLE IF EXISTS #tempCutpoints_717;
+--HINT DISTRIBUTE_ON_KEY(drug_concept_id)
+  SELECT drug_concept_id
+    , FLOOR(num_recs * 0.10) AS pct10_cutpoint
+    , FLOOR(num_recs * 0.25) AS pct25_cutpoint
+    , FLOOR(num_recs * 0.50) AS pct50_cutpoint
+    , FLOOR(num_recs * 0.75) AS pct75_cutpoint
+    , FLOOR(num_recs * 0.90) AS pct90_cutpoint
+  INTO #tempCutpoints_717
+  FROM #tempAgg_717
+;
+
+-- Compute quartiles & deciles (plus median) based upon those cutpoints
+DROP TABLE IF EXISTS #tempCalc_717;
+--HINT DISTRIBUTE_ON_KEY(drug_concept_id)
+  SELECT ct.drug_concept_id
+    , MIN(CASE WHEN ov.cum_num_recs >= ct.pct10_cutpoint THEN ov.quantity ELSE NULL END) AS p10_value
+    , MIN(CASE WHEN ov.cum_num_recs >= ct.pct25_cutpoint THEN ov.quantity ELSE NULL END) AS p25_value
+    , MIN(CASE WHEN ov.cum_num_recs >= ct.pct50_cutpoint THEN ov.quantity ELSE NULL END) AS median_value
+    , MIN(CASE WHEN ov.cum_num_recs >= ct.pct75_cutpoint THEN ov.quantity ELSE NULL END) AS p75_value
+    , MIN(CASE WHEN ov.cum_num_recs >= ct.pct90_cutpoint THEN ov.quantity ELSE NULL END) AS p90_value
+  INTO  #tempCalc_717
+  FROM #tempOrdbyval_717 ov
+  JOIN #tempCutpoints_717 ct
+    ON ov.drug_concept_id = ct.drug_concept_id
+  GROUP BY ct.drug_concept_id
+;
+
+-- Select final values for inclusion INTO achilles_results_dist
+-- HINT DISTRIBUTE_ON_RANDOM 
+SELECT 717 AS analysis_id
+  , a.drug_concept_id AS stratum_1
+  , a.num_recs AS count_value
+  , a.min_value
+  , a.max_value
+  , a.avg_value
+  , a.stdev_value
+  , CASE WHEN c.median_value IS NULL THEN a.max_value ELSE c.median_value END as median_value
+  , CASE WHEN c.p10_value IS NULL THEN a.max_value ELSE c.p10_value END as p10_value
+  , CASE WHEN c.p25_value IS NULL THEN a.max_value ELSE c.p25_value END  as p25_value
+  , CASE WHEN c.p75_value IS NULL THEN a.max_value ELSE c.p75_value END  as p75_value
+  , CASE WHEN c.p90_value IS NULL THEN a.max_value ELSE c.p90_value END  as p90_value
+INTO #tempResults_717
+FROM #tempAgg_717 a
+JOIN #tempCalc_717 c
+  ON a.drug_concept_id = c.drug_concept_id
+ORDER BY a.drug_concept_id
 ;
 
 --HINT DISTRIBUTE_ON_KEY(stratum_1)
-select analysis_id, stratum_id as stratum_1, 
-cast(null as varchar(255)) as stratum_2, cast(null as varchar(255)) as stratum_3, cast(null as varchar(255)) as stratum_4, cast(null as varchar(255)) as stratum_5,
+select analysis_id, stratum_1, cast(null as varchar(255)) as stratum_2, 
+cast(null as varchar(255)) as stratum_3, cast(null as varchar(255)) as stratum_4, cast(null as varchar(255)) as stratum_5,
 count_value, min_value, max_value, avg_value, stdev_value, median_value, p10_value, p25_value, p75_value, p90_value
 into @scratchDatabaseSchema@schemaDelim@tempAchillesPrefix_dist_717
 from #tempResults_717
@@ -70,3 +120,18 @@ from #tempResults_717
 
 truncate table #tempResults_717;
 drop table #tempResults_717;
+
+truncate table #tempAgg_717;
+drop table #tempAgg_717;
+
+truncate table #tempByval_717;
+drop table #tempByval_717;
+
+truncate table #tempOrdbyval_717;
+drop table #tempOrdbyval_717;
+
+truncate table #tempCutpoints_717;
+drop table #tempCutpoints_717;
+
+truncate table #tempCalc_717;
+drop table #tempCalc_717;
