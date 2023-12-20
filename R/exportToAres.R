@@ -1898,38 +1898,36 @@ generateQualityCompleteness <- function(connection, resultsDatabaseSchema) {
 }
 
 #' @title exportToAres
-#'
+#' 
 #' @description
 #' \code{exportToAres} Exports Achilles statistics for ARES
 #'
 #' @details
 #' Creates export files 
 #' 
-#' 
 #' @param connectionDetails             An R object of type ConnectionDetail (details for the function that contains server info, database type, optionally username/password, port)
 #' @param cdmDatabaseSchema             Name of the database schema that contains the OMOP CDM.
 #' @param resultsDatabaseSchema     		Name of the database schema that contains the Achilles analysis files. Default is cdmDatabaseSchema
 #' @param outputPath		                A folder location to save the JSON files. Default is current working folder
 #' @param vocabDatabaseSchema		        string name of database schema that contains OMOP Vocabulary. Default is cdmDatabaseSchema. On SQL Server, this should specifiy both the database and the schema, so for example 'results.dbo'.
+#' @param outputFormat                  default or alternatively "duckdb" to use parquet and duckdb formats.
 #' @param reports                       vector of reports to run, c() defaults to all reports
 #' 
 #' See \code{showReportTypes} for a list of all report types
 #' 
 #' @return none 
 #' 
+#'@import DBI
 #'@importFrom data.table fwrite
 #'@importFrom dplyr ntile desc
 #'@export
-#'
-library("DBI")
-
 exportToAres <- function(
   connectionDetails,
   cdmDatabaseSchema,
   resultsDatabaseSchema,
   vocabDatabaseSchema,
   outputPath,
-  outputFormat,
+  outputFormat = "default",
   reports = c())
 {
   conn <- DatabaseConnector::connect(connectionDetails)
@@ -1966,21 +1964,17 @@ exportToAres <- function(
     data.table::fwrite(currentTable$totalRecordsData, file = paste0(sourceOutputPath, "/datadensity-total.csv"))
     data.table::fwrite(currentTable$domainAggregates, file = paste0(sourceOutputPath, "/records-by-domain.csv"))
 
-
     # data density - records per person
     currentTable <- generateDataDensityRecordsPerPerson(conn, resultsDatabaseSchema)
     data.table::fwrite(currentTable, file = paste0(sourceOutputPath, "/datadensity-records-per-person.csv"))
-
 
     # data density - concepts  per person
     currentTable <- generateDataDensityConceptsPerPerson(conn, resultsDatabaseSchema)
     data.table::fwrite(currentTable, file = paste0(sourceOutputPath, "/datadensity-concepts-per-person.csv"))
 
-
     # data density - domains per person
     currentTable <- generateDataDensityDomainsPerPerson(conn, resultsDatabaseSchema)
     data.table::fwrite(currentTable, file = paste0(sourceOutputPath, "/datadensity-domains-per-person.csv"))
-
   }
 
   if (length(reports) == 0 || (length(reports) > 0 && ("domain" %in% reports || "concept" %in% reports))) {
@@ -1989,12 +1983,10 @@ exportToAres <- function(
     currentTable <- generateAOMetadataReport(conn, cdmDatabaseSchema, sourceOutputPath)
     data.table::fwrite(currentTable, file = paste0(sourceOutputPath, "/metadata.csv"))
 
-
     # cdm source
     writeLines("Generating cdm source report")
     currentTable <- generateAOCdmSourceReport(conn, cdmDatabaseSchema, sourceOutputPath)
     data.table::fwrite(currentTable, file = paste0(sourceOutputPath, "/cdmsource.csv"))
-
 
     # domain summary - observation period
     writeLines("Generating observation period reports")
@@ -2002,13 +1994,11 @@ exportToAres <- function(
     filename <- file.path(sourceOutputPath, "observationperiod.json")
     write(jsonlite::toJSON(currentTable), filename)
 
-
     # death report
     writeLines("Generating death report")
     currentTable <- generateAODeathReport(conn, cdmDatabaseSchema, resultsDatabaseSchema, vocabDatabaseSchema, sourceOutputPath)
     filename <- file.path(sourceOutputPath, "death.json")
     write(jsonlite::toJSON(currentTable), filename)
-
 
     writeLines("Generating domain summary reports")
 
@@ -2016,56 +2006,45 @@ exportToAres <- function(
     dataConditions <- generateDomainSummaryConditions(conn, resultsDatabaseSchema, vocabDatabaseSchema)
     data.table::fwrite(dataConditions, file = paste0(sourceOutputPath, "/domain-summary-condition_occurrence.csv"))
 
-
     # domain summary - condition eras
     dataConditionEra <- generateDomainSummaryConditionEras(conn, resultsDatabaseSchema, vocabDatabaseSchema)
     data.table::fwrite(dataConditionEra, file = paste0(sourceOutputPath, "/domain-summary-condition_era.csv"))
-
 
     # domain summary - drugs
     dataDrugs <- generateDomainSummaryDrugs(conn, resultsDatabaseSchema, vocabDatabaseSchema)
     data.table::fwrite(dataDrugs, file = paste0(sourceOutputPath, "/domain-summary-drug_exposure.csv"))
 
-
     # domain stratification by drug type concept
     dataDrugType <- generateDomainDrugStratification(conn, resultsDatabaseSchema, vocabDatabaseSchema)
     data.table::fwrite(dataDrugType, file = paste0(sourceOutputPath, "/domain-drug-stratification.csv"))
-
 
     # domain summary - drug era
     dataDrugEra <- generateDomainSummaryDrugEra(conn, resultsDatabaseSchema, vocabDatabaseSchema)
     data.table::fwrite(dataDrugEra, file = paste0(sourceOutputPath, "/domain-summary-drug_era.csv"))
 
-
     # domain summary - measurements
     dataMeasurements <- generateDomainSummaryMeasurements(conn, resultsDatabaseSchema, vocabDatabaseSchema)
     data.table::fwrite(dataMeasurements, file = paste0(sourceOutputPath, "/domain-summary-measurement.csv"))
-
 
     # domain summary - observations
     dataObservations <- generateDomainSummaryObservations(conn, resultsDatabaseSchema, vocabDatabaseSchema)
     data.table::fwrite(dataObservations, file = paste0(sourceOutputPath, "/domain-summary-observation.csv"))
 
-
     # domain summary - visit details
     dataVisitDetails <- generateDomainSummaryVisitDetails(conn, resultsDatabaseSchema, vocabDatabaseSchema)
     data.table::fwrite(dataVisitDetails, file = paste0(sourceOutputPath, "/domain-summary-visit_detail.csv"))
-
 
     # domain summary - visits
     dataVisits <- generateDomainSummaryVisits(conn, resultsDatabaseSchema, vocabDatabaseSchema)
     data.table::fwrite(dataVisits, file = paste0(sourceOutputPath, "/domain-summary-visit_occurrence.csv"))
 
-
     # domain stratification by visit concept
     currentTable <- generateDomainVisitStratification(conn, resultsDatabaseSchema, vocabDatabaseSchema)
     data.table::fwrite(currentTable, file = paste0(sourceOutputPath, "/domain-visit-stratification.csv"))
 
-
     # domain summary - procedures
     dataProcedures <- generateDomainSummaryProcedures(conn, resultsDatabaseSchema, vocabDatabaseSchema)
     data.table::fwrite(dataProcedures, file = paste0(sourceOutputPath, "/domain-summary-procedure_occurrence.csv"))
-
 
     # domain summary - devices
     dataDevices <- generateDomainSummaryDevices(conn, resultsDatabaseSchema, vocabDatabaseSchema)
@@ -2090,8 +2069,6 @@ exportToAres <- function(
     writeLines("Generating achilles performance report")
     currentTable <- generateAOAchillesPerformanceReport(conn, cdmDatabaseSchema, resultsDatabaseSchema, vocabDatabaseSchema, sourceOutputPath)
     data.table::fwrite(currentTable, file.path(sourceOutputPath, "achilles-performance.csv"))
-
-
   }
 
   if (length(reports) == 0 || (length(reports) > 0 && "concept" %in% reports)) {
