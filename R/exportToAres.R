@@ -10,12 +10,13 @@ normalizeEmptyValue <- function(x) {
 }
 
 createConceptMedatataTable <- function(report, concept_id, domain) {
-  df <- data.frame(CONCEPT_ID = concept_id,
-                   CONCEPT_NAME = report$CONCEPT_NAME,
-                   DOMAIN = domain,
-                   NUM_PERSONS = report$NUM_PERSONS,
-                   PERCENT_PERSONS = report$PERCENT_PERSONS,
-                   RECORDS_PER_PERSON = report$RECORDS_PER_PERSON
+  df <- data.frame(
+    CONCEPT_ID = concept_id,
+    CONCEPT_NAME = ifelse(length(report$CONCEPT_NAME) == 0, NA, report$CONCEPT_NAME),
+    DOMAIN = domain,
+    NUM_PERSONS = ifelse(length(report$NUM_PERSONS) == 0, NA, report$NUM_PERSONS),
+    PERCENT_PERSONS = ifelse(length(report$PERCENT_PERSONS) == 0, NA, report$PERCENT_PERSONS),
+    RECORDS_PER_PERSON = ifelse(length(report$RECORDS_PER_PERSON) == 0, NA, report$RECORDS_PER_PERSON)
   )
   return(df)
 }
