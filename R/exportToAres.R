@@ -1680,7 +1680,7 @@ generateDomainSummaryConditions <- function(connection, resultsDatabaseSchema, v
   dataConditions$RECORDS_PER_PERSON <- format(round(dataConditions$RECORDS_PER_PERSON, 1), nsmall = 1)
   dataConditions$RECORDS_PER_PERSON_NTILE <- dplyr::ntile(dplyr::desc(dataConditions$RECORDS_PER_PERSON), 10)
   return(dataConditions)
-  #data.table::fwrite(dataConditions, file=paste0(sourceOutputPath, "/domain-summary-condition_occurrence.csv"))  
+  #data.table::fwrite(dataConditions, file=paste0(sourceOutputPath, "/domain-summary-condition_occurrence.csv"))
   #dbWriteTable(duckdbCon, "domain_summary", dataConditions, append = TRUE)
 }
 
@@ -1728,7 +1728,7 @@ generateDomainDrugStratification <- function(connection, resultsDatabaseSchema, 
   )
   dataDrugType <- DatabaseConnector::querySql(connection, queryDrugType)
   return(dataDrugType)
-  #data.table::fwrite(dataDrugType, file=paste0(sourceOutputPath, "/domain-drug-stratification.csv"))      
+  #data.table::fwrite(dataDrugType, file=paste0(sourceOutputPath, "/domain-drug-stratification.csv"))
 }
 
 generateDomainSummaryDrugEra <- function(connection, resultsDatabaseSchema, vocabDatabaseSchema) {
@@ -1899,13 +1899,13 @@ generateQualityCompleteness <- function(connection, resultsDatabaseSchema) {
 }
 
 #' @title exportToAres
-#' 
+#'
 #' @description
 #' \code{exportToAres} Exports Achilles statistics for ARES
 #'
 #' @details
-#' Creates export files 
-#' 
+#' Creates export files
+#'
 #' @param connectionDetails             An R object of type ConnectionDetail (details for the function that contains server info, database type, optionally username/password, port)
 #' @param cdmDatabaseSchema             Name of the database schema that contains the OMOP CDM.
 #' @param resultsDatabaseSchema     		Name of the database schema that contains the Achilles analysis files. Default is cdmDatabaseSchema
@@ -1913,11 +1913,11 @@ generateQualityCompleteness <- function(connection, resultsDatabaseSchema) {
 #' @param vocabDatabaseSchema		        string name of database schema that contains OMOP Vocabulary. Default is cdmDatabaseSchema. On SQL Server, this should specifiy both the database and the schema, so for example 'results.dbo'.
 #' @param outputFormat                  default or alternatively "duckdb" to use parquet and duckdb formats.
 #' @param reports                       vector of reports to run, c() defaults to all reports
-#' 
+#'
 #' See \code{showReportTypes} for a list of all report types
-#' 
-#' @return none 
-#' 
+#'
+#' @return none
+#'
 #'@import DBI
 #'@importFrom data.table fwrite
 #'@importFrom dplyr ntile desc
