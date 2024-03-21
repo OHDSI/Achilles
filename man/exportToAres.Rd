@@ -10,7 +10,7 @@ exportToAres(
   resultsDatabaseSchema,
   vocabDatabaseSchema,
   outputPath,
-  outputFormat = NULL,
+  outputFormat = "default",
   reports = c()
 )
 }
@@ -25,7 +25,7 @@ exportToAres(
 
 \item{outputPath}{A folder location to save the JSON files. Default is current working folder}
 
-\item{outputFormat}{Unassigned for default, alternatively "duckdb" to use parquet and duckdb formats.}
+\item{outputFormat}{default or alternatively "duckdb" to use parquet and duckdb formats.}
 
 \item{reports}{vector of reports to run, c() defaults to all reports
 
