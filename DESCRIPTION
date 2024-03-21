@@ -28,6 +28,7 @@ Depends:
   R (>= 4.0.0)
 Imports:
   DBI,
+  duckdb,
   SqlRender (>= 1.6.0),
   dplyr,
   jsonlite,

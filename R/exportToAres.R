@@ -333,7 +333,7 @@ generateAOAchillesPerformanceReport <- function(connection, cdmDatabaseSchema, r
 
   queryAchillesPerformance <- SqlRender::loadRenderTranslateSql(sqlFilename = "export/performance/sqlAchillesPerformance.sql",
                                                                 packageName = "Achilles",
-                                                                dbms = connectionDetails$dbms,
+                                                                dbms = connection@dbms,
                                                                 warnOnMissingParameters = FALSE,
                                                                 cdm_database_schema = cdmDatabaseSchema,
                                                                 results_database_schema = resultsDatabaseSchema,
@@ -352,7 +352,7 @@ generateAODeathReport <- function(connection, cdmDatabaseSchema, resultsDatabase
   queryPrevalenceByGenderAgeYear <- SqlRender::loadRenderTranslateSql(
     sqlFilename = "export/death/sqlPrevalenceByGenderAgeYear.sql",
     packageName = "Achilles",
-    dbms = connectionDetails$dbms,
+    dbms = connection@dbms,
     results_database_schema = resultsDatabaseSchema,
     vocab_database_schema = vocabDatabaseSchema
   )
@@ -360,14 +360,14 @@ generateAODeathReport <- function(connection, cdmDatabaseSchema, resultsDatabase
   queryPrevalenceByMonth <- SqlRender::loadRenderTranslateSql(
     sqlFilename = "export/death/sqlPrevalenceByMonth.sql",
     packageName = "Achilles",
-    dbms = connectionDetails$dbms,
+    dbms = connection@dbms,
     results_database_schema = resultsDatabaseSchema
   )
 
   queryDeathByType <- SqlRender::loadRenderTranslateSql(
     sqlFilename = "export/death/sqlDeathByType.sql",
     packageName = "Achilles",
-    dbms = connectionDetails$dbms,
+    dbms = connection@dbms,
     results_database_schema = resultsDatabaseSchema,
     vocab_database_schema = vocabDatabaseSchema
   )
@@ -375,7 +375,7 @@ generateAODeathReport <- function(connection, cdmDatabaseSchema, resultsDatabase
   queryAgeAtDeath <- SqlRender::loadRenderTranslateSql(
     sqlFilename = "export/death/sqlAgeAtDeath.sql",
     packageName = "Achilles",
-    dbms = connectionDetails$dbms,
+    dbms = connection@dbms,
     results_database_schema = resultsDatabaseSchema,
     vocab_database_schema = vocabDatabaseSchema
   )
@@ -398,7 +398,7 @@ generateAOObservationPeriodReport <- function(connection, cdmDatabaseSchema, res
   renderedSql <- SqlRender::loadRenderTranslateSql(
     sqlFilename = "export/observationperiod/ageatfirst.sql",
     packageName = "Achilles",
-    dbms = connectionDetails$dbms,
+    dbms = connection@dbms,
     results_database_schema = resultsDatabaseSchema
   )
   ageAtFirstObservationData <- DatabaseConnector::querySql(connection, renderedSql)
@@ -407,7 +407,7 @@ generateAOObservationPeriodReport <- function(connection, cdmDatabaseSchema, res
   renderedSql <- SqlRender::loadRenderTranslateSql(
     sqlFilename = "export/observationperiod/agebygender.sql",
     packageName = "Achilles",
-    dbms = connectionDetails$dbms,
+    dbms = connection@dbms,
     results_database_schema = resultsDatabaseSchema,
     vocab_database_schema = vocabDatabaseSchema
   )
@@ -418,7 +418,7 @@ generateAOObservationPeriodReport <- function(connection, cdmDatabaseSchema, res
   renderedSql <- SqlRender::loadRenderTranslateSql(
     sqlFilename = "export/observationperiod/observationlength_stats.sql",
     packageName = "Achilles",
-    dbms = connectionDetails$dbms,
+    dbms = connection@dbms,
     results_database_schema = resultsDatabaseSchema
   )
   observationLengthStats <- DatabaseConnector::querySql(connection, renderedSql)
@@ -430,7 +430,7 @@ generateAOObservationPeriodReport <- function(connection, cdmDatabaseSchema, res
   renderedSql <- SqlRender::loadRenderTranslateSql(
     sqlFilename = "export/observationperiod/observationlength_data.sql",
     packageName = "Achilles",
-    dbms = connectionDetails$dbms,
+    dbms = connection@dbms,
     results_database_schema = resultsDatabaseSchema
   )
   observationLengthData <- DatabaseConnector::querySql(connection, renderedSql)
@@ -439,7 +439,7 @@ generateAOObservationPeriodReport <- function(connection, cdmDatabaseSchema, res
   renderedSql <- SqlRender::loadRenderTranslateSql(
     sqlFilename = "export/observationperiod/cumulativeduration.sql",
     packageName = "Achilles",
-    dbms = connectionDetails$dbms,
+    dbms = connection@dbms,
     results_database_schema = resultsDatabaseSchema
   )
   cumulativeDurationData <- DatabaseConnector::querySql(connection, renderedSql)
@@ -451,7 +451,7 @@ generateAOObservationPeriodReport <- function(connection, cdmDatabaseSchema, res
   renderedSql <- SqlRender::loadRenderTranslateSql(
     sqlFilename = "export/observationperiod/observationlengthbygender.sql",
     packageName = "Achilles",
-    dbms = connectionDetails$dbms,
+    dbms = connection@dbms,
     results_database_schema = resultsDatabaseSchema,
     vocab_database_schema = vocabDatabaseSchema
   )
@@ -469,7 +469,7 @@ generateAOObservationPeriodReport <- function(connection, cdmDatabaseSchema, res
   renderedSql <- SqlRender::loadRenderTranslateSql(
     sqlFilename = "export/observationperiod/observationlengthbyage.sql",
     packageName = "Achilles",
-    dbms = connectionDetails$dbms,
+    dbms = connection@dbms,
     results_database_schema = resultsDatabaseSchema
   )
   opLengthByAgeData <- DatabaseConnector::querySql(connection, renderedSql)
@@ -486,7 +486,7 @@ generateAOObservationPeriodReport <- function(connection, cdmDatabaseSchema, res
   renderedSql <- SqlRender::loadRenderTranslateSql(
     sqlFilename = "export/observationperiod/observedbyyear_stats.sql",
     packageName = "Achilles",
-    dbms = connectionDetails$dbms,
+    dbms = connection@dbms,
     results_database_schema = resultsDatabaseSchema
   )
   observedByYearStats <- DatabaseConnector::querySql(connection, renderedSql)
@@ -498,7 +498,7 @@ generateAOObservationPeriodReport <- function(connection, cdmDatabaseSchema, res
   renderedSql <- SqlRender::loadRenderTranslateSql(
     sqlFilename = "export/observationperiod/observedbyyear_data.sql",
     packageName = "Achilles",
-    dbms = connectionDetails$dbms,
+    dbms = connection@dbms,
     results_database_schema = resultsDatabaseSchema
   )
   observedByYearData <- DatabaseConnector::querySql(connection, renderedSql)
@@ -509,7 +509,7 @@ generateAOObservationPeriodReport <- function(connection, cdmDatabaseSchema, res
   renderedSql <- SqlRender::loadRenderTranslateSql(
     sqlFilename = "export/observationperiod/observedbymonth.sql",
     packageName = "Achilles",
-    dbms = connectionDetails$dbms,
+    dbms = connection@dbms,
     results_database_schema = resultsDatabaseSchema
   )
   observedByMonth <- DatabaseConnector::querySql(connection, renderedSql)
@@ -518,7 +518,7 @@ generateAOObservationPeriodReport <- function(connection, cdmDatabaseSchema, res
   renderedSql <- SqlRender::loadRenderTranslateSql(
     sqlFilename = "export/observationperiod/periodsperperson.sql",
     packageName = "Achilles",
-    dbms = connectionDetails$dbms,
+    dbms = connection@dbms,
     results_database_schema = resultsDatabaseSchema
   )
   personPeriodsData <- DatabaseConnector::querySql(connection, renderedSql)
@@ -793,7 +793,7 @@ generateAOMetadataReport <- function(connection, cdmDatabaseSchema, outputPath)
     queryMetadata <- SqlRender::loadRenderTranslateSql(
       sqlFilename = "export/metadata/sqlMetadata.sql",
       packageName = "Achilles",
-      dbms = connectionDetails$dbms,
+      dbms = connection@dbms,
       cdm_database_schema = cdmDatabaseSchema
     )
     dataMetadata <- DatabaseConnector::querySql(connection, queryMetadata)
@@ -943,7 +943,7 @@ generateAOCdmSourceReport <- function(connection, cdmDatabaseSchema, outputPath)
     queryCdmSource <- SqlRender::loadRenderTranslateSql(
       sqlFilename = "export/metadata/sqlCdmSource.sql",
       packageName = "Achilles",
-      dbms = connectionDetails$dbms,
+      dbms = connection@dbms,
       cdm_database_schema = cdmDatabaseSchema
     )
 
@@ -1901,7 +1901,7 @@ generateDataDensityTotal <- function(connection, resultsDatabaseSchema) {
   renderedSql <- SqlRender::loadRenderTranslateSql(
     sqlFilename = "export/datadensity/totalrecords.sql",
     packageName = "Achilles",
-    dbms = connectionDetails$dbms,
+    dbms = connection@dbms,
     results_database_schema = resultsDatabaseSchema
   )
 
@@ -1919,7 +1919,7 @@ generateDataDensityRecordsPerPerson <- function(connection, resultsDatabaseSchem
   renderedSql <- SqlRender::loadRenderTranslateSql(
     sqlFilename = "export/datadensity/recordsperperson.sql",
     packageName = "Achilles",
-    dbms = connectionDetails$dbms,
+    dbms = connection@dbms,
     results_database_schema = resultsDatabaseSchema
   )
 
@@ -1934,7 +1934,7 @@ generateDataDensityConceptsPerPerson <- function(connection, resultsDatabaseSche
   renderedSql <- SqlRender::loadRenderTranslateSql(
     sqlFilename = "export/datadensity/conceptsperperson.sql",
     packageName = "Achilles",
-    dbms = connectionDetails$dbms,
+    dbms = connection@dbms,
     results_database_schema = resultsDatabaseSchema
   )
   conceptsPerPerson <- DatabaseConnector::querySql(connection, renderedSql)
@@ -1947,7 +1947,7 @@ generateDataDensityDomainsPerPerson <- function(connection, resultsDatabaseSchem
   renderedSql <- SqlRender::loadRenderTranslateSql(
     sqlFilename = "export/datadensity/domainsperperson.sql",
     packageName = "Achilles",
-    dbms = connectionDetails$dbms,
+    dbms = connection@dbms,
     results_database_schema = resultsDatabaseSchema
   )
   domainsPerPerson <- DatabaseConnector::querySql(connection, renderedSql)
@@ -1961,7 +1961,7 @@ generateDomainSummaryConditions <- function(connection, resultsDatabaseSchema, v
   queryConditions <- SqlRender::loadRenderTranslateSql(
     sqlFilename = "export/condition/sqlConditionTable.sql",
     packageName = "Achilles",
-    dbms = connectionDetails$dbms,
+    dbms = connection@dbms,
     results_database_schema = resultsDatabaseSchema,
     vocab_database_schema = vocabDatabaseSchema
   )
@@ -1979,7 +1979,7 @@ generateDomainSummaryConditionEras <- function(connection, resultsDatabaseSchema
   queryConditionEra <- SqlRender::loadRenderTranslateSql(
     sqlFilename = "export/conditionera/sqlConditionEraTable.sql",
     packageName = "Achilles",
-    dbms = connectionDetails$dbms,
+    dbms = connection@dbms,
     results_database_schema = resultsDatabaseSchema,
     vocab_database_schema = vocabDatabaseSchema
   )
@@ -1996,7 +1996,7 @@ generateDomainSummaryDrugs <- function(connection, resultsDatabaseSchema, vocabD
   queryDrugs <- SqlRender::loadRenderTranslateSql(
     sqlFilename = "export/drug/sqlDrugTable.sql",
     packageName = "Achilles",
-    dbms = connectionDetails$dbms,
+    dbms = connection@dbms,
     results_database_schema = resultsDatabaseSchema,
     vocab_database_schema = vocabDatabaseSchema
   )
@@ -2013,7 +2013,7 @@ generateDomainDrugStratification <- function(connection, resultsDatabaseSchema, 
   queryDrugType <- SqlRender::loadRenderTranslateSql(
     sqlFilename = "export/drug/sqlDomainDrugStratification.sql",
     packageName = "Achilles",
-    dbms = connectionDetails$dbms,
+    dbms = connection@dbms,
     results_database_schema = resultsDatabaseSchema,
     vocab_database_schema = vocabDatabaseSchema
   )
@@ -2026,7 +2026,7 @@ generateDomainSummaryDrugEra <- function(connection, resultsDatabaseSchema, voca
   queryDrugEra <- SqlRender::loadRenderTranslateSql(
     sqlFilename = "export/drugera/sqlDrugEraTable.sql",
     packageName = "Achilles",
-    dbms = connectionDetails$dbms,
+    dbms = connection@dbms,
     results_database_schema = resultsDatabaseSchema,
     vocab_database_schema = vocabDatabaseSchema
   )
@@ -2043,7 +2043,7 @@ generateDomainSummaryMeasurements <- function(connection, resultsDatabaseSchema,
   queryMeasurements <- SqlRender::loadRenderTranslateSql(
     sqlFilename = "export/measurement/sqlMeasurementTable.sql",
     packageName = "Achilles",
-    dbms = connectionDetails$dbms,
+    dbms = connection@dbms,
     results_database_schema = resultsDatabaseSchema,
     vocab_database_schema = vocabDatabaseSchema
   )
@@ -2060,7 +2060,7 @@ generateDomainSummaryObservations <- function(connection, resultsDatabaseSchema,
   queryObservations <- SqlRender::loadRenderTranslateSql(
     sqlFilename = "export/observation/sqlObservationTable.sql",
     packageName = "Achilles",
-    dbms = connectionDetails$dbms,
+    dbms = connection@dbms,
     results_database_schema = resultsDatabaseSchema,
     vocab_database_schema = vocabDatabaseSchema
   )
@@ -2077,7 +2077,7 @@ generateDomainSummaryVisitDetails <- function(connection, resultsDatabaseSchema,
   queryVisitDetails <- SqlRender::loadRenderTranslateSql(
     sqlFilename = "export/visitdetail/sqlVisitDetailTreemap.sql",
     packageName = "Achilles",
-    dbms = connectionDetails$dbms,
+    dbms = connection@dbms,
     results_database_schema = resultsDatabaseSchema,
     vocab_database_schema = vocabDatabaseSchema
   )
@@ -2095,7 +2095,7 @@ generateDomainSummaryVisits <- function(connection, resultsDatabaseSchema, vocab
   queryVisits <- SqlRender::loadRenderTranslateSql(
     sqlFilename = "export/visit/sqlVisitTreemap.sql",
     packageName = "Achilles",
-    dbms = connectionDetails$dbms,
+    dbms = connection@dbms,
     results_database_schema = resultsDatabaseSchema,
     vocab_database_schema = vocabDatabaseSchema
   )
@@ -2113,7 +2113,7 @@ generateDomainVisitStratification <- function(connection, resultsDatabaseSchema,
   queryVisits <- SqlRender::loadRenderTranslateSql(
     sqlFilename = "export/visit/sqlDomainVisitStratification.sql",
     packageName = "Achilles",
-    dbms = connectionDetails$dbms,
+    dbms = connection@dbms,
     results_database_schema = resultsDatabaseSchema,
     vocab_database_schema = vocabDatabaseSchema
   )
@@ -2126,7 +2126,7 @@ generateDomainSummaryProcedures <- function(connection, resultsDatabaseSchema, v
   queryProcedures <- SqlRender::loadRenderTranslateSql(
     sqlFilename = "export/procedure/sqlProcedureTable.sql",
     packageName = "Achilles",
-    dbms = connectionDetails$dbms,
+    dbms = connection@dbms,
     results_database_schema = resultsDatabaseSchema,
     vocab_database_schema = vocabDatabaseSchema
   )
@@ -2143,7 +2143,7 @@ generateDomainSummaryDevices <- function(connection, resultsDatabaseSchema, voca
   queryDevices <- SqlRender::loadRenderTranslateSql(
     sqlFilename = "export/device/sqlDeviceTable.sql",
     packageName = "Achilles",
-    dbms = connectionDetails$dbms,
+    dbms = connection@dbms,
     results_database_schema = resultsDatabaseSchema,
     vocab_database_schema = vocabDatabaseSchema
   )
@@ -2160,7 +2160,7 @@ generateDomainSummaryProvider <- function(connection, resultsDatabaseSchema, voc
   queryProviders <- SqlRender::loadRenderTranslateSql(
     sqlFilename = "export/provider/sqlProviderSpecialty.sql",
     packageName = "Achilles",
-    dbms = connectionDetails$dbms,
+    dbms = connection@dbms,
     results_database_schema = resultsDatabaseSchema,
     vocab_database_schema = vocabDatabaseSchema
   )
@@ -2176,7 +2176,7 @@ generateQualityCompleteness <- function(connection, resultsDatabaseSchema) {
   queryCompleteness <- SqlRender::loadRenderTranslateSql(
     sqlFilename = "export/quality/sqlCompletenessTable.sql",
     packageName = "Achilles",
-    dbms = connectionDetails$dbms,
+    dbms = connection@dbms,
     results_database_schema = resultsDatabaseSchema
   )
   dataCompleteness <- DatabaseConnector::querySql(connection, queryCompleteness)
