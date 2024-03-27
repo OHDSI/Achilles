@@ -270,7 +270,7 @@ analysis_id,distribution,distributed_field,analysis_name,stratum_1_name,stratum_
 1830,0,,Number of visit_detail records inside a valid observation period,,,,,,0,Observation Period
 1831,0,,Proportion of people with at least one measurement record outside a valid observation period,Proportion,Number of people with a measurement record outside a valid observation period,Number of people in measurement,,,0,Observation Period
 1832,0,,Proportion of measurement records outside a valid observation period,Proportion,Number of records in measurement outside a valid observation period,Number of measurement records,,,0,Observation Period
-1833,0,,Proportion of measurement records inside a valid observation period and without a value,measurement_concept_id,Number of measurement records with no value for the given measurement_concept_id,proportion,,,0,Measurement
+1833,0,,Proportion of measurement records inside a valid observation period and without a value,measurement_concept_id,Number of measurement records with no value for the given measurement_concept_id,proportion,,,1,Measurement
 1891,0,,Percentage of total persons that have at least x measurements,measurement_concept_id,measurement_person,,,,1,Measurement
 1900,0,,"Source values mapped to concept_id 0 by table, by column, by source_value",table_name,column_name,source_value,,,1,Completeness
 2000,0,,Number of patients with at least 1 Dx and 1 Rx,,,,,,1,Completeness
