@@ -1915,6 +1915,18 @@ generateDataDensityTotal <- function(connection, resultsDatabaseSchema) {
   return(data)
 }
 
+generateLocationData <- function(connection, resultsDatabaseSchema) {
+  renderedSql <- SqlRender::loadRenderTranslateSql(
+    sqlFilename = "export/location/sqlLocationTable.sql",
+    packageName = "Achilles",
+    dbms = connection@dbms,
+    results_database_schema = resultsDatabaseSchema
+  )
+
+  locationData <- DatabaseConnector::querySql(connection, renderedSql)
+  return(locationData)
+}
+
 generateDataDensityRecordsPerPerson <- function(connection, resultsDatabaseSchema) {
   renderedSql <- SqlRender::loadRenderTranslateSql(
     sqlFilename = "export/datadensity/recordsperperson.sql",
@@ -2292,6 +2304,10 @@ exportToAres <- function(
     filename <- file.path(sourceOutputPath, "death.json")
     write(jsonlite::toJSON(currentTable), filename)
 
+    writeLines("Generating location report")
+    currentTable <- generateLocationData(conn, resultsDatabaseSchema)
+    filename <- file.path(sourceOutputPath, "location.csv")
+    data.table::fwrite(currentTable, file = filename)
     writeLines("Generating domain summary reports")
 
     # domain summary - conditions
