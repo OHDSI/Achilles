@@ -95,4 +95,5 @@ cnt as count_value
   select 'death' as table_name, 'cause_source_value' as column_name, cause_source_value as source_value, count_big(*) as cnt from @cdmDatabaseSchema.death where cause_concept_id = 0 group by cause_source_value
 ) a
 where cnt >= 1 
+and len(source_value) > 0
 ;
