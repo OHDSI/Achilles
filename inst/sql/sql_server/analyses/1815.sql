@@ -1,8 +1,8 @@
 -- 1815  Distribution of numeric values, by measurement_concept_id and unit_concept_id
 
---HINT DISTRIBUTE_ON_KEY(subject_id)
+--HINT DISTRIBUTE_ON_KEY(measurement_concept_id)
 SELECT
-	m.measurement_concept_id AS subject_id,
+	m.measurement_concept_id,
 	m.unit_concept_id,
 	CAST(m.value_as_number AS FLOAT) AS count_value
 INTO
@@ -22,17 +22,17 @@ WHERE
 
 --HINT DISTRIBUTE_ON_KEY(stratum1_id)
 SELECT
-	m.subject_id AS stratum1_id,
+	m.measurement_concept_id AS stratum1_id,
 	m.unit_concept_id AS stratum2_id,
 	m.count_value,
 	COUNT_BIG(*) AS total,
-	ROW_NUMBER() OVER (PARTITION BY m.subject_id,m.unit_concept_id ORDER BY m.count_value) AS rn
+	ROW_NUMBER() OVER (PARTITION BY m.measurement_concept_id,m.unit_concept_id ORDER BY m.count_value) AS rn
 INTO
 	#statsView_1815
 FROM
 	#measurementView_1815 m
 GROUP BY
-	m.subject_id,
+	m.measurement_concept_id,
 	m.unit_concept_id,
 	m.count_value
 ;
@@ -64,7 +64,7 @@ view_cte as (
 ),
 measurement_cte as (
 	SELECT
-		m.subject_id,
+		m.measurement_concept_id,
 		m.unit_concept_id,
 		m.count_value
 	FROM
@@ -76,7 +76,7 @@ measurement_cte as (
 ),
 measurement_agg_cte as (
 	SELECT
-		m.subject_id AS stratum1_id,
+		m.measurement_concept_id AS stratum1_id,
 		m.unit_concept_id AS stratum2_id,
 		CAST(AVG(1.0 * m.count_value) AS FLOAT) AS avg_value,
 		CAST(stdev(m.count_value) AS FLOAT) AS stdev_value,
@@ -86,7 +86,7 @@ measurement_agg_cte as (
 	FROM
 		measurement_cte m
 	GROUP BY
-		m.subject_id,
+		m.measurement_concept_id,
 		m.unit_concept_id
 )
 select
