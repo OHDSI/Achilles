@@ -16,7 +16,7 @@ analysisDetails <- Achilles::getAnalysisDetails()
 # in the past and the achilles results tables were not created, then when running achilles for PERSON, we allow createTable and 
 # updateGivenAnalysesOnly to assume their default values (ie, we don't specify them).
 
-personOnly <- analysisDetails[analysisDetails$CATEGORY == "Person",]$ANALYSIS_ID
+personOnly <- analysisDetails[analysisDetails$category == "Person",]$analysis_id
 
 Achilles::achilles(
   connectionDetails     = connectionDetails,
@@ -30,7 +30,7 @@ Achilles::achilles(
 # we need to call Achilles such that the prior PERSON analyses are NOT deleted.  We do so by using createTable = F and
 # updateGivenAnalysisOnly = T. 
 
-opOnly <- analysisDetails[analysisDetails$CATEGORY == "Observation Period",]$ANALYSIS_ID
+opOnly <- analysisDetails[analysisDetails$category == "Observation Period",]$analysis_id
 
 Achilles::achilles(
   connectionDetails       = connectionDetails,
@@ -45,7 +45,7 @@ Achilles::achilles(
 # We continue to execute Achilles for VISIT_OCCURRENCE, CONDITION_OCCURRENCE, DRUG_EXPOSURE, and MEASUREMENT 
 # as we did for OBSERVATION_PERIOD.  For example, for VISIT_OCCURRENCE:
 
-voOnly <- analysisDetails[analysisDetails$CATEGORY == "Visit Occurrence",]$ANALYSIS_ID
+voOnly <- analysisDetails[analysisDetails$category == "Visit Occurrence",]$analysis_id
 
 Achilles::achilles(
   connectionDetails       = connectionDetails,
@@ -73,7 +73,7 @@ for (vo_id in voOnly) {
     updateGivenAnalysesOnly = T)
 }
 
-# Finally, the column names and data types for ACHILLES_RESULTS and ACHILLES_RESULTS_DIST are found here:
+# Finally, the column names and data types for achilles_results and achilles_results_dist are found here:
 #   https://github.com/OHDSI/Achilles/blob/master/inst/csv/schemas/schema_achilles_results.csv
 #   https://github.com/OHDSI/Achilles/blob/master/inst/csv/schemas/schema_achilles_results_dist.csv
 # so they can be created manually in SQL as well.

@@ -1,4 +1,4 @@
-FIELD_NAME,FIELD_TYPE
+field_name,field_type
 analysis_id,int
 stratum_1,varchar(255)
 stratum_2,varchar(255)

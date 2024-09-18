@@ -1,4 +1,4 @@
-INDEX_NAME,TABLE_NAME,FIELDS
+index_name,table_name,fields
 idx_ar_aid,achilles_results,analysis_id
 idx_ar_s1,achilles_results,stratum_1
 idx_ar_s2,achilles_results,stratum_2

@@ -55,7 +55,7 @@ listMissingAnalyses <- function(connectionDetails, resultsDatabaseSchema) {
   # Determine which analyses are missing by comparing analysisDetails with achilles_results and
   # achilles_results_dist
   analysisDetails <- getAnalysisDetails()
-  allAnalysisIds <- analysisDetails$ANALYSIS_ID
+  allAnalysisIds <- analysisDetails$analysis_id
 
   conn <- DatabaseConnector::connect(connectionDetails)
   print("Retrieving previously computed achilles_results and achilles_results_dist data...")
@@ -67,19 +67,15 @@ listMissingAnalyses <- function(connectionDetails, resultsDatabaseSchema) {
   sql <- SqlRender::render(sql, results_schema = resultsDatabaseSchema)
   sql <- SqlRender::translate(sql, targetDialect = connectionDetails$dbms)
 
-  existingAnalysisIds <- DatabaseConnector::querySql(conn, sql)$ANALYSIS_ID
+  existingAnalysisIds <- DatabaseConnector::querySql(conn, sql)$analysis_id
 
   DatabaseConnector::disconnect(conn)
 
   missingAnalysisIds <- setdiff(allAnalysisIds, existingAnalysisIds)
 
-  colsToDisplay <- c("ANALYSIS_ID",
-                     "DISTRIBUTION",
-                     "CATEGORY",
-                     "IS_DEFAULT",
-                     "ANALYSIS_NAME")
-  retVal <- analysisDetails[analysisDetails$ANALYSIS_ID %in% missingAnalysisIds, colsToDisplay]
-  retVal <- retVal[order(retVal$ANALYSIS_ID), ]
+  colsToDisplay <- c("analysis_id","distribution","category","is_default","analysis_name")
+  retVal <- analysisDetails[analysisDetails$analysis_id %in% missingAnalysisIds, colsToDisplay]
+  retVal <- retVal[order(retVal$analysis_id), ]
 
   return(retVal)
 }

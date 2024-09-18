@@ -4,8 +4,8 @@ Title: Achilles Data Source Characterization
 Version: 1.7.2
 Date: 2023-05-11
 Authors@R: c(
-  person("Frank", "DeFalco", email = "fdefalco@ohdsi.org", role = c("aut","cre")),  
-  person("Patrick", "Ryan", email = "ryan@ohdsi.org", role = c("aut")),  
+  person("Frank", "DeFalco", email = "fdefalco@ohdsi.org", role = c("aut","cre")),
+  person("Patrick", "Ryan", email = "ryan@ohdsi.org", role = c("aut")),
   person("Martijn", "Schuemie", email = "schuemie@ohdsi.org", role = c("aut")),
   person("Vojtech", "Huser", role = c("aut")),
   person("Chris", "Knoll", role = c("aut")),
@@ -16,17 +16,19 @@ Authors@R: c(
   )
 Maintainer: Frank DeFalco <fdefalco@ohdsi.org>
 LazyData: true
-Description: Automated Characterization of Health Information at Large-Scale 
-  Longitudinal Evidence Systems. Creates a descriptive statistics summary for 
-  an Observational Medical Outcomes Partnership Common Data Model standardized 
-  data source. This package includes functions for executing summary queries on 
-  the specified data source and exporting reporting content for use across a 
-  variety of Observational Health Data Sciences and Informatics community 
-  applications. 
+Description: Automated Characterization of Health Information at Large-Scale
+  Longitudinal Evidence Systems. Creates a descriptive statistics summary for
+  an Observational Medical Outcomes Partnership Common Data Model standardized
+  data source. This package includes functions for executing summary queries on
+  the specified data source and exporting reporting content for use across a
+  variety of Observational Health Data Sciences and Informatics community
+  applications.
 Depends:
   DatabaseConnector (>= 2.0.0),
   R (>= 4.0.0)
 Imports:
+  DBI,
+  duckdb,
   SqlRender (>= 1.6.0),
   dplyr,
   jsonlite,
@@ -49,4 +51,6 @@ License: Apache License
 Roxygen: list()
 RoxygenNote: 7.2.3
 Encoding: UTF-8
+URL: https://ohdsi.github.io/Achilles/, https://github.com/OHDSI/Achilles
+BugReports: https://github.com/OHDSI/Achilles/issues
 Config/testthat/edition: 3
