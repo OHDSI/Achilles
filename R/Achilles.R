@@ -1107,7 +1107,10 @@ optimizeAtlasCache <- function(connectionDetails,
 
 .getAchillesResultBenchmark <- function(analysisId, logs) {
   logs <- logs[logs$analysisId == analysisId, ]
-  if (nrow(logs) == 1) {
+
+  if (nrow(logs) > 1) {
+    stop("Multiple log rows found for analysisId ", analysisId, ". Expected exactly one row. Delete any historic log files and run again.")
+  } else if (nrow(logs) == 1) {
     runTime <- strsplit(logs[1, ]$runTime, " ")[[1]]
     runTimeValue <- round(as.numeric(runTime[1]), 2)
     runTimeUnit <- runTime[2]
