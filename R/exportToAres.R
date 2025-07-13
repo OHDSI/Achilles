@@ -20,8 +20,11 @@ saveConceptsAsJson <- function(
   report <- as.list(report)
 
   #Normalize the specified columns
-  for (col in columnsToNormalize) {
-    report[[col]] <- normalizeEmptyValue(report[[col]])
+  if (!is.null(columnsToNormalize) && length(columnsToNormalize) > 0)
+  {
+    for (col in columnsToNormalize) {
+      report[[col]] <- normalizeEmptyValue(report[[col]])
+    }
   }
 
   # Convert specified columns to data frames
@@ -30,7 +33,7 @@ saveConceptsAsJson <- function(
   }
 
   filename <- paste(
-    dir, "/concept_", report$CONCEPT_ID, ".json",
+    dir, "/concept_", concept_id, ".json",
     sep = ""
   )
   write(jsonlite::toJSON(report), filename)
@@ -1969,6 +1972,23 @@ generateDataDensityDomainsPerPerson <- function(connection, resultsDatabaseSchem
   #dbWriteTable(duckdbCon, "domains_per_person", domainsPerPerson)
 }
 
+#generate cost domain summaries
+
+
+generateCostDomainSummary <- function(connection, resultsDatabaseSchema, vocabDatabaseSchema) {
+  queryCost <- SqlRender::loadRenderTranslateSql(
+    sqlFilename = "export/cost/sqlCostTable.sql",
+    packageName = "Achilles",
+    dbms = connection@dbms,
+    results_database_schema = resultsDatabaseSchema,
+    vocab_database_schema = vocabDatabaseSchema
+  )
+
+  costSummary <- DatabaseConnector::querySql(connection, queryCost)
+  return(costSummary)
+}
+
+
 generateDomainSummaryConditions <- function(connection, resultsDatabaseSchema, vocabDatabaseSchema) {
   queryConditions <- SqlRender::loadRenderTranslateSql(
     sqlFilename = "export/condition/sqlConditionTable.sql",
@@ -2032,6 +2052,25 @@ generateDomainDrugStratification <- function(connection, resultsDatabaseSchema, 
   dataDrugType <- DatabaseConnector::querySql(connection, queryDrugType)
   return(dataDrugType)
   #data.table::fwrite(dataDrugType, file=paste0(sourceOutputPath, "/domain-drug-stratification.csv"))
+}
+
+generateCostTimeseries <- function(connection, resultsDatabaseSchema, vocabDatabaseSchema) {
+  queryCost <- SqlRender::loadRenderTranslateSql(
+    sqlFilename = "export/cost/sqlCostTimeseries.sql",
+    packageName = "Achilles",
+    dbms = connection@dbms,
+    results_database_schema = resultsDatabaseSchema,
+    vocabDatabaseSchema = vocabDatabaseSchema
+  )
+
+  costTimeseries <- DatabaseConnector::querySql(connection, queryCost)
+
+  costTimeseries <- costTimeseries %>%
+    mutate(MONTH_YEAR = format(as.Date(MONTH_YEAR), "%Y-%m")) %>%
+    group_by(MONTH_YEAR, DOMAIN_ID) %>%
+    summarise(TOTAL_COST = sum(TOTAL_COST, na.rm = TRUE), .groups = "drop")
+
+  return(costTimeseries)
 }
 
 generateDomainSummaryDrugEra <- function(connection, resultsDatabaseSchema, vocabDatabaseSchema) {
@@ -2310,6 +2349,10 @@ exportToAres <- function(
     data.table::fwrite(currentTable, file = filename)
     writeLines("Generating domain summary reports")
 
+    # cost domain summary
+    costDomainSummary <- generateCostDomainSummary(conn, resultsDatabaseSchema, vocabDatabaseSchema)
+    data.table::fwrite(costDomainSummary, file = paste0(sourceOutputPath, "/cost-domain-summary.csv"))
+
     # domain summary - conditions
     dataConditions <- generateDomainSummaryConditions(conn, resultsDatabaseSchema, vocabDatabaseSchema)
     data.table::fwrite(dataConditions, file = paste0(sourceOutputPath, "/domain-summary-condition_occurrence.csv"))
@@ -2325,6 +2368,9 @@ exportToAres <- function(
     # domain stratification by drug type concept
     dataDrugType <- generateDomainDrugStratification(conn, resultsDatabaseSchema, vocabDatabaseSchema)
     data.table::fwrite(dataDrugType, file = paste0(sourceOutputPath, "/domain-drug-stratification.csv"))
+
+    dataCostTimeseries <- generateCostTimeseries(conn, resultsDatabaseSchema, vocabDatabaseSchema)
+    data.table::fwrite(dataCostTimeseries, file = paste0(sourceOutputPath, "/cost-timeseries.csv"))
 
     # domain summary - drug era
     dataDrugEra <- generateDomainSummaryDrugEra(conn, resultsDatabaseSchema, vocabDatabaseSchema)
