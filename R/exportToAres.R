@@ -2066,10 +2066,20 @@ generateCostTimeseries <- function(connection, resultsDatabaseSchema, vocabDatab
   costTimeseries <- DatabaseConnector::querySql(connection, queryCost)
 
   costTimeseries <- costTimeseries %>%
-    mutate(MONTH_YEAR = format(as.Date(MONTH_YEAR), "%Y-%m")) %>%
+    mutate(
+      MONTH_YEAR = format(as.Date(MONTH_YEAR), "%Y-%m"),
+      TOTAL_COST = as.numeric(TOTAL_COST),
+      TOTAL_PAID = as.numeric(TOTAL_PAID),
+      TOTAL_CHARGE = as.numeric(TOTAL_CHARGE)
+    ) %>%
     group_by(MONTH_YEAR, DOMAIN_ID) %>%
-    summarise(TOTAL_COST = sum(TOTAL_COST, na.rm = TRUE), .groups = "drop")
-
+    summarise(
+      TOTAL_COST = sum(TOTAL_COST, na.rm = TRUE),
+      TOTAL_PAID = sum(TOTAL_PAID, na.rm = TRUE),
+      TOTAL_CHARGE = sum(TOTAL_CHARGE, na.rm = TRUE),
+      .groups = "drop"
+    )
+    
   return(costTimeseries)
 }
 

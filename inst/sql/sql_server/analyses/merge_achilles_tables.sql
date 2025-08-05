@@ -15,6 +15,7 @@ from
   @detailSqls
 ) Q
 {@smallCellCount != ''}?{
-  where count_value > @smallCellCount
+  where (analysis_id in (1500, 1600, 1700, 1501, 1601, 1701)
+         or count_value > @smallCellCount)
 }
 ;
