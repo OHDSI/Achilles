@@ -1,0 +1,22 @@
+select
+    CAST(ard1.stratum_1 AS INTEGER) as concept_id,
+    c_cause.concept_name as concept_name,
+    c_gender.concept_name as category,
+    ard1.min_value,
+    ard1.p10_value,
+    ard1.p25_value,
+    ard1.median_value,
+    ard1.p75_value,
+    ard1.p90_value,
+    ard1.max_value
+from (
+    select cast(stratum_1 as bigint) stratum_1,
+           cast(stratum_2 as bigint) stratum_2,
+           min_value, p10_value, p25_value, median_value, p75_value, p90_value, max_value
+    FROM @results_database_schema.achilles_results_dist
+    where analysis_id = 507
+    GROUP BY analysis_id, stratum_1, stratum_2, min_value, p10_value, p25_value, median_value, p75_value, p90_value, max_value
+) ard1
+inner join @vocab_database_schema.concept c_cause on ard1.stratum_1 = c_cause.concept_id
+inner join @vocab_database_schema.concept c_gender on ard1.stratum_2 = c_gender.concept_id
+order by c_cause.concept_name, c_gender.concept_name

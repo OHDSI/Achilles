@@ -654,6 +654,131 @@ generateAOVisitReports <- function(connectionDetails, cdmDatabaseSchema, results
   return(list("reports" = reports, "uniqueConcepts" = uniqueConcepts))
 }
 
+generateAODeathReports <- function(connectionDetails, deathDomainSummary, cdmDatabaseSchema, resultsDatabaseSchema, vocabDatabaseSchema, outputFormat)
+{
+  queryAgeAtDeath <- SqlRender::loadRenderTranslateSql(
+    sqlFilename = "export/deathDomain/sqlAgeAtDeath.sql",
+    packageName = "Achilles",
+    dbms = connectionDetails$dbms,
+    results_database_schema = resultsDatabaseSchema,
+    vocab_database_schema = vocabDatabaseSchema
+  )
+
+  queryDeathByType <- SqlRender::loadRenderTranslateSql(
+    sqlFilename = "export/deathDomain/sqlDeathByType.sql",
+    packageName = "Achilles",
+    dbms = connectionDetails$dbms,
+    results_database_schema = resultsDatabaseSchema,
+    vocab_database_schema = vocabDatabaseSchema
+  )
+
+  queryDeathPrevalenceByMonth <- SqlRender::loadRenderTranslateSql(
+    sqlFilename = "export/deathDomain/sqlPrevalenceByMonth.sql",
+    packageName = "Achilles",
+    dbms = connectionDetails$dbms,
+    results_database_schema = resultsDatabaseSchema,
+    vocab_database_schema = vocabDatabaseSchema
+  )
+
+  queryDeathPrevalendeByGenderAgeYear <- SqlRender::loadRenderTranslateSql(
+    sqlFilename = "export/deathDomain/sqlPrevalenceByGenderAgeYear.sql",
+    packageName = "Achilles",
+    dbms = connectionDetails$dbms,
+    results_database_schema = resultsDatabaseSchema,
+    vocab_database_schema = vocabDatabaseSchema
+  )
+
+  conn <- DatabaseConnector::connect(connectionDetails)
+
+  dataAgeAtDeath <-
+    DatabaseConnector::querySql(conn, queryAgeAtDeath) %>%
+      dplyr::select(c("CONCEPT_ID", "CONCEPT_NAME", "CATEGORY", "MIN_VALUE", "P10_VALUE", "P25_VALUE", "MEDIAN_VALUE", "P75_VALUE", "P90_VALUE", "MAX_VALUE"))
+  if (nrow(dataAgeAtDeath) == 0) {
+    return(NULL)
+  }
+
+  dataDeathByType <-
+    DatabaseConnector::querySql(conn, queryDeathByType) %>%
+      dplyr::select(c("CONCEPT_ID", "CONCEPT_NAME", "DEATH_TYPE_CONCEPT_ID", "DEATH_TYPE_CONCEPT_NAME", "COUNT_VALUE"))
+
+  deathPrevalenceByMonth <-
+    DatabaseConnector::querySql(conn, queryDeathPrevalenceByMonth) %>%
+      dplyr::select(c("CONCEPT_ID", 'CONCEPT_NAME', 'X_CALENDAR_MONTH', 'Y_PREVALENCE_1000PP'))
+
+  deathPrevalenceByGenderAgeYear <-
+    DatabaseConnector::querySql(conn, queryDeathPrevalendeByGenderAgeYear) %>%
+      dplyr::select(c("CONCEPT_ID", "TRELLIS_NAME", "SERIES_NAME", "X_CALENDAR_YEAR", "Y_PREVALENCE_1000PP"))
+
+  # Create concept metadata from unique concepts with their names
+  # conceptMetadata <- dataAgeAtDeath %>%
+  #   dplyr::distinct(CONCEPT_ID, CONCEPT_NAME) %>%
+  #   dplyr::mutate(CDM_TABLE_NAME = "DEATH")
+
+  uniqueConcepts <- data.frame(
+    CONCEPT_ID = unique(deathPrevalenceByMonth$CONCEPT_ID),
+    CDM_TABLE_NAME = "DEATH"
+  )
+
+  conceptMetadata <-
+    uniqueConcepts %>%
+      dplyr::left_join(
+        (
+          deathDomainSummary %>%
+            dplyr::select(
+              "CONCEPT_ID",
+              "CONCEPT_NAME",
+              "NUM_PERSONS",
+              "PERCENT_PERSONS",
+              "RECORDS_PER_PERSON"
+            )
+        ),
+        by = c("CONCEPT_ID" = "CONCEPT_ID")
+      )
+
+  if (outputFormat == "duckdb") {
+    reports <- list(
+      concept_metadata = conceptMetadata,
+      age_at_death = dataAgeAtDeath,
+      death_by_type = dataDeathByType,
+      prevalence_by_month = deathPrevalenceByMonth,
+      prevalence_by_gender_age_year = deathPrevalenceByGenderAgeYear
+    )
+  } else {
+    reports <-
+      conceptMetadata %>%
+        dplyr::left_join(
+          (
+            dataAgeAtDeath %>%
+              tidyr::nest(AGE_AT_DEATH = c(-1))
+          ),
+          by = c("CONCEPT_ID" = "CONCEPT_ID")
+        ) %>%
+        dplyr::left_join(
+          (
+            dataDeathByType %>%
+              tidyr::nest(DEATH_BY_TYPE = c(-1))
+          ),
+          by = c("CONCEPT_ID" = "CONCEPT_ID")
+        ) %>%
+        dplyr::left_join(
+          (
+            deathPrevalenceByMonth %>%
+              tidyr::nest(PREVALENCE_BY_MONTH = c(-1))
+          ),
+          by = c("CONCEPT_ID" = "CONCEPT_ID")
+        ) %>%
+        dplyr::left_join(
+          (
+            deathPrevalenceByGenderAgeYear %>%
+              tidyr::nest(PREVALENCE_BY_GENDER_AGE_YEAR = c(-1))
+          ),
+          by = c("CONCEPT_ID" = "CONCEPT_ID")
+        ) %>%
+        dplyr::collect()
+  }
+  return(list("reports" = reports, "uniqueConcepts" = data.frame(CONCEPT_ID = unique(conceptMetadata$CONCEPT_ID), CDM_TABLE_NAME = "DEATH")))
+}
+
 generateAOVisitDetailReports <- function(connectionDetails, cdmDatabaseSchema, resultsDatabaseSchema, vocabDatabaseSchema, outputFormat)
 {
   queryVisitDetails <- SqlRender::loadRenderTranslateSql(
@@ -1990,6 +2115,22 @@ generateDomainSummaryConditions <- function(connection, resultsDatabaseSchema, v
   #dbWriteTable(duckdbCon, "domain_summary", dataConditions, append = TRUE)
 }
 
+generateDomainSummaryDeath <- function(connection, resultsDatabaseSchema, vocabDatabaseSchema) {
+  queryDeaths <- SqlRender::loadRenderTranslateSql(
+    sqlFilename = "export/deathDomain/sqlDeathTable.sql",
+    packageName = "Achilles",
+    dbms = connection@dbms,
+    results_database_schema = resultsDatabaseSchema,
+    vocab_database_schema = vocabDatabaseSchema
+  )
+  dataDeaths <- DatabaseConnector::querySql(connection, queryDeaths)
+  dataDeaths$PERCENT_PERSONS <- format(round(dataDeaths$PERCENT_PERSONS, 4), nsmall = 4)
+  dataDeaths$PERCENT_PERSONS_NTILE <- dplyr::ntile(dplyr::desc(dataDeaths$PERCENT_PERSONS), 10)
+  dataDeaths$RECORDS_PER_PERSON <- format(round(dataDeaths$RECORDS_PER_PERSON, 1), nsmall = 1)
+  dataDeaths$RECORDS_PER_PERSON_NTILE <- dplyr::ntile(dplyr::desc(dataDeaths$RECORDS_PER_PERSON), 10)
+  return(dataDeaths)
+}
+
 generateDomainSummaryConditionEras <- function(connection, resultsDatabaseSchema, vocabDatabaseSchema) {
   queryConditionEra <- SqlRender::loadRenderTranslateSql(
     sqlFilename = "export/conditionera/sqlConditionEraTable.sql",
@@ -2321,6 +2462,10 @@ exportToAres <- function(
     dataConditionEra <- generateDomainSummaryConditionEras(conn, resultsDatabaseSchema, vocabDatabaseSchema)
     data.table::fwrite(dataConditionEra, file = paste0(sourceOutputPath, "/domain-summary-condition_era.csv"))
 
+    # domain summary - condition eras
+    dataDeath <- generateDomainSummaryDeath(conn, resultsDatabaseSchema, vocabDatabaseSchema)
+    data.table::fwrite(dataDeath, file = paste0(sourceOutputPath, "/domain-summary-death.csv"))
+
     # domain summary - drugs
     dataDrugs <- generateDomainSummaryDrugs(conn, resultsDatabaseSchema, vocabDatabaseSchema)
     data.table::fwrite(dataDrugs, file = paste0(sourceOutputPath, "/domain-summary-drug_exposure.csv"))
@@ -2408,6 +2553,31 @@ exportToAres <- function(
         "AGE_AT_FIRST_OCCURRENCE"
       ),
       domain = "visit_occurrence",
+      schema = conceptsSchema
+    )
+
+    writeLines("Generating death domain reports")
+    conceptData <- generateAODeathReports (
+      connectionDetails,
+      dataDeath,
+      cdmDatabaseSchema,
+      resultsDatabaseSchema,
+      vocabDatabaseSchema,
+      outputFormat
+    )
+    processAndExportConceptData(
+      duckdbCon = duckdbCon,
+      conceptData = conceptData,
+      outputPath = sourceOutputPath,
+      outputFormat = outputFormat,
+      columnsToNormalize = columnsToNormalize,
+      columnsToConvertToDataFrame = c(
+       'AGE_AT_DEATH',
+       'DEATH_BY_TYPE',
+       'PREVALENCE_BY_MONTH',
+       'PREVALENCE_BY_GENDER_AGE_YEAR'
+      ),
+      domain = "death",
       schema = conceptsSchema
     )
 

@@ -77,9 +77,12 @@ analysis_id,distribution,distributed_field,analysis_name,stratum_1_name,stratum_
 500,0,,"Number of persons with death, by cause_concept_id",cause_concept_id,,,,,1,Death
 501,0,,"Number of records of death, by cause_concept_id",cause_concept_id,,,,,1,Death
 502,0,,Number of persons by death month,calendar month,,,,,1,Death
+503,0,,Number of persons by death type per cause,calendar month,,,,,1,Death
 504,0,,"Number of persons with a death, by calendar year by gender by age decile",calendar year,gender_concept_id,age decile,,,1,Death
 505,0,,"Number of death records, by death_type_concept_id",death_type_concept_id,,,,,1,Death
 506,1,,Distribution of age at death by gender,gender_concept_id,,,,,1,Death
+507,1,,Distribution of age at death by gender and cause,gender_concept_id,,,,,1,Death
+508,0,,Death by month-year,cause_concept_id,,,,,1,Death
 509,0,,Number of death records with invalid person_id,,,,,,0,Death
 510,0,,Number of death records outside valid observation period,,,,,,0,Observation Period
 511,1,,Distribution of time from death to last condition,,,,,,1,Death
@@ -87,6 +90,7 @@ analysis_id,distribution,distributed_field,analysis_name,stratum_1_name,stratum_
 513,1,,Distribution of time from death to last visit,,,,,,1,Death
 514,1,,Distribution of time from death to last procedure,,,,,,1,Death
 515,1,,Distribution of time from death to last observation,,,,,,1,Death
+516,0,,"Number of persons with a death, by cause concept id by calendar year by gender by age decile",calendar year,gender_concept_id,age decile,,,1,Death
 525,0,,Number of death records by cause_source_concept_id,cause_source_concept_id,,,,,1,Death
 530,0,,Number of death records inside a valid observation period,,,,,,0,Observation Period
 531,0,,Proportion of people with at least one death record outside a valid observation period,Proportion,Number of people with a death record outside a valid observation period,Number of people in death,,,0,Observation Period
@@ -222,6 +226,8 @@ analysis_id,distribution,distributed_field,analysis_name,stratum_1_name,stratum_
 1414,0,,Number of persons with payer plan period before year-of-birth,,,,,,0,Payer Plan Period
 1415,0,,Number of persons with payer plan period end < payer plan period start,,,,,,0,Payer Plan Period
 1425,0,,Number of payer_plan_period records by payer_source_concept_id,payer_source_concept_id,,,,,1,Payer Plan Period
+1500,0,,"Total cost by drug_concept_id",drug_concept_id,,,,,0,Cost
+1501,0,,Total cost by drug by monthyear,cost_id,,,,,0,Cost
 1502,1,paid_patient_copay,"Distribution of paid_patient_copay, by drug_concept_id",drug_concept_id,,,,,0,Cost
 1503,1,paid_patient_coinsurance,"Distribution of paid_patient_coinsurance, by drug_concept_id",drug_concept_id,,,,,0,Cost
 1504,1,paid_patient_deductible,"Distribution of paid_patient_deductible, by drug_concept_id",drug_concept_id,,,,,0,Cost
@@ -232,6 +238,8 @@ analysis_id,distribution,distributed_field,analysis_name,stratum_1_name,stratum_
 1509,1,paid_ingredient_cost,"Distribution of paid_ingredient_cost, by drug_concept_id",drug_concept_id,,,,,0,Cost
 1510,1,paid_dispensing_fee,"Distribution of paid_dispensing_fee, by drug_concept_id",drug_concept_id,,,,,0,Cost
 1511,1,total_cost,"Distribution of total_cost, by drug_concept_id",drug_concept_id,,,,,0,Cost
+1600,0,,"Total cost by procedure_concept_id",procedure_concept_id,,,,,0,Cost
+1601,0,,Total cost by procedure_concept_id by monthyear,cost_id,,,,,0,Cost
 1602,1,paid_patient_copay,"Distribution of paid_patient_copay, by procedure_concept_id",procedure_concept_id,,,,,0,Cost
 1603,1,paid_patient_coinsurance,"Distribution of paid_patient_coinsurance, by procedure_concept_id",procedure_concept_id,,,,,0,Cost
 1604,1,paid_patient_deductible,"Distribution of paid_patient_deductible, by procedure_concept_id",procedure_concept_id,,,,,0,Cost
@@ -240,6 +248,8 @@ analysis_id,distribution,distributed_field,analysis_name,stratum_1_name,stratum_
 1607,1,paid_by_patient,"Distribution of paid_by_patient, by procedure_concept_id",procedure_concept_id,,,,,0,Cost
 1608,1,total_paid,"Distribution of total paid, by procedure_concept_id",procedure_concept_id,,,,,0,Cost
 1610,0,,Number of records by revenue_code_concept_id,revenue_code_concept_id,,,,,0,Cost
+1700,0,,"Total cost by visit_concept_id",visit_concept_id,,,,,0,Cost
+1701,0,,"Total cost by visit by yearmonth",cost_id,,,,,0,Cost
 1800,0,,"Number of persons with at least one measurement occurrence, by measurement_concept_id",measurement_concept_id,,,,,1,Measurement
 1801,0,,"Number of measurement occurrence records, by measurement_concept_id",measurement_concept_id,,,,,1,Measurement
 1802,0,,"Number of persons by measurement occurrence start month, by measurement_concept_id",measurement_concept_id,calendar month,,,,1,Measurement
