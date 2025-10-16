@@ -42,10 +42,13 @@ genreated, this function will fail.
 }
 \examples{
 \dontrun{
-connectionDetails <- DatabaseConnector::createConnectionDetails(dbms = "sql server",
-                                                                server = "yourserver")
+connectionDetails <- DatabaseConnector::createConnectionDetails(
+  dbms = "sql server",
+  server = "yourserver"
+)
 exportDashboardToJson(connectionDetails,
-                      cdmDatabaseSchema = "cdm4_sim",
-                      outputPath = "your/output/path")
+  cdmDatabaseSchema = "cdm4_sim",
+  outputPath = "your/output/path"
+)
 }
 }

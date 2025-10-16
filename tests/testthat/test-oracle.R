@@ -6,7 +6,7 @@ test_that("Achilles Oracle Execution", {
       password = URLdecode(Sys.getenv("CDM5_ORACLE_PASSWORD")),
       server = Sys.getenv("CDM5_ORACLE_SERVER")
     )
-    
+
     expect_no_error(
       Achilles::achilles(
         connectionDetails = details,

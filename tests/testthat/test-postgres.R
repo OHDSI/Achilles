@@ -6,7 +6,7 @@ test_that("Achilles Postgresql Execution", {
       password = URLdecode(Sys.getenv("CDM5_POSTGRESQL_PASSWORD")),
       server = Sys.getenv("CDM5_POSTGRESQL_SERVER")
     )
-    
+
     expect_no_error(
       Achilles::achilles(
         connectionDetails = details,

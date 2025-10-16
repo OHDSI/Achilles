@@ -1,15 +1,15 @@
 # @file generateDbSummary
 #
-# Copyright 2021 Observational Health Data Sciences and Informatics
+# Copyright 2025 Observational Health Data Sciences and Informatics
 #
 # This file is part of Achilles
-# 
+#
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
-# 
+#
 #     https://www.apache.org/licenses/LICENSE-2.0
-# 
+#
 # Unless required by applicable law or agreed to in writing, software
 # distributed under the License is distributed on an "AS IS" BASIS,
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -21,7 +21,7 @@
 #' generateDbSummary
 #'
 #' @description
-#' \code{generateDbSummary} can be run after the Achilles analyses are complete 
+#' \code{generateDbSummary} can be run after the Achilles analyses are complete
 #' to create a high-level database summary.
 #'
 #' @details
@@ -48,24 +48,26 @@
 #'
 #' @examples
 #' \dontrun{
-#' connectionDetails <- DatabaseConnector::createConnectionDetails(dbms = "sql server",
-#'                                                                 server = "yourserver")
+#' connectionDetails <- DatabaseConnector::createConnectionDetails(
+#'   dbms = "sql server",
+#'   server = "yourserver"
+#' )
 #' dbSummary <- generateDbSummary(connectionDetails,
-#'                                cdmDatabaseSchema = "cdm_schema",
-#'                                resultsDatabaseSchema = "results_schema",
-#'                                country = "Country of Origin",
-#'                                provenance = "Provenance of data")
+#'   cdmDatabaseSchema = "cdm_schema",
+#'   resultsDatabaseSchema = "results_schema",
+#'   country = "Country of Origin",
+#'   provenance = "Provenance of data"
+#' )
 #' }
 #' @export
 
-generateDbSummary <- function (connectionDetails,
-                               cdmDatabaseSchema,
-                               resultsDatabaseSchema,
-                               country,
-                               provenance){
-  
+generateDbSummary <- function(connectionDetails,
+                              cdmDatabaseSchema,
+                              resultsDatabaseSchema,
+                              country,
+                              provenance) {
   conn <- DatabaseConnector::connect(connectionDetails)
-  
+
   sql <-
     SqlRender::loadRenderTranslateSql(
       sqlFilename = "summary/generateDbSummary.sql",
@@ -77,9 +79,9 @@ generateDbSummary <- function (connectionDetails,
       country = country,
       provenance = provenance
     )
-  
+
   dbSummary <- DatabaseConnector::querySql(conn, sql)
-  
+
   sql <-
     SqlRender::loadRenderTranslateSql(
       sqlFilename = "summary/dbSourceVocabs.sql",
@@ -91,9 +93,9 @@ generateDbSummary <- function (connectionDetails,
       country = country,
       provenance = provenance
     )
-  
+
   dbSourceVocabs <- DatabaseConnector::querySql(conn, sql)
-  
+
   sql <-
     SqlRender::loadRenderTranslateSql(
       sqlFilename = "summary/dbVisitDist.sql",
@@ -105,20 +107,20 @@ generateDbSummary <- function (connectionDetails,
       country = country,
       provenance = provenance
     )
-  
+
   dbVisitDist <- DatabaseConnector::querySql(conn, sql)
-  
+
   DatabaseConnector::dbDisconnect(conn)
 
   # extract columns and pivot
-  dbInfo <- dbSummary[1,c(1,2,3,4)]
+  dbInfo <- dbSummary[1, c(1, 2, 3, 4)]
   row.names(dbSummary) <- dbSummary$ATTRIBUTE_NAME
-  df <- dbSummary[,c('ATTRIBUTE_VALUE')]
+  df <- dbSummary[, c("ATTRIBUTE_VALUE")]
   df_t <- t(df)
   colnames(df_t) <- rownames(dbSummary)
   dbSummaryFinal <- cbind(dbInfo, df_t)
-  
+
   colnames(dbSummaryFinal)[1:4] <- c("Data Source Name", "Data Source Abbreviation", "Source Country", "Data Provenance")
-  
-  return(list(summary=dbSummaryFinal, visitDist=dbVisitDist, sourceVocabs = dbSourceVocabs))
+
+  return(list(summary = dbSummaryFinal, visitDist = dbVisitDist, sourceVocabs = dbSourceVocabs))
 }

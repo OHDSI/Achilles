@@ -10,16 +10,15 @@ normalizeEmptyValue <- function(x) {
 }
 
 saveConceptsAsJson <- function(
-  concept_id,
-  reports,
-  columnsToNormalize,
-  columnsToConvertToDataFrame,
-  dir
-) {
-  report <- reports[reports$CONCEPT_ID == concept_id,]
+    concept_id,
+    reports,
+    columnsToNormalize,
+    columnsToConvertToDataFrame,
+    dir) {
+  report <- reports[reports$CONCEPT_ID == concept_id, ]
   report <- as.list(report)
 
-  #Normalize the specified columns
+  # Normalize the specified columns
   for (col in columnsToNormalize) {
     report[[col]] <- normalizeEmptyValue(report[[col]])
   }
@@ -37,11 +36,10 @@ saveConceptsAsJson <- function(
 }
 
 saveConceptsAsDuckDb <- function(
-  duckdbCon,
-  conceptData,
-  domain,
-  schema
-) {
+    duckdbCon,
+    conceptData,
+    domain,
+    schema) {
   for (tableName in names(conceptData$reports)) {
     tableData <-
       conceptData$reports[[tableName]]
@@ -68,15 +66,14 @@ saveConceptsAsDuckDb <- function(
 }
 
 processAndExportConceptData <- function(
-  duckdbCon,
-  conceptData,
-  outputPath,
-  outputFormat,
-  columnsToNormalize,
-  columnsToConvertToDataFrame,
-  domain,
-  schema
-) {
+    duckdbCon,
+    conceptData,
+    outputPath,
+    outputFormat,
+    columnsToNormalize,
+    columnsToConvertToDataFrame,
+    domain,
+    schema) {
   if (is.null(conceptData)) {
     return()
   }
@@ -109,8 +106,7 @@ processAndExportConceptData <- function(
 }
 
 
-generateAOProcedureReports <- function(connectionDetails, proceduresData, cdmDatabaseSchema, resultsDatabaseSchema, vocabDatabaseSchema, outputFormat)
-{
+generateAOProcedureReports <- function(connectionDetails, proceduresData, cdmDatabaseSchema, resultsDatabaseSchema, vocabDatabaseSchema, outputFormat) {
   if (nrow(proceduresData) == 0) {
     return(NULL)
   }
@@ -158,24 +154,24 @@ generateAOProcedureReports <- function(connectionDetails, proceduresData, cdmDat
   on.exit(DatabaseConnector::disconnect(connection = conn))
   dataPrevalenceByGenderAgeYear <-
     DatabaseConnector::querySql(conn, queryPrevalenceByGenderAgeYear) %>%
-      dplyr::select(c("CONCEPT_ID", "TRELLIS_NAME", "SERIES_NAME", "X_CALENDAR_YEAR", "Y_PREVALENCE_1000PP"))
+    dplyr::select(c("CONCEPT_ID", "TRELLIS_NAME", "SERIES_NAME", "X_CALENDAR_YEAR", "Y_PREVALENCE_1000PP"))
 
   dataPrevalenceByMonth <-
     DatabaseConnector::querySql(conn, queryPrevalenceByMonth) %>%
-      dplyr::select(c("CONCEPT_ID", "X_CALENDAR_MONTH", "Y_PREVALENCE_1000PP"))
+    dplyr::select(c("CONCEPT_ID", "X_CALENDAR_MONTH", "Y_PREVALENCE_1000PP"))
 
   dataProceduresByType <-
     DatabaseConnector::querySql(conn, queryProceduresByType) %>%
-      dplyr::select(c("CONCEPT_ID" = "PROCEDURE_CONCEPT_ID", "CONCEPT_NAME", "COUNT_VALUE"))
+    dplyr::select(c("CONCEPT_ID" = "PROCEDURE_CONCEPT_ID", "CONCEPT_NAME", "COUNT_VALUE"))
 
   dataAgeAtFirstOccurrence <-
     DatabaseConnector::querySql(conn, queryAgeAtFirstOccurrence) %>%
-      dplyr::select(c("CONCEPT_ID", "CATEGORY", "MIN_VALUE", "P10_VALUE", "P25_VALUE", "MEDIAN_VALUE", "P75_VALUE", "P90_VALUE", "MAX_VALUE"))
+    dplyr::select(c("CONCEPT_ID", "CATEGORY", "MIN_VALUE", "P10_VALUE", "P25_VALUE", "MEDIAN_VALUE", "P75_VALUE", "P90_VALUE", "MAX_VALUE"))
 
 
   dataProcedureFrequencyDistribution <-
     DatabaseConnector::querySql(conn, queryProcedureFrequencyDistribution) %>%
-      dplyr::select(c("CONCEPT_ID", "Y_NUM_PERSONS", "X_COUNT"))
+    dplyr::select(c("CONCEPT_ID", "Y_NUM_PERSONS", "X_COUNT"))
 
 
   uniqueConcepts <- data.frame(
@@ -184,18 +180,18 @@ generateAOProcedureReports <- function(connectionDetails, proceduresData, cdmDat
   )
   conceptMetadata <-
     uniqueConcepts %>%
-      dplyr::left_join(
-        proceduresData,
-        by = c("CONCEPT_ID" = "CONCEPT_ID")
-      ) %>%
-      dplyr::select(
-        "CONCEPT_ID",
-        "CONCEPT_NAME",
-        "CDM_TABLE_NAME",
-        "NUM_PERSONS",
-        "PERCENT_PERSONS",
-        "RECORDS_PER_PERSON"
-      )
+    dplyr::left_join(
+      proceduresData,
+      by = c("CONCEPT_ID" = "CONCEPT_ID")
+    ) %>%
+    dplyr::select(
+      "CONCEPT_ID",
+      "CONCEPT_NAME",
+      "CDM_TABLE_NAME",
+      "NUM_PERSONS",
+      "PERCENT_PERSONS",
+      "RECORDS_PER_PERSON"
+    )
 
   if (outputFormat == "duckdb") {
     reports <- list(
@@ -209,50 +205,49 @@ generateAOProcedureReports <- function(connectionDetails, proceduresData, cdmDat
   } else {
     reports <-
       conceptMetadata %>%
-        dplyr::left_join(
-          (
-            dataPrevalenceByGenderAgeYear %>%
-              tidyr::nest(PREVALENCE_BY_GENDER_AGE_YEAR = c(-1))
-          ),
-          by = c("CONCEPT_ID" = "CONCEPT_ID")
-        ) %>%
-        dplyr::left_join(
-          (
-            dataPrevalenceByMonth %>%
-              tidyr::nest(PREVALENCE_BY_MONTH = c(-1))
-          ),
-          by = c("CONCEPT_ID" = "CONCEPT_ID")
-        ) %>%
-        dplyr::left_join(
-          (
-            dataProcedureFrequencyDistribution %>%
-              tidyr::nest(PROCEDURE_FREQUENCY_DISTRIBUTION = c(-1))
-          ),
-          by = c("CONCEPT_ID" = "CONCEPT_ID")
-        ) %>%
-        dplyr::left_join(
-          (
-            dataProceduresByType %>%
-              tidyr::nest(PROCEDURES_BY_TYPE = c(-1))
-          ),
-          by = c("CONCEPT_ID" = "CONCEPT_ID")
-        ) %>%
-        dplyr::left_join(
-          (
-            dataAgeAtFirstOccurrence %>%
-              tidyr::nest(AGE_AT_FIRST_OCCURRENCE = c(-1))
-          ),
-          by = c("CONCEPT_ID" = "CONCEPT_ID")
-        ) %>%
-        dplyr::collect()
+      dplyr::left_join(
+        (
+          dataPrevalenceByGenderAgeYear %>%
+            tidyr::nest(PREVALENCE_BY_GENDER_AGE_YEAR = c(-1))
+        ),
+        by = c("CONCEPT_ID" = "CONCEPT_ID")
+      ) %>%
+      dplyr::left_join(
+        (
+          dataPrevalenceByMonth %>%
+            tidyr::nest(PREVALENCE_BY_MONTH = c(-1))
+        ),
+        by = c("CONCEPT_ID" = "CONCEPT_ID")
+      ) %>%
+      dplyr::left_join(
+        (
+          dataProcedureFrequencyDistribution %>%
+            tidyr::nest(PROCEDURE_FREQUENCY_DISTRIBUTION = c(-1))
+        ),
+        by = c("CONCEPT_ID" = "CONCEPT_ID")
+      ) %>%
+      dplyr::left_join(
+        (
+          dataProceduresByType %>%
+            tidyr::nest(PROCEDURES_BY_TYPE = c(-1))
+        ),
+        by = c("CONCEPT_ID" = "CONCEPT_ID")
+      ) %>%
+      dplyr::left_join(
+        (
+          dataAgeAtFirstOccurrence %>%
+            tidyr::nest(AGE_AT_FIRST_OCCURRENCE = c(-1))
+        ),
+        by = c("CONCEPT_ID" = "CONCEPT_ID")
+      ) %>%
+      dplyr::collect()
   }
 
   return(list("reports" = reports, "uniqueConcepts" = uniqueConcepts))
 }
 
-generateAOPersonReport <- function(connectionDetails, cdmDatabaseSchema, resultsDatabaseSchema, vocabDatabaseSchema, outputPath)
-{
-  output = { }
+generateAOPersonReport <- function(connectionDetails, cdmDatabaseSchema, resultsDatabaseSchema, vocabDatabaseSchema, outputPath) {
+  output <- { }
   conn <- DatabaseConnector::connect(connectionDetails)
   on.exit(DatabaseConnector::disconnect(connection = conn))
   renderedSql <- SqlRender::loadRenderTranslateSql(
@@ -266,7 +261,7 @@ generateAOPersonReport <- function(connectionDetails, cdmDatabaseSchema, results
   )
 
   personSummaryData <- DatabaseConnector::querySql(conn, renderedSql)
-  output$SUMMARY = personSummaryData
+  output$SUMMARY <- personSummaryData
 
   renderedSql <- SqlRender::loadRenderTranslateSql(
     sqlFilename = "export/person/population_age_gender.sql",
@@ -278,7 +273,7 @@ generateAOPersonReport <- function(connectionDetails, cdmDatabaseSchema, results
     vocab_database_schema = vocabDatabaseSchema
   )
   ageGenderData <- DatabaseConnector::querySql(conn, renderedSql)
-  output$AGE_GENDER_DATA = ageGenderData
+  output$AGE_GENDER_DATA <- ageGenderData
 
   renderedSql <- SqlRender::loadRenderTranslateSql(
     sqlFilename = "export/person/gender.sql",
@@ -290,7 +285,7 @@ generateAOPersonReport <- function(connectionDetails, cdmDatabaseSchema, results
     vocab_database_schema = vocabDatabaseSchema
   )
   genderData <- DatabaseConnector::querySql(conn, renderedSql)
-  output$GENDER_DATA = genderData
+  output$GENDER_DATA <- genderData
 
   renderedSql <- SqlRender::loadRenderTranslateSql(
     sqlFilename = "export/person/race.sql",
@@ -302,7 +297,7 @@ generateAOPersonReport <- function(connectionDetails, cdmDatabaseSchema, results
     vocab_database_schema = vocabDatabaseSchema
   )
   raceData <- DatabaseConnector::querySql(conn, renderedSql)
-  output$RACE_DATA = raceData
+  output$RACE_DATA <- raceData
 
   renderedSql <- SqlRender::loadRenderTranslateSql(
     sqlFilename = "export/person/ethnicity.sql",
@@ -314,7 +309,7 @@ generateAOPersonReport <- function(connectionDetails, cdmDatabaseSchema, results
     vocab_database_schema = vocabDatabaseSchema
   )
   ethnicityData <- DatabaseConnector::querySql(conn, renderedSql)
-  output$ETHNICITY_DATA = ethnicityData
+  output$ETHNICITY_DATA <- ethnicityData
 
 
   renderedSql <- SqlRender::loadRenderTranslateSql(
@@ -331,16 +326,15 @@ generateAOPersonReport <- function(connectionDetails, cdmDatabaseSchema, results
   return(output)
 }
 
-generateAOAchillesPerformanceReport <- function(connection, cdmDatabaseSchema, resultsDatabaseSchema, vocabDatabaseSchema, outputPath)
-{
-
-  queryAchillesPerformance <- SqlRender::loadRenderTranslateSql(sqlFilename = "export/performance/sqlAchillesPerformance.sql",
-                                                                packageName = "Achilles",
-                                                                dbms = connection@dbms,
-                                                                warnOnMissingParameters = FALSE,
-                                                                cdm_database_schema = cdmDatabaseSchema,
-                                                                results_database_schema = resultsDatabaseSchema,
-                                                                vocab_database_schema = vocabDatabaseSchema
+generateAOAchillesPerformanceReport <- function(connection, cdmDatabaseSchema, resultsDatabaseSchema, vocabDatabaseSchema, outputPath) {
+  queryAchillesPerformance <- SqlRender::loadRenderTranslateSql(
+    sqlFilename = "export/performance/sqlAchillesPerformance.sql",
+    packageName = "Achilles",
+    dbms = connection@dbms,
+    warnOnMissingParameters = FALSE,
+    cdm_database_schema = cdmDatabaseSchema,
+    results_database_schema = resultsDatabaseSchema,
+    vocab_database_schema = vocabDatabaseSchema
   )
 
   dataPerformance <- DatabaseConnector::querySql(connection, queryAchillesPerformance)
@@ -349,9 +343,7 @@ generateAOAchillesPerformanceReport <- function(connection, cdmDatabaseSchema, r
   return(dataPerformance)
 }
 
-generateAODeathReport <- function(connection, cdmDatabaseSchema, resultsDatabaseSchema, vocabDatabaseSchema, outputPath)
-{
-
+generateAODeathReport <- function(connection, cdmDatabaseSchema, resultsDatabaseSchema, vocabDatabaseSchema, outputPath) {
   queryPrevalenceByGenderAgeYear <- SqlRender::loadRenderTranslateSql(
     sqlFilename = "export/death/sqlPrevalenceByGenderAgeYear.sql",
     packageName = "Achilles",
@@ -387,17 +379,16 @@ generateAODeathReport <- function(connection, cdmDatabaseSchema, resultsDatabase
   prevalenceByMonthData <- DatabaseConnector::querySql(connection, queryPrevalenceByMonth)
   ageAtDeathData <- DatabaseConnector::querySql(connection, queryAgeAtDeath)
 
-  output = { }
-  output$PREVALENCE_BY_GENDER_AGE_YEAR = prevalenceByGenderAgeYearData
-  output$PREVALENCE_BY_MONTH = prevalenceByMonthData
-  output$DEATH_BY_TYPE = deathByTypeData
-  output$AGE_AT_DEATH = ageAtDeathData
+  output <- { }
+  output$PREVALENCE_BY_GENDER_AGE_YEAR <- prevalenceByGenderAgeYearData
+  output$PREVALENCE_BY_MONTH <- prevalenceByMonthData
+  output$DEATH_BY_TYPE <- deathByTypeData
+  output$AGE_AT_DEATH <- ageAtDeathData
   return(output)
 }
 
-generateAOObservationPeriodReport <- function(connection, cdmDatabaseSchema, resultsDatabaseSchema, vocabDatabaseSchema, outputPath)
-{
-  output = { }
+generateAOObservationPeriodReport <- function(connection, cdmDatabaseSchema, resultsDatabaseSchema, vocabDatabaseSchema, outputPath) {
+  output <- { }
   renderedSql <- SqlRender::loadRenderTranslateSql(
     sqlFilename = "export/observationperiod/ageatfirst.sql",
     packageName = "Achilles",
@@ -415,7 +406,7 @@ generateAOObservationPeriodReport <- function(connection, cdmDatabaseSchema, res
     vocab_database_schema = vocabDatabaseSchema
   )
   ageByGenderData <- DatabaseConnector::querySql(connection, renderedSql)
-  output$AGE_BY_GENDER = ageByGenderData
+  output$AGE_BY_GENDER <- ageByGenderData
 
   observationLengthHist <- { }
   renderedSql <- SqlRender::loadRenderTranslateSql(
@@ -425,10 +416,10 @@ generateAOObservationPeriodReport <- function(connection, cdmDatabaseSchema, res
     results_database_schema = resultsDatabaseSchema
   )
   observationLengthStats <- DatabaseConnector::querySql(connection, renderedSql)
-  observationLengthHist$MIN = observationLengthStats$MIN_VALUE
-  observationLengthHist$MAX = observationLengthStats$MAX_VALUE
-  observationLengthHist$INTERVAL_SIZE = observationLengthStats$INTERVAL_SIZE
-  observationLengthHist$INTERVALS = (observationLengthStats$MAX_VALUE - observationLengthStats$MIN_VALUE) / observationLengthStats$INTERVAL_SIZE
+  observationLengthHist$MIN <- observationLengthStats$MIN_VALUE
+  observationLengthHist$MAX <- observationLengthStats$MAX_VALUE
+  observationLengthHist$INTERVAL_SIZE <- observationLengthStats$INTERVAL_SIZE
+  observationLengthHist$INTERVALS <- (observationLengthStats$MAX_VALUE - observationLengthStats$MIN_VALUE) / observationLengthStats$INTERVAL_SIZE
 
   renderedSql <- SqlRender::loadRenderTranslateSql(
     sqlFilename = "export/observationperiod/observationlength_data.sql",
@@ -437,7 +428,7 @@ generateAOObservationPeriodReport <- function(connection, cdmDatabaseSchema, res
     results_database_schema = resultsDatabaseSchema
   )
   observationLengthData <- DatabaseConnector::querySql(connection, renderedSql)
-  output$OBSERVATION_LENGTH_HISTOGRAM = observationLengthHist
+  output$OBSERVATION_LENGTH_HISTOGRAM <- observationLengthHist
 
   renderedSql <- SqlRender::loadRenderTranslateSql(
     sqlFilename = "export/observationperiod/cumulativeduration.sql",
@@ -449,7 +440,7 @@ generateAOObservationPeriodReport <- function(connection, cdmDatabaseSchema, res
   cumulativeDurationData$X_LENGTH_OF_OBSERVATION <- cumulativeDurationData$X_LENGTH_OF_OBSERVATION / 365.25
   cumulativeDurationData$SERIES_NAME <- NULL
   names(cumulativeDurationData) <- c("YEARS", "PERCENT_PEOPLE")
-  output$CUMULATIVE_DURATION = cumulativeDurationData
+  output$CUMULATIVE_DURATION <- cumulativeDurationData
 
   renderedSql <- SqlRender::loadRenderTranslateSql(
     sqlFilename = "export/observationperiod/observationlengthbygender.sql",
@@ -467,7 +458,7 @@ generateAOObservationPeriodReport <- function(connection, cdmDatabaseSchema, res
   opLengthByGenderData$P90_VALUE <- opLengthByGenderData$P90_VALUE / 365.25
   opLengthByGenderData$MAX_VALUE <- opLengthByGenderData$MAX_VALUE / 365.25
 
-  output$OBSERVATION_PERIOD_LENGTH_BY_GENDER = opLengthByGenderData
+  output$OBSERVATION_PERIOD_LENGTH_BY_GENDER <- opLengthByGenderData
 
   renderedSql <- SqlRender::loadRenderTranslateSql(
     sqlFilename = "export/observationperiod/observationlengthbyage.sql",
@@ -483,7 +474,7 @@ generateAOObservationPeriodReport <- function(connection, cdmDatabaseSchema, res
   opLengthByAgeData$P75_VALUE <- opLengthByAgeData$P75_VALUE / 365.25
   opLengthByAgeData$P90_VALUE <- opLengthByAgeData$P90_VALUE / 365.25
   opLengthByAgeData$MAX_VALUE <- opLengthByAgeData$MAX_VALUE / 365.25
-  output$OBSERVATION_PERIOD_LENGTH_BY_AGE = opLengthByAgeData
+  output$OBSERVATION_PERIOD_LENGTH_BY_AGE <- opLengthByAgeData
 
   observedByYearHist <- { }
   renderedSql <- SqlRender::loadRenderTranslateSql(
@@ -493,10 +484,10 @@ generateAOObservationPeriodReport <- function(connection, cdmDatabaseSchema, res
     results_database_schema = resultsDatabaseSchema
   )
   observedByYearStats <- DatabaseConnector::querySql(connection, renderedSql)
-  observedByYearHist$MIN = observedByYearStats$MIN_VALUE
-  observedByYearHist$MAX = observedByYearStats$MAX_VALUE
-  observedByYearHist$INTERVAL_SIZE = observedByYearStats$INTERVAL_SIZE
-  observedByYearHist$INTERVALS = (observedByYearStats$MAX_VALUE - observedByYearStats$MIN_VALUE) / observedByYearStats$INTERVAL_SIZE
+  observedByYearHist$MIN <- observedByYearStats$MIN_VALUE
+  observedByYearHist$MAX <- observedByYearStats$MAX_VALUE
+  observedByYearHist$INTERVAL_SIZE <- observedByYearStats$INTERVAL_SIZE
+  observedByYearHist$INTERVALS <- (observedByYearStats$MAX_VALUE - observedByYearStats$MIN_VALUE) / observedByYearStats$INTERVAL_SIZE
 
   renderedSql <- SqlRender::loadRenderTranslateSql(
     sqlFilename = "export/observationperiod/observedbyyear_data.sql",
@@ -506,7 +497,7 @@ generateAOObservationPeriodReport <- function(connection, cdmDatabaseSchema, res
   )
   observedByYearData <- DatabaseConnector::querySql(connection, renderedSql)
   observedByYearHist$DATA <- observedByYearData
-  output$OBSERVED_BY_YEAR_HISTOGRAM = observedByYearHist
+  output$OBSERVED_BY_YEAR_HISTOGRAM <- observedByYearHist
 
   observedByMonth <- { }
   renderedSql <- SqlRender::loadRenderTranslateSql(
@@ -516,7 +507,7 @@ generateAOObservationPeriodReport <- function(connection, cdmDatabaseSchema, res
     results_database_schema = resultsDatabaseSchema
   )
   observedByMonth <- DatabaseConnector::querySql(connection, renderedSql)
-  output$OBSERVED_BY_MONTH = observedByMonth
+  output$OBSERVED_BY_MONTH <- observedByMonth
 
   renderedSql <- SqlRender::loadRenderTranslateSql(
     sqlFilename = "export/observationperiod/periodsperperson.sql",
@@ -525,13 +516,11 @@ generateAOObservationPeriodReport <- function(connection, cdmDatabaseSchema, res
     results_database_schema = resultsDatabaseSchema
   )
   personPeriodsData <- DatabaseConnector::querySql(connection, renderedSql)
-  output$PERSON_PERIODS_DATA = personPeriodsData
+  output$PERSON_PERIODS_DATA <- personPeriodsData
   return(output)
 }
 
-generateAOVisitReports <- function(connectionDetails, cdmDatabaseSchema, resultsDatabaseSchema, vocabDatabaseSchema, outputFormat)
-{
-
+generateAOVisitReports <- function(connectionDetails, cdmDatabaseSchema, resultsDatabaseSchema, vocabDatabaseSchema, outputFormat) {
   queryVisits <- SqlRender::loadRenderTranslateSql(
     sqlFilename = "export/visit/sqlVisitTreemap.sql",
     packageName = "Achilles",
@@ -575,30 +564,30 @@ generateAOVisitReports <- function(connectionDetails, cdmDatabaseSchema, results
   conn <- DatabaseConnector::connect(connectionDetails)
   dataVisits <-
     DatabaseConnector::querySql(conn, queryVisits) %>%
-      dplyr::rename(dplyr::all_of(c("CONCEPT_NAME" = "CONCEPT_PATH"))) %>%
-      dplyr::select(
-        "CONCEPT_ID",
-        "CONCEPT_NAME",
-        "NUM_PERSONS",
-        "PERCENT_PERSONS",
-        "RECORDS_PER_PERSON"
-      )
+    dplyr::rename(dplyr::all_of(c("CONCEPT_NAME" = "CONCEPT_PATH"))) %>%
+    dplyr::select(
+      "CONCEPT_ID",
+      "CONCEPT_NAME",
+      "NUM_PERSONS",
+      "PERCENT_PERSONS",
+      "RECORDS_PER_PERSON"
+    )
   if (nrow(dataVisits) == 0) {
     return(NULL)
   }
 
   dataPrevalenceByGenderAgeYear <-
     DatabaseConnector::querySql(conn, queryPrevalenceByGenderAgeYear) %>%
-      dplyr::select(c("CONCEPT_ID", "TRELLIS_NAME", "SERIES_NAME", "X_CALENDAR_YEAR", "Y_PREVALENCE_1000PP"))
+    dplyr::select(c("CONCEPT_ID", "TRELLIS_NAME", "SERIES_NAME", "X_CALENDAR_YEAR", "Y_PREVALENCE_1000PP"))
   dataPrevalenceByMonth <-
     DatabaseConnector::querySql(conn, queryPrevalenceByMonth) %>%
-      dplyr::select(c("CONCEPT_ID", "X_CALENDAR_MONTH", "Y_PREVALENCE_1000PP"))
+    dplyr::select(c("CONCEPT_ID", "X_CALENDAR_MONTH", "Y_PREVALENCE_1000PP"))
   dataVisitDurationByType <-
     DatabaseConnector::querySql(conn, queryVisitDurationByType) %>%
-      dplyr::select(c("CONCEPT_ID", "CATEGORY", "MIN_VALUE", "P10_VALUE", "P25_VALUE", "MEDIAN_VALUE", "P75_VALUE", "P90_VALUE", "MAX_VALUE"))
+    dplyr::select(c("CONCEPT_ID", "CATEGORY", "MIN_VALUE", "P10_VALUE", "P25_VALUE", "MEDIAN_VALUE", "P75_VALUE", "P90_VALUE", "MAX_VALUE"))
   dataAgeAtFirstOccurrence <-
     DatabaseConnector::querySql(conn, queryAgeAtFirstOccurrence) %>%
-      dplyr::select(c("CONCEPT_ID", "CATEGORY", "MIN_VALUE", "P10_VALUE", "P25_VALUE", "MEDIAN_VALUE", "P75_VALUE", "P90_VALUE", "MAX_VALUE"))
+    dplyr::select(c("CONCEPT_ID", "CATEGORY", "MIN_VALUE", "P10_VALUE", "P25_VALUE", "MEDIAN_VALUE", "P75_VALUE", "P90_VALUE", "MAX_VALUE"))
 
   uniqueConcepts <- data.frame(
     CONCEPT_ID = unique(dataVisits$CONCEPT_ID),
@@ -606,10 +595,10 @@ generateAOVisitReports <- function(connectionDetails, cdmDatabaseSchema, results
   )
   conceptMetadata <-
     uniqueConcepts %>%
-      dplyr::left_join(
-        dataVisits,
-        by = c("CONCEPT_ID" = "CONCEPT_ID")
-      )
+    dplyr::left_join(
+      dataVisits,
+      by = c("CONCEPT_ID" = "CONCEPT_ID")
+    )
   if (outputFormat == "duckdb") {
     reports <- list(
       concept_metadata = conceptMetadata,
@@ -621,41 +610,40 @@ generateAOVisitReports <- function(connectionDetails, cdmDatabaseSchema, results
   } else {
     reports <-
       conceptMetadata %>%
-        dplyr::left_join(
-          (
-            dataPrevalenceByGenderAgeYear %>%
-              tidyr::nest(PREVALENCE_BY_GENDER_AGE_YEAR = c(-1))
-          ),
-          by = c("CONCEPT_ID" = "CONCEPT_ID")
-        ) %>%
-        dplyr::left_join(
-          (
-            dataPrevalenceByMonth %>%
-              tidyr::nest(PREVALENCE_BY_MONTH = c(-1))
-          ),
-          by = c("CONCEPT_ID" = "CONCEPT_ID")
-        ) %>%
-        dplyr::left_join(
-          (
-            dataVisitDurationByType %>%
-              tidyr::nest(VISIT_DURATION_BY_TYPE = c(-1))
-          ),
-          by = c("CONCEPT_ID" = "CONCEPT_ID")
-        ) %>%
-        dplyr::left_join(
-          (
-            dataAgeAtFirstOccurrence %>%
-              tidyr::nest(AGE_AT_FIRST_OCCURRENCE = c(-1))
-          ),
-          by = c("CONCEPT_ID" = "CONCEPT_ID")
-        ) %>%
-        dplyr::collect()
+      dplyr::left_join(
+        (
+          dataPrevalenceByGenderAgeYear %>%
+            tidyr::nest(PREVALENCE_BY_GENDER_AGE_YEAR = c(-1))
+        ),
+        by = c("CONCEPT_ID" = "CONCEPT_ID")
+      ) %>%
+      dplyr::left_join(
+        (
+          dataPrevalenceByMonth %>%
+            tidyr::nest(PREVALENCE_BY_MONTH = c(-1))
+        ),
+        by = c("CONCEPT_ID" = "CONCEPT_ID")
+      ) %>%
+      dplyr::left_join(
+        (
+          dataVisitDurationByType %>%
+            tidyr::nest(VISIT_DURATION_BY_TYPE = c(-1))
+        ),
+        by = c("CONCEPT_ID" = "CONCEPT_ID")
+      ) %>%
+      dplyr::left_join(
+        (
+          dataAgeAtFirstOccurrence %>%
+            tidyr::nest(AGE_AT_FIRST_OCCURRENCE = c(-1))
+        ),
+        by = c("CONCEPT_ID" = "CONCEPT_ID")
+      ) %>%
+      dplyr::collect()
   }
   return(list("reports" = reports, "uniqueConcepts" = uniqueConcepts))
 }
 
-generateAOVisitDetailReports <- function(connectionDetails, cdmDatabaseSchema, resultsDatabaseSchema, vocabDatabaseSchema, outputFormat)
-{
+generateAOVisitDetailReports <- function(connectionDetails, cdmDatabaseSchema, resultsDatabaseSchema, vocabDatabaseSchema, outputFormat) {
   queryVisitDetails <- SqlRender::loadRenderTranslateSql(
     sqlFilename = "export/visitdetail/sqlVisitDetailTreemap.sql",
     packageName = "Achilles",
@@ -708,14 +696,14 @@ generateAOVisitDetailReports <- function(connectionDetails, cdmDatabaseSchema, r
   on.exit(DatabaseConnector::disconnect(connection = conn))
   dataVisitDetails <-
     DatabaseConnector::querySql(conn, queryVisitDetails) %>%
-      dplyr::rename(dplyr::all_of(c("CONCEPT_NAME" = "CONCEPT_PATH"))) %>%
-      dplyr::select(
-        "CONCEPT_ID",
-        "CONCEPT_NAME",
-        "NUM_PERSONS",
-        "PERCENT_PERSONS",
-        "RECORDS_PER_PERSON"
-      )
+    dplyr::rename(dplyr::all_of(c("CONCEPT_NAME" = "CONCEPT_PATH"))) %>%
+    dplyr::select(
+      "CONCEPT_ID",
+      "CONCEPT_NAME",
+      "NUM_PERSONS",
+      "PERCENT_PERSONS",
+      "RECORDS_PER_PERSON"
+    )
 
   if (nrow(dataVisitDetails) == 0) {
     return(NULL)
@@ -723,16 +711,16 @@ generateAOVisitDetailReports <- function(connectionDetails, cdmDatabaseSchema, r
 
   dataPrevalenceByGenderAgeYear <-
     DatabaseConnector::querySql(conn, queryPrevalenceByGenderAgeYear) %>%
-      dplyr::select(c("CONCEPT_ID", "TRELLIS_NAME", "SERIES_NAME", "X_CALENDAR_YEAR", "Y_PREVALENCE_1000PP"))
+    dplyr::select(c("CONCEPT_ID", "TRELLIS_NAME", "SERIES_NAME", "X_CALENDAR_YEAR", "Y_PREVALENCE_1000PP"))
   dataPrevalenceByMonth <-
     DatabaseConnector::querySql(conn, queryPrevalenceByMonth) %>%
-      dplyr::select(c("CONCEPT_ID", "X_CALENDAR_MONTH", "Y_PREVALENCE_1000PP"))
+    dplyr::select(c("CONCEPT_ID", "X_CALENDAR_MONTH", "Y_PREVALENCE_1000PP"))
   dataVisitDetailDurationByType <-
     DatabaseConnector::querySql(conn, queryVisitDetailDurationByType) %>%
-      dplyr::select(c("CONCEPT_ID", "CATEGORY", "MIN_VALUE", "P10_VALUE", "P25_VALUE", "MEDIAN_VALUE", "P75_VALUE", "P90_VALUE", "MAX_VALUE"))
+    dplyr::select(c("CONCEPT_ID", "CATEGORY", "MIN_VALUE", "P10_VALUE", "P25_VALUE", "MEDIAN_VALUE", "P75_VALUE", "P90_VALUE", "MAX_VALUE"))
   dataAgeAtFirstOccurrence <-
     DatabaseConnector::querySql(conn, queryAgeAtFirstOccurrence) %>%
-      dplyr::select(c("CONCEPT_ID", "CATEGORY", "MIN_VALUE", "P10_VALUE", "P25_VALUE", "MEDIAN_VALUE", "P75_VALUE", "P90_VALUE", "MAX_VALUE"))
+    dplyr::select(c("CONCEPT_ID", "CATEGORY", "MIN_VALUE", "P10_VALUE", "P25_VALUE", "MEDIAN_VALUE", "P75_VALUE", "P90_VALUE", "MAX_VALUE"))
 
   uniqueConcepts <- data.frame(
     CONCEPT_ID = unique(dataVisitDetails$CONCEPT_ID),
@@ -740,10 +728,10 @@ generateAOVisitDetailReports <- function(connectionDetails, cdmDatabaseSchema, r
   )
   conceptMetadata <-
     uniqueConcepts %>%
-      dplyr::left_join(
-        dataVisitDetails,
-        by = c("CONCEPT_ID" = "CONCEPT_ID")
-      )
+    dplyr::left_join(
+      dataVisitDetails,
+      by = c("CONCEPT_ID" = "CONCEPT_ID")
+    )
 
   if (outputFormat == "duckdb") {
     reports <- list(
@@ -756,43 +744,41 @@ generateAOVisitDetailReports <- function(connectionDetails, cdmDatabaseSchema, r
   } else {
     reports <-
       conceptMetadata %>%
-        dplyr::left_join(
-          (
-            dataPrevalenceByGenderAgeYear %>%
-              tidyr::nest(PREVALENCE_BY_GENDER_AGE_YEAR = c(-1))
-          ),
-          by = c("CONCEPT_ID" = "CONCEPT_ID")
-        ) %>%
-        dplyr::left_join(
-          (
-            dataPrevalenceByMonth %>%
-              tidyr::nest(PREVALENCE_BY_MONTH = c(-1))
-          ),
-          by = c("CONCEPT_ID" = "CONCEPT_ID")
-        ) %>%
-        dplyr::left_join(
-          (
-            dataVisitDetailDurationByType %>%
-              tidyr::nest(VISIT_DETAIL_DURATION_BY_TYPE = c(-1))
-          ),
-          by = c("CONCEPT_ID" = "CONCEPT_ID")
-        ) %>%
-        dplyr::left_join(
-          (
-            dataAgeAtFirstOccurrence %>%
-              tidyr::nest(AGE_AT_FIRST_OCCURRENCE = c(-1))
-          ),
-          by = c("CONCEPT_ID" = "CONCEPT_ID")
-        ) %>%
-        dplyr::collect()
+      dplyr::left_join(
+        (
+          dataPrevalenceByGenderAgeYear %>%
+            tidyr::nest(PREVALENCE_BY_GENDER_AGE_YEAR = c(-1))
+        ),
+        by = c("CONCEPT_ID" = "CONCEPT_ID")
+      ) %>%
+      dplyr::left_join(
+        (
+          dataPrevalenceByMonth %>%
+            tidyr::nest(PREVALENCE_BY_MONTH = c(-1))
+        ),
+        by = c("CONCEPT_ID" = "CONCEPT_ID")
+      ) %>%
+      dplyr::left_join(
+        (
+          dataVisitDetailDurationByType %>%
+            tidyr::nest(VISIT_DETAIL_DURATION_BY_TYPE = c(-1))
+        ),
+        by = c("CONCEPT_ID" = "CONCEPT_ID")
+      ) %>%
+      dplyr::left_join(
+        (
+          dataAgeAtFirstOccurrence %>%
+            tidyr::nest(AGE_AT_FIRST_OCCURRENCE = c(-1))
+        ),
+        by = c("CONCEPT_ID" = "CONCEPT_ID")
+      ) %>%
+      dplyr::collect()
   }
   return(list("reports" = reports, "uniqueConcepts" = uniqueConcepts))
 }
 
-generateAOMetadataReport <- function(connection, cdmDatabaseSchema, outputPath)
-{
-  if (DatabaseConnector::existsTable(connection = connection, databaseSchema = cdmDatabaseSchema, tableName = "METADATA"))
-  {
+generateAOMetadataReport <- function(connection, cdmDatabaseSchema, outputPath) {
+  if (DatabaseConnector::existsTable(connection = connection, databaseSchema = cdmDatabaseSchema, tableName = "METADATA")) {
     queryMetadata <- SqlRender::loadRenderTranslateSql(
       sqlFilename = "export/metadata/sqlMetadata.sql",
       packageName = "Achilles",
@@ -804,8 +790,7 @@ generateAOMetadataReport <- function(connection, cdmDatabaseSchema, outputPath)
   }
 }
 
-generateAOObservationReports <- function(connectionDetails, observationsData, cdmDatabaseSchema, resultsDatabaseSchema, vocabDatabaseSchema, outputFormat)
-{
+generateAOObservationReports <- function(connectionDetails, observationsData, cdmDatabaseSchema, resultsDatabaseSchema, vocabDatabaseSchema, outputFormat) {
   if (nrow(observationsData) == 0) {
     return(NULL)
   }
@@ -854,19 +839,19 @@ generateAOObservationReports <- function(connectionDetails, observationsData, cd
   on.exit(DatabaseConnector::disconnect(connection = conn))
   dataPrevalenceByGenderAgeYear <-
     DatabaseConnector::querySql(conn, queryPrevalenceByGenderAgeYear) %>%
-      dplyr::select(c("CONCEPT_ID", "TRELLIS_NAME", "SERIES_NAME", "X_CALENDAR_YEAR", "Y_PREVALENCE_1000PP"))
+    dplyr::select(c("CONCEPT_ID", "TRELLIS_NAME", "SERIES_NAME", "X_CALENDAR_YEAR", "Y_PREVALENCE_1000PP"))
   dataPrevalenceByMonth <-
     DatabaseConnector::querySql(conn, queryPrevalenceByMonth) %>%
-      dplyr::select(c("CONCEPT_ID", "X_CALENDAR_MONTH", "Y_PREVALENCE_1000PP"))
+    dplyr::select(c("CONCEPT_ID", "X_CALENDAR_MONTH", "Y_PREVALENCE_1000PP"))
   dataObservationsByType <-
     DatabaseConnector::querySql(conn, queryObservationsByType) %>%
-      dplyr::select(c("CONCEPT_ID" = "OBSERVATION_CONCEPT_ID", "CONCEPT_NAME", "COUNT_VALUE"))
+    dplyr::select(c("CONCEPT_ID" = "OBSERVATION_CONCEPT_ID", "CONCEPT_NAME", "COUNT_VALUE"))
   dataAgeAtFirstOccurrence <-
     DatabaseConnector::querySql(conn, queryAgeAtFirstOccurrence) %>%
-      dplyr::select(c("CONCEPT_ID", "CATEGORY", "MIN_VALUE", "P10_VALUE", "P25_VALUE", "MEDIAN_VALUE", "P75_VALUE", "P90_VALUE", "MAX_VALUE"))
+    dplyr::select(c("CONCEPT_ID", "CATEGORY", "MIN_VALUE", "P10_VALUE", "P25_VALUE", "MEDIAN_VALUE", "P75_VALUE", "P90_VALUE", "MAX_VALUE"))
   dataObsFrequencyDistribution <-
     DatabaseConnector::querySql(conn, queryObsFrequencyDistribution) %>%
-      dplyr::select(c("CONCEPT_ID", "Y_NUM_PERSONS", "X_COUNT"))
+    dplyr::select(c("CONCEPT_ID", "Y_NUM_PERSONS", "X_COUNT"))
 
   uniqueConcepts <- data.frame(
     CONCEPT_ID = unique(observationsData$CONCEPT_ID),
@@ -874,18 +859,18 @@ generateAOObservationReports <- function(connectionDetails, observationsData, cd
   )
   conceptMetadata <-
     uniqueConcepts %>%
-      dplyr::left_join(
-        observationsData,
-        by = c("CONCEPT_ID" = "CONCEPT_ID")
-      ) %>%
-      dplyr::select(
-        "CONCEPT_ID",
-        "CONCEPT_NAME",
-        "CDM_TABLE_NAME",
-        "NUM_PERSONS",
-        "PERCENT_PERSONS",
-        "RECORDS_PER_PERSON"
-      )
+    dplyr::left_join(
+      observationsData,
+      by = c("CONCEPT_ID" = "CONCEPT_ID")
+    ) %>%
+    dplyr::select(
+      "CONCEPT_ID",
+      "CONCEPT_NAME",
+      "CDM_TABLE_NAME",
+      "NUM_PERSONS",
+      "PERCENT_PERSONS",
+      "RECORDS_PER_PERSON"
+    )
 
   if (outputFormat == "duckdb") {
     reports <- list(
@@ -899,50 +884,48 @@ generateAOObservationReports <- function(connectionDetails, observationsData, cd
   } else {
     reports <-
       conceptMetadata %>%
-        dplyr::left_join(
-          (
-            dataPrevalenceByGenderAgeYear %>%
-              tidyr::nest(PREVALENCE_BY_GENDER_AGE_YEAR = c(-1))
-          ),
-          by = c("CONCEPT_ID" = "CONCEPT_ID")
-        ) %>%
-        dplyr::left_join(
-          (
-            dataPrevalenceByMonth %>%
-              tidyr::nest(PREVALENCE_BY_MONTH = c(-1))
-          ),
-          by = c("CONCEPT_ID" = "CONCEPT_ID")
-        ) %>%
-        dplyr::left_join(
-          (
-            dataObsFrequencyDistribution %>%
-              tidyr::nest(OBS_FREQUENCY_DISTRIBUTION = c(-1))
-          ),
-          by = c("CONCEPT_ID" = "CONCEPT_ID")
-        ) %>%
-        dplyr::left_join(
-          (
-            dataObservationsByType %>%
-              tidyr::nest(OBSERVATIONS_BY_TYPE = c(-1))
-          ),
-          by = c("CONCEPT_ID" = "CONCEPT_ID")
-        ) %>%
-        dplyr::left_join(
-          (
-            dataAgeAtFirstOccurrence %>%
-              tidyr::nest(AGE_AT_FIRST_OCCURRENCE = c(-1))
-          ),
-          by = c("CONCEPT_ID" = "CONCEPT_ID")
-        ) %>%
-        dplyr::collect()
+      dplyr::left_join(
+        (
+          dataPrevalenceByGenderAgeYear %>%
+            tidyr::nest(PREVALENCE_BY_GENDER_AGE_YEAR = c(-1))
+        ),
+        by = c("CONCEPT_ID" = "CONCEPT_ID")
+      ) %>%
+      dplyr::left_join(
+        (
+          dataPrevalenceByMonth %>%
+            tidyr::nest(PREVALENCE_BY_MONTH = c(-1))
+        ),
+        by = c("CONCEPT_ID" = "CONCEPT_ID")
+      ) %>%
+      dplyr::left_join(
+        (
+          dataObsFrequencyDistribution %>%
+            tidyr::nest(OBS_FREQUENCY_DISTRIBUTION = c(-1))
+        ),
+        by = c("CONCEPT_ID" = "CONCEPT_ID")
+      ) %>%
+      dplyr::left_join(
+        (
+          dataObservationsByType %>%
+            tidyr::nest(OBSERVATIONS_BY_TYPE = c(-1))
+        ),
+        by = c("CONCEPT_ID" = "CONCEPT_ID")
+      ) %>%
+      dplyr::left_join(
+        (
+          dataAgeAtFirstOccurrence %>%
+            tidyr::nest(AGE_AT_FIRST_OCCURRENCE = c(-1))
+        ),
+        by = c("CONCEPT_ID" = "CONCEPT_ID")
+      ) %>%
+      dplyr::collect()
   }
   return(list("reports" = reports, "uniqueConcepts" = uniqueConcepts))
 }
 
-generateAOCdmSourceReport <- function(connection, cdmDatabaseSchema, outputPath)
-{
-  if (DatabaseConnector::existsTable(connection = connection, databaseSchema = cdmDatabaseSchema, tableName = "CDM_SOURCE"))
-  {
+generateAOCdmSourceReport <- function(connection, cdmDatabaseSchema, outputPath) {
+  if (DatabaseConnector::existsTable(connection = connection, databaseSchema = cdmDatabaseSchema, tableName = "CDM_SOURCE")) {
     queryCdmSource <- SqlRender::loadRenderTranslateSql(
       sqlFilename = "export/metadata/sqlCdmSource.sql",
       packageName = "Achilles",
@@ -955,8 +938,7 @@ generateAOCdmSourceReport <- function(connection, cdmDatabaseSchema, outputPath)
   }
 }
 
-generateAODashboardReport <- function(outputPath)
-{
+generateAODashboardReport <- function(outputPath) {
   output <- { }
   personReport <- jsonlite::fromJSON(file = paste(outputPath, "/person.json", sep = ""))
   output$SUMMARY <- personReport$SUMMARY
@@ -971,8 +953,7 @@ generateAODashboardReport <- function(outputPath)
   write(jsonOutput, file = paste(outputPath, "/dashboard.json", sep = ""))
 }
 
-generateAOMeasurementReports <- function(connectionDetails, dataMeasurements, cdmDatabaseSchema, resultsDatabaseSchema, vocabDatabaseSchema, outputFormat)
-{
+generateAOMeasurementReports <- function(connectionDetails, dataMeasurements, cdmDatabaseSchema, resultsDatabaseSchema, vocabDatabaseSchema, outputFormat) {
   queryPrevalenceByGenderAgeYear <- SqlRender::loadRenderTranslateSql(
     sqlFilename = "export/measurement/sqlPrevalenceByGenderAgeYear.sql",
     packageName = "Achilles",
@@ -1057,38 +1038,38 @@ generateAOMeasurementReports <- function(connectionDetails, dataMeasurements, cd
   on.exit(DatabaseConnector::disconnect(connection = conn))
   dataPrevalenceByMonth <-
     DatabaseConnector::querySql(conn, queryPrevalenceByMonth) %>%
-      dplyr::select(c("CONCEPT_ID", "X_CALENDAR_MONTH", "Y_PREVALENCE_1000PP"))
+    dplyr::select(c("CONCEPT_ID", "X_CALENDAR_MONTH", "Y_PREVALENCE_1000PP"))
   if (nrow(dataPrevalenceByMonth) == 0) {
     return(NULL)
   }
 
   dataPrevalenceByGenderAgeYear <-
     DatabaseConnector::querySql(conn, queryPrevalenceByGenderAgeYear) %>%
-      dplyr::select(c("CONCEPT_ID", "TRELLIS_NAME", "SERIES_NAME", "X_CALENDAR_YEAR", "Y_PREVALENCE_1000PP"))
+    dplyr::select(c("CONCEPT_ID", "TRELLIS_NAME", "SERIES_NAME", "X_CALENDAR_YEAR", "Y_PREVALENCE_1000PP"))
   dataMeasurementsByType <-
     DatabaseConnector::querySql(conn, queryMeasurementsByType) %>%
-      dplyr::select(c("CONCEPT_ID" = "MEASUREMENT_CONCEPT_ID", "CONCEPT_NAME", "COUNT_VALUE"))
+    dplyr::select(c("CONCEPT_ID" = "MEASUREMENT_CONCEPT_ID", "CONCEPT_NAME", "COUNT_VALUE"))
   dataAgeAtFirstOccurrence <-
     DatabaseConnector::querySql(conn, queryAgeAtFirstOccurrence) %>%
-      dplyr::select(c("CONCEPT_ID", "CATEGORY", "MIN_VALUE", "P10_VALUE", "P25_VALUE", "MEDIAN_VALUE", "P75_VALUE", "P90_VALUE", "MAX_VALUE"))
+    dplyr::select(c("CONCEPT_ID", "CATEGORY", "MIN_VALUE", "P10_VALUE", "P25_VALUE", "MEDIAN_VALUE", "P75_VALUE", "P90_VALUE", "MAX_VALUE"))
   dataRecordsByUnit <-
     DatabaseConnector::querySql(conn, queryRecordsByUnit) %>%
-      dplyr::select(c("CONCEPT_ID" = "MEASUREMENT_CONCEPT_ID", "CONCEPT_NAME", "COUNT_VALUE", "UNIT_CONCEPT_ID"))
+    dplyr::select(c("CONCEPT_ID" = "MEASUREMENT_CONCEPT_ID", "CONCEPT_NAME", "COUNT_VALUE", "UNIT_CONCEPT_ID"))
   dataMeasurementValueDistribution <-
     DatabaseConnector::querySql(conn, queryMeasurementValueDistribution) %>%
-      dplyr::select(c("CONCEPT_ID", "CATEGORY", "MIN_VALUE", "P10_VALUE", "P25_VALUE", "MEDIAN_VALUE", "P75_VALUE", "P90_VALUE", "MAX_VALUE", "UNIT_CONCEPT_ID"))
+    dplyr::select(c("CONCEPT_ID", "CATEGORY", "MIN_VALUE", "P10_VALUE", "P25_VALUE", "MEDIAN_VALUE", "P75_VALUE", "P90_VALUE", "MAX_VALUE", "UNIT_CONCEPT_ID"))
   dataLowerLimitDistribution <-
     DatabaseConnector::querySql(conn, queryLowerLimitDistribution) %>%
-      dplyr::select(c("CONCEPT_ID", "CATEGORY", "MIN_VALUE", "P10_VALUE", "P25_VALUE", "MEDIAN_VALUE", "P75_VALUE", "P90_VALUE", "MAX_VALUE"))
+    dplyr::select(c("CONCEPT_ID", "CATEGORY", "MIN_VALUE", "P10_VALUE", "P25_VALUE", "MEDIAN_VALUE", "P75_VALUE", "P90_VALUE", "MAX_VALUE"))
   dataUpperLimitDistribution <-
     DatabaseConnector::querySql(conn, queryUpperLimitDistribution) %>%
-      dplyr::select(c("CONCEPT_ID", "CATEGORY", "MIN_VALUE", "P10_VALUE", "P25_VALUE", "MEDIAN_VALUE", "P75_VALUE", "P90_VALUE", "MAX_VALUE"))
+    dplyr::select(c("CONCEPT_ID", "CATEGORY", "MIN_VALUE", "P10_VALUE", "P25_VALUE", "MEDIAN_VALUE", "P75_VALUE", "P90_VALUE", "MAX_VALUE"))
   dataValuesRelativeToNorm <-
     DatabaseConnector::querySql(conn, queryValuesRelativeToNorm) %>%
-      dplyr::select(c("CONCEPT_ID" = "MEASUREMENT_CONCEPT_ID", "CONCEPT_NAME", "COUNT_VALUE"))
+    dplyr::select(c("CONCEPT_ID" = "MEASUREMENT_CONCEPT_ID", "CONCEPT_NAME", "COUNT_VALUE"))
   dataFrequencyDistribution <-
     DatabaseConnector::querySql(conn, queryFrequencyDistribution) %>%
-      dplyr::select(c("CONCEPT_ID", "Y_NUM_PERSONS", "X_COUNT"))
+    dplyr::select(c("CONCEPT_ID", "Y_NUM_PERSONS", "X_COUNT"))
 
   uniqueConcepts <- data.frame(
     CONCEPT_ID = unique(dataPrevalenceByMonth$CONCEPT_ID),
@@ -1096,19 +1077,19 @@ generateAOMeasurementReports <- function(connectionDetails, dataMeasurements, cd
   )
   conceptMetadata <-
     uniqueConcepts %>%
-      dplyr::left_join(
-        (
-          dataMeasurements %>%
-            dplyr::select(
-              "CONCEPT_ID",
-              "CONCEPT_NAME",
-              "NUM_PERSONS",
-              "PERCENT_PERSONS",
-              "RECORDS_PER_PERSON"
-            )
-        ),
-        by = c("CONCEPT_ID" = "CONCEPT_ID")
-      )
+    dplyr::left_join(
+      (
+        dataMeasurements %>%
+          dplyr::select(
+            "CONCEPT_ID",
+            "CONCEPT_NAME",
+            "NUM_PERSONS",
+            "PERCENT_PERSONS",
+            "RECORDS_PER_PERSON"
+          )
+      ),
+      by = c("CONCEPT_ID" = "CONCEPT_ID")
+    )
 
   if (outputFormat == "duckdb") {
     reports <- list(
@@ -1127,83 +1108,82 @@ generateAOMeasurementReports <- function(connectionDetails, dataMeasurements, cd
   } else {
     reports <-
       conceptMetadata %>%
-        dplyr::left_join(
-          (
-            dataPrevalenceByGenderAgeYear %>%
-              tidyr::nest(PREVALENCE_BY_GENDER_AGE_YEAR = c(-1))
-          ),
-          by = c("CONCEPT_ID" = "CONCEPT_ID")
-        ) %>%
-        dplyr::left_join(
-          (
-            dataPrevalenceByMonth %>%
-              tidyr::nest(PREVALENCE_BY_MONTH = c(-1))
-          ),
-          by = c("CONCEPT_ID" = "CONCEPT_ID")
-        ) %>%
-        dplyr::left_join(
-          (
-            dataFrequencyDistribution %>%
-              tidyr::nest(FREQUENCY_DISTRIBUTION = c(-1))
-          ),
-          by = c("CONCEPT_ID" = "CONCEPT_ID")
-        ) %>%
-        dplyr::left_join(
-          (
-            dataMeasurementsByType %>%
-              tidyr::nest(MEASUREMENTS_BY_TYPE = c(-1))
-          ),
-          by = c("CONCEPT_ID" = "CONCEPT_ID")
-        ) %>%
-        dplyr::left_join(
-          (
-            dataAgeAtFirstOccurrence %>%
-              tidyr::nest(AGE_AT_FIRST_OCCURRENCE = c(-1))
-          ),
-          by = c("CONCEPT_ID" = "CONCEPT_ID")
-        ) %>%
-        dplyr::left_join(
-          (
-            dataRecordsByUnit %>%
-              tidyr::nest(RECORDS_BY_UNIT = c(-1))
-          ),
-          by = c("CONCEPT_ID" = "CONCEPT_ID")
-        ) %>%
-        dplyr::left_join(
-          (
-            dataMeasurementValueDistribution %>%
-              tidyr::nest(MEASUREMENT_VALUE_DISTRIBUTION = c(-1))
-          ),
-          by = c("CONCEPT_ID" = "CONCEPT_ID")
-        ) %>%
-        dplyr::left_join(
-          (
-            dataLowerLimitDistribution %>%
-              tidyr::nest(LOWER_LIMIT_DISTRIBUTION = c(-1))
-          ),
-          by = c("CONCEPT_ID" = "CONCEPT_ID")
-        ) %>%
-        dplyr::left_join(
-          (
-            dataUpperLimitDistribution %>%
-              tidyr::nest(UPPER_LIMIT_DISTRIBUTION = c(-1))
-          ),
-          by = c("CONCEPT_ID" = "CONCEPT_ID")
-        ) %>%
-        dplyr::left_join(
-          (
-            dataValuesRelativeToNorm %>%
-              tidyr::nest(VALUES_RELATIVE_TO_NORM = c(-1))
-          ),
-          by = c("CONCEPT_ID" = "CONCEPT_ID")
-        ) %>%
-        dplyr::collect()
+      dplyr::left_join(
+        (
+          dataPrevalenceByGenderAgeYear %>%
+            tidyr::nest(PREVALENCE_BY_GENDER_AGE_YEAR = c(-1))
+        ),
+        by = c("CONCEPT_ID" = "CONCEPT_ID")
+      ) %>%
+      dplyr::left_join(
+        (
+          dataPrevalenceByMonth %>%
+            tidyr::nest(PREVALENCE_BY_MONTH = c(-1))
+        ),
+        by = c("CONCEPT_ID" = "CONCEPT_ID")
+      ) %>%
+      dplyr::left_join(
+        (
+          dataFrequencyDistribution %>%
+            tidyr::nest(FREQUENCY_DISTRIBUTION = c(-1))
+        ),
+        by = c("CONCEPT_ID" = "CONCEPT_ID")
+      ) %>%
+      dplyr::left_join(
+        (
+          dataMeasurementsByType %>%
+            tidyr::nest(MEASUREMENTS_BY_TYPE = c(-1))
+        ),
+        by = c("CONCEPT_ID" = "CONCEPT_ID")
+      ) %>%
+      dplyr::left_join(
+        (
+          dataAgeAtFirstOccurrence %>%
+            tidyr::nest(AGE_AT_FIRST_OCCURRENCE = c(-1))
+        ),
+        by = c("CONCEPT_ID" = "CONCEPT_ID")
+      ) %>%
+      dplyr::left_join(
+        (
+          dataRecordsByUnit %>%
+            tidyr::nest(RECORDS_BY_UNIT = c(-1))
+        ),
+        by = c("CONCEPT_ID" = "CONCEPT_ID")
+      ) %>%
+      dplyr::left_join(
+        (
+          dataMeasurementValueDistribution %>%
+            tidyr::nest(MEASUREMENT_VALUE_DISTRIBUTION = c(-1))
+        ),
+        by = c("CONCEPT_ID" = "CONCEPT_ID")
+      ) %>%
+      dplyr::left_join(
+        (
+          dataLowerLimitDistribution %>%
+            tidyr::nest(LOWER_LIMIT_DISTRIBUTION = c(-1))
+        ),
+        by = c("CONCEPT_ID" = "CONCEPT_ID")
+      ) %>%
+      dplyr::left_join(
+        (
+          dataUpperLimitDistribution %>%
+            tidyr::nest(UPPER_LIMIT_DISTRIBUTION = c(-1))
+        ),
+        by = c("CONCEPT_ID" = "CONCEPT_ID")
+      ) %>%
+      dplyr::left_join(
+        (
+          dataValuesRelativeToNorm %>%
+            tidyr::nest(VALUES_RELATIVE_TO_NORM = c(-1))
+        ),
+        by = c("CONCEPT_ID" = "CONCEPT_ID")
+      ) %>%
+      dplyr::collect()
   }
   return(list("reports" = reports, "uniqueConcepts" = uniqueConcepts))
 }
 
-generateAODrugEraReports <- function(connectionDetails, dataDrugEra, cdmDatabaseSchema, resultsDatabaseSchema, vocabDatabaseSchema, outputFormat)
-{
+generateAODrugEraReports <- function(connectionDetails, dataDrugEra, cdmDatabaseSchema, resultsDatabaseSchema, vocabDatabaseSchema, outputFormat) {
   if (nrow(dataDrugEra) == 0) {
     return(NULL)
   }
@@ -1244,16 +1224,16 @@ generateAODrugEraReports <- function(connectionDetails, dataDrugEra, cdmDatabase
   on.exit(DatabaseConnector::disconnect(connection = conn))
   dataAgeAtFirstExposure <-
     DatabaseConnector::querySql(conn, queryAgeAtFirstExposure) %>%
-      dplyr::select(c("CONCEPT_ID", "CATEGORY", "MIN_VALUE", "P10_VALUE", "P25_VALUE", "MEDIAN_VALUE", "P75_VALUE", "P90_VALUE", "MAX_VALUE"))
+    dplyr::select(c("CONCEPT_ID", "CATEGORY", "MIN_VALUE", "P10_VALUE", "P25_VALUE", "MEDIAN_VALUE", "P75_VALUE", "P90_VALUE", "MAX_VALUE"))
   dataPrevalenceByGenderAgeYear <-
     DatabaseConnector::querySql(conn, queryPrevalenceByGenderAgeYear) %>%
-      dplyr::select(c("CONCEPT_ID", "TRELLIS_NAME", "SERIES_NAME", "X_CALENDAR_YEAR", "Y_PREVALENCE_1000PP"))
+    dplyr::select(c("CONCEPT_ID", "TRELLIS_NAME", "SERIES_NAME", "X_CALENDAR_YEAR", "Y_PREVALENCE_1000PP"))
   dataPrevalenceByMonth <-
     DatabaseConnector::querySql(conn, queryPrevalenceByMonth) %>%
-      dplyr::select(c("CONCEPT_ID", "X_CALENDAR_MONTH", "Y_PREVALENCE_1000PP"))
+    dplyr::select(c("CONCEPT_ID", "X_CALENDAR_MONTH", "Y_PREVALENCE_1000PP"))
   dataLengthOfEra <-
     DatabaseConnector::querySql(conn, queryLengthOfEra) %>%
-      dplyr::select(c("CONCEPT_ID", "CATEGORY", "MIN_VALUE", "P10_VALUE", "P25_VALUE", "MEDIAN_VALUE", "P75_VALUE", "P90_VALUE", "MAX_VALUE"))
+    dplyr::select(c("CONCEPT_ID", "CATEGORY", "MIN_VALUE", "P10_VALUE", "P25_VALUE", "MEDIAN_VALUE", "P75_VALUE", "P90_VALUE", "MAX_VALUE"))
 
   uniqueConcepts <- data.frame(
     CONCEPT_ID = unique(dataDrugEra$CONCEPT_ID),
@@ -1261,19 +1241,19 @@ generateAODrugEraReports <- function(connectionDetails, dataDrugEra, cdmDatabase
   )
   conceptMetadata <-
     uniqueConcepts %>%
-      dplyr::left_join(
-        (
-          dataDrugEra %>%
-            dplyr::select(
-              "CONCEPT_ID",
-              "CONCEPT_NAME",
-              "NUM_PERSONS",
-              "PERCENT_PERSONS",
-              "RECORDS_PER_PERSON"
-            )
-        ),
-        by = c("CONCEPT_ID" = "CONCEPT_ID")
-      )
+    dplyr::left_join(
+      (
+        dataDrugEra %>%
+          dplyr::select(
+            "CONCEPT_ID",
+            "CONCEPT_NAME",
+            "NUM_PERSONS",
+            "PERCENT_PERSONS",
+            "RECORDS_PER_PERSON"
+          )
+      ),
+      by = c("CONCEPT_ID" = "CONCEPT_ID")
+    )
 
   if (outputFormat == "duckdb") {
     reports <- list(
@@ -1286,42 +1266,40 @@ generateAODrugEraReports <- function(connectionDetails, dataDrugEra, cdmDatabase
   } else {
     reports <-
       conceptMetadata %>%
-        dplyr::left_join(
-          (
-            dataAgeAtFirstExposure %>%
-              tidyr::nest(AGE_AT_FIRST_EXPOSURE = c(-1))
-          ),
-          by = c("CONCEPT_ID" = "CONCEPT_ID")
-        ) %>%
-        dplyr::left_join(
-          (
-            dataPrevalenceByGenderAgeYear %>%
-              tidyr::nest(PREVALENCE_BY_GENDER_AGE_YEAR = c(-1))
-          ),
-          by = c("CONCEPT_ID" = "CONCEPT_ID")
-        ) %>%
-        dplyr::left_join(
-          (
-            dataPrevalenceByMonth %>%
-              tidyr::nest(PREVALENCE_BY_MONTH = c(-1))
-          ),
-          by = c("CONCEPT_ID" = "CONCEPT_ID")
-        ) %>%
-        dplyr::left_join(
-          (
-            dataLengthOfEra %>%
-              tidyr::nest(LENGTH_OF_ERA = c(-1))
-          ),
-          by = c("CONCEPT_ID" = "CONCEPT_ID")
-        ) %>%
-        dplyr::collect()
+      dplyr::left_join(
+        (
+          dataAgeAtFirstExposure %>%
+            tidyr::nest(AGE_AT_FIRST_EXPOSURE = c(-1))
+        ),
+        by = c("CONCEPT_ID" = "CONCEPT_ID")
+      ) %>%
+      dplyr::left_join(
+        (
+          dataPrevalenceByGenderAgeYear %>%
+            tidyr::nest(PREVALENCE_BY_GENDER_AGE_YEAR = c(-1))
+        ),
+        by = c("CONCEPT_ID" = "CONCEPT_ID")
+      ) %>%
+      dplyr::left_join(
+        (
+          dataPrevalenceByMonth %>%
+            tidyr::nest(PREVALENCE_BY_MONTH = c(-1))
+        ),
+        by = c("CONCEPT_ID" = "CONCEPT_ID")
+      ) %>%
+      dplyr::left_join(
+        (
+          dataLengthOfEra %>%
+            tidyr::nest(LENGTH_OF_ERA = c(-1))
+        ),
+        by = c("CONCEPT_ID" = "CONCEPT_ID")
+      ) %>%
+      dplyr::collect()
   }
   return(list("reports" = reports, "uniqueConcepts" = uniqueConcepts))
 }
 
-generateAODrugReports <- function(connectionDetails, dataDrugs, cdmDatabaseSchema, resultsDatabaseSchema, vocabDatabaseSchema, outputFormat)
-{
-
+generateAODrugReports <- function(connectionDetails, dataDrugs, cdmDatabaseSchema, resultsDatabaseSchema, vocabDatabaseSchema, outputFormat) {
   queryAgeAtFirstExposure <- SqlRender::loadRenderTranslateSql(
     sqlFilename = "export/drug/sqlAgeAtFirstExposure.sql",
     packageName = "Achilles",
@@ -1390,32 +1368,32 @@ generateAODrugReports <- function(connectionDetails, dataDrugs, cdmDatabaseSchem
   on.exit(DatabaseConnector::disconnect(connection = conn))
   dataPrevalenceByMonth <-
     DatabaseConnector::querySql(conn, queryPrevalenceByMonth) %>%
-      dplyr::select(c("CONCEPT_ID", "X_CALENDAR_MONTH", "Y_PREVALENCE_1000PP"))
+    dplyr::select(c("CONCEPT_ID", "X_CALENDAR_MONTH", "Y_PREVALENCE_1000PP"))
   if (nrow(dataPrevalenceByMonth) == 0) {
     return(NULL)
   }
 
   dataAgeAtFirstExposure <-
     DatabaseConnector::querySql(conn, queryAgeAtFirstExposure) %>%
-      dplyr::select(c("CONCEPT_ID" = "DRUG_CONCEPT_ID", "CATEGORY", "MIN_VALUE", "P10_VALUE", "P25_VALUE", "MEDIAN_VALUE", "P75_VALUE", "P90_VALUE", "MAX_VALUE"))
+    dplyr::select(c("CONCEPT_ID" = "DRUG_CONCEPT_ID", "CATEGORY", "MIN_VALUE", "P10_VALUE", "P25_VALUE", "MEDIAN_VALUE", "P75_VALUE", "P90_VALUE", "MAX_VALUE"))
   dataDaysSupplyDistribution <-
     DatabaseConnector::querySql(conn, queryDaysSupplyDistribution) %>%
-      dplyr::select(c("CONCEPT_ID" = "DRUG_CONCEPT_ID", "CATEGORY", "MIN_VALUE", "P10_VALUE", "P25_VALUE", "MEDIAN_VALUE", "P75_VALUE", "P90_VALUE", "MAX_VALUE"))
+    dplyr::select(c("CONCEPT_ID" = "DRUG_CONCEPT_ID", "CATEGORY", "MIN_VALUE", "P10_VALUE", "P25_VALUE", "MEDIAN_VALUE", "P75_VALUE", "P90_VALUE", "MAX_VALUE"))
   dataDrugsByType <-
     DatabaseConnector::querySql(conn, queryDrugsByType) %>%
-      dplyr::select(c("CONCEPT_ID" = "DRUG_CONCEPT_ID", "CONCEPT_NAME", "COUNT_VALUE"))
+    dplyr::select(c("CONCEPT_ID" = "DRUG_CONCEPT_ID", "CONCEPT_NAME", "COUNT_VALUE"))
   dataPrevalenceByGenderAgeYear <-
     DatabaseConnector::querySql(conn, queryPrevalenceByGenderAgeYear) %>%
-      dplyr::select(c("CONCEPT_ID", "TRELLIS_NAME", "SERIES_NAME", "X_CALENDAR_YEAR", "Y_PREVALENCE_1000PP"))
+    dplyr::select(c("CONCEPT_ID", "TRELLIS_NAME", "SERIES_NAME", "X_CALENDAR_YEAR", "Y_PREVALENCE_1000PP"))
   dataQuantityDistribution <-
     DatabaseConnector::querySql(conn, queryQuantityDistribution) %>%
-      dplyr::select(c("CONCEPT_ID" = "DRUG_CONCEPT_ID", "CATEGORY", "MIN_VALUE", "P10_VALUE", "P25_VALUE", "MEDIAN_VALUE", "P75_VALUE", "P90_VALUE", "MAX_VALUE"))
+    dplyr::select(c("CONCEPT_ID" = "DRUG_CONCEPT_ID", "CATEGORY", "MIN_VALUE", "P10_VALUE", "P25_VALUE", "MEDIAN_VALUE", "P75_VALUE", "P90_VALUE", "MAX_VALUE"))
   dataRefillsDistribution <-
     DatabaseConnector::querySql(conn, queryRefillsDistribution) %>%
-      dplyr::select(c("CONCEPT_ID" = "DRUG_CONCEPT_ID", "CATEGORY", "MIN_VALUE", "P10_VALUE", "P25_VALUE", "MEDIAN_VALUE", "P75_VALUE", "P90_VALUE", "MAX_VALUE"))
+    dplyr::select(c("CONCEPT_ID" = "DRUG_CONCEPT_ID", "CATEGORY", "MIN_VALUE", "P10_VALUE", "P25_VALUE", "MEDIAN_VALUE", "P75_VALUE", "P90_VALUE", "MAX_VALUE"))
   dataDrugFrequencyDistribution <-
     DatabaseConnector::querySql(conn, queryDrugFrequencyDistribution) %>%
-      dplyr::select(c("CONCEPT_ID", "Y_NUM_PERSONS", "X_COUNT"))
+    dplyr::select(c("CONCEPT_ID", "Y_NUM_PERSONS", "X_COUNT"))
 
   uniqueConcepts <- data.frame(
     CONCEPT_ID = unique(dataPrevalenceByMonth$CONCEPT_ID),
@@ -1423,19 +1401,19 @@ generateAODrugReports <- function(connectionDetails, dataDrugs, cdmDatabaseSchem
   )
   conceptMetadata <-
     uniqueConcepts %>%
-      dplyr::left_join(
-        (
-          dataDrugs %>%
-            dplyr::select(
-              "CONCEPT_ID",
-              "CONCEPT_NAME",
-              "NUM_PERSONS",
-              "PERCENT_PERSONS",
-              "RECORDS_PER_PERSON"
-            )
-        ),
-        by = c("CONCEPT_ID" = "CONCEPT_ID")
-      )
+    dplyr::left_join(
+      (
+        dataDrugs %>%
+          dplyr::select(
+            "CONCEPT_ID",
+            "CONCEPT_NAME",
+            "NUM_PERSONS",
+            "PERCENT_PERSONS",
+            "RECORDS_PER_PERSON"
+          )
+      ),
+      by = c("CONCEPT_ID" = "CONCEPT_ID")
+    )
 
   if (outputFormat == "duckdb") {
     reports <- list(
@@ -1452,69 +1430,68 @@ generateAODrugReports <- function(connectionDetails, dataDrugs, cdmDatabaseSchem
   } else {
     reports <-
       conceptMetadata %>%
-        dplyr::left_join(
-          (
-            dataAgeAtFirstExposure %>%
-              tidyr::nest(AGE_AT_FIRST_EXPOSURE = c(-1))
-          ),
-          by = c("CONCEPT_ID" = "CONCEPT_ID")
-        ) %>%
-        dplyr::left_join(
-          (
-            dataDaysSupplyDistribution %>%
-              tidyr::nest(DAYS_SUPPLY_DISTRIBUTION = c(-1))
-          ),
-          by = c("CONCEPT_ID" = "CONCEPT_ID")
-        ) %>%
-        dplyr::left_join(
-          (
-            dataDrugsByType %>%
-              tidyr::nest(DRUGS_BY_TYPE = c(-1))
-          ),
-          by = c("CONCEPT_ID" = "CONCEPT_ID")
-        ) %>%
-        dplyr::left_join(
-          (
-            dataPrevalenceByGenderAgeYear %>%
-              tidyr::nest(PREVALENCE_BY_GENDER_AGE_YEAR = c(-1))
-          ),
-          by = c("CONCEPT_ID" = "CONCEPT_ID")
-        ) %>%
-        dplyr::left_join(
-          (
-            dataPrevalenceByMonth %>%
-              tidyr::nest(PREVALENCE_BY_MONTH = c(-1))
-          ),
-          by = c("CONCEPT_ID" = "CONCEPT_ID")
-        ) %>%
-        dplyr::left_join(
-          (
-            dataDrugFrequencyDistribution %>%
-              tidyr::nest(DRUG_FREQUENCY_DISTRIBUTION = c(-1))
-          ),
-          by = c("CONCEPT_ID" = "CONCEPT_ID")
-        ) %>%
-        dplyr::left_join(
-          (
-            dataQuantityDistribution %>%
-              tidyr::nest(QUANTITY_DISTRIBUTION = c(-1))
-          ),
-          by = c("CONCEPT_ID" = "CONCEPT_ID")
-        ) %>%
-        dplyr::left_join(
-          (
-            dataRefillsDistribution %>%
-              tidyr::nest(REFILLS_DISTRIBUTION = c(-1))
-          ),
-          by = c("CONCEPT_ID" = "CONCEPT_ID")
-        ) %>%
-        dplyr::collect()
+      dplyr::left_join(
+        (
+          dataAgeAtFirstExposure %>%
+            tidyr::nest(AGE_AT_FIRST_EXPOSURE = c(-1))
+        ),
+        by = c("CONCEPT_ID" = "CONCEPT_ID")
+      ) %>%
+      dplyr::left_join(
+        (
+          dataDaysSupplyDistribution %>%
+            tidyr::nest(DAYS_SUPPLY_DISTRIBUTION = c(-1))
+        ),
+        by = c("CONCEPT_ID" = "CONCEPT_ID")
+      ) %>%
+      dplyr::left_join(
+        (
+          dataDrugsByType %>%
+            tidyr::nest(DRUGS_BY_TYPE = c(-1))
+        ),
+        by = c("CONCEPT_ID" = "CONCEPT_ID")
+      ) %>%
+      dplyr::left_join(
+        (
+          dataPrevalenceByGenderAgeYear %>%
+            tidyr::nest(PREVALENCE_BY_GENDER_AGE_YEAR = c(-1))
+        ),
+        by = c("CONCEPT_ID" = "CONCEPT_ID")
+      ) %>%
+      dplyr::left_join(
+        (
+          dataPrevalenceByMonth %>%
+            tidyr::nest(PREVALENCE_BY_MONTH = c(-1))
+        ),
+        by = c("CONCEPT_ID" = "CONCEPT_ID")
+      ) %>%
+      dplyr::left_join(
+        (
+          dataDrugFrequencyDistribution %>%
+            tidyr::nest(DRUG_FREQUENCY_DISTRIBUTION = c(-1))
+        ),
+        by = c("CONCEPT_ID" = "CONCEPT_ID")
+      ) %>%
+      dplyr::left_join(
+        (
+          dataQuantityDistribution %>%
+            tidyr::nest(QUANTITY_DISTRIBUTION = c(-1))
+        ),
+        by = c("CONCEPT_ID" = "CONCEPT_ID")
+      ) %>%
+      dplyr::left_join(
+        (
+          dataRefillsDistribution %>%
+            tidyr::nest(REFILLS_DISTRIBUTION = c(-1))
+        ),
+        by = c("CONCEPT_ID" = "CONCEPT_ID")
+      ) %>%
+      dplyr::collect()
   }
   return(list("reports" = reports, "uniqueConcepts" = uniqueConcepts))
 }
 
-generateAODeviceReports <- function(connectionDetails, dataDevices, cdmDatabaseSchema, resultsDatabaseSchema, vocabDatabaseSchema, outputFormat)
-{
+generateAODeviceReports <- function(connectionDetails, dataDevices, cdmDatabaseSchema, resultsDatabaseSchema, vocabDatabaseSchema, outputFormat) {
   if (nrow(dataDevices) == 0) {
     return(NULL)
   }
@@ -1563,19 +1540,19 @@ generateAODeviceReports <- function(connectionDetails, dataDevices, cdmDatabaseS
   on.exit(DatabaseConnector::disconnect(connection = conn))
   dataAgeAtFirstExposure <-
     DatabaseConnector::querySql(conn, queryAgeAtFirstExposure) %>%
-      dplyr::select(c("CONCEPT_ID", "CATEGORY", "MIN_VALUE", "P10_VALUE", "P25_VALUE", "MEDIAN_VALUE", "P75_VALUE", "P90_VALUE", "MAX_VALUE"))
+    dplyr::select(c("CONCEPT_ID", "CATEGORY", "MIN_VALUE", "P10_VALUE", "P25_VALUE", "MEDIAN_VALUE", "P75_VALUE", "P90_VALUE", "MAX_VALUE"))
   dataDevicesByType <-
     DatabaseConnector::querySql(conn, queryDevicesByType) %>%
-      dplyr::select(c("CONCEPT_ID" = "DEVICE_CONCEPT_ID", "CONCEPT_NAME", "COUNT_VALUE"))
+    dplyr::select(c("CONCEPT_ID" = "DEVICE_CONCEPT_ID", "CONCEPT_NAME", "COUNT_VALUE"))
   dataPrevalenceByGenderAgeYear <-
     DatabaseConnector::querySql(conn, queryPrevalenceByGenderAgeYear) %>%
-      dplyr::select(c("CONCEPT_ID", "TRELLIS_NAME", "SERIES_NAME", "X_CALENDAR_YEAR", "Y_PREVALENCE_1000PP"))
+    dplyr::select(c("CONCEPT_ID", "TRELLIS_NAME", "SERIES_NAME", "X_CALENDAR_YEAR", "Y_PREVALENCE_1000PP"))
   dataPrevalenceByMonth <-
     DatabaseConnector::querySql(conn, queryPrevalenceByMonth) %>%
-      dplyr::select(c("CONCEPT_ID", "X_CALENDAR_MONTH", "Y_PREVALENCE_1000PP"))
+    dplyr::select(c("CONCEPT_ID", "X_CALENDAR_MONTH", "Y_PREVALENCE_1000PP"))
   dataDeviceFrequencyDistribution <-
     DatabaseConnector::querySql(conn, queryDeviceFrequencyDistribution) %>%
-      dplyr::select(c("CONCEPT_ID", "Y_NUM_PERSONS", "X_COUNT"))
+    dplyr::select(c("CONCEPT_ID", "Y_NUM_PERSONS", "X_COUNT"))
 
   uniqueConcepts <- data.frame(
     CONCEPT_ID = unique(dataDevices$CONCEPT_ID),
@@ -1583,19 +1560,19 @@ generateAODeviceReports <- function(connectionDetails, dataDevices, cdmDatabaseS
   )
   conceptMetadata <-
     uniqueConcepts %>%
-      dplyr::left_join(
-        (
-          dataDevices %>%
-            dplyr::select(
-              "CONCEPT_ID",
-              "CONCEPT_NAME",
-              "NUM_PERSONS",
-              "PERCENT_PERSONS",
-              "RECORDS_PER_PERSON"
-            )
-        ),
-        by = c("CONCEPT_ID" = "CONCEPT_ID")
-      )
+    dplyr::left_join(
+      (
+        dataDevices %>%
+          dplyr::select(
+            "CONCEPT_ID",
+            "CONCEPT_NAME",
+            "NUM_PERSONS",
+            "PERCENT_PERSONS",
+            "RECORDS_PER_PERSON"
+          )
+      ),
+      by = c("CONCEPT_ID" = "CONCEPT_ID")
+    )
 
   if (outputFormat == "duckdb") {
     reports <- list(
@@ -1609,48 +1586,47 @@ generateAODeviceReports <- function(connectionDetails, dataDevices, cdmDatabaseS
   } else {
     reports <-
       conceptMetadata %>%
-        dplyr::left_join(
-          (
-            dataAgeAtFirstExposure %>%
-              tidyr::nest(AGE_AT_FIRST_EXPOSURE = c(-1))
-          ),
-          by = c("CONCEPT_ID" = "CONCEPT_ID")
-        ) %>%
-        dplyr::left_join(
-          (
-            dataDevicesByType %>%
-              tidyr::nest(DEVICES_BY_TYPE = c(-1))
-          ),
-          by = c("CONCEPT_ID" = "CONCEPT_ID")
-        ) %>%
-        dplyr::left_join(
-          (
-            dataPrevalenceByGenderAgeYear %>%
-              tidyr::nest(PREVALENCE_BY_GENDER_AGE_YEAR = c(-1))
-          ),
-          by = c("CONCEPT_ID" = "CONCEPT_ID")
-        ) %>%
-        dplyr::left_join(
-          (
-            dataPrevalenceByMonth %>%
-              tidyr::nest(PREVALENCE_BY_MONTH = c(-1))
-          ),
-          by = c("CONCEPT_ID" = "CONCEPT_ID")
-        ) %>%
-        dplyr::left_join(
-          (
-            dataDeviceFrequencyDistribution %>%
-              tidyr::nest(DEVICE_FREQUENCY_DISTRIBUTION = c(-1))
-          ),
-          by = c("CONCEPT_ID" = "CONCEPT_ID")
-        ) %>%
-        dplyr::collect()
+      dplyr::left_join(
+        (
+          dataAgeAtFirstExposure %>%
+            tidyr::nest(AGE_AT_FIRST_EXPOSURE = c(-1))
+        ),
+        by = c("CONCEPT_ID" = "CONCEPT_ID")
+      ) %>%
+      dplyr::left_join(
+        (
+          dataDevicesByType %>%
+            tidyr::nest(DEVICES_BY_TYPE = c(-1))
+        ),
+        by = c("CONCEPT_ID" = "CONCEPT_ID")
+      ) %>%
+      dplyr::left_join(
+        (
+          dataPrevalenceByGenderAgeYear %>%
+            tidyr::nest(PREVALENCE_BY_GENDER_AGE_YEAR = c(-1))
+        ),
+        by = c("CONCEPT_ID" = "CONCEPT_ID")
+      ) %>%
+      dplyr::left_join(
+        (
+          dataPrevalenceByMonth %>%
+            tidyr::nest(PREVALENCE_BY_MONTH = c(-1))
+        ),
+        by = c("CONCEPT_ID" = "CONCEPT_ID")
+      ) %>%
+      dplyr::left_join(
+        (
+          dataDeviceFrequencyDistribution %>%
+            tidyr::nest(DEVICE_FREQUENCY_DISTRIBUTION = c(-1))
+        ),
+        by = c("CONCEPT_ID" = "CONCEPT_ID")
+      ) %>%
+      dplyr::collect()
   }
   return(list("reports" = reports, "uniqueConcepts" = uniqueConcepts))
 }
 
-generateAOConditionReports <- function(connectionDetails, dataConditions, cdmDatabaseSchema, resultsDatabaseSchema, vocabDatabaseSchema, outputFormat)
-{
+generateAOConditionReports <- function(connectionDetails, dataConditions, cdmDatabaseSchema, resultsDatabaseSchema, vocabDatabaseSchema, outputFormat) {
   queryPrevalenceByGenderAgeYear <- SqlRender::loadRenderTranslateSql(
     sqlFilename = "export/condition/sqlPrevalenceByGenderAgeYear.sql",
     packageName = "Achilles",
@@ -1695,20 +1671,20 @@ generateAOConditionReports <- function(connectionDetails, dataConditions, cdmDat
   on.exit(DatabaseConnector::disconnect(connection = conn))
   dataPrevalenceByMonth <-
     DatabaseConnector::querySql(conn, queryPrevalenceByMonth) %>%
-      dplyr::select(c("CONCEPT_ID", "X_CALENDAR_MONTH", "Y_PREVALENCE_1000PP"))
+    dplyr::select(c("CONCEPT_ID", "X_CALENDAR_MONTH", "Y_PREVALENCE_1000PP"))
   if (nrow(dataPrevalenceByMonth) == 0) {
     return(NULL)
   }
 
   dataPrevalenceByGenderAgeYear <-
     DatabaseConnector::querySql(conn, queryPrevalenceByGenderAgeYear) %>%
-      dplyr::select(c("CONCEPT_ID", "TRELLIS_NAME", "SERIES_NAME", "X_CALENDAR_YEAR", "Y_PREVALENCE_1000PP"))
+    dplyr::select(c("CONCEPT_ID", "TRELLIS_NAME", "SERIES_NAME", "X_CALENDAR_YEAR", "Y_PREVALENCE_1000PP"))
   dataConditionsByType <-
     DatabaseConnector::querySql(conn, queryConditionsByType) %>%
-      dplyr::select(c("CONCEPT_ID" = "CONDITION_CONCEPT_ID", "CONCEPT_NAME", "COUNT_VALUE"))
+    dplyr::select(c("CONCEPT_ID" = "CONDITION_CONCEPT_ID", "CONCEPT_NAME", "COUNT_VALUE"))
   dataAgeAtFirstDiagnosis <-
     DatabaseConnector::querySql(conn, queryAgeAtFirstDiagnosis) %>%
-      dplyr::select(c("CONCEPT_ID", "CATEGORY", "MIN_VALUE", "P10_VALUE", "P25_VALUE", "MEDIAN_VALUE", "P75_VALUE", "P90_VALUE", "MAX_VALUE"))
+    dplyr::select(c("CONCEPT_ID", "CATEGORY", "MIN_VALUE", "P10_VALUE", "P25_VALUE", "MEDIAN_VALUE", "P75_VALUE", "P90_VALUE", "MAX_VALUE"))
 
   uniqueConcepts <- data.frame(
     CONCEPT_ID = unique(dataPrevalenceByMonth$CONCEPT_ID),
@@ -1716,19 +1692,19 @@ generateAOConditionReports <- function(connectionDetails, dataConditions, cdmDat
   )
   conceptMetadata <-
     uniqueConcepts %>%
-      dplyr::left_join(
-        (
-          dataConditions %>%
-            dplyr::select(
-              "CONCEPT_ID",
-              "CONCEPT_NAME",
-              "NUM_PERSONS",
-              "PERCENT_PERSONS",
-              "RECORDS_PER_PERSON"
-            )
-        ),
-        by = c("CONCEPT_ID" = "CONCEPT_ID")
-      )
+    dplyr::left_join(
+      (
+        dataConditions %>%
+          dplyr::select(
+            "CONCEPT_ID",
+            "CONCEPT_NAME",
+            "NUM_PERSONS",
+            "PERCENT_PERSONS",
+            "RECORDS_PER_PERSON"
+          )
+      ),
+      by = c("CONCEPT_ID" = "CONCEPT_ID")
+    )
 
   if (outputFormat == "duckdb") {
     reports <- list(
@@ -1741,41 +1717,40 @@ generateAOConditionReports <- function(connectionDetails, dataConditions, cdmDat
   } else {
     reports <-
       conceptMetadata %>%
-        dplyr::left_join(
-          (
-            dataPrevalenceByGenderAgeYear %>%
-              tidyr::nest(PREVALENCE_BY_GENDER_AGE_YEAR = c(-1))
-          ),
-          by = c("CONCEPT_ID" = "CONCEPT_ID")
-        ) %>%
-        dplyr::left_join(
-          (
-            dataPrevalenceByMonth %>%
-              tidyr::nest(PREVALENCE_BY_MONTH = c(-1))
-          ),
-          by = c("CONCEPT_ID" = "CONCEPT_ID")
-        ) %>%
-        dplyr::left_join(
-          (
-            dataConditionsByType %>%
-              tidyr::nest(CONDITIONS_BY_TYPE = c(-1))
-          ),
-          by = c("CONCEPT_ID" = "CONCEPT_ID")
-        ) %>%
-        dplyr::left_join(
-          (
-            dataAgeAtFirstDiagnosis %>%
-              tidyr::nest(AGE_AT_FIRST_DIAGNOSIS = c(-1))
-          ),
-          by = c("CONCEPT_ID" = "CONCEPT_ID")
-        ) %>%
-        dplyr::collect()
+      dplyr::left_join(
+        (
+          dataPrevalenceByGenderAgeYear %>%
+            tidyr::nest(PREVALENCE_BY_GENDER_AGE_YEAR = c(-1))
+        ),
+        by = c("CONCEPT_ID" = "CONCEPT_ID")
+      ) %>%
+      dplyr::left_join(
+        (
+          dataPrevalenceByMonth %>%
+            tidyr::nest(PREVALENCE_BY_MONTH = c(-1))
+        ),
+        by = c("CONCEPT_ID" = "CONCEPT_ID")
+      ) %>%
+      dplyr::left_join(
+        (
+          dataConditionsByType %>%
+            tidyr::nest(CONDITIONS_BY_TYPE = c(-1))
+        ),
+        by = c("CONCEPT_ID" = "CONCEPT_ID")
+      ) %>%
+      dplyr::left_join(
+        (
+          dataAgeAtFirstDiagnosis %>%
+            tidyr::nest(AGE_AT_FIRST_DIAGNOSIS = c(-1))
+        ),
+        by = c("CONCEPT_ID" = "CONCEPT_ID")
+      ) %>%
+      dplyr::collect()
   }
   return(list("reports" = reports, "uniqueConcepts" = uniqueConcepts))
 }
 
-generateAOConditionEraReports <- function(connectionDetails, dataConditionEra, cdmDatabaseSchema, resultsDatabaseSchema, vocabDatabaseSchema, outputFormat)
-{
+generateAOConditionEraReports <- function(connectionDetails, dataConditionEra, cdmDatabaseSchema, resultsDatabaseSchema, vocabDatabaseSchema, outputFormat) {
   if (nrow(dataConditionEra) == 0) {
     return(NULL)
   }
@@ -1824,16 +1799,16 @@ generateAOConditionEraReports <- function(connectionDetails, dataConditionEra, c
   on.exit(DatabaseConnector::disconnect(connection = conn))
   dataPrevalenceByGenderAgeYear <-
     DatabaseConnector::querySql(conn, queryPrevalenceByGenderAgeYear) %>%
-      dplyr::select(c("CONCEPT_ID", "TRELLIS_NAME", "SERIES_NAME", "X_CALENDAR_YEAR", "Y_PREVALENCE_1000PP"))
+    dplyr::select(c("CONCEPT_ID", "TRELLIS_NAME", "SERIES_NAME", "X_CALENDAR_YEAR", "Y_PREVALENCE_1000PP"))
   dataPrevalenceByMonth <-
     DatabaseConnector::querySql(conn, queryPrevalenceByMonth) %>%
-      dplyr::select(c("CONCEPT_ID", "X_CALENDAR_MONTH", "Y_PREVALENCE_1000PP"))
+    dplyr::select(c("CONCEPT_ID", "X_CALENDAR_MONTH", "Y_PREVALENCE_1000PP"))
   dataLengthOfEra <-
     DatabaseConnector::querySql(conn, queryLengthOfEra) %>%
-      dplyr::select(c("CONCEPT_ID", "CATEGORY", "MIN_VALUE", "P10_VALUE", "P25_VALUE", "MEDIAN_VALUE", "P75_VALUE", "P90_VALUE", "MAX_VALUE"))
+    dplyr::select(c("CONCEPT_ID", "CATEGORY", "MIN_VALUE", "P10_VALUE", "P25_VALUE", "MEDIAN_VALUE", "P75_VALUE", "P90_VALUE", "MAX_VALUE"))
   dataAgeAtFirstDiagnosis <-
     DatabaseConnector::querySql(conn, queryAgeAtFirstDiagnosis) %>%
-      dplyr::select(c("CONCEPT_ID", "CATEGORY", "MIN_VALUE", "P10_VALUE", "P25_VALUE", "MEDIAN_VALUE", "P75_VALUE", "P90_VALUE", "MAX_VALUE"))
+    dplyr::select(c("CONCEPT_ID", "CATEGORY", "MIN_VALUE", "P10_VALUE", "P25_VALUE", "MEDIAN_VALUE", "P75_VALUE", "P90_VALUE", "MAX_VALUE"))
 
   uniqueConcepts <- data.frame(
     CONCEPT_ID = unique(dataConditionEra$CONCEPT_ID),
@@ -1841,19 +1816,19 @@ generateAOConditionEraReports <- function(connectionDetails, dataConditionEra, c
   )
   conceptMetadata <-
     uniqueConcepts %>%
-      dplyr::left_join(
-        (
-          dataConditionEra %>%
-            dplyr::select(
-              "CONCEPT_ID",
-              "CONCEPT_NAME",
-              "NUM_PERSONS",
-              "PERCENT_PERSONS",
-              "RECORDS_PER_PERSON"
-            )
-        ),
-        by = c("CONCEPT_ID" = "CONCEPT_ID")
-      )
+    dplyr::left_join(
+      (
+        dataConditionEra %>%
+          dplyr::select(
+            "CONCEPT_ID",
+            "CONCEPT_NAME",
+            "NUM_PERSONS",
+            "PERCENT_PERSONS",
+            "RECORDS_PER_PERSON"
+          )
+      ),
+      by = c("CONCEPT_ID" = "CONCEPT_ID")
+    )
 
   if (outputFormat == "duckdb") {
     reports <- list(
@@ -1866,35 +1841,35 @@ generateAOConditionEraReports <- function(connectionDetails, dataConditionEra, c
   } else {
     reports <-
       conceptMetadata %>%
-        dplyr::left_join(
-          (
-            dataAgeAtFirstDiagnosis %>%
-              tidyr::nest(AGE_AT_FIRST_EXPOSURE = c(-1))
-          ),
-          by = c("CONCEPT_ID" = "CONCEPT_ID")
-        ) %>%
-        dplyr::left_join(
-          (
-            dataPrevalenceByGenderAgeYear %>%
-              tidyr::nest(PREVALENCE_BY_GENDER_AGE_YEAR = c(-1))
-          ),
-          by = c("CONCEPT_ID" = "CONCEPT_ID")
-        ) %>%
-        dplyr::left_join(
-          (
-            dataPrevalenceByMonth %>%
-              tidyr::nest(PREVALENCE_BY_MONTH = c(-1))
-          ),
-          by = c("CONCEPT_ID" = "CONCEPT_ID")
-        ) %>%
-        dplyr::left_join(
-          (
-            dataLengthOfEra %>%
-              tidyr::nest(LENGTH_OF_ERA = c(-1))
-          ),
-          by = c("CONCEPT_ID" = "CONCEPT_ID")
-        ) %>%
-        dplyr::collect()
+      dplyr::left_join(
+        (
+          dataAgeAtFirstDiagnosis %>%
+            tidyr::nest(AGE_AT_FIRST_EXPOSURE = c(-1))
+        ),
+        by = c("CONCEPT_ID" = "CONCEPT_ID")
+      ) %>%
+      dplyr::left_join(
+        (
+          dataPrevalenceByGenderAgeYear %>%
+            tidyr::nest(PREVALENCE_BY_GENDER_AGE_YEAR = c(-1))
+        ),
+        by = c("CONCEPT_ID" = "CONCEPT_ID")
+      ) %>%
+      dplyr::left_join(
+        (
+          dataPrevalenceByMonth %>%
+            tidyr::nest(PREVALENCE_BY_MONTH = c(-1))
+        ),
+        by = c("CONCEPT_ID" = "CONCEPT_ID")
+      ) %>%
+      dplyr::left_join(
+        (
+          dataLengthOfEra %>%
+            tidyr::nest(LENGTH_OF_ERA = c(-1))
+        ),
+        by = c("CONCEPT_ID" = "CONCEPT_ID")
+      ) %>%
+      dplyr::collect()
   }
   return(list("reports" = reports, "uniqueConcepts" = uniqueConcepts))
 }
@@ -1954,8 +1929,8 @@ generateDataDensityConceptsPerPerson <- function(connection, resultsDatabaseSche
   )
   conceptsPerPerson <- DatabaseConnector::querySql(connection, renderedSql)
   return(conceptsPerPerson)
-  #data.table::fwrite(conceptsPerPerson, file=paste0(sourceOutputPath, "/datadensity-concepts-per-person.csv"))
-  #dbWriteTable(duckdbCon, "concepts_per_person", conceptsPerPerson)
+  # data.table::fwrite(conceptsPerPerson, file=paste0(sourceOutputPath, "/datadensity-concepts-per-person.csv"))
+  # dbWriteTable(duckdbCon, "concepts_per_person", conceptsPerPerson)
 }
 
 generateDataDensityDomainsPerPerson <- function(connection, resultsDatabaseSchema) {
@@ -1968,8 +1943,8 @@ generateDataDensityDomainsPerPerson <- function(connection, resultsDatabaseSchem
   domainsPerPerson <- DatabaseConnector::querySql(connection, renderedSql)
   domainsPerPerson$PERCENT_VALUE <- round(as.numeric(domainsPerPerson$PERCENT_VALUE), 2)
   return(domainsPerPerson)
-  #data.table::fwrite(domainsPerPerson, file=paste0(sourceOutputPath, "/datadensity-domains-per-person.csv"))
-  #dbWriteTable(duckdbCon, "domains_per_person", domainsPerPerson)
+  # data.table::fwrite(domainsPerPerson, file=paste0(sourceOutputPath, "/datadensity-domains-per-person.csv"))
+  # dbWriteTable(duckdbCon, "domains_per_person", domainsPerPerson)
 }
 
 generateDomainSummaryConditions <- function(connection, resultsDatabaseSchema, vocabDatabaseSchema) {
@@ -1986,8 +1961,8 @@ generateDomainSummaryConditions <- function(connection, resultsDatabaseSchema, v
   dataConditions$RECORDS_PER_PERSON <- format(round(dataConditions$RECORDS_PER_PERSON, 1), nsmall = 1)
   dataConditions$RECORDS_PER_PERSON_NTILE <- dplyr::ntile(dplyr::desc(dataConditions$RECORDS_PER_PERSON), 10)
   return(dataConditions)
-  #data.table::fwrite(dataConditions, file=paste0(sourceOutputPath, "/domain-summary-condition_occurrence.csv"))
-  #dbWriteTable(duckdbCon, "domain_summary", dataConditions, append = TRUE)
+  # data.table::fwrite(dataConditions, file=paste0(sourceOutputPath, "/domain-summary-condition_occurrence.csv"))
+  # dbWriteTable(duckdbCon, "domain_summary", dataConditions, append = TRUE)
 }
 
 generateDomainSummaryConditionEras <- function(connection, resultsDatabaseSchema, vocabDatabaseSchema) {
@@ -2004,7 +1979,7 @@ generateDomainSummaryConditionEras <- function(connection, resultsDatabaseSchema
   dataConditionEra$RECORDS_PER_PERSON <- format(round(dataConditionEra$RECORDS_PER_PERSON, 1), nsmall = 1)
   dataConditionEra$RECORDS_PER_PERSON_NTILE <- dplyr::ntile(dplyr::desc(dataConditionEra$RECORDS_PER_PERSON), 10)
   return(dataConditionEra)
-  #data.table::fwrite(dataConditionEra, file=paste0(sourceOutputPath, "/domain-summary-condition_era.csv"))
+  # data.table::fwrite(dataConditionEra, file=paste0(sourceOutputPath, "/domain-summary-condition_era.csv"))
 }
 
 generateDomainSummaryDrugs <- function(connection, resultsDatabaseSchema, vocabDatabaseSchema) {
@@ -2021,7 +1996,7 @@ generateDomainSummaryDrugs <- function(connection, resultsDatabaseSchema, vocabD
   dataDrugs$RECORDS_PER_PERSON <- format(round(dataDrugs$RECORDS_PER_PERSON, 1), nsmall = 1)
   dataDrugs$RECORDS_PER_PERSON_NTILE <- dplyr::ntile(dplyr::desc(dataDrugs$RECORDS_PER_PERSON), 10)
   return(dataDrugs)
-  #data.table::fwrite(dataDrugs, file=paste0(sourceOutputPath, "/domain-summary-drug_exposure.csv"))
+  # data.table::fwrite(dataDrugs, file=paste0(sourceOutputPath, "/domain-summary-drug_exposure.csv"))
 }
 
 generateDomainDrugStratification <- function(connection, resultsDatabaseSchema, vocabDatabaseSchema) {
@@ -2034,7 +2009,7 @@ generateDomainDrugStratification <- function(connection, resultsDatabaseSchema, 
   )
   dataDrugType <- DatabaseConnector::querySql(connection, queryDrugType)
   return(dataDrugType)
-  #data.table::fwrite(dataDrugType, file=paste0(sourceOutputPath, "/domain-drug-stratification.csv"))
+  # data.table::fwrite(dataDrugType, file=paste0(sourceOutputPath, "/domain-drug-stratification.csv"))
 }
 
 generateDomainSummaryDrugEra <- function(connection, resultsDatabaseSchema, vocabDatabaseSchema) {
@@ -2051,7 +2026,7 @@ generateDomainSummaryDrugEra <- function(connection, resultsDatabaseSchema, voca
   dataDrugEra$RECORDS_PER_PERSON <- format(round(dataDrugEra$RECORDS_PER_PERSON, 1), nsmall = 1)
   dataDrugEra$RECORDS_PER_PERSON_NTILE <- dplyr::ntile(dplyr::desc(dataDrugEra$RECORDS_PER_PERSON), 10)
   return(dataDrugEra)
-  #data.table::fwrite(dataDrugEra, file=paste0(sourceOutputPath, "/domain-summary-drug_era.csv"))
+  # data.table::fwrite(dataDrugEra, file=paste0(sourceOutputPath, "/domain-summary-drug_era.csv"))
 }
 
 generateDomainSummaryMeasurements <- function(connection, resultsDatabaseSchema, vocabDatabaseSchema) {
@@ -2068,7 +2043,7 @@ generateDomainSummaryMeasurements <- function(connection, resultsDatabaseSchema,
   dataMeasurements$RECORDS_PER_PERSON <- format(round(dataMeasurements$RECORDS_PER_PERSON, 1), nsmall = 1)
   dataMeasurements$RECORDS_PER_PERSON_NTILE <- dplyr::ntile(dplyr::desc(dataMeasurements$RECORDS_PER_PERSON), 10)
   return(dataMeasurements)
-  #data.table::fwrite(dataMeasurements, file=paste0(sourceOutputPath, "/domain-summary-measurement.csv"))
+  # data.table::fwrite(dataMeasurements, file=paste0(sourceOutputPath, "/domain-summary-measurement.csv"))
 }
 
 generateDomainSummaryObservations <- function(connection, resultsDatabaseSchema, vocabDatabaseSchema) {
@@ -2085,7 +2060,7 @@ generateDomainSummaryObservations <- function(connection, resultsDatabaseSchema,
   dataObservations$RECORDS_PER_PERSON <- format(round(dataObservations$RECORDS_PER_PERSON, 1), nsmall = 1)
   dataObservations$RECORDS_PER_PERSON_NTILE <- dplyr::ntile(dplyr::desc(dataObservations$RECORDS_PER_PERSON), 10)
   return(dataObservations)
-  #data.table::fwrite(dataObservations, file=paste0(sourceOutputPath, "/domain-summary-observation.csv"))
+  # data.table::fwrite(dataObservations, file=paste0(sourceOutputPath, "/domain-summary-observation.csv"))
 }
 
 generateDomainSummaryVisitDetails <- function(connection, resultsDatabaseSchema, vocabDatabaseSchema) {
@@ -2101,9 +2076,9 @@ generateDomainSummaryVisitDetails <- function(connection, resultsDatabaseSchema,
   dataVisitDetails$PERCENT_PERSONS_NTILE <- dplyr::ntile(dplyr::desc(dataVisitDetails$PERCENT_PERSONS), 10)
   dataVisitDetails$RECORDS_PER_PERSON <- format(round(dataVisitDetails$RECORDS_PER_PERSON, 1), nsmall = 1)
   dataVisitDetails$RECORDS_PER_PERSON_NTILE <- dplyr::ntile(dplyr::desc(dataVisitDetails$RECORDS_PER_PERSON), 10)
-  names(dataVisitDetails)[names(dataVisitDetails) == 'CONCEPT_PATH'] <- 'CONCEPT_NAME'
+  names(dataVisitDetails)[names(dataVisitDetails) == "CONCEPT_PATH"] <- "CONCEPT_NAME"
   return(dataVisitDetails)
-  #data.table::fwrite(dataVisitDetails, file=paste0(sourceOutputPath, "/domain-summary-visit_detail.csv"))
+  # data.table::fwrite(dataVisitDetails, file=paste0(sourceOutputPath, "/domain-summary-visit_detail.csv"))
 }
 
 generateDomainSummaryVisits <- function(connection, resultsDatabaseSchema, vocabDatabaseSchema) {
@@ -2119,9 +2094,9 @@ generateDomainSummaryVisits <- function(connection, resultsDatabaseSchema, vocab
   dataVisits$PERCENT_PERSONS_NTILE <- dplyr::ntile(dplyr::desc(dataVisits$PERCENT_PERSONS), 10)
   dataVisits$RECORDS_PER_PERSON <- format(round(dataVisits$RECORDS_PER_PERSON, 1), nsmall = 1)
   dataVisits$RECORDS_PER_PERSON_NTILE <- dplyr::ntile(dplyr::desc(dataVisits$RECORDS_PER_PERSON), 10)
-  names(dataVisits)[names(dataVisits) == 'CONCEPT_PATH'] <- 'CONCEPT_NAME'
+  names(dataVisits)[names(dataVisits) == "CONCEPT_PATH"] <- "CONCEPT_NAME"
   return(dataVisits)
-  #data.table::fwrite(dataVisits, file=paste0(sourceOutputPath, "/domain-summary-visit_occurrence.csv"))
+  # data.table::fwrite(dataVisits, file=paste0(sourceOutputPath, "/domain-summary-visit_occurrence.csv"))
 }
 
 generateDomainVisitStratification <- function(connection, resultsDatabaseSchema, vocabDatabaseSchema) {
@@ -2134,7 +2109,7 @@ generateDomainVisitStratification <- function(connection, resultsDatabaseSchema,
   )
   dataVisits <- DatabaseConnector::querySql(connection, queryVisits)
   return(dataVisits)
-  #data.table::fwrite(dataVisits, file=paste0(sourceOutputPath, "/domain-visit-stratification.csv"))
+  # data.table::fwrite(dataVisits, file=paste0(sourceOutputPath, "/domain-visit-stratification.csv"))
 }
 
 generateDomainSummaryProcedures <- function(connection, resultsDatabaseSchema, vocabDatabaseSchema) {
@@ -2151,7 +2126,7 @@ generateDomainSummaryProcedures <- function(connection, resultsDatabaseSchema, v
   dataProcedures$RECORDS_PER_PERSON <- format(round(dataProcedures$RECORDS_PER_PERSON, 1), nsmall = 1)
   dataProcedures$RECORDS_PER_PERSON_NTILE <- dplyr::ntile(dplyr::desc(dataProcedures$RECORDS_PER_PERSON), 10)
   return(dataProcedures)
-  #data.table::fwrite(dataProcedures, file=paste0(sourceOutputPath, "/domain-summary-procedure_occurrence.csv"))
+  # data.table::fwrite(dataProcedures, file=paste0(sourceOutputPath, "/domain-summary-procedure_occurrence.csv"))
 }
 
 generateDomainSummaryDevices <- function(connection, resultsDatabaseSchema, vocabDatabaseSchema) {
@@ -2168,7 +2143,7 @@ generateDomainSummaryDevices <- function(connection, resultsDatabaseSchema, voca
   dataDevices$RECORDS_PER_PERSON <- format(round(dataDevices$RECORDS_PER_PERSON, 1), nsmall = 1)
   dataDevices$RECORDS_PER_PERSON_NTILE <- dplyr::ntile(dplyr::desc(dataDevices$RECORDS_PER_PERSON), 10)
   return(dataDevices)
-  #data.table::fwrite(dataDevices, file=paste0(sourceOutputPath, "/domain-summary-device_exposure.csv"))
+  # data.table::fwrite(dataDevices, file=paste0(sourceOutputPath, "/domain-summary-device_exposure.csv"))
 }
 
 generateDomainSummaryProvider <- function(connection, resultsDatabaseSchema, vocabDatabaseSchema) {
@@ -2183,8 +2158,8 @@ generateDomainSummaryProvider <- function(connection, resultsDatabaseSchema, voc
   dataProviders <- DatabaseConnector::querySql(connection, queryProviders)
   dataProviders$PERCENT_PERSONS <- format(round(dataProviders$PERCENT_PERSONS, 4), nsmall = 4)
   return(dataProviders)
-  #data.table::fwrite(dataProviders, file=paste0(sourceOutputPath, "/domain-summary-provider.csv"))
-  #dbWriteTable(duckdbCon, "domain_summary", dataProviders, append = TRUE)
+  # data.table::fwrite(dataProviders, file=paste0(sourceOutputPath, "/domain-summary-provider.csv"))
+  # dbWriteTable(duckdbCon, "domain_summary", dataProviders, append = TRUE)
 }
 
 generateQualityCompleteness <- function(connection, resultsDatabaseSchema) {
@@ -2195,12 +2170,12 @@ generateQualityCompleteness <- function(connection, resultsDatabaseSchema) {
     results_database_schema = resultsDatabaseSchema
   )
   dataCompleteness <- DatabaseConnector::querySql(connection, queryCompleteness)
-  dataCompleteness <- dataCompleteness[order(-dataCompleteness$RECORD_COUNT),]
+  dataCompleteness <- dataCompleteness[order(-dataCompleteness$RECORD_COUNT), ]
   # prevent downstream crashes with large files
   if (nrow(dataCompleteness) > 100000) {
-    dataCompleteness <- dataCompleteness[1:100000,]
+    dataCompleteness <- dataCompleteness[1:100000, ]
   }
-  #data.table::fwrite(dataCompleteness, file=paste0(sourceOutputPath, "/quality-completeness.csv"))
+  # data.table::fwrite(dataCompleteness, file=paste0(sourceOutputPath, "/quality-completeness.csv"))
   return(dataCompleteness)
 }
 
@@ -2224,19 +2199,18 @@ generateQualityCompleteness <- function(connection, resultsDatabaseSchema) {
 #'
 #' @return none
 #'
-#'@import DBI
-#'@importFrom data.table fwrite
-#'@importFrom dplyr ntile desc
-#'@export
+#' @import DBI
+#' @importFrom data.table fwrite
+#' @importFrom dplyr ntile desc
+#' @export
 exportToAres <- function(
-  connectionDetails,
-  cdmDatabaseSchema,
-  resultsDatabaseSchema,
-  vocabDatabaseSchema,
-  outputPath,
-  outputFormat = "default",
-  reports = c())
-{
+    connectionDetails,
+    cdmDatabaseSchema,
+    resultsDatabaseSchema,
+    vocabDatabaseSchema,
+    outputPath,
+    outputFormat = "default",
+    reports = c()) {
   conn <- DatabaseConnector::connect(connectionDetails)
   on.exit(DatabaseConnector::disconnect(connection = conn))
 
@@ -2253,7 +2227,7 @@ exportToAres <- function(
   conceptsFolder <- file.path(sourceOutputPath, "concepts")
   dir.create(conceptsFolder, showWarnings = F)
   if (outputFormat == "duckdb") {
-    conceptsDatabasePath <- file.path(conceptsFolder, 'data.duckdb')
+    conceptsDatabasePath <- file.path(conceptsFolder, "data.duckdb")
     if (file.exists(conceptsDatabasePath)) {
       unlink(conceptsDatabasePath)
     }
@@ -2373,7 +2347,6 @@ exportToAres <- function(
     # quality - completeness
     currentTable <- generateQualityCompleteness(conn, resultsDatabaseSchema)
     data.table::fwrite(currentTable, file = paste0(sourceOutputPath, "/quality-completeness.csv"))
-
   }
 
   if (length(reports) == 0 || (length(reports) > 0 && "performance" %in% reports)) {
@@ -2652,7 +2625,7 @@ exportToAres <- function(
   if (length(reports) == 0 || (length(reports) > 0 && "person" %in% reports)) {
     writeLines("Generating person report")
     currentTable <- generateAOPersonReport(connectionDetails, cdmDatabaseSchema, resultsDatabaseSchema, vocabDatabaseSchema, sourceOutputPath)
-    jsonOutput = jsonlite::toJSON(currentTable)
+    jsonOutput <- jsonlite::toJSON(currentTable)
     write(jsonOutput, file = paste0(sourceOutputPath, "/person.json"))
   }
 }

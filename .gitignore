@@ -42,3 +42,4 @@ output/
 
 # R environment settings file
 .Renviron
+.DS_Store

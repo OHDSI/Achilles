@@ -6,7 +6,7 @@ test_that("Achilles Redshift Execution", {
       password = URLdecode(Sys.getenv("CDM5_REDSHIFT_PASSWORD")),
       server = Sys.getenv("CDM5_REDSHIFT_SERVER")
     )
-    
+
     expect_no_error(
       Achilles::achilles(
         connectionDetails = details,

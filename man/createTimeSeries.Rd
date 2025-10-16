@@ -26,9 +26,15 @@ correct column name (see example).
 \examples{
 # Example 1:
 temporalData <- data.frame(START_DATE = seq.Date(as.Date("20210101", "\%Y\%m\%d"),
-                                                 as.Date("20231201",
-  "\%Y\%m\%d"), by = "month"), COUNT_VALUE = round(runif(36, 1, 1000)), PREVALENCE = round(runif(36,
-  0, 10), 2), PROPORTION_WITHIN_YEAR = round(runif(36, 0, 1), 2), stringsAsFactors = FALSE)
+  as.Date(
+    "20231201",
+    "\%Y\%m\%d"
+  ),
+  by = "month"
+), COUNT_VALUE = round(runif(36, 1, 1000)), PREVALENCE = round(runif(
+  36,
+  0, 10
+), 2), PROPORTION_WITHIN_YEAR = round(runif(36, 0, 1), 2), stringsAsFactors = FALSE)
 dummyTs <- createTimeSeries(temporalData)
 dummyTs.cv <- dummyTs[, "COUNT_VALUE"]
 dummyTs.pv <- dummyTs[, "PREVALENCE"]
@@ -37,8 +43,10 @@ dummyTs.pwy <- dummyTs[, "PROPORTION_WITHIN_YEAR"]
 \dontrun{
 # Example 2:
 pneumonia <- 255848
-temporalData <- getTemporalData(connectionDetails = connectionDetails, cdmDatabaseSchema = "cdm",
-  resultsDatabaseSchema = "results", conceptId = pneumonia)
+temporalData <- getTemporalData(
+  connectionDetails = connectionDetails, cdmDatabaseSchema = "cdm",
+  resultsDatabaseSchema = "results", conceptId = pneumonia
+)
 pneumoniaTs <- createTimeSeries(temporalData)
 pneumoniaTs.cv <- pneumoniaTs[, "COUNT_VALUE"]
 pneumoniaTs.pv <- pneumoniaTs[, "PREVALENCE"]

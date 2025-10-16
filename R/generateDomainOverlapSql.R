@@ -7,21 +7,26 @@ generateDomainOverlapSql <- function() {
 
   # creates a matrix of domain overlap possibilities.  If you want to add a domain, you would add
   # to the list directly below.
-  domainMatrix <- tidyr::crossing(condition_occurrence = 0:1,
-                                  drug_exposure = 0:1,
-                                  device_exposure = 0:1,
-
-    measurement = 0:1, death = 0:1, procedure_occurrence = 0:1, observation = 0:1)
+  domainMatrix <- tidyr::crossing(
+    condition_occurrence = 0:1,
+    drug_exposure = 0:1,
+    device_exposure = 0:1,
+    measurement = 0:1, death = 0:1, procedure_occurrence = 0:1, observation = 0:1
+  )
   domainMatrixResults <- domainMatrix
   domainMatrixResults <- domainMatrixResults %>%
     mutate(count = 0, proportion = 0, dataSource = "")
 
 
   # Creates notes
-  write(x = "-- Analysis 2004: Number of distinct patients that overlap between specific domains",
-    sqlFile, append = TRUE)
-  write(x = "-- Bit String Breakdown:   1) Condition Occurrence 2) Drug Exposure 3) Device Exposure 4) Measurement 5) Death 6) Procedure Occurrence 7) Observation",
-    sqlFile, append = TRUE)
+  write(
+    x = "-- Analysis 2004: Number of distinct patients that overlap between specific domains",
+    sqlFile, append = TRUE
+  )
+  write(
+    x = "-- Bit String Breakdown:   1) Condition Occurrence 2) Drug Exposure 3) Device Exposure 4) Measurement 5) Death 6) Procedure Occurrence 7) Observation",
+    sqlFile, append = TRUE
+  )
   write(x = "", sqlFile, append = TRUE)
 
   # Creates temp tables for each specific domain
@@ -29,7 +34,7 @@ generateDomainOverlapSql <- function() {
   write(x = "select distinct person_id into #drexp from @cdmDatabaseSchema.drug_exposure;", sqlFile, append = TRUE)
   write(x = "select distinct person_id into #dvexp from @cdmDatabaseSchema.device_exposure;", sqlFile, append = TRUE)
   write(x = "select distinct person_id into #msmt from @cdmDatabaseSchema.measurement;", sqlFile, append = TRUE)
-  write(x = "select distinct person_id into #death from @cdmDatabaseSchema.death;", sqlFile,append = TRUE)
+  write(x = "select distinct person_id into #death from @cdmDatabaseSchema.death;", sqlFile, append = TRUE)
   write(x = "select distinct person_id into #prococ from @cdmDatabaseSchema.procedure_occurrence;", sqlFile, append = TRUE)
   write(x = "select distinct person_id into #obs from @cdmDatabaseSchema.observation;", sqlFile, append = TRUE)
   write(x = "", sqlFile, append = TRUE)
@@ -121,8 +126,7 @@ generateDomainOverlapSql <- function() {
           sql <- paste0(sql, " intersect select person_id from #obs")
         }
       }
-
-    }  # End for loop for domainMatrix by column
+    } # End for loop for domainMatrix by column
 
     sql <- paste0(sql, ")")
 
@@ -155,10 +159,9 @@ generateDomainOverlapSql <- function() {
     } else {
       write(x = sql, sqlFile, append = TRUE)
     }
+  } # End for loop for domainMatrix by row
 
-  }  # End for loop for domainMatrix by row
-  
-  
+
   # clean up temp tables
   # Creates temp tables for each specific domain
   write(x = "drop table #conoc;", sqlFile, append = TRUE)
@@ -168,5 +171,5 @@ generateDomainOverlapSql <- function() {
   write(x = "drop table #death;", sqlFile, append = TRUE)
   write(x = "drop table #prococ;", sqlFile, append = TRUE)
   write(x = "drop table #obs;", sqlFile, append = TRUE)
-  write(x = "", sqlFile, append = TRUE)  
-}  # End function
+  write(x = "", sqlFile, append = TRUE)
+} # End function
