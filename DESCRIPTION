@@ -2,7 +2,7 @@ Package: Achilles
 Type: Package
 Title: Achilles Data Source Characterization
 Version: 1.8
-Date: 2025-10-09
+Date: 2025-10-10
 Authors@R: c(
   person("Frank", "DeFalco", email = "fdefalco@ohdsi.org", role = c("aut","cre")),
   person("Patrick", "Ryan", email = "ryan@ohdsi.org", role = c("aut")),
