@@ -24,12 +24,12 @@ Description: Automated Characterization of Health Information at Large-Scale
   variety of Observational Health Data Sciences and Informatics community
   applications.
 Depends:
-  DatabaseConnector (>= 2.0.0),
+  DatabaseConnector (>= 7.0.0),
   R (>= 4.0.0)
 Imports:
-  DBI,
+  DBI (>= 1.0.0),
   duckdb,
-  SqlRender (>= 1.6.0),
+  SqlRender (>= 1.19.2),
   dplyr,
   jsonlite,
   ParallelLogger,
