@@ -59,7 +59,7 @@ analysis_id,distribution,distributed_field,analysis_name,stratum_1_name,stratum_
 403,1,,Number of distinct condition occurrence concepts per person,,,,,,1,Condition Occurrence
 404,0,,"Number of persons with at least one condition occurrence, by condition_concept_id by calendar year by gender by age decile",condition_concept_id,calendar year,gender_concept_id,age decile,,1,Condition Occurrence
 405,0,,"Number of condition occurrence records, by condition_concept_id by condition_type_concept_id",condition_concept_id,condition_type_concept_id,,,,1,Condition Occurrence
-406,1,,Distribution of age by condition_concept_id,condition_concept_id,gender_concept_id,,,,1,Condition Occurrence
+406,1,,Distribution of age by condition_concept_id and gender,condition_concept_id,gender_concept_id,,,,1,Condition Occurrence
 409,0,,Number of condition occurrence records with invalid person_id,,,,,,0,Condition Occurrence
 410,0,,Number of condition occurrence records outside valid observation period,,,,,,0,Observation Period
 411,0,,Number of condition occurrence records with end date < start date,,,,,,0,Condition Occurrence
