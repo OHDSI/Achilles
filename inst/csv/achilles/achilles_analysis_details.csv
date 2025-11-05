@@ -97,7 +97,7 @@ analysis_id,distribution,distributed_field,analysis_name,stratum_1_name,stratum_
 603,1,,Number of distinct procedure occurrence concepts per person,,,,,,1,Procedure Occurrence
 604,0,,"Number of persons with at least one procedure occurrence, by procedure_concept_id by calendar year by gender by age decile",procedure_concept_id,calendar year,gender_concept_id,age decile,,1,Procedure Occurrence
 605,0,,"Number of procedure occurrence records, by procedure_concept_id by procedure_type_concept_id",procedure_concept_id,procedure_type_concept_id,,,,1,Procedure Occurrence
-606,1,,Distribution of age by procedure_concept_id,procedure_concept_id,gender_concept_id,,,,1,Procedure Occurrence
+606,1,,Distribution of age by procedure_concept_id and gender,procedure_concept_id,gender_concept_id,,,,1,Procedure Occurrence
 609,0,,Number of procedure occurrence records with invalid person_id,,,,,,0,Procedure Occurrence
 610,0,,Number of procedure occurrence records outside valid observation period,,,,,,0,Observation Period
 612,0,,Number of procedure occurrence records with invalid provider_id,,,,,,0,Procedure Occurrence
