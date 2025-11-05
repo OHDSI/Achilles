@@ -35,7 +35,7 @@ analysis_id,distribution,distributed_field,analysis_name,stratum_1_name,stratum_
 202,0,,"Number of persons by visit occurrence start month, by visit_concept_id",visit_concept_id,calendar month,,,,1,Visit Occurrence
 203,1,,Number of distinct visit occurrence concepts per person,,,,,,1,Visit Occurrence
 204,0,,"Number of persons with at least one visit occurrence, by visit_concept_id by calendar year by gender by age decile",visit_concept_id,calendar year,gender_concept_id,age decile,,1,Visit Occurrence
-206,1,,Distribution of age by visit_concept_id,visit_concept_id,gender_concept_id,,,,1,Visit Occurrence
+206,1,,Distribution of age by visit_concept_id and gender,visit_concept_id,gender_concept_id,,,,1,Visit Occurrence
 207,0,,Number of visit records with invalid person_id,,,,,,1,Visit Occurrence
 209,0,,Number of visit records with invalid care_site_id,,,,,,1,Visit Occurrence
 210,0,,Number of visit_occurrence records outside a valid observation period,,,,,,1,Observation Period
