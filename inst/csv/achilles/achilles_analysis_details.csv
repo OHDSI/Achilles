@@ -45,7 +45,7 @@ analysis_id,distribution,distributed_field,analysis_name,stratum_1_name,stratum_
 220,0,,Number of visit occurrence records by visit occurrence start month,calendar month,,,,,1,Visit Occurrence
 221,0,,Number of persons by visit start year,calendar year,,,,,1,Visit Occurrence
 225,0,,Number of visit_occurrence records by visit_source_concept_id,visit_source_concept_id,,,,,1,Visit Occurrence
-226,0,,Number of records by domain by visit_concept_id,visit_source_concept_id,cdm_table_name,,,,1,Visit Occurrence
+226,0,,Number of records by domain by visit_concept_id,visit_concept_id,cdm_table_name,,,,1,Visit Occurrence
 230,0,,Number of visit_occurrence records inside valid observation period,,,,,,0,Observation Period
 231,0,,Proportion of people with at least one visit_occurrence record outside a valid observation period,Proportion,Number of people with a visit_occurrence record outside a valid observation period,Number of people in visit_occurrence,,,0,Observation Period
 232,0,,Proportion of visit_occurrence records outside a valid observation period,Proportion,Number of visit_occurrence records outside a valid observation period,Number of visit_occurrence records,,,0,Observation Period
