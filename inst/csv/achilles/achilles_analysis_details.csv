@@ -115,7 +115,7 @@ analysis_id,distribution,distributed_field,analysis_name,stratum_1_name,stratum_
 703,1,,Number of distinct drug exposure concepts per person,,,,,,1,Drug Exposure
 704,0,,"Number of persons with at least one drug exposure, by drug_concept_id by calendar year by gender by age decile",drug_concept_id,calendar year,gender_concept_id,age decile,,1,Drug Exposure
 705,0,,"Number of drug exposure records, by drug_concept_id by drug_type_concept_id",drug_concept_id,drug_type_concept_id,,,,1,Drug Exposure
-706,1,,Distribution of age by drug_concept_id,drug_concept_id,gender_concept_id,,,,1,Drug Exposure
+706,1,,Distribution of age by drug_concept_id and gender,drug_concept_id,gender_concept_id,,,,1,Drug Exposure
 709,0,,Number of drug exposure records with invalid person_id,,,,,,0,Drug Exposure
 710,0,,Number of drug exposure records outside valid observation period,,,,,,0,Observation Period
 711,0,,Number of drug exposure records with end date < start date,,,,,,0,Drug Exposure
@@ -137,7 +137,7 @@ analysis_id,distribution,distributed_field,analysis_name,stratum_1_name,stratum_
 803,1,,Number of distinct observation occurrence concepts per person,,,,,,1,Observation
 804,0,,"Number of persons with at least one observation occurrence, by observation_concept_id by calendar year by gender by age decile",observation_concept_id,calendar year,gender_concept_id,age decile,,1,Observation
 805,0,,"Number of observation occurrence records, by observation_concept_id by observation_type_concept_id",observation_concept_id,observation_type_concept_id,,,,1,Observation
-806,1,,Distribution of age by observation_concept_id,observation_concept_id,gender_concept_id,,,,1,Observation
+806,1,,Distribution of age by observation_concept_id and gender,observation_concept_id,gender_concept_id,,,,1,Observation
 807,0,,"Number of observation occurrence records, by observation_concept_id and unit_concept_id",observation_concept_id,unit_concept_id,,,,1,Observation
 809,0,,Number of observation records with invalid person_id,,,,,,0,Observation
 810,0,,Number of observation records outside valid observation period,,,,,,0,Observation Period
@@ -161,7 +161,7 @@ analysis_id,distribution,distributed_field,analysis_name,stratum_1_name,stratum_
 902,0,,"Number of persons by drug era start month, by drug_concept_id",drug_concept_id,calendar month,,,,1,Drug Era
 903,1,,Number of distinct drug era concepts per person,,,,,,1,Drug Era
 904,0,,"Number of persons with at least one drug era, by drug_concept_id by calendar year by gender by age decile",drug_concept_id,calendar year,gender_concept_id,age decile,,1,Drug Era
-906,1,,Distribution of age by drug_concept_id,drug_concept_id,gender_concept_id,,,,1,Drug Era
+906,1,,Distribution of age by drug_concept_id and gender,drug_concept_id,gender_concept_id,,,,1,Drug Era
 907,1,,"Distribution of drug era length, by drug_concept_id",drug_concept_id,,,,,1,Drug Era
 908,0,,Number of drug eras without valid person,,,,,,0,Drug Era
 910,0,,Number of drug_era records outside valid observation period,,,,,,0,Observation Period
@@ -175,7 +175,7 @@ analysis_id,distribution,distributed_field,analysis_name,stratum_1_name,stratum_
 1002,0,,"Number of persons by condition era start month, by condition_concept_id",condition_concept_id,calendar month,,,,1,Condition Era
 1003,1,,Number of distinct condition era concepts per person,,,,,,1,Condition Era
 1004,0,,"Number of persons with at least one condition era, by condition_concept_id by calendar year by gender by age decile",condition_concept_id,calendar year,gender_concept_id,age decile,,1,Condition Era
-1006,1,,Distribution of age by condition_concept_id,condition_concept_id,gender_concept_id,,,,1,Condition Era
+1006,1,,Distribution of age by condition_concept_id and gender,condition_concept_id,gender_concept_id,,,,1,Condition Era
 1007,1,,"Distribution of condition era length, by condition_concept_id",condition_concept_id,,,,,1,Condition Era
 1008,0,,Number of condition eras without valid person,,,,,,0,Condition Era
 1010,0,,Number of condition_era records outside a valid observation period,,,,,,0,Observation Period
@@ -197,7 +197,7 @@ analysis_id,distribution,distributed_field,analysis_name,stratum_1_name,stratum_
 1302,0,,"Number of persons by visit detail start month, by visit_detail_concept_id",visit_detail_concept_id,calendar month,,,,1,Visit Detail
 1303,1,,Number of distinct visit detail concepts per person,,,,,,1,Visit Detail
 1304,0,,"Number of persons with at least one visit detail, by visit_detail_concept_id by calendar year by gender by age decile",visit_detail_concept_id,calendar year,gender_concept_id,age decile,,1,Visit Detail
-1306,1,,Distribution of age by visit_detail_concept_id,visit_detail_concept_id,gender_concept_id,,,,1,Visit Detail
+1306,1,,Distribution of age by visit_detail_concept_id and gender,visit_detail_concept_id,gender_concept_id,,,,1,Visit Detail
 1307,0,,Number of visit records with invalid person_id,,,,,,0,Visit Detail
 1309,0,,Number of visit_detail records with invalid care_site_id,,,,,,0,Visit Detail
 1310,0,,Number of visit_detail records outside a valid observation period,,,,,,0,Observation Period
@@ -246,7 +246,7 @@ analysis_id,distribution,distributed_field,analysis_name,stratum_1_name,stratum_
 1803,1,,Number of distinct mesurement occurrence concepts per person,,,,,,1,Measurement
 1804,0,,"Number of persons with at least one mesurement  occurrence, by measurement_concept_id by calendar year by gender by age decile",measurement_concept_id,calendar year,gender_concept_id,age decile,,1,Measurement
 1805,0,,"Number of measurement occurrence records, by measurement_concept_id by measurement_type_concept_id",measurement_concept_id,measurement_type_concept_id,,,,1,Measurement
-1806,1,,Distribution of age by measurement_concept_id,measurement_concept_id,gender_concept_id,,,,1,Measurement
+1806,1,,Distribution of age by measurement_concept_id and gender,measurement_concept_id,gender_concept_id,,,,1,Measurement
 1807,0,,"Number of measurement occurrence records, by measurement_concept_id and unit_concept_id",measurement_concept_id,unit_concept_id,,,,1,Measurement
 1809,0,,Number of measurement records with invalid person_id,,,,,,0,Measurement
 1810,0,,Number of measurement records outside valid observation period,,,,,,0,Observation Period
@@ -283,7 +283,7 @@ analysis_id,distribution,distributed_field,analysis_name,stratum_1_name,stratum_
 2102,0,,"Number of persons by device records  start month, by device_concept_id",device_concept_id,calendar month,,,,1,Device Exposure
 2104,0,,"Number of persons with at least one device exposure, by device_concept_id by calendar year by gender by age decile",device_concept_id,calendar year,gender_concept_id,age decile,,1,Device Exposure
 2105,0,,"Number of device exposure records, by device_concept_id by device_type_concept_id",device_concept_id,device_type_concept_id,,,,1,Device Exposure
-2106,1,,Distribution of age by device_concept_id,device_concept_id,gender_concept_id,,,,1,Device Exposure
+2106,1,,Distribution of age by device_concept_id and gender,device_concept_id,gender_concept_id,,,,1,Device Exposure
 2110,0,,Number of device_exposure records outside valid observation period,,,,,,0,Observation Period
 2120,0,,Number of device_exposure records by device_exposure start month,calendar month,,,,,1,Device Exposure
 2125,0,,Number of device_exposure records by device_source_concept_id,device_source_concept_id,,,,,1,Device Exposure
