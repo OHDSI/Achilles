@@ -30,6 +30,7 @@ Imports:
   DBI (>= 1.0.0),
   duckdb,
   SqlRender (>= 1.19.2),
+  AresIndexer,
   dplyr,
   jsonlite,
   ParallelLogger,

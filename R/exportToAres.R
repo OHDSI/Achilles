@@ -2200,6 +2200,7 @@ generateQualityCompleteness <- function(connection, resultsDatabaseSchema) {
 #' @return none
 #'
 #' @import DBI
+#' @importFrom AresIndexer getSourceReleaseKey
 #' @importFrom data.table fwrite
 #' @importFrom dplyr ntile desc
 #' @export
@@ -2215,12 +2216,11 @@ exportToAres <- function(
   on.exit(DatabaseConnector::disconnect(connection = conn))
 
   # generate a folder name for this release of the cdm characterization
-  sql <- SqlRender::render(sql = "select * from @cdmDatabaseSchema.cdm_source;", cdmDatabaseSchema = cdmDatabaseSchema)
-  sql <- SqlRender::translate(sql = sql, targetDialect = connectionDetails$dbms)
-  metadata <- DatabaseConnector::querySql(conn, sql)
-  sourceKey <- gsub(" ", "_", metadata$CDM_SOURCE_ABBREVIATION)
-  releaseDateKey <- format(lubridate::ymd(metadata$CDM_RELEASE_DATE), "%Y%m%d")
-  sourceOutputPath <- file.path(outputPath, sourceKey, releaseDateKey)
+  releaseKey <- AresIndexer::getSourceReleaseKey(
+    connectionDetails,
+    cdmDatabaseSchema
+  )
+  sourceOutputPath <- file.path(outputPath, releaseKey)
   dir.create(sourceOutputPath, showWarnings = F, recursive = T)
   duckdbCon <- NULL
   conceptsSchema <- "concepts"
