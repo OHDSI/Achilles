@@ -9,6 +9,11 @@ normalizeEmptyValue <- function(x) {
   }
 }
 
+querySqlWithUpperCaseColumns <- function(...) {
+  DatabaseConnector::querySql(...) |>
+  dplyr::rename_with(toupper)
+}
+
 saveConceptsAsJson <- function(
     concept_id,
     reports,
@@ -153,24 +158,24 @@ generateAOProcedureReports <- function(connectionDetails, proceduresData, cdmDat
   conn <- DatabaseConnector::connect(connectionDetails)
   on.exit(DatabaseConnector::disconnect(connection = conn))
   dataPrevalenceByGenderAgeYear <-
-    DatabaseConnector::querySql(conn, queryPrevalenceByGenderAgeYear) %>%
+    querySqlWithUpperCaseColumns(conn, queryPrevalenceByGenderAgeYear) %>%
     dplyr::select(c("CONCEPT_ID", "TRELLIS_NAME", "SERIES_NAME", "X_CALENDAR_YEAR", "Y_PREVALENCE_1000PP"))
 
   dataPrevalenceByMonth <-
-    DatabaseConnector::querySql(conn, queryPrevalenceByMonth) %>%
+    querySqlWithUpperCaseColumns(conn, queryPrevalenceByMonth) %>%
     dplyr::select(c("CONCEPT_ID", "X_CALENDAR_MONTH", "Y_PREVALENCE_1000PP"))
 
   dataProceduresByType <-
-    DatabaseConnector::querySql(conn, queryProceduresByType) %>%
+    querySqlWithUpperCaseColumns(conn, queryProceduresByType) %>%
     dplyr::select(c("CONCEPT_ID" = "PROCEDURE_CONCEPT_ID", "CONCEPT_NAME", "COUNT_VALUE"))
 
   dataAgeAtFirstOccurrence <-
-    DatabaseConnector::querySql(conn, queryAgeAtFirstOccurrence) %>%
+    querySqlWithUpperCaseColumns(conn, queryAgeAtFirstOccurrence) %>%
     dplyr::select(c("CONCEPT_ID", "CATEGORY", "MIN_VALUE", "P10_VALUE", "P25_VALUE", "MEDIAN_VALUE", "P75_VALUE", "P90_VALUE", "MAX_VALUE"))
 
 
   dataProcedureFrequencyDistribution <-
-    DatabaseConnector::querySql(conn, queryProcedureFrequencyDistribution) %>%
+    querySqlWithUpperCaseColumns(conn, queryProcedureFrequencyDistribution) %>%
     dplyr::select(c("CONCEPT_ID", "Y_NUM_PERSONS", "X_COUNT"))
 
 
@@ -260,7 +265,7 @@ generateAOPersonReport <- function(connectionDetails, cdmDatabaseSchema, results
     vocab_database_schema = vocabDatabaseSchema
   )
 
-  personSummaryData <- DatabaseConnector::querySql(conn, renderedSql)
+  personSummaryData <- querySqlWithUpperCaseColumns(conn, renderedSql)
   output$SUMMARY <- personSummaryData
 
   renderedSql <- SqlRender::loadRenderTranslateSql(
@@ -272,7 +277,7 @@ generateAOPersonReport <- function(connectionDetails, cdmDatabaseSchema, results
     results_database_schema = resultsDatabaseSchema,
     vocab_database_schema = vocabDatabaseSchema
   )
-  ageGenderData <- DatabaseConnector::querySql(conn, renderedSql)
+  ageGenderData <- querySqlWithUpperCaseColumns(conn, renderedSql)
   output$AGE_GENDER_DATA <- ageGenderData
 
   renderedSql <- SqlRender::loadRenderTranslateSql(
@@ -284,7 +289,7 @@ generateAOPersonReport <- function(connectionDetails, cdmDatabaseSchema, results
     results_database_schema = resultsDatabaseSchema,
     vocab_database_schema = vocabDatabaseSchema
   )
-  genderData <- DatabaseConnector::querySql(conn, renderedSql)
+  genderData <- querySqlWithUpperCaseColumns(conn, renderedSql)
   output$GENDER_DATA <- genderData
 
   renderedSql <- SqlRender::loadRenderTranslateSql(
@@ -296,7 +301,7 @@ generateAOPersonReport <- function(connectionDetails, cdmDatabaseSchema, results
     results_database_schema = resultsDatabaseSchema,
     vocab_database_schema = vocabDatabaseSchema
   )
-  raceData <- DatabaseConnector::querySql(conn, renderedSql)
+  raceData <- querySqlWithUpperCaseColumns(conn, renderedSql)
   output$RACE_DATA <- raceData
 
   renderedSql <- SqlRender::loadRenderTranslateSql(
@@ -308,7 +313,7 @@ generateAOPersonReport <- function(connectionDetails, cdmDatabaseSchema, results
     results_database_schema = resultsDatabaseSchema,
     vocab_database_schema = vocabDatabaseSchema
   )
-  ethnicityData <- DatabaseConnector::querySql(conn, renderedSql)
+  ethnicityData <- querySqlWithUpperCaseColumns(conn, renderedSql)
   output$ETHNICITY_DATA <- ethnicityData
 
 
@@ -321,7 +326,7 @@ generateAOPersonReport <- function(connectionDetails, cdmDatabaseSchema, results
     results_database_schema = resultsDatabaseSchema,
     vocab_database_schema = vocabDatabaseSchema
   )
-  birthYearData <- DatabaseConnector::querySql(conn, renderedSql)
+  birthYearData <- querySqlWithUpperCaseColumns(conn, renderedSql)
   output$BIRTH_YEAR_DATA <- birthYearData
   return(output)
 }
@@ -337,7 +342,7 @@ generateAOAchillesPerformanceReport <- function(connection, cdmDatabaseSchema, r
     vocab_database_schema = vocabDatabaseSchema
   )
 
-  dataPerformance <- DatabaseConnector::querySql(connection, queryAchillesPerformance)
+  dataPerformance <- querySqlWithUpperCaseColumns(connection, queryAchillesPerformance)
   names(dataPerformance) <- c("analysis_id", "analysis_name", "category", "elapsed_seconds")
   dataPerformance$elapsed_seconds <- format(round(as.numeric(dataPerformance$elapsed_seconds), digits = 2), nsmall = 2)
   return(dataPerformance)
@@ -374,10 +379,10 @@ generateAODeathReport <- function(connection, cdmDatabaseSchema, resultsDatabase
     results_database_schema = resultsDatabaseSchema,
     vocab_database_schema = vocabDatabaseSchema
   )
-  deathByTypeData <- DatabaseConnector::querySql(connection, queryDeathByType)
-  prevalenceByGenderAgeYearData <- DatabaseConnector::querySql(connection, queryPrevalenceByGenderAgeYear)
-  prevalenceByMonthData <- DatabaseConnector::querySql(connection, queryPrevalenceByMonth)
-  ageAtDeathData <- DatabaseConnector::querySql(connection, queryAgeAtDeath)
+  deathByTypeData <- querySqlWithUpperCaseColumns(connection, queryDeathByType)
+  prevalenceByGenderAgeYearData <- querySqlWithUpperCaseColumns(connection, queryPrevalenceByGenderAgeYear)
+  prevalenceByMonthData <- querySqlWithUpperCaseColumns(connection, queryPrevalenceByMonth)
+  ageAtDeathData <- querySqlWithUpperCaseColumns(connection, queryAgeAtDeath)
 
   output <- { }
   output$PREVALENCE_BY_GENDER_AGE_YEAR <- prevalenceByGenderAgeYearData
@@ -395,7 +400,7 @@ generateAOObservationPeriodReport <- function(connection, cdmDatabaseSchema, res
     dbms = connection@dbms,
     results_database_schema = resultsDatabaseSchema
   )
-  ageAtFirstObservationData <- DatabaseConnector::querySql(connection, renderedSql)
+  ageAtFirstObservationData <- querySqlWithUpperCaseColumns(connection, renderedSql)
   output$AGE_AT_FIRST_OBSERVATION <- ageAtFirstObservationData
 
   renderedSql <- SqlRender::loadRenderTranslateSql(
@@ -405,7 +410,7 @@ generateAOObservationPeriodReport <- function(connection, cdmDatabaseSchema, res
     results_database_schema = resultsDatabaseSchema,
     vocab_database_schema = vocabDatabaseSchema
   )
-  ageByGenderData <- DatabaseConnector::querySql(connection, renderedSql)
+  ageByGenderData <- querySqlWithUpperCaseColumns(connection, renderedSql)
   output$AGE_BY_GENDER <- ageByGenderData
 
   observationLengthHist <- { }
@@ -415,7 +420,7 @@ generateAOObservationPeriodReport <- function(connection, cdmDatabaseSchema, res
     dbms = connection@dbms,
     results_database_schema = resultsDatabaseSchema
   )
-  observationLengthStats <- DatabaseConnector::querySql(connection, renderedSql)
+  observationLengthStats <- querySqlWithUpperCaseColumns(connection, renderedSql)
   observationLengthHist$MIN <- observationLengthStats$MIN_VALUE
   observationLengthHist$MAX <- observationLengthStats$MAX_VALUE
   observationLengthHist$INTERVAL_SIZE <- observationLengthStats$INTERVAL_SIZE
@@ -427,7 +432,7 @@ generateAOObservationPeriodReport <- function(connection, cdmDatabaseSchema, res
     dbms = connection@dbms,
     results_database_schema = resultsDatabaseSchema
   )
-  observationLengthData <- DatabaseConnector::querySql(connection, renderedSql)
+  observationLengthData <- querySqlWithUpperCaseColumns(connection, renderedSql)
   output$OBSERVATION_LENGTH_HISTOGRAM <- observationLengthHist
 
   renderedSql <- SqlRender::loadRenderTranslateSql(
@@ -436,7 +441,7 @@ generateAOObservationPeriodReport <- function(connection, cdmDatabaseSchema, res
     dbms = connection@dbms,
     results_database_schema = resultsDatabaseSchema
   )
-  cumulativeDurationData <- DatabaseConnector::querySql(connection, renderedSql)
+  cumulativeDurationData <- querySqlWithUpperCaseColumns(connection, renderedSql)
   cumulativeDurationData$X_LENGTH_OF_OBSERVATION <- cumulativeDurationData$X_LENGTH_OF_OBSERVATION / 365.25
   cumulativeDurationData$SERIES_NAME <- NULL
   names(cumulativeDurationData) <- c("YEARS", "PERCENT_PEOPLE")
@@ -449,7 +454,7 @@ generateAOObservationPeriodReport <- function(connection, cdmDatabaseSchema, res
     results_database_schema = resultsDatabaseSchema,
     vocab_database_schema = vocabDatabaseSchema
   )
-  opLengthByGenderData <- DatabaseConnector::querySql(connection, renderedSql)
+  opLengthByGenderData <- querySqlWithUpperCaseColumns(connection, renderedSql)
   opLengthByGenderData$MIN_VALUE <- opLengthByGenderData$MIN_VALUE / 365.25
   opLengthByGenderData$P10_VALUE <- opLengthByGenderData$P10_VALUE / 365.25
   opLengthByGenderData$P25_VALUE <- opLengthByGenderData$P25_VALUE / 365.25
@@ -466,7 +471,7 @@ generateAOObservationPeriodReport <- function(connection, cdmDatabaseSchema, res
     dbms = connection@dbms,
     results_database_schema = resultsDatabaseSchema
   )
-  opLengthByAgeData <- DatabaseConnector::querySql(connection, renderedSql)
+  opLengthByAgeData <- querySqlWithUpperCaseColumns(connection, renderedSql)
   opLengthByAgeData$MIN_VALUE <- opLengthByAgeData$MIN_VALUE / 365.25
   opLengthByAgeData$P10_VALUE <- opLengthByAgeData$P10_VALUE / 365.25
   opLengthByAgeData$P25_VALUE <- opLengthByAgeData$P25_VALUE / 365.25
@@ -483,7 +488,7 @@ generateAOObservationPeriodReport <- function(connection, cdmDatabaseSchema, res
     dbms = connection@dbms,
     results_database_schema = resultsDatabaseSchema
   )
-  observedByYearStats <- DatabaseConnector::querySql(connection, renderedSql)
+  observedByYearStats <- querySqlWithUpperCaseColumns(connection, renderedSql)
   observedByYearHist$MIN <- observedByYearStats$MIN_VALUE
   observedByYearHist$MAX <- observedByYearStats$MAX_VALUE
   observedByYearHist$INTERVAL_SIZE <- observedByYearStats$INTERVAL_SIZE
@@ -495,7 +500,7 @@ generateAOObservationPeriodReport <- function(connection, cdmDatabaseSchema, res
     dbms = connection@dbms,
     results_database_schema = resultsDatabaseSchema
   )
-  observedByYearData <- DatabaseConnector::querySql(connection, renderedSql)
+  observedByYearData <- querySqlWithUpperCaseColumns(connection, renderedSql)
   observedByYearHist$DATA <- observedByYearData
   output$OBSERVED_BY_YEAR_HISTOGRAM <- observedByYearHist
 
@@ -506,7 +511,7 @@ generateAOObservationPeriodReport <- function(connection, cdmDatabaseSchema, res
     dbms = connection@dbms,
     results_database_schema = resultsDatabaseSchema
   )
-  observedByMonth <- DatabaseConnector::querySql(connection, renderedSql)
+  observedByMonth <- querySqlWithUpperCaseColumns(connection, renderedSql)
   output$OBSERVED_BY_MONTH <- observedByMonth
 
   renderedSql <- SqlRender::loadRenderTranslateSql(
@@ -515,7 +520,7 @@ generateAOObservationPeriodReport <- function(connection, cdmDatabaseSchema, res
     dbms = connection@dbms,
     results_database_schema = resultsDatabaseSchema
   )
-  personPeriodsData <- DatabaseConnector::querySql(connection, renderedSql)
+  personPeriodsData <- querySqlWithUpperCaseColumns(connection, renderedSql)
   output$PERSON_PERIODS_DATA <- personPeriodsData
   return(output)
 }
@@ -563,7 +568,7 @@ generateAOVisitReports <- function(connectionDetails, cdmDatabaseSchema, results
 
   conn <- DatabaseConnector::connect(connectionDetails)
   dataVisits <-
-    DatabaseConnector::querySql(conn, queryVisits) %>%
+    querySqlWithUpperCaseColumns(conn, queryVisits) %>%
     dplyr::rename(dplyr::all_of(c("CONCEPT_NAME" = "CONCEPT_PATH"))) %>%
     dplyr::select(
       "CONCEPT_ID",
@@ -577,16 +582,16 @@ generateAOVisitReports <- function(connectionDetails, cdmDatabaseSchema, results
   }
 
   dataPrevalenceByGenderAgeYear <-
-    DatabaseConnector::querySql(conn, queryPrevalenceByGenderAgeYear) %>%
+    querySqlWithUpperCaseColumns(conn, queryPrevalenceByGenderAgeYear) %>%
     dplyr::select(c("CONCEPT_ID", "TRELLIS_NAME", "SERIES_NAME", "X_CALENDAR_YEAR", "Y_PREVALENCE_1000PP"))
   dataPrevalenceByMonth <-
-    DatabaseConnector::querySql(conn, queryPrevalenceByMonth) %>%
+    querySqlWithUpperCaseColumns(conn, queryPrevalenceByMonth) %>%
     dplyr::select(c("CONCEPT_ID", "X_CALENDAR_MONTH", "Y_PREVALENCE_1000PP"))
   dataVisitDurationByType <-
-    DatabaseConnector::querySql(conn, queryVisitDurationByType) %>%
+    querySqlWithUpperCaseColumns(conn, queryVisitDurationByType) %>%
     dplyr::select(c("CONCEPT_ID", "CATEGORY", "MIN_VALUE", "P10_VALUE", "P25_VALUE", "MEDIAN_VALUE", "P75_VALUE", "P90_VALUE", "MAX_VALUE"))
   dataAgeAtFirstOccurrence <-
-    DatabaseConnector::querySql(conn, queryAgeAtFirstOccurrence) %>%
+    querySqlWithUpperCaseColumns(conn, queryAgeAtFirstOccurrence) %>%
     dplyr::select(c("CONCEPT_ID", "CATEGORY", "MIN_VALUE", "P10_VALUE", "P25_VALUE", "MEDIAN_VALUE", "P75_VALUE", "P90_VALUE", "MAX_VALUE"))
 
   uniqueConcepts <- data.frame(
@@ -695,7 +700,7 @@ generateAOVisitDetailReports <- function(connectionDetails, cdmDatabaseSchema, r
   conn <- DatabaseConnector::connect(connectionDetails)
   on.exit(DatabaseConnector::disconnect(connection = conn))
   dataVisitDetails <-
-    DatabaseConnector::querySql(conn, queryVisitDetails) %>%
+    querySqlWithUpperCaseColumns(conn, queryVisitDetails) %>%
     dplyr::rename(dplyr::all_of(c("CONCEPT_NAME" = "CONCEPT_PATH"))) %>%
     dplyr::select(
       "CONCEPT_ID",
@@ -710,16 +715,16 @@ generateAOVisitDetailReports <- function(connectionDetails, cdmDatabaseSchema, r
   }
 
   dataPrevalenceByGenderAgeYear <-
-    DatabaseConnector::querySql(conn, queryPrevalenceByGenderAgeYear) %>%
+    querySqlWithUpperCaseColumns(conn, queryPrevalenceByGenderAgeYear) %>%
     dplyr::select(c("CONCEPT_ID", "TRELLIS_NAME", "SERIES_NAME", "X_CALENDAR_YEAR", "Y_PREVALENCE_1000PP"))
   dataPrevalenceByMonth <-
-    DatabaseConnector::querySql(conn, queryPrevalenceByMonth) %>%
+    querySqlWithUpperCaseColumns(conn, queryPrevalenceByMonth) %>%
     dplyr::select(c("CONCEPT_ID", "X_CALENDAR_MONTH", "Y_PREVALENCE_1000PP"))
   dataVisitDetailDurationByType <-
-    DatabaseConnector::querySql(conn, queryVisitDetailDurationByType) %>%
+    querySqlWithUpperCaseColumns(conn, queryVisitDetailDurationByType) %>%
     dplyr::select(c("CONCEPT_ID", "CATEGORY", "MIN_VALUE", "P10_VALUE", "P25_VALUE", "MEDIAN_VALUE", "P75_VALUE", "P90_VALUE", "MAX_VALUE"))
   dataAgeAtFirstOccurrence <-
-    DatabaseConnector::querySql(conn, queryAgeAtFirstOccurrence) %>%
+    querySqlWithUpperCaseColumns(conn, queryAgeAtFirstOccurrence) %>%
     dplyr::select(c("CONCEPT_ID", "CATEGORY", "MIN_VALUE", "P10_VALUE", "P25_VALUE", "MEDIAN_VALUE", "P75_VALUE", "P90_VALUE", "MAX_VALUE"))
 
   uniqueConcepts <- data.frame(
@@ -785,7 +790,7 @@ generateAOMetadataReport <- function(connection, cdmDatabaseSchema, outputPath) 
       dbms = connection@dbms,
       cdm_database_schema = cdmDatabaseSchema
     )
-    dataMetadata <- DatabaseConnector::querySql(connection, queryMetadata)
+    dataMetadata <- querySqlWithUpperCaseColumns(connection, queryMetadata)
     return(dataMetadata)
   }
 }
@@ -838,19 +843,19 @@ generateAOObservationReports <- function(connectionDetails, observationsData, cd
   conn <- DatabaseConnector::connect(connectionDetails)
   on.exit(DatabaseConnector::disconnect(connection = conn))
   dataPrevalenceByGenderAgeYear <-
-    DatabaseConnector::querySql(conn, queryPrevalenceByGenderAgeYear) %>%
+    querySqlWithUpperCaseColumns(conn, queryPrevalenceByGenderAgeYear) %>%
     dplyr::select(c("CONCEPT_ID", "TRELLIS_NAME", "SERIES_NAME", "X_CALENDAR_YEAR", "Y_PREVALENCE_1000PP"))
   dataPrevalenceByMonth <-
-    DatabaseConnector::querySql(conn, queryPrevalenceByMonth) %>%
+    querySqlWithUpperCaseColumns(conn, queryPrevalenceByMonth) %>%
     dplyr::select(c("CONCEPT_ID", "X_CALENDAR_MONTH", "Y_PREVALENCE_1000PP"))
   dataObservationsByType <-
-    DatabaseConnector::querySql(conn, queryObservationsByType) %>%
+    querySqlWithUpperCaseColumns(conn, queryObservationsByType) %>%
     dplyr::select(c("CONCEPT_ID" = "OBSERVATION_CONCEPT_ID", "CONCEPT_NAME", "COUNT_VALUE"))
   dataAgeAtFirstOccurrence <-
-    DatabaseConnector::querySql(conn, queryAgeAtFirstOccurrence) %>%
+    querySqlWithUpperCaseColumns(conn, queryAgeAtFirstOccurrence) %>%
     dplyr::select(c("CONCEPT_ID", "CATEGORY", "MIN_VALUE", "P10_VALUE", "P25_VALUE", "MEDIAN_VALUE", "P75_VALUE", "P90_VALUE", "MAX_VALUE"))
   dataObsFrequencyDistribution <-
-    DatabaseConnector::querySql(conn, queryObsFrequencyDistribution) %>%
+    querySqlWithUpperCaseColumns(conn, queryObsFrequencyDistribution) %>%
     dplyr::select(c("CONCEPT_ID", "Y_NUM_PERSONS", "X_COUNT"))
 
   uniqueConcepts <- data.frame(
@@ -933,7 +938,7 @@ generateAOCdmSourceReport <- function(connection, cdmDatabaseSchema, outputPath)
       cdm_database_schema = cdmDatabaseSchema
     )
 
-    dataCdmSource <- DatabaseConnector::querySql(connection, queryCdmSource)
+    dataCdmSource <- querySqlWithUpperCaseColumns(connection, queryCdmSource)
     return(dataCdmSource)
   }
 }
@@ -1037,38 +1042,38 @@ generateAOMeasurementReports <- function(connectionDetails, dataMeasurements, cd
   conn <- DatabaseConnector::connect(connectionDetails)
   on.exit(DatabaseConnector::disconnect(connection = conn))
   dataPrevalenceByMonth <-
-    DatabaseConnector::querySql(conn, queryPrevalenceByMonth) %>%
+    querySqlWithUpperCaseColumns(conn, queryPrevalenceByMonth) %>%
     dplyr::select(c("CONCEPT_ID", "X_CALENDAR_MONTH", "Y_PREVALENCE_1000PP"))
   if (nrow(dataPrevalenceByMonth) == 0) {
     return(NULL)
   }
 
   dataPrevalenceByGenderAgeYear <-
-    DatabaseConnector::querySql(conn, queryPrevalenceByGenderAgeYear) %>%
+    querySqlWithUpperCaseColumns(conn, queryPrevalenceByGenderAgeYear) %>%
     dplyr::select(c("CONCEPT_ID", "TRELLIS_NAME", "SERIES_NAME", "X_CALENDAR_YEAR", "Y_PREVALENCE_1000PP"))
   dataMeasurementsByType <-
-    DatabaseConnector::querySql(conn, queryMeasurementsByType) %>%
+    querySqlWithUpperCaseColumns(conn, queryMeasurementsByType) %>%
     dplyr::select(c("CONCEPT_ID" = "MEASUREMENT_CONCEPT_ID", "CONCEPT_NAME", "COUNT_VALUE"))
   dataAgeAtFirstOccurrence <-
-    DatabaseConnector::querySql(conn, queryAgeAtFirstOccurrence) %>%
+    querySqlWithUpperCaseColumns(conn, queryAgeAtFirstOccurrence) %>%
     dplyr::select(c("CONCEPT_ID", "CATEGORY", "MIN_VALUE", "P10_VALUE", "P25_VALUE", "MEDIAN_VALUE", "P75_VALUE", "P90_VALUE", "MAX_VALUE"))
   dataRecordsByUnit <-
-    DatabaseConnector::querySql(conn, queryRecordsByUnit) %>%
+    querySqlWithUpperCaseColumns(conn, queryRecordsByUnit) %>%
     dplyr::select(c("CONCEPT_ID" = "MEASUREMENT_CONCEPT_ID", "CONCEPT_NAME", "COUNT_VALUE", "UNIT_CONCEPT_ID"))
   dataMeasurementValueDistribution <-
-    DatabaseConnector::querySql(conn, queryMeasurementValueDistribution) %>%
+    querySqlWithUpperCaseColumns(conn, queryMeasurementValueDistribution) %>%
     dplyr::select(c("CONCEPT_ID", "CATEGORY", "MIN_VALUE", "P10_VALUE", "P25_VALUE", "MEDIAN_VALUE", "P75_VALUE", "P90_VALUE", "MAX_VALUE", "UNIT_CONCEPT_ID"))
   dataLowerLimitDistribution <-
-    DatabaseConnector::querySql(conn, queryLowerLimitDistribution) %>%
+    querySqlWithUpperCaseColumns(conn, queryLowerLimitDistribution) %>%
     dplyr::select(c("CONCEPT_ID", "CATEGORY", "MIN_VALUE", "P10_VALUE", "P25_VALUE", "MEDIAN_VALUE", "P75_VALUE", "P90_VALUE", "MAX_VALUE"))
   dataUpperLimitDistribution <-
-    DatabaseConnector::querySql(conn, queryUpperLimitDistribution) %>%
+    querySqlWithUpperCaseColumns(conn, queryUpperLimitDistribution) %>%
     dplyr::select(c("CONCEPT_ID", "CATEGORY", "MIN_VALUE", "P10_VALUE", "P25_VALUE", "MEDIAN_VALUE", "P75_VALUE", "P90_VALUE", "MAX_VALUE"))
   dataValuesRelativeToNorm <-
-    DatabaseConnector::querySql(conn, queryValuesRelativeToNorm) %>%
+    querySqlWithUpperCaseColumns(conn, queryValuesRelativeToNorm) %>%
     dplyr::select(c("CONCEPT_ID" = "MEASUREMENT_CONCEPT_ID", "CONCEPT_NAME", "COUNT_VALUE"))
   dataFrequencyDistribution <-
-    DatabaseConnector::querySql(conn, queryFrequencyDistribution) %>%
+    querySqlWithUpperCaseColumns(conn, queryFrequencyDistribution) %>%
     dplyr::select(c("CONCEPT_ID", "Y_NUM_PERSONS", "X_COUNT"))
 
   uniqueConcepts <- data.frame(
@@ -1223,16 +1228,16 @@ generateAODrugEraReports <- function(connectionDetails, dataDrugEra, cdmDatabase
   conn <- DatabaseConnector::connect(connectionDetails)
   on.exit(DatabaseConnector::disconnect(connection = conn))
   dataAgeAtFirstExposure <-
-    DatabaseConnector::querySql(conn, queryAgeAtFirstExposure) %>%
+    querySqlWithUpperCaseColumns(conn, queryAgeAtFirstExposure) %>%
     dplyr::select(c("CONCEPT_ID", "CATEGORY", "MIN_VALUE", "P10_VALUE", "P25_VALUE", "MEDIAN_VALUE", "P75_VALUE", "P90_VALUE", "MAX_VALUE"))
   dataPrevalenceByGenderAgeYear <-
-    DatabaseConnector::querySql(conn, queryPrevalenceByGenderAgeYear) %>%
+    querySqlWithUpperCaseColumns(conn, queryPrevalenceByGenderAgeYear) %>%
     dplyr::select(c("CONCEPT_ID", "TRELLIS_NAME", "SERIES_NAME", "X_CALENDAR_YEAR", "Y_PREVALENCE_1000PP"))
   dataPrevalenceByMonth <-
-    DatabaseConnector::querySql(conn, queryPrevalenceByMonth) %>%
+    querySqlWithUpperCaseColumns(conn, queryPrevalenceByMonth) %>%
     dplyr::select(c("CONCEPT_ID", "X_CALENDAR_MONTH", "Y_PREVALENCE_1000PP"))
   dataLengthOfEra <-
-    DatabaseConnector::querySql(conn, queryLengthOfEra) %>%
+    querySqlWithUpperCaseColumns(conn, queryLengthOfEra) %>%
     dplyr::select(c("CONCEPT_ID", "CATEGORY", "MIN_VALUE", "P10_VALUE", "P25_VALUE", "MEDIAN_VALUE", "P75_VALUE", "P90_VALUE", "MAX_VALUE"))
 
   uniqueConcepts <- data.frame(
@@ -1367,32 +1372,32 @@ generateAODrugReports <- function(connectionDetails, dataDrugs, cdmDatabaseSchem
   conn <- DatabaseConnector::connect(connectionDetails)
   on.exit(DatabaseConnector::disconnect(connection = conn))
   dataPrevalenceByMonth <-
-    DatabaseConnector::querySql(conn, queryPrevalenceByMonth) %>%
+    querySqlWithUpperCaseColumns(conn, queryPrevalenceByMonth) %>%
     dplyr::select(c("CONCEPT_ID", "X_CALENDAR_MONTH", "Y_PREVALENCE_1000PP"))
   if (nrow(dataPrevalenceByMonth) == 0) {
     return(NULL)
   }
 
   dataAgeAtFirstExposure <-
-    DatabaseConnector::querySql(conn, queryAgeAtFirstExposure) %>%
+    querySqlWithUpperCaseColumns(conn, queryAgeAtFirstExposure) %>%
     dplyr::select(c("CONCEPT_ID" = "DRUG_CONCEPT_ID", "CATEGORY", "MIN_VALUE", "P10_VALUE", "P25_VALUE", "MEDIAN_VALUE", "P75_VALUE", "P90_VALUE", "MAX_VALUE"))
   dataDaysSupplyDistribution <-
-    DatabaseConnector::querySql(conn, queryDaysSupplyDistribution) %>%
+    querySqlWithUpperCaseColumns(conn, queryDaysSupplyDistribution) %>%
     dplyr::select(c("CONCEPT_ID" = "DRUG_CONCEPT_ID", "CATEGORY", "MIN_VALUE", "P10_VALUE", "P25_VALUE", "MEDIAN_VALUE", "P75_VALUE", "P90_VALUE", "MAX_VALUE"))
   dataDrugsByType <-
-    DatabaseConnector::querySql(conn, queryDrugsByType) %>%
+    querySqlWithUpperCaseColumns(conn, queryDrugsByType) %>%
     dplyr::select(c("CONCEPT_ID" = "DRUG_CONCEPT_ID", "CONCEPT_NAME", "COUNT_VALUE"))
   dataPrevalenceByGenderAgeYear <-
-    DatabaseConnector::querySql(conn, queryPrevalenceByGenderAgeYear) %>%
+    querySqlWithUpperCaseColumns(conn, queryPrevalenceByGenderAgeYear) %>%
     dplyr::select(c("CONCEPT_ID", "TRELLIS_NAME", "SERIES_NAME", "X_CALENDAR_YEAR", "Y_PREVALENCE_1000PP"))
   dataQuantityDistribution <-
-    DatabaseConnector::querySql(conn, queryQuantityDistribution) %>%
+    querySqlWithUpperCaseColumns(conn, queryQuantityDistribution) %>%
     dplyr::select(c("CONCEPT_ID" = "DRUG_CONCEPT_ID", "CATEGORY", "MIN_VALUE", "P10_VALUE", "P25_VALUE", "MEDIAN_VALUE", "P75_VALUE", "P90_VALUE", "MAX_VALUE"))
   dataRefillsDistribution <-
-    DatabaseConnector::querySql(conn, queryRefillsDistribution) %>%
+    querySqlWithUpperCaseColumns(conn, queryRefillsDistribution) %>%
     dplyr::select(c("CONCEPT_ID" = "DRUG_CONCEPT_ID", "CATEGORY", "MIN_VALUE", "P10_VALUE", "P25_VALUE", "MEDIAN_VALUE", "P75_VALUE", "P90_VALUE", "MAX_VALUE"))
   dataDrugFrequencyDistribution <-
-    DatabaseConnector::querySql(conn, queryDrugFrequencyDistribution) %>%
+    querySqlWithUpperCaseColumns(conn, queryDrugFrequencyDistribution) %>%
     dplyr::select(c("CONCEPT_ID", "Y_NUM_PERSONS", "X_COUNT"))
 
   uniqueConcepts <- data.frame(
@@ -1539,19 +1544,19 @@ generateAODeviceReports <- function(connectionDetails, dataDevices, cdmDatabaseS
   conn <- DatabaseConnector::connect(connectionDetails)
   on.exit(DatabaseConnector::disconnect(connection = conn))
   dataAgeAtFirstExposure <-
-    DatabaseConnector::querySql(conn, queryAgeAtFirstExposure) %>%
+    querySqlWithUpperCaseColumns(conn, queryAgeAtFirstExposure) %>%
     dplyr::select(c("CONCEPT_ID", "CATEGORY", "MIN_VALUE", "P10_VALUE", "P25_VALUE", "MEDIAN_VALUE", "P75_VALUE", "P90_VALUE", "MAX_VALUE"))
   dataDevicesByType <-
-    DatabaseConnector::querySql(conn, queryDevicesByType) %>%
+    querySqlWithUpperCaseColumns(conn, queryDevicesByType) %>%
     dplyr::select(c("CONCEPT_ID" = "DEVICE_CONCEPT_ID", "CONCEPT_NAME", "COUNT_VALUE"))
   dataPrevalenceByGenderAgeYear <-
-    DatabaseConnector::querySql(conn, queryPrevalenceByGenderAgeYear) %>%
+    querySqlWithUpperCaseColumns(conn, queryPrevalenceByGenderAgeYear) %>%
     dplyr::select(c("CONCEPT_ID", "TRELLIS_NAME", "SERIES_NAME", "X_CALENDAR_YEAR", "Y_PREVALENCE_1000PP"))
   dataPrevalenceByMonth <-
-    DatabaseConnector::querySql(conn, queryPrevalenceByMonth) %>%
+    querySqlWithUpperCaseColumns(conn, queryPrevalenceByMonth) %>%
     dplyr::select(c("CONCEPT_ID", "X_CALENDAR_MONTH", "Y_PREVALENCE_1000PP"))
   dataDeviceFrequencyDistribution <-
-    DatabaseConnector::querySql(conn, queryDeviceFrequencyDistribution) %>%
+    querySqlWithUpperCaseColumns(conn, queryDeviceFrequencyDistribution) %>%
     dplyr::select(c("CONCEPT_ID", "Y_NUM_PERSONS", "X_COUNT"))
 
   uniqueConcepts <- data.frame(
@@ -1670,20 +1675,20 @@ generateAOConditionReports <- function(connectionDetails, dataConditions, cdmDat
   conn <- DatabaseConnector::connect(connectionDetails)
   on.exit(DatabaseConnector::disconnect(connection = conn))
   dataPrevalenceByMonth <-
-    DatabaseConnector::querySql(conn, queryPrevalenceByMonth) %>%
+    querySqlWithUpperCaseColumns(conn, queryPrevalenceByMonth) %>%
     dplyr::select(c("CONCEPT_ID", "X_CALENDAR_MONTH", "Y_PREVALENCE_1000PP"))
   if (nrow(dataPrevalenceByMonth) == 0) {
     return(NULL)
   }
 
   dataPrevalenceByGenderAgeYear <-
-    DatabaseConnector::querySql(conn, queryPrevalenceByGenderAgeYear) %>%
+    querySqlWithUpperCaseColumns(conn, queryPrevalenceByGenderAgeYear) %>%
     dplyr::select(c("CONCEPT_ID", "TRELLIS_NAME", "SERIES_NAME", "X_CALENDAR_YEAR", "Y_PREVALENCE_1000PP"))
   dataConditionsByType <-
-    DatabaseConnector::querySql(conn, queryConditionsByType) %>%
+    querySqlWithUpperCaseColumns(conn, queryConditionsByType) %>%
     dplyr::select(c("CONCEPT_ID" = "CONDITION_CONCEPT_ID", "CONCEPT_NAME", "COUNT_VALUE"))
   dataAgeAtFirstDiagnosis <-
-    DatabaseConnector::querySql(conn, queryAgeAtFirstDiagnosis) %>%
+    querySqlWithUpperCaseColumns(conn, queryAgeAtFirstDiagnosis) %>%
     dplyr::select(c("CONCEPT_ID", "CATEGORY", "MIN_VALUE", "P10_VALUE", "P25_VALUE", "MEDIAN_VALUE", "P75_VALUE", "P90_VALUE", "MAX_VALUE"))
 
   uniqueConcepts <- data.frame(
@@ -1798,16 +1803,16 @@ generateAOConditionEraReports <- function(connectionDetails, dataConditionEra, c
   conn <- DatabaseConnector::connect(connectionDetails)
   on.exit(DatabaseConnector::disconnect(connection = conn))
   dataPrevalenceByGenderAgeYear <-
-    DatabaseConnector::querySql(conn, queryPrevalenceByGenderAgeYear) %>%
+    querySqlWithUpperCaseColumns(conn, queryPrevalenceByGenderAgeYear) %>%
     dplyr::select(c("CONCEPT_ID", "TRELLIS_NAME", "SERIES_NAME", "X_CALENDAR_YEAR", "Y_PREVALENCE_1000PP"))
   dataPrevalenceByMonth <-
-    DatabaseConnector::querySql(conn, queryPrevalenceByMonth) %>%
+    querySqlWithUpperCaseColumns(conn, queryPrevalenceByMonth) %>%
     dplyr::select(c("CONCEPT_ID", "X_CALENDAR_MONTH", "Y_PREVALENCE_1000PP"))
   dataLengthOfEra <-
-    DatabaseConnector::querySql(conn, queryLengthOfEra) %>%
+    querySqlWithUpperCaseColumns(conn, queryLengthOfEra) %>%
     dplyr::select(c("CONCEPT_ID", "CATEGORY", "MIN_VALUE", "P10_VALUE", "P25_VALUE", "MEDIAN_VALUE", "P75_VALUE", "P90_VALUE", "MAX_VALUE"))
   dataAgeAtFirstDiagnosis <-
-    DatabaseConnector::querySql(conn, queryAgeAtFirstDiagnosis) %>%
+    querySqlWithUpperCaseColumns(conn, queryAgeAtFirstDiagnosis) %>%
     dplyr::select(c("CONCEPT_ID", "CATEGORY", "MIN_VALUE", "P10_VALUE", "P25_VALUE", "MEDIAN_VALUE", "P75_VALUE", "P90_VALUE", "MAX_VALUE"))
 
   uniqueConcepts <- data.frame(
@@ -1883,7 +1888,7 @@ generateDataDensityTotal <- function(connection, resultsDatabaseSchema) {
     results_database_schema = resultsDatabaseSchema
   )
 
-  totalRecordsData <- DatabaseConnector::querySql(connection, renderedSql)
+  totalRecordsData <- querySqlWithUpperCaseColumns(connection, renderedSql)
   colnames(totalRecordsData) <- c("domain", "date", "records")
   totalRecordsData$date <- lubridate::parse_date_time(totalRecordsData$date, "ym")
 
@@ -1901,7 +1906,7 @@ generateLocationData <- function(connection, resultsDatabaseSchema) {
     results_database_schema = resultsDatabaseSchema
   )
 
-  locationData <- DatabaseConnector::querySql(connection, renderedSql)
+  locationData <- querySqlWithUpperCaseColumns(connection, renderedSql)
   return(locationData)
 }
 
@@ -1913,7 +1918,7 @@ generateDataDensityRecordsPerPerson <- function(connection, resultsDatabaseSchem
     results_database_schema = resultsDatabaseSchema
   )
 
-  recordsPerPerson <- DatabaseConnector::querySql(connection, renderedSql)
+  recordsPerPerson <- querySqlWithUpperCaseColumns(connection, renderedSql)
   colnames(recordsPerPerson) <- c("domain", "date", "records")
   recordsPerPerson$date <- lubridate::parse_date_time(recordsPerPerson$date, "ym")
   recordsPerPerson$records <- round(recordsPerPerson$records, 2)
@@ -1927,7 +1932,7 @@ generateDataDensityConceptsPerPerson <- function(connection, resultsDatabaseSche
     dbms = connection@dbms,
     results_database_schema = resultsDatabaseSchema
   )
-  conceptsPerPerson <- DatabaseConnector::querySql(connection, renderedSql)
+  conceptsPerPerson <- querySqlWithUpperCaseColumns(connection, renderedSql)
   return(conceptsPerPerson)
   # data.table::fwrite(conceptsPerPerson, file=paste0(sourceOutputPath, "/datadensity-concepts-per-person.csv"))
   # dbWriteTable(duckdbCon, "concepts_per_person", conceptsPerPerson)
@@ -1940,7 +1945,7 @@ generateDataDensityDomainsPerPerson <- function(connection, resultsDatabaseSchem
     dbms = connection@dbms,
     results_database_schema = resultsDatabaseSchema
   )
-  domainsPerPerson <- DatabaseConnector::querySql(connection, renderedSql)
+  domainsPerPerson <- querySqlWithUpperCaseColumns(connection, renderedSql)
   domainsPerPerson$PERCENT_VALUE <- round(as.numeric(domainsPerPerson$PERCENT_VALUE), 2)
   return(domainsPerPerson)
   # data.table::fwrite(domainsPerPerson, file=paste0(sourceOutputPath, "/datadensity-domains-per-person.csv"))
@@ -1955,7 +1960,7 @@ generateDomainSummaryConditions <- function(connection, resultsDatabaseSchema, v
     results_database_schema = resultsDatabaseSchema,
     vocab_database_schema = vocabDatabaseSchema
   )
-  dataConditions <- DatabaseConnector::querySql(connection, queryConditions)
+  dataConditions <- querySqlWithUpperCaseColumns(connection, queryConditions)
   dataConditions$PERCENT_PERSONS <- format(round(dataConditions$PERCENT_PERSONS, 4), nsmall = 4)
   dataConditions$PERCENT_PERSONS_NTILE <- dplyr::ntile(dplyr::desc(dataConditions$PERCENT_PERSONS), 10)
   dataConditions$RECORDS_PER_PERSON <- format(round(dataConditions$RECORDS_PER_PERSON, 1), nsmall = 1)
@@ -1973,7 +1978,7 @@ generateDomainSummaryConditionEras <- function(connection, resultsDatabaseSchema
     results_database_schema = resultsDatabaseSchema,
     vocab_database_schema = vocabDatabaseSchema
   )
-  dataConditionEra <- DatabaseConnector::querySql(connection, queryConditionEra)
+  dataConditionEra <- querySqlWithUpperCaseColumns(connection, queryConditionEra)
   dataConditionEra$PERCENT_PERSONS <- format(round(dataConditionEra$PERCENT_PERSONS, 4), nsmall = 4)
   dataConditionEra$PERCENT_PERSONS_NTILE <- dplyr::ntile(dplyr::desc(dataConditionEra$PERCENT_PERSONS), 10)
   dataConditionEra$RECORDS_PER_PERSON <- format(round(dataConditionEra$RECORDS_PER_PERSON, 1), nsmall = 1)
@@ -1990,7 +1995,7 @@ generateDomainSummaryDrugs <- function(connection, resultsDatabaseSchema, vocabD
     results_database_schema = resultsDatabaseSchema,
     vocab_database_schema = vocabDatabaseSchema
   )
-  dataDrugs <- DatabaseConnector::querySql(connection, queryDrugs)
+  dataDrugs <- querySqlWithUpperCaseColumns(connection, queryDrugs)
   dataDrugs$PERCENT_PERSONS <- format(round(dataDrugs$PERCENT_PERSONS, 4), nsmall = 4)
   dataDrugs$PERCENT_PERSONS_NTILE <- dplyr::ntile(dplyr::desc(dataDrugs$PERCENT_PERSONS), 10)
   dataDrugs$RECORDS_PER_PERSON <- format(round(dataDrugs$RECORDS_PER_PERSON, 1), nsmall = 1)
@@ -2007,7 +2012,7 @@ generateDomainDrugStratification <- function(connection, resultsDatabaseSchema, 
     results_database_schema = resultsDatabaseSchema,
     vocab_database_schema = vocabDatabaseSchema
   )
-  dataDrugType <- DatabaseConnector::querySql(connection, queryDrugType)
+  dataDrugType <- querySqlWithUpperCaseColumns(connection, queryDrugType)
   return(dataDrugType)
   # data.table::fwrite(dataDrugType, file=paste0(sourceOutputPath, "/domain-drug-stratification.csv"))
 }
@@ -2020,7 +2025,7 @@ generateDomainSummaryDrugEra <- function(connection, resultsDatabaseSchema, voca
     results_database_schema = resultsDatabaseSchema,
     vocab_database_schema = vocabDatabaseSchema
   )
-  dataDrugEra <- DatabaseConnector::querySql(connection, queryDrugEra)
+  dataDrugEra <- querySqlWithUpperCaseColumns(connection, queryDrugEra)
   dataDrugEra$PERCENT_PERSONS <- format(round(dataDrugEra$PERCENT_PERSONS, 4), nsmall = 4)
   dataDrugEra$PERCENT_PERSONS_NTILE <- dplyr::ntile(dplyr::desc(dataDrugEra$PERCENT_PERSONS), 10)
   dataDrugEra$RECORDS_PER_PERSON <- format(round(dataDrugEra$RECORDS_PER_PERSON, 1), nsmall = 1)
@@ -2037,7 +2042,7 @@ generateDomainSummaryMeasurements <- function(connection, resultsDatabaseSchema,
     results_database_schema = resultsDatabaseSchema,
     vocab_database_schema = vocabDatabaseSchema
   )
-  dataMeasurements <- DatabaseConnector::querySql(connection, queryMeasurements)
+  dataMeasurements <- querySqlWithUpperCaseColumns(connection, queryMeasurements)
   dataMeasurements$PERCENT_PERSONS <- format(round(dataMeasurements$PERCENT_PERSONS, 4), nsmall = 4)
   dataMeasurements$PERCENT_PERSONS_NTILE <- dplyr::ntile(dplyr::desc(dataMeasurements$PERCENT_PERSONS), 10)
   dataMeasurements$RECORDS_PER_PERSON <- format(round(dataMeasurements$RECORDS_PER_PERSON, 1), nsmall = 1)
@@ -2054,7 +2059,7 @@ generateDomainSummaryObservations <- function(connection, resultsDatabaseSchema,
     results_database_schema = resultsDatabaseSchema,
     vocab_database_schema = vocabDatabaseSchema
   )
-  dataObservations <- DatabaseConnector::querySql(connection, queryObservations)
+  dataObservations <- querySqlWithUpperCaseColumns(connection, queryObservations)
   dataObservations$PERCENT_PERSONS <- format(round(dataObservations$PERCENT_PERSONS, 4), nsmall = 4)
   dataObservations$PERCENT_PERSONS_NTILE <- dplyr::ntile(dplyr::desc(dataObservations$PERCENT_PERSONS), 10)
   dataObservations$RECORDS_PER_PERSON <- format(round(dataObservations$RECORDS_PER_PERSON, 1), nsmall = 1)
@@ -2071,7 +2076,7 @@ generateDomainSummaryVisitDetails <- function(connection, resultsDatabaseSchema,
     results_database_schema = resultsDatabaseSchema,
     vocab_database_schema = vocabDatabaseSchema
   )
-  dataVisitDetails <- DatabaseConnector::querySql(connection, queryVisitDetails)
+  dataVisitDetails <- querySqlWithUpperCaseColumns(connection, queryVisitDetails)
   dataVisitDetails$PERCENT_PERSONS <- format(round(dataVisitDetails$PERCENT_PERSONS, 4), nsmall = 4)
   dataVisitDetails$PERCENT_PERSONS_NTILE <- dplyr::ntile(dplyr::desc(dataVisitDetails$PERCENT_PERSONS), 10)
   dataVisitDetails$RECORDS_PER_PERSON <- format(round(dataVisitDetails$RECORDS_PER_PERSON, 1), nsmall = 1)
@@ -2089,7 +2094,7 @@ generateDomainSummaryVisits <- function(connection, resultsDatabaseSchema, vocab
     results_database_schema = resultsDatabaseSchema,
     vocab_database_schema = vocabDatabaseSchema
   )
-  dataVisits <- DatabaseConnector::querySql(connection, queryVisits)
+  dataVisits <- querySqlWithUpperCaseColumns(connection, queryVisits)
   dataVisits$PERCENT_PERSONS <- format(round(dataVisits$PERCENT_PERSONS, 4), nsmall = 4)
   dataVisits$PERCENT_PERSONS_NTILE <- dplyr::ntile(dplyr::desc(dataVisits$PERCENT_PERSONS), 10)
   dataVisits$RECORDS_PER_PERSON <- format(round(dataVisits$RECORDS_PER_PERSON, 1), nsmall = 1)
@@ -2107,7 +2112,7 @@ generateDomainVisitStratification <- function(connection, resultsDatabaseSchema,
     results_database_schema = resultsDatabaseSchema,
     vocab_database_schema = vocabDatabaseSchema
   )
-  dataVisits <- DatabaseConnector::querySql(connection, queryVisits)
+  dataVisits <- querySqlWithUpperCaseColumns(connection, queryVisits)
   return(dataVisits)
   # data.table::fwrite(dataVisits, file=paste0(sourceOutputPath, "/domain-visit-stratification.csv"))
 }
@@ -2120,7 +2125,7 @@ generateDomainSummaryProcedures <- function(connection, resultsDatabaseSchema, v
     results_database_schema = resultsDatabaseSchema,
     vocab_database_schema = vocabDatabaseSchema
   )
-  dataProcedures <- DatabaseConnector::querySql(connection, queryProcedures)
+  dataProcedures <- querySqlWithUpperCaseColumns(connection, queryProcedures)
   dataProcedures$PERCENT_PERSONS <- format(round(dataProcedures$PERCENT_PERSONS, 4), nsmall = 4)
   dataProcedures$PERCENT_PERSONS_NTILE <- dplyr::ntile(dplyr::desc(dataProcedures$PERCENT_PERSONS), 10)
   dataProcedures$RECORDS_PER_PERSON <- format(round(dataProcedures$RECORDS_PER_PERSON, 1), nsmall = 1)
@@ -2137,7 +2142,7 @@ generateDomainSummaryDevices <- function(connection, resultsDatabaseSchema, voca
     results_database_schema = resultsDatabaseSchema,
     vocab_database_schema = vocabDatabaseSchema
   )
-  dataDevices <- DatabaseConnector::querySql(connection, queryDevices)
+  dataDevices <- querySqlWithUpperCaseColumns(connection, queryDevices)
   dataDevices$PERCENT_PERSONS <- format(round(dataDevices$PERCENT_PERSONS, 4), nsmall = 4)
   dataDevices$PERCENT_PERSONS_NTILE <- dplyr::ntile(dplyr::desc(dataDevices$PERCENT_PERSONS), 10)
   dataDevices$RECORDS_PER_PERSON <- format(round(dataDevices$RECORDS_PER_PERSON, 1), nsmall = 1)
@@ -2155,7 +2160,7 @@ generateDomainSummaryProvider <- function(connection, resultsDatabaseSchema, voc
     vocab_database_schema = vocabDatabaseSchema
   )
   writeLines("Generating provider reports")
-  dataProviders <- DatabaseConnector::querySql(connection, queryProviders)
+  dataProviders <- querySqlWithUpperCaseColumns(connection, queryProviders)
   dataProviders$PERCENT_PERSONS <- format(round(dataProviders$PERCENT_PERSONS, 4), nsmall = 4)
   return(dataProviders)
   # data.table::fwrite(dataProviders, file=paste0(sourceOutputPath, "/domain-summary-provider.csv"))
@@ -2169,7 +2174,7 @@ generateQualityCompleteness <- function(connection, resultsDatabaseSchema) {
     dbms = connection@dbms,
     results_database_schema = resultsDatabaseSchema
   )
-  dataCompleteness <- DatabaseConnector::querySql(connection, queryCompleteness)
+  dataCompleteness <- querySqlWithUpperCaseColumns(connection, queryCompleteness)
   dataCompleteness <- dataCompleteness[order(-dataCompleteness$RECORD_COUNT), ]
   # prevent downstream crashes with large files
   if (nrow(dataCompleteness) > 100000) {
@@ -2200,9 +2205,9 @@ generateQualityCompleteness <- function(connection, resultsDatabaseSchema) {
 #' @return none
 #'
 #' @import DBI
+#' @import dplyr
 #' @importFrom AresIndexer getSourceReleaseKey
 #' @importFrom data.table fwrite
-#' @importFrom dplyr ntile desc
 #' @export
 exportToAres <- function(
     connectionDetails,

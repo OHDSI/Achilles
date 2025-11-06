@@ -68,6 +68,7 @@
 #' )
 #' }
 #'
+#' @importFrom dplyr rename_with
 #' @export
 
 
@@ -115,7 +116,7 @@ getTemporalData <- function(connectionDetails,
 
   conn <- DatabaseConnector::connect(connectionDetails)
 
-  queryResults <- DatabaseConnector::querySql(conn, translatedSql)
+  queryResults <- DatabaseConnector::querySql(conn, translatedSql) |> dplyr::rename_with(toupper)
 
   on.exit(DatabaseConnector::disconnect(conn))
 
