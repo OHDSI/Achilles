@@ -39,6 +39,8 @@ Imports:
   lubridate,
   tseries,
   rlang
+Remotes:
+  github::OHDSI/AresIndexer
 Suggests:
   DT,
   magrittr,
