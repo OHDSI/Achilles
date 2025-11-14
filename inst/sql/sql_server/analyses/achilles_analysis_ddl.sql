@@ -4,7 +4,7 @@
 IF OBJECT_ID('@resultsDatabaseSchema.achilles_analysis', 'U') IS NOT NULL
   DROP TABLE @resultsDatabaseSchema.achilles_analysis;
   
-CREATE TABLE @resultsDatabaseSchema.ACHILLES_ANALYSIS (
+CREATE TABLE @resultsDatabaseSchema.achilles_analysis (
 	analysis_id     INTEGER,
 	analysis_name   VARCHAR(255),
 	stratum_1_name  VARCHAR(255),

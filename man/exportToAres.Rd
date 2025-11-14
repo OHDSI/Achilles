@@ -10,6 +10,7 @@ exportToAres(
   resultsDatabaseSchema,
   vocabDatabaseSchema,
   outputPath,
+  outputFormat = "default",
   reports = c()
 )
 }
@@ -23,6 +24,8 @@ exportToAres(
 \item{vocabDatabaseSchema}{string name of database schema that contains OMOP Vocabulary. Default is cdmDatabaseSchema. On SQL Server, this should specifiy both the database and the schema, so for example 'results.dbo'.}
 
 \item{outputPath}{A folder location to save the JSON files. Default is current working folder}
+
+\item{outputFormat}{default or alternatively "duckdb" to use parquet and duckdb formats.}
 
 \item{reports}{vector of reports to run, c() defaults to all reports
 

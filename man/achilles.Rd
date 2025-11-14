@@ -117,12 +117,12 @@ of Achilles when supplied \code{analysisIds}.}
 \item{excludeAnalysisIds}{(OPTIONAL) A vector containing the set of Achilles analyses to
 exclude.}
 
-\item{sqlDialect}{(OPTIONAL) String to be used when specifying sqlOnly = TRUE and 
-NOT supplying the \code{connectionDetails} parameter. 
-if the \code{connectionDetails} parameter is supplied, \code{sqlDialect} 
-is ignored.  If the \code{connectionDetails} parameter is not supplied, 
-\code{sqlDialect} must be supplied to enable \code{SqlRender} 
-to translate properly.  \code{sqlDialect} takes the value normally 
+\item{sqlDialect}{(OPTIONAL) String to be used when specifying sqlOnly = TRUE and
+NOT supplying the \code{connectionDetails} parameter.
+if the \code{connectionDetails} parameter is supplied, \code{sqlDialect}
+is ignored.  If the \code{connectionDetails} parameter is not supplied,
+\code{sqlDialect} must be supplied to enable \code{SqlRender}
+to translate properly.  \code{sqlDialect} takes the value normally
 supplied to connectionDetails$dbms.  Default = NULL.}
 }
 \value{
@@ -141,10 +141,10 @@ connectionDetails <- createConnectionDetails(dbms = "sql server", server = "some
 achillesResults <- achilles(connectionDetails = connectionDetails,
   cdmDatabaseSchema = "cdm",
   resultsDatabaseSchema = "results",
-  scratchDatabaseSchema = "scratch", 
-  sourceName = "Some Source", 
-  cdmVersion = "5.3", 
-  numThreads = 10, 
+  scratchDatabaseSchema = "scratch",
+  sourceName = "Some Source",
+  cdmVersion = "5.3",
+  numThreads = 10,
   outputFolder = "output")
 }
 

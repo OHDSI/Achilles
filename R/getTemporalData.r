@@ -93,9 +93,13 @@ getTemporalData <- function(connectionDetails,
     analysisIdGiven <- FALSE
   }
 
-  if (typeof(connectionDetails$server) == "character")
-    dbName <- toupper(strsplit(connectionDetails$server,
-                               "/")[[1]][2]) else dbName <- toupper(strsplit(connectionDetails$server(), "/")[[1]][2])
+  if (typeof(connectionDetails$server) == "character") {
+    dbName <- toupper(strsplit(connectionDetails$server, "/")[[1]][2])
+  } else if (typeof(connectionDetails$server()) == "character") {
+    dbName <- toupper(strsplit(connectionDetails$server(), "/")[[1]][2])
+  } else {
+    dbName <- NA
+  }
 
   translatedSql <- SqlRender::loadRenderTranslateSql(sqlFilename = "temporal/achilles_temporal_data.sql",
     packageName = "Achilles", dbms = connectionDetails$dbms, db_name = dbName, cdm_schema = cdmDatabaseSchema,

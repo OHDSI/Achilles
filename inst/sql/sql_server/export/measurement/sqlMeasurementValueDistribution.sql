@@ -6,7 +6,8 @@ select c1.concept_id as concept_id,
 	ard1.median_value as median_value,
 	ard1.p75_value as P75_value,
 	ard1.p90_value as P90_value,
-	ard1.max_value as max_value
+	ard1.max_value as max_value,
+	ard1.stratum_2 as unit_concept_id
 from (
   select cast(stratum_1 as bigint) stratum_1, cast(stratum_2 as bigint) stratum_2, min_value, p10_value, p25_value, median_value, p75_value, p90_value, max_value
   FROM @results_database_schema.achilles_results_dist

@@ -1250,7 +1250,7 @@ generateConditionReports <- function(conn,
     return()
   }
 
-  treemapData <- jsonlite::fromJSON(file = treemapFile)
+  treemapData <- jsonlite::fromJSON(treemapFile)
   uniqueConcepts <- unique(treemapData$CONCEPT_ID)
   totalCount <- length(uniqueConcepts)
 
@@ -1334,7 +1334,7 @@ generateConditionEraReports <- function(conn,
     return()
   }
 
-  treemapData <- jsonlite::fromJSON(file = treemapFile)
+  treemapData <- jsonlite::fromJSON(treemapFile)
   uniqueConcepts <- unique(treemapData$CONCEPT_ID)
   totalCount <- length(uniqueConcepts)
 
@@ -1413,7 +1413,7 @@ generateDrugEraReports <- function(conn, dbms, cdmDatabaseSchema, resultsDatabas
     return()
   }
 
-  treemapData <- jsonlite::fromJSON(file = treemapFile)
+  treemapData <- jsonlite::fromJSON(treemapFile)
   uniqueConcepts <- unique(treemapData$CONCEPT_ID)
   totalCount <- length(uniqueConcepts)
 
@@ -1495,7 +1495,7 @@ generateDrugReports <- function(conn,
     return()
   }
 
-  treemapData <- jsonlite::fromJSON(file = treemapFile)
+  treemapData <- jsonlite::fromJSON(treemapFile)
   uniqueConcepts <- unique(treemapData$CONCEPT_ID)
   totalCount <- length(uniqueConcepts)
 
@@ -1630,7 +1630,7 @@ generateProcedureReports <- function(conn,
     return()
   }
 
-  treemapData <- jsonlite::fromJSON(file = treemapFile)
+  treemapData <- jsonlite::fromJSON(treemapFile)
   uniqueConcepts <- unique(treemapData$CONCEPT_ID)
   totalCount <- length(uniqueConcepts)
 
@@ -1985,14 +1985,14 @@ generateDashboardReport <- function(outputPath) {
   progress <- progress + 1
   utils::setTxtProgressBar(progressBar, progress)
 
-  personReport <- jsonlite::fromJSON(file = paste(outputPath, "/person.json", sep = ""))
+  personReport <- jsonlite::fromJSON(paste(outputPath, "/person.json", sep = ""))
   output$SUMMARY <- personReport$SUMMARY
   output$GENDER_DATA <- personReport$GENDER_DATA
 
   progress <- progress + 1
   utils::setTxtProgressBar(progressBar, progress)
 
-  opReport <- jsonlite::fromJSON(file = paste(outputPath, "/observationperiod.json", sep = ""))
+  opReport <- jsonlite::fromJSON(paste(outputPath, "/observationperiod.json", sep = ""))
 
   output$AGE_AT_FIRST_OBSERVATION_HISTOGRAM <- opReport$AGE_AT_FIRST_OBSERVATION_HISTOGRAM
   output$CUMULATIVE_DURATION <- opReport$CUMULATIVE_DURATION
@@ -2110,7 +2110,7 @@ generateMeasurementReports <- function(conn,
     return()
   }
 
-  treemapData <- jsonlite::fromJSON(file = treemapFile)
+  treemapData <- jsonlite::fromJSON(treemapFile)
   uniqueConcepts <- unique(treemapData$CONCEPT_ID)
   totalCount <- length(uniqueConcepts)
 
@@ -2265,7 +2265,7 @@ generateObservationReports <- function(conn,
     return()
   }
 
-  treemapData <- jsonlite::fromJSON(file = treemapFile)
+  treemapData <- jsonlite::fromJSON(treemapFile)
   uniqueConcepts <- unique(treemapData$CONCEPT_ID)
   totalCount <- length(uniqueConcepts)
 
@@ -2382,7 +2382,7 @@ generateVisitReports <- function(conn,
     return()
   }
 
-  treemapData <- jsonlite::fromJSON(file = treemapFile)
+  treemapData <- jsonlite::fromJSON(treemapFile)
   uniqueConcepts <- unique(treemapData$CONCEPT_ID)
   totalCount <- length(uniqueConcepts)
 
@@ -2557,7 +2557,7 @@ generateVisitDetailReports <- function(conn,
     return()
   }
 
-  treemapData <- jsonlite::fromJSON(file = treemapFile)
+  treemapData <- jsonlite::fromJSON(treemapFile)
   uniqueConcepts <- unique(treemapData$CONCEPT_ID)
   totalCount <- length(uniqueConcepts)
 

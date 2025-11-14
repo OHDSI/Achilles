@@ -90,7 +90,7 @@ runMissingAnalyses <- function(connectionDetails,
   }
   
   if (defaultAnalysesOnly) {
-    missingAnalyses <- missingAnalyses[missingAnalyses$IS_DEFAULT == 1,]
+    missingAnalyses <- missingAnalyses[missingAnalyses$is_default == 1,]
   }  
 
   if (nrow(missingAnalyses) == 0) {
@@ -105,7 +105,7 @@ runMissingAnalyses <- function(connectionDetails,
            scratchDatabaseSchema   = scratchDatabaseSchema, 
 		   vocabDatabaseSchema     = cdmDatabaseSchema, 
 		   tempEmulationSchema     = tempEmulationSchema,
-           analysisIds             = missingAnalyses$ANALYSIS_ID, 
+           analysisIds             = missingAnalyses$analysis_id, 
 		   defaultAnalysesOnly     = defaultAnalysesOnly,
 		   outputFolder            = outputFolder, 
 		   createTable             = FALSE, 

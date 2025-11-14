@@ -111,35 +111,50 @@ performTemporalCharacterization <- function(
 	}
 	
 	allConceptIds <- unique(temporalData$CONCEPT_ID)
-		
-	rowData <- data.frame(
-		DB_NAME           = character(),
-		CDM_TABLE_NAME    = character(),
-		CONCEPT_ID        = numeric(),
-		CONCEPT_NAME      = character(),
-		SEASONALITY_SCORE = numeric(),
-		IS_STATIONARY     = logical(),
-		stringsAsFactors  = FALSE )
-		
 	print(paste0("Attempting temporal characterization on ", length(allConceptIds), " individual concepts"))
 	
 	# Loop through temporal data, perform temporal characterization, and write out results
-	for (conceptId in allConceptIds) {
-		tempData <- temporalData[temporalData$CONCEPT_ID == conceptId,]
-		tempData.ts <- Achilles::createTimeSeries(tempData)
-		tempData.ts <- tempData.ts[,"PREVALENCE"]
-		tempData.ts <- Achilles::tsCompleteYears(tempData.ts)
-		if (length(tempData.ts) >= minMonths) {
-			tempData.ts.ss <- Achilles::getSeasonalityScore(tempData.ts)
-			tempData.ts.is <- Achilles::isStationary(tempData.ts)
-			rowData[nrow(rowData)+1,] <- c( tempData$DB_NAME[1],
-											tempData$CDM_TABLE_NAME[1],
-											tempData$CONCEPT_ID[1],
-											tempData$CONCEPT_NAME[1],
-											tempData.ts.ss,
-											tempData.ts.is )
-		}
-	}
+	rowData <-
+		temporalData %>%
+		tidyr::nest(
+			tempData = c(
+				"START_DATE",
+				"COUNT_VALUE",
+				"PREVALENCE",
+				"PROPORTION_WITHIN_YEAR"
+			)
+		) %>%
+		## rowwise allows to work with nested list vars as with usual ones
+		dplyr::rowwise() %>%
+		dplyr::mutate(
+			tempData.ts = list(
+				Achilles::createTimeSeries(.data$tempData)
+			),
+			tempData.ts = list(
+				.data$tempData.ts[, "PREVALENCE"]
+			),
+			tempData.ts = list(
+				Achilles::tsCompleteYears(.data$tempData.ts)
+			)
+		) %>%
+		dplyr::filter(
+			length(.data$tempData.ts) >= minMonths
+		) %>%
+		dplyr::mutate(
+			tempData.ts.ss = Achilles::getSeasonalityScore(.data$tempData.ts),
+			tempData.ts.is = Achilles::isStationary(.data$tempData.ts)
+		) %>%
+		## now we don't need to handle variables row wise
+		dplyr::ungroup() %>%
+		dplyr::select(
+			DB_NAME = .data$DB_NAME,
+			CDM_TABLE_NAME = .data$CDM_TABLE_NAME,
+			CONCEPT_ID = .data$CONCEPT_ID,
+			CONCEPT_NAME = .data$CONCEPT_NAME,
+			SEASONALITY_SCORE = .data$tempData.ts.ss,
+			IS_STATIONARY = .data$tempData.ts.is,
+		) %>%
+		dplyr::collect()
 	write.csv(rowData,outputFile,row.names = FALSE)
 	print(paste0("Temporal characterization complete.  Results can be found in ", outputFile))
 	invisible(rowData)
