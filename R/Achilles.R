@@ -456,7 +456,7 @@ achilles <- function(connectionDetails,
           endTime <- Sys.time()
           delta <- endTime - start
           analysisId <- as.integer(mainSql$analysisId)
-          performanceTable[nrow(performanceTable) + 1, ] <- c(analysisId, delta, start, endTime)
+          performanceTable[nrow(performanceTable) + 1, ] <- list(analysisId, delta, start, endTime)
           ParallelLogger::logInfo(sprintf(
             "[Main Analysis] [COMPLETE] %d (%f %s)",
             as.integer(mainSql$analysisId),
