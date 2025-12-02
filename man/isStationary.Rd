@@ -17,6 +17,6 @@ Uses the Augmented Dickey-Fuller test to determine when the time series has a un
 }
 \details{
 A time series must have a minimum of three complete years of data.
-For details on the implementation of the Augmented Dickey-Fuller test, 
+For details on the implementation of the Augmented Dickey-Fuller test,
 see the tseries package on cran.
 }

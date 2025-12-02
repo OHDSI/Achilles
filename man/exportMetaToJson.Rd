@@ -40,10 +40,13 @@ Creates individual files for Achilles META report found in Achilles.Web
 }
 \examples{
 \dontrun{
-connectionDetails <- DatabaseConnector::createConnectionDetails(dbms = "sql server",
-                                                                server = "yourserver")
+connectionDetails <- DatabaseConnector::createConnectionDetails(
+  dbms = "sql server",
+  server = "yourserver"
+)
 exportMetaToJson(connectionDetails,
-                 cdmDatabaseSchema = "cdm4_sim",
-                 outputPath = "your/output/path")
+  cdmDatabaseSchema = "cdm4_sim",
+  outputPath = "your/output/path"
+)
 }
 }

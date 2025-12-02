@@ -138,14 +138,16 @@ containing the results
 \examples{
 \dontrun{
 connectionDetails <- createConnectionDetails(dbms = "sql server", server = "some_server")
-achillesResults <- achilles(connectionDetails = connectionDetails,
+achillesResults <- achilles(
+  connectionDetails = connectionDetails,
   cdmDatabaseSchema = "cdm",
   resultsDatabaseSchema = "results",
   scratchDatabaseSchema = "scratch",
   sourceName = "Some Source",
   cdmVersion = "5.3",
   numThreads = 10,
-  outputFolder = "output")
+  outputFolder = "output"
+)
 }
 
 }

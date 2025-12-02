@@ -1,6 +1,6 @@
 # @file createTimeSeries
 #
-# Copyright 2023 Observational Health Data Sciences and Informatics
+# Copyright 2025 Observational Health Data Sciences and Informatics
 #
 # This file is part of Achilles
 #
@@ -49,9 +49,15 @@
 #' @examples
 #' # Example 1:
 #' temporalData <- data.frame(START_DATE = seq.Date(as.Date("20210101", "%Y%m%d"),
-#'                                                  as.Date("20231201",
-#'   "%Y%m%d"), by = "month"), COUNT_VALUE = round(runif(36, 1, 1000)), PREVALENCE = round(runif(36,
-#'   0, 10), 2), PROPORTION_WITHIN_YEAR = round(runif(36, 0, 1), 2), stringsAsFactors = FALSE)
+#'   as.Date(
+#'     "20231201",
+#'     "%Y%m%d"
+#'   ),
+#'   by = "month"
+#' ), COUNT_VALUE = round(runif(36, 1, 1000)), PREVALENCE = round(runif(
+#'   36,
+#'   0, 10
+#' ), 2), PROPORTION_WITHIN_YEAR = round(runif(36, 0, 1), 2), stringsAsFactors = FALSE)
 #' dummyTs <- createTimeSeries(temporalData)
 #' dummyTs.cv <- dummyTs[, "COUNT_VALUE"]
 #' dummyTs.pv <- dummyTs[, "PREVALENCE"]
@@ -60,8 +66,10 @@
 #' \dontrun{
 #' # Example 2:
 #' pneumonia <- 255848
-#' temporalData <- getTemporalData(connectionDetails = connectionDetails, cdmDatabaseSchema = "cdm",
-#'   resultsDatabaseSchema = "results", conceptId = pneumonia)
+#' temporalData <- getTemporalData(
+#'   connectionDetails = connectionDetails, cdmDatabaseSchema = "cdm",
+#'   resultsDatabaseSchema = "results", conceptId = pneumonia
+#' )
 #' pneumoniaTs <- createTimeSeries(temporalData)
 #' pneumoniaTs.cv <- pneumoniaTs[, "COUNT_VALUE"]
 #' pneumoniaTs.pv <- pneumoniaTs[, "PREVALENCE"]
@@ -71,13 +79,16 @@
 #' @export
 
 createTimeSeries <- function(temporalData) {
-
   requiredColumns <- c("START_DATE", "COUNT_VALUE", "PREVALENCE", "PROPORTION_WITHIN_YEAR")
 
-  if (sum(colnames(temporalData) %in% requiredColumns) < 4)
-    stop(paste0("ERROR: INVALID DATA FRAME FORMAT. The data frame must contain columns: ",
-                paste(requiredColumns,
-      collapse = ", ")))
+  if (sum(colnames(temporalData) %in% requiredColumns) < 4) {
+    stop(paste0(
+      "ERROR: INVALID DATA FRAME FORMAT. The data frame must contain columns: ",
+      paste(requiredColumns,
+        collapse = ", "
+      )
+    ))
+  }
 
   if (nrow(temporalData) == 0) {
     stop("ERROR: Cannot create time series from an empty data frame")
@@ -95,9 +106,13 @@ createTimeSeries <- function(temporalData) {
   # series
   lastRow <- nrow(resultSetData)
 
-  denseDates <- seq.Date(from = as.Date(resultSetData$START_DATE[1], "%Y%m%d"),
-                         to = as.Date(resultSetData$START_DATE[lastRow],
-    "%Y%m%d"), by = "month")
+  denseDates <- seq.Date(
+    from = as.Date(resultSetData$START_DATE[1], "%Y%m%d"),
+    to = as.Date(
+      resultSetData$START_DATE[lastRow],
+      "%Y%m%d"
+    ), by = "month"
+  )
 
   # Find gaps, if any, in data (e.g., dates that have no data, give that date a 0 count and 0
   # prevalence)
@@ -110,23 +125,33 @@ createTimeSeries <- function(temporalData) {
   joinResults$PROPORTION_WITHIN_YEAR[which(is.na(joinResults$PROPORTION_WITHIN_YEAR))] <- 0
 
   # Now that we no longer have sparse dates, keep only necessary columns and build the time series
-  joinResults <- joinResults[, c("START_DATE",
-                                 "COUNT_VALUE",
-                                 "PREVALENCE",
-                                 "PROPORTION_WITHIN_YEAR")]
+  joinResults <- joinResults[, c(
+    "START_DATE",
+    "COUNT_VALUE",
+    "PREVALENCE",
+    "PROPORTION_WITHIN_YEAR"
+  )]
 
   # Find the end of the dense results
   lastRow <- nrow(joinResults)
 
   # Create the multivariate time series
-  tsData <- data.frame(COUNT_VALUE = joinResults$COUNT_VALUE, PREVALENCE = joinResults$PREVALENCE,
-    PROPORTION_WITHIN_YEAR = joinResults$PROPORTION_WITHIN_YEAR)
+  tsData <- data.frame(
+    COUNT_VALUE = joinResults$COUNT_VALUE, PREVALENCE = joinResults$PREVALENCE,
+    PROPORTION_WITHIN_YEAR = joinResults$PROPORTION_WITHIN_YEAR
+  )
 
-  resultSetDataTs <- ts(data = tsData, start = c(as.numeric(substring(joinResults$START_DATE[1], 1,
-    4)), as.numeric(substring(joinResults$START_DATE[1],
-                              6,
-                              7))), end = c(as.numeric(substring(joinResults$START_DATE[lastRow],
-    1, 4)), as.numeric(substring(joinResults$START_DATE[lastRow], 6, 7))), frequency = 12)
+  resultSetDataTs <- ts(data = tsData, start = c(as.numeric(substring(
+    joinResults$START_DATE[1], 1,
+    4
+  )), as.numeric(substring(
+    joinResults$START_DATE[1],
+    6,
+    7
+  ))), end = c(as.numeric(substring(
+    joinResults$START_DATE[lastRow],
+    1, 4
+  )), as.numeric(substring(joinResults$START_DATE[lastRow], 6, 7))), frequency = 12)
 
   return(resultSetDataTs)
 }

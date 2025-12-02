@@ -1,32 +1,30 @@
-#'@title  Trim a monthly time series object to so that partial years are removed
+#' @title  Trim a monthly time series object to so that partial years are removed
 #'
-#'@details This function is only supported for monthly time series
+#' @details This function is only supported for monthly time series
 #'
-#'@param tsData  A time series object
+#' @param tsData  A time series object
 #'
-#'@return A time series with partial years removed.
+#' @return A time series with partial years removed.
 #'
-#'@export
+#' @export
 
-tsCompleteYears <- function(tsData)
-{
+tsCompleteYears <- function(tsData) {
+  if (frequency(tsData) != 12) {
+    stop("This function is only supported for monthly time series.")
+  }
 
-	if (frequency(tsData) != 12) {
-		stop("This function is only supported for monthly time series.")
-	}
+  origStartMonth <- start(tsData)[2]
+  origStartYear <- start(tsData)[1]
+  origEndMonth <- end(tsData)[2]
+  origEndYear <- end(tsData)[1]
 
-	origStartMonth <- start(tsData)[2]
-	origStartYear  <- start(tsData)[1]
-	origEndMonth   <- end(tsData)[2]
-	origEndYear    <- end(tsData)[1]
+  newStartMonth <- 1
+  newEndMonth <- 12
 
-	newStartMonth <- 1
-	newEndMonth   <- 12
+  tsObj <- tsData
 
-	tsObj <- tsData
+  if (origStartMonth > 1) tsObj <- window(tsObj, start = c(origStartYear + 1, newStartMonth))
+  if (origEndMonth < 12) tsObj <- window(tsObj, end = c(origEndYear - 1, newEndMonth))
 
-	if (origStartMonth > 1) tsObj <- window(tsObj, start=c(origStartYear+1,newStartMonth))
-	if (origEndMonth < 12)  tsObj <- window(tsObj, end=c(origEndYear-1,newEndMonth))
-
-	return (tsObj)
+  return(tsObj)
 }

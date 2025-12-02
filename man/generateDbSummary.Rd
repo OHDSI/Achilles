@@ -34,7 +34,7 @@ Server, 'cdm_results.dbo'.}
 none
 }
 \description{
-\code{generateDbSummary} can be run after the Achilles analyses are complete 
+\code{generateDbSummary} can be run after the Achilles analyses are complete
 to create a high-level database summary.
 }
 \details{
@@ -45,12 +45,15 @@ used in an analysis
 }
 \examples{
 \dontrun{
-connectionDetails <- DatabaseConnector::createConnectionDetails(dbms = "sql server",
-                                                                server = "yourserver")
+connectionDetails <- DatabaseConnector::createConnectionDetails(
+  dbms = "sql server",
+  server = "yourserver"
+)
 dbSummary <- generateDbSummary(connectionDetails,
-                               cdmDatabaseSchema = "cdm_schema",
-                               resultsDatabaseSchema = "results_schema",
-                               country = "Country of Origin",
-                               provenance = "Provenance of data")
+  cdmDatabaseSchema = "cdm_schema",
+  resultsDatabaseSchema = "results_schema",
+  country = "Country of Origin",
+  provenance = "Provenance of data"
+)
 }
 }

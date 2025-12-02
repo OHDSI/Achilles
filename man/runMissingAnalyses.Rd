@@ -59,11 +59,12 @@ No return value.  Run to execute analyses currently missing from results.
 }
 \examples{
 \dontrun{
-Achilles::runMissingAnalyses(connectionDetails = connectionDetails,
-                             cdmDatabaseSchema = "cdm",
-                             resultsDatabaseSchema = "results",
-
-  outputFolder = "/tmp")
+Achilles::runMissingAnalyses(
+  connectionDetails = connectionDetails,
+  cdmDatabaseSchema = "cdm",
+  resultsDatabaseSchema = "results",
+  outputFolder = "/tmp"
+)
 }
 
 }

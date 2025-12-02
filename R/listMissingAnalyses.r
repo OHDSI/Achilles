@@ -1,6 +1,6 @@
 # @file listMissingAnalyses
 #
-# Copyright 2023 Observational Health Data Sciences and Informatics
+# Copyright 2025 Observational Health Data Sciences and Informatics
 #
 # This file is part of Achilles
 #
@@ -44,14 +44,15 @@
 #'
 #' @examples
 #' \dontrun{
-#' Achilles::listMissingAnalyses(connectionDetails = connectionDetails,
-#'                               resultsDatabaseSchema = "results")
+#' Achilles::listMissingAnalyses(
+#'   connectionDetails = connectionDetails,
+#'   resultsDatabaseSchema = "results"
+#' )
 #' }
 #'
 #' @export
 
 listMissingAnalyses <- function(connectionDetails, resultsDatabaseSchema) {
-
   # Determine which analyses are missing by comparing analysisDetails with achilles_results and
   # achilles_results_dist
   analysisDetails <- getAnalysisDetails()
@@ -73,7 +74,7 @@ listMissingAnalyses <- function(connectionDetails, resultsDatabaseSchema) {
 
   missingAnalysisIds <- setdiff(allAnalysisIds, existingAnalysisIds)
 
-  colsToDisplay <- c("analysis_id","distribution","category","is_default","analysis_name")
+  colsToDisplay <- c("analysis_id", "distribution", "category", "is_default", "analysis_name")
   retVal <- analysisDetails[analysisDetails$analysis_id %in% missingAnalysisIds, colsToDisplay]
   retVal <- retVal[order(retVal$analysis_id), ]
 

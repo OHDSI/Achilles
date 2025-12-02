@@ -1,15 +1,15 @@
 # @file PackageMaintenance
 #
-# Copyright 2023 Observational Health Data Sciences and Informatics
+# Copyright 2025 Observational Health Data Sciences and Informatics
 #
 # This file is part of Achilles
-# 
+#
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
-# 
+#
 #     http://www.apache.org/licenses/LICENSE-2.0
-# 
+#
 # Unless required by applicable law or agreed to in writing, software
 # distributed under the License is distributed on an "AS IS" BASIS,
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -25,29 +25,34 @@ unlink(folder, recursive = TRUE, force = TRUE)
 file.exists(folder)
 
 # Format and check code --------------------------------------------------------
-OhdsiRTools::formatRFolder()
+styler::style_dir()
+
 OhdsiRTools::checkUsagePackage("Achilles")
 OhdsiRTools::updateCopyrightYearFolder()
 devtools::spell_check()
 
 devtools::check()
-# devtools::check(document = FALSE, args=c("--no-tests"))
-# codetools::checkUsagePackage("Achilles")
 
 # Regenerate manual, vignette PDFs, and website --------------------------------
 unlink("extras/Achilles.pdf")
 shell("R CMD Rd2pdf ./ --output=extras/Achilles.pdf")
 
 dir.create("inst/doc")
+
 rmarkdown::render("vignettes/RunningAchilles.Rmd",
   output_file = "../inst/doc/RunningAchilles.pdf",
-  rmarkdown::pdf_document(latex_engine = "pdflatex",
-  toc = TRUE, number_sections = TRUE)
+  rmarkdown::pdf_document(
+    latex_engine = "pdflatex",
+    toc = TRUE, number_sections = TRUE
+  )
 )
+
 rmarkdown::render("vignettes/GettingStarted.Rmd",
   output_file = "../inst/doc/GettingStarted.pdf",
-  rmarkdown::pdf_document(latex_engine = "pdflatex",
-  toc = TRUE, number_sections = TRUE)
+  rmarkdown::pdf_document(
+    latex_engine = "pdflatex",
+    toc = TRUE, number_sections = TRUE
+  )
 )
 
 devtools::document()
@@ -61,4 +66,4 @@ devtools::check_rhub()
 
 devtools::release()
 
-devtools::check(cran=TRUE)
+devtools::check(cran = TRUE)

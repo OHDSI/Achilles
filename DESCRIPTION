@@ -1,8 +1,8 @@
 Package: Achilles
 Type: Package
 Title: Achilles Data Source Characterization
-Version: 1.8
-Date: 2025-10-10
+Version: 1.8.0
+Date: 2025-12-02
 Authors@R: c(
   person("Frank", "DeFalco", email = "fdefalco@ohdsi.org", role = c("aut","cre")),
   person("Patrick", "Ryan", email = "ryan@ohdsi.org", role = c("aut")),
@@ -24,12 +24,12 @@ Description: Automated Characterization of Health Information at Large-Scale
   variety of Observational Health Data Sciences and Informatics community
   applications.
 Depends:
-  DatabaseConnector (>= 2.0.0),
+  DatabaseConnector (>= 7.0.0),
   R (>= 4.0.0)
 Imports:
-  DBI,
+  DBI (>= 1.0.0),
   duckdb,
-  SqlRender (>= 1.6.0),
+  SqlRender (>= 1.19.2),
   dplyr,
   jsonlite,
   ParallelLogger,
@@ -49,7 +49,7 @@ Suggests:
 VignetteBuilder: knitr
 License: Apache License
 Roxygen: list()
-RoxygenNote: 7.2.3
+RoxygenNote: 7.3.3
 Encoding: UTF-8
 URL: https://ohdsi.github.io/Achilles/, https://github.com/OHDSI/Achilles
 BugReports: https://github.com/OHDSI/Achilles/issues
