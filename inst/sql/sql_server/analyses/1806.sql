@@ -1,8 +1,8 @@
 -- 1806	Distribution of age by measurement_concept_id
 
---HINT DISTRIBUTE_ON_KEY(subject_id)
+--HINT DISTRIBUTE_ON_KEY(measurement_concept_id)
 SELECT 
-	o.measurement_concept_id AS subject_id,
+	o.measurement_concept_id,
 	p.gender_concept_id,
 	o.measurement_start_year - p.year_of_birth AS count_value
 INTO 
@@ -35,7 +35,7 @@ ON
 --HINT DISTRIBUTE_ON_KEY(stratum1_id)
 with overallStats (stratum1_id, stratum2_id, avg_value, stdev_value, min_value, max_value, total) as
 (
-  select subject_id as stratum1_id,
+  select measurement_concept_id as stratum1_id,
     gender_concept_id as stratum2_id,
     CAST(avg(1.0 * count_value) AS FLOAT) as avg_value,
     CAST(stdev(count_value) AS FLOAT) as stdev_value,
@@ -43,13 +43,13 @@ with overallStats (stratum1_id, stratum2_id, avg_value, stdev_value, min_value, 
     max(count_value) as max_value,
     count_big(*) as total
   FROM #rawData_1806
-	group by subject_id, gender_concept_id
+	group by measurement_concept_id, gender_concept_id
 ),
 statsView (stratum1_id, stratum2_id, count_value, total, rn) as
 (
-  select subject_id as stratum1_id, gender_concept_id as stratum2_id, count_value, count_big(*) as total, row_number() over (partition by subject_id, gender_concept_id order by count_value) as rn
+  select measurement_concept_id as stratum1_id, gender_concept_id as stratum2_id, count_value, count_big(*) as total, row_number() over (partition by measurement_concept_id, gender_concept_id order by count_value) as rn
   FROM #rawData_1806
-  group by subject_id, gender_concept_id, count_value
+  group by measurement_concept_id, gender_concept_id, count_value
 ),
 priorStats (stratum1_id, stratum2_id, count_value, total, accumulated) as
 (

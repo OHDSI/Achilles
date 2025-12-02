@@ -3,7 +3,7 @@
 
 --HINT DISTRIBUTE_ON_KEY(stratum1_id)
 SELECT 
-	m.subject_id AS stratum1_id,
+	m.measurement_concept_id AS stratum1_id,
 	m.unit_concept_id AS stratum2_id,
 	CAST(AVG(1.0 * m.count_value) AS FLOAT) AS avg_value,
 	CAST(STDEV(m.count_value) AS FLOAT) AS stdev_value,
@@ -14,7 +14,7 @@ INTO
 	#overallStats_1817
 FROM (
 	SELECT 
-		measurement_concept_id AS subject_id,
+		measurement_concept_id,
 		unit_concept_id,
 		CAST(range_high AS FLOAT) AS count_value
 	FROM 
@@ -37,22 +37,22 @@ FROM (
 		m.range_high IS NOT NULL
 	) m
 GROUP BY 
-	m.subject_id, 
+	m.measurement_concept_id, 
 	m.unit_concept_id
 ;
 
 --HINT DISTRIBUTE_ON_KEY(stratum1_id)
 SELECT 
-	m.subject_id AS stratum1_id,
+	m.measurement_concept_id AS stratum1_id,
 	m.unit_concept_id AS stratum2_id,
 	m.count_value,
 	COUNT_BIG(*) AS total,
-	ROW_NUMBER() OVER (PARTITION BY m.subject_id,m.unit_concept_id ORDER BY m.count_value) AS rn
+	ROW_NUMBER() OVER (PARTITION BY m.measurement_concept_id,m.unit_concept_id ORDER BY m.count_value) AS rn
 INTO 
 	#statsView_1817
 FROM (
 	SELECT 
-		m.measurement_concept_id AS subject_id,
+		m.measurement_concept_id,
 		m.unit_concept_id,
 		CAST(m.range_high AS FLOAT) AS count_value
 	FROM 
@@ -75,7 +75,7 @@ FROM (
 		m.range_high IS NOT NULL
 	) m
 GROUP BY 
-	m.subject_id, 
+	m.measurement_concept_id, 
 	m.unit_concept_id, 
 	m.count_value
 ;
