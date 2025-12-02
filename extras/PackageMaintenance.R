@@ -26,18 +26,19 @@ file.exists(folder)
 
 # Format and check code --------------------------------------------------------
 styler::style_dir()
+
 OhdsiRTools::checkUsagePackage("Achilles")
 OhdsiRTools::updateCopyrightYearFolder()
 devtools::spell_check()
 
 devtools::check()
-# devtools::check(document = FALSE, args=c('--no-tests')) codetools::checkUsagePackage('Achilles')
 
 # Regenerate manual, vignette PDFs, and website --------------------------------
 unlink("extras/Achilles.pdf")
 shell("R CMD Rd2pdf ./ --output=extras/Achilles.pdf")
 
 dir.create("inst/doc")
+
 rmarkdown::render("vignettes/RunningAchilles.Rmd",
   output_file = "../inst/doc/RunningAchilles.pdf",
   rmarkdown::pdf_document(
@@ -45,6 +46,7 @@ rmarkdown::render("vignettes/RunningAchilles.Rmd",
     toc = TRUE, number_sections = TRUE
   )
 )
+
 rmarkdown::render("vignettes/GettingStarted.Rmd",
   output_file = "../inst/doc/GettingStarted.pdf",
   rmarkdown::pdf_document(
