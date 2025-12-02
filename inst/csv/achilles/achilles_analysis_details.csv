@@ -151,7 +151,7 @@ analysis_id,distribution,distributed_field,analysis_name,stratum_1_name,stratum_
 824,0,,Number of distinct people with co-occurring observation observation_concept_id pairs,observation_concept_id,observation_concept_id,ranking,num_people,num_cases,0,Observation
 825,0,,Number of observation records by observation_source_concept_id,observation_source_concept_id,,,,,1,Observation
 826,0,,Number of observation records by value_as_concept_id,value_as_concept_id,,,,,1,Observation
-827,0,,Number of observation records by unit_concept_id,unit_as_concept_id,,,,,1,Observation
+827,0,,Number of observation records by unit_concept_id,unit_concept_id,,,,,1,Observation
 830,0,,Number of observation records inside a valid observation period,,,,,,0,Observation Period
 831,0,,Proportion of people with at least one observation record outside a valid observation period,Proportion,Number of people with a observation record outside a valid observation period,Number of people in observation,,,0,Observation Period
 832,0,,Proportion of observation records outside a valid observation period,Proportion,Number of records in observation outside a valid observation period,Number of observation records,,,0,Observation Period
