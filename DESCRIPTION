@@ -49,7 +49,7 @@ Suggests:
 VignetteBuilder: knitr
 License: Apache License
 Roxygen: list()
-RoxygenNote: 7.2.3
+RoxygenNote: 7.3.3
 Encoding: UTF-8
 URL: https://ohdsi.github.io/Achilles/, https://github.com/OHDSI/Achilles
 BugReports: https://github.com/OHDSI/Achilles/issues
