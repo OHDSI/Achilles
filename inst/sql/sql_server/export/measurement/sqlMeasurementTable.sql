@@ -16,7 +16,7 @@ from
 	(
 		select concept_id, concept_name
 		from @vocab_database_schema.concept
-		where domain_id = 'Measurement'
+		where upper(domain_id) = 'MEASUREMENT'
 	) concept
 	on concept.concept_id = ar1.stratum_1 and concept.concept_id = ar2.stratum_1,
 	(select count_value from @results_database_schema.achilles_results where analysis_id = 1) denom

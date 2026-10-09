@@ -8,8 +8,8 @@ with top_level as (
   LEFT JOIN @cdm_database_schema.concept_ancestor 
  	ON concept_id=descendant_concept_id 
     AND ancestor_concept_id!=descendant_concept_id
-  WHERE domain_id='Visit' 
- 	AND standard_concept='S'
+  WHERE upper(domain_id)='VISIT'
+ 	AND upper(standard_concept)='S'
     AND ancestor_concept_id IS NULL
 
 ),
@@ -26,7 +26,7 @@ visit_roll_up as (
   	ON top_level.concept_id = ancestor_concept_id
   JOIN @cdm_database_schema.concept descendant 
   	ON descendant.concept_id = descendant_concept_id
-  WHERE descendant.domain_id = 'Visit'
+  WHERE upper(descendant.domain_id) = 'VISIT'
 
 )
 

@@ -7,7 +7,7 @@ with rawData(stratum1_id, count_value) as
   from @cdmDatabaseSchema.cost c
   join @cdmDatabaseSchema.drug_exposure de
     on c.cost_event_id = de.drug_exposure_id
- where c.cost_domain_id = 'Drug'
+ where upper(c.cost_domain_id) = 'DRUG'
    and c.paid_ingredient_cost is not null
 ),
 overallStats (stratum1_id, avg_value, stdev_value, min_value, max_value, total) as

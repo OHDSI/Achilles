@@ -24,7 +24,7 @@ from (select cast(stratum_1 as bigint) stratum_1, count_value from @results_data
 			from @vocab_database_schema.concept c1
 				inner join @vocab_database_schema.vocabulary v1
 				on c1.vocabulary_id = v1.vocabulary_id
-			WHERE c1.domain_id = 'Procedure'
+			WHERE upper(c1.domain_id) = 'PROCEDURE'
 		) procs
 	left join
 		(select ca0.DESCENDANT_CONCEPT_ID, max(ca0.ancestor_concept_id) as ancestor_concept_id

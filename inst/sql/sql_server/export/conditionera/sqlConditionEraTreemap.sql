@@ -23,7 +23,7 @@ from (select cast(stratum_1 as bigint) stratum_1, count_value from @results_data
 		(
 			select concept_id, concept_name
 			from @vocab_database_schema.concept
-			where domain_id = 'Condition'
+			where upper(domain_id) = 'CONDITION'
 		) snomed
 		left join
 			(select c1.concept_id as snomed_concept_id, max(c2.concept_id) as pt_concept_id
@@ -32,12 +32,12 @@ from (select cast(stratum_1 as bigint) stratum_1, count_value from @results_data
 			inner join 
 			@vocab_database_schema.concept_ancestor ca1
 			on c1.concept_id = ca1.descendant_concept_id
-			and c1.domain_id = 'Condition'
+			and upper(c1.domain_id) = 'CONDITION'
 			and ca1.min_levels_of_separation = 1
 			inner join 
 			@vocab_database_schema.concept c2
 			on ca1.ancestor_concept_id = c2.concept_id
-			and c2.vocabulary_id = 'MedDRA'
+			and upper(c2.vocabulary_id) = 'MEDDRA'
 			group by c1.concept_id
 			) snomed_to_pt
 		on snomed.concept_id = snomed_to_pt.snomed_concept_id
@@ -49,12 +49,12 @@ from (select cast(stratum_1 as bigint) stratum_1, count_value from @results_data
 			inner join 
 			@vocab_database_schema.concept_ancestor ca1
 			on c1.concept_id = ca1.descendant_concept_id
-			and c1.vocabulary_id = 'MedDRA'
+			and upper(c1.vocabulary_id) = 'MEDDRA'
 			and ca1.min_levels_of_separation = 1
 			inner join 
 			@vocab_database_schema.concept c2
 			on ca1.ancestor_concept_id = c2.concept_id
-			and c2.vocabulary_id = 'MedDRA'
+			and upper(c2.vocabulary_id) = 'MEDDRA'
 			group by c1.concept_id, c1.concept_name
 			) pt_to_hlt
 		on snomed_to_pt.pt_concept_id = pt_to_hlt.pt_concept_id
@@ -66,12 +66,12 @@ from (select cast(stratum_1 as bigint) stratum_1, count_value from @results_data
 			inner join 
 			@vocab_database_schema.concept_ancestor ca1
 			on c1.concept_id = ca1.descendant_concept_id
-			and c1.vocabulary_id = 'MedDRA'
+			and upper(c1.vocabulary_id) = 'MEDDRA'
 			and ca1.min_levels_of_separation = 1
 			inner join 
 			@vocab_database_schema.concept c2
 			on ca1.ancestor_concept_id = c2.concept_id
-			and c2.vocabulary_id = 'MedDRA'
+			and upper(c2.vocabulary_id) = 'MEDDRA'
 			group by c1.concept_id, c1.concept_name
 			) hlt_to_hlgt
 		on pt_to_hlt.hlt_concept_id = hlt_to_hlgt.hlt_concept_id
@@ -83,12 +83,12 @@ from (select cast(stratum_1 as bigint) stratum_1, count_value from @results_data
 			inner join 
 			@vocab_database_schema.concept_ancestor ca1
 			on c1.concept_id = ca1.descendant_concept_id
-			and c1.vocabulary_id = 'MedDRA'
+			and upper(c1.vocabulary_id) = 'MEDDRA'
 			and ca1.min_levels_of_separation = 1
 			inner join 
 			@vocab_database_schema.concept c2
 			on ca1.ancestor_concept_id = c2.concept_id
-			and c2.vocabulary_id = 'MedDRA'
+			and upper(c2.vocabulary_id) = 'MEDDRA'
 			group by c1.concept_id, c1.concept_name
 			) hlgt_to_soc on hlt_to_hlgt.hlgt_concept_id = hlgt_to_soc.hlgt_concept_id
 
