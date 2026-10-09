@@ -7,7 +7,7 @@ with rawData(stratum1_id, count_value) as
   from @cdmDatabaseSchema.cost c
   join @cdmDatabaseSchema.procedure_occurrence po
     on c.cost_event_id = po.procedure_occurrence_id
- where c.cost_domain_id = 'Procedure'
+ where upper(c.cost_domain_id) = 'PROCEDURE'
    and c.paid_patient_copay is not null
 ),
 overallStats (stratum1_id, avg_value, stdev_value, min_value, max_value, total) as

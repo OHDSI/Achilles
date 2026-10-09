@@ -28,11 +28,11 @@ from (select cast(stratum_1 as bigint) stratum_1, count_value from @results_data
 		from @vocab_database_schema.concept c1
 			inner join @vocab_database_schema.concept_ancestor ca1
 			on c1.concept_id = ca1.descendant_concept_id
-			and c1.domain_id = 'Drug'
+			and upper(c1.domain_id) = 'DRUG'
 			inner join @vocab_database_schema.concept c2
 			on ca1.ancestor_concept_id = c2.concept_id
-			and c2.domain_id = 'Drug'
-			and c2.concept_class_id in ('Ingredient','CVX')
+			and upper(c2.domain_id) = 'DRUG'
+			and upper(c2.concept_class_id) in ('INGREDIENT','CVX')
 		) rxnorm
 		left join
 			(select c1.concept_id as rxnorm_ingredient_concept_id, max(c2.concept_id) as atc5_concept_id
@@ -41,13 +41,13 @@ from (select cast(stratum_1 as bigint) stratum_1, count_value from @results_data
 			inner join 
 			@vocab_database_schema.concept_ancestor ca1
 			on c1.concept_id = ca1.descendant_concept_id
-			and c1.domain_id = 'Drug'
-			and c1.concept_class_id = 'Ingredient'
+			and upper(c1.domain_id) = 'DRUG'
+			and upper(c1.concept_class_id) = 'INGREDIENT'
 			inner join 
 			@vocab_database_schema.concept c2
 			on ca1.ancestor_concept_id = c2.concept_id
-			and c2.vocabulary_id = 'ATC'
-			and c2.concept_class_id = 'ATC 4th'
+			and upper(c2.vocabulary_id) = 'ATC'
+			and upper(c2.concept_class_id) = 'ATC 4TH'
 			group by c1.concept_id
 			) rxnorm_to_atc5 on rxnorm.rxnorm_ingredient_concept_id = rxnorm_to_atc5.rxnorm_ingredient_concept_id
 
@@ -58,13 +58,13 @@ from (select cast(stratum_1 as bigint) stratum_1, count_value from @results_data
 			inner join 
 			@vocab_database_schema.concept_ancestor ca1
 			on c1.concept_id = ca1.descendant_concept_id
-			and c1.vocabulary_id = 'ATC'
-			and c1.concept_class_id = 'ATC 4th'
+			and upper(c1.vocabulary_id) = 'ATC'
+			and upper(c1.concept_class_id) = 'ATC 4TH'
 			inner join 
 			@vocab_database_schema.concept c2
 			on ca1.ancestor_concept_id = c2.concept_id
-			and c2.vocabulary_id = 'ATC'
-			and c2.concept_class_id = 'ATC 2nd'
+			and upper(c2.vocabulary_id) = 'ATC'
+			and upper(c2.concept_class_id) = 'ATC 2ND'
 			group by c1.concept_id, c1.concept_name
 			) atc5_to_atc3 on rxnorm_to_atc5.atc5_concept_id = atc5_to_atc3.atc5_concept_id
 
@@ -75,13 +75,13 @@ from (select cast(stratum_1 as bigint) stratum_1, count_value from @results_data
 			inner join 
 			@vocab_database_schema.concept_ancestor ca1
 			on c1.concept_id = ca1.descendant_concept_id
-			and c1.vocabulary_id = 'ATC'
-			and c1.concept_class_id = 'ATC 2nd'
+			and upper(c1.vocabulary_id) = 'ATC'
+			and upper(c1.concept_class_id) = 'ATC 2ND'
 			inner join 
 			@vocab_database_schema.concept c2
 			on ca1.ancestor_concept_id = c2.concept_id
-			and c2.vocabulary_id = 'ATC'
-  		and c2.concept_class_id = 'ATC 1st'
+			and upper(c2.vocabulary_id) = 'ATC'
+  		and upper(c2.concept_class_id) = 'ATC 1ST'
 			group by c1.concept_id, c1.concept_name
 			) atc3_to_atc1 on atc5_to_atc3.atc3_concept_id = atc3_to_atc1.atc3_concept_id
 

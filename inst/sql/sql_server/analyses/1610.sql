@@ -10,7 +10,7 @@ select
 into @scratchDatabaseSchema@schemaDelim@tempAchillesPrefix_1610
 from @cdmDatabaseSchema.cost
 where revenue_code_concept_id is not null
-and cost_domain_id = 'Procedure'
+and upper(cost_domain_id) = 'PROCEDURE'
 group by revenue_code_concept_id
 ;
 

@@ -8,13 +8,13 @@
   with num as (
 select '@db_name' db_name,
        case 
-	   when c.domain_id = 'Condition'   then 'CONDITION_OCCURRENCE'
-	   when c.domain_id = 'Procedure'   then 'PROCEDURE_OCCURRENCE'
-	   when c.domain_id = 'Visit'       then 'VISIT_OCCURRENCE'
-	   when c.domain_id = 'Observation' then 'OBSERVATION'
-	   when c.domain_id = 'Measurement' then 'MEASUREMENT'
-	   when c.domain_id = 'Drug'        then 'DRUG_EXPOSURE'
-	   when c.domain_id = 'Device'      then 'DEVICE_EXPOSURE'
+	   when upper(c.domain_id) = 'CONDITION'   then 'CONDITION_OCCURRENCE'
+	   when upper(c.domain_id) = 'PROCEDURE'   then 'PROCEDURE_OCCURRENCE'
+	   when upper(c.domain_id) = 'VISIT'       then 'VISIT_OCCURRENCE'
+	   when upper(c.domain_id) = 'OBSERVATION' then 'OBSERVATION'
+	   when upper(c.domain_id) = 'MEASUREMENT' then 'MEASUREMENT'
+	   when upper(c.domain_id) = 'DRUG'        then 'DRUG_EXPOSURE'
+	   when upper(c.domain_id) = 'DEVICE'      then 'DEVICE_EXPOSURE'
 	   else 'UNKNOWN'
 	   end cdm_table_name,
        c.concept_id,
