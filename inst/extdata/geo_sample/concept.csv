@@ -1,0 +1,7 @@
+concept_id,concept_name,domain_id,vocabulary_id,concept_class_id,standard_concept,concept_code
+2052496943,Within,Observation,OMOP GIS,Geometry Relationship,S,GIS1003256
+2052496995,Patient Residence,Observation,OMOP GIS,Location,S,GIS1003089
+2052497544,"Total Number Of Days With Daily Maximum Heat Index, Absolute Threshold: 90°F",Observation,OMOP SDOH,AHRQ Item,S,NEPHTN_HEATIND_90
+2052499839,Annual Mean Of Particulate Matter (PM2.5) Concentration (µg/M3),Observation,OMOP SDOH,AHRQ Item,S,WUSTL_AVG_PM25
+2052499878,Air Quality Database,Observation,OMOP SDOH,Exposure Type Concept,S,GIS1000107
+2052499957,4th Highest Daily Max 8-Hour Average Of Ozone (O3) In The Year (PPM),Observation,OMOP SDOH,AHRQ Item,S,EPAA_4THMAX_O3_8HR

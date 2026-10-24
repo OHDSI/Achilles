@@ -1,3 +1,7 @@
+# Achilles (development)
+
+1. New optional `exportGeoToAres()` creates aggregated geographic exposure files (from `external_exposure`, `location` and `location_history`) for the ARES Geographic Exposures report. `exportToAres()` runs it automatically when the data is present (`exportGeo = "auto"`) and skips it silently otherwise.
+
 # Achilles 1.7.1
 
 Changes
