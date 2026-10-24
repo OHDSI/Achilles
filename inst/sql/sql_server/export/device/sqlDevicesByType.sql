@@ -1,5 +1,5 @@
-select c1.concept_id as OBSERVATION_CONCEPT_ID, 
-  c1.concept_name as OBSERVATION_CONCEPT_NAME, 
+select c1.concept_id as DEVICE_CONCEPT_ID,
+  c1.concept_name as DEVICE_CONCEPT_NAME,
 	c2.concept_id as CONCEPT_ID,
 	c2.concept_name as CONCEPT_NAME, 
 	ar1.count_value as COUNT_VALUE

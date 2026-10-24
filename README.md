@@ -6,7 +6,7 @@ Achilles is part of [HADES](https://ohdsi.github.io/Hades/).
 
 # Introduction
 
-**A**utomated **C**haracterization of **H**ealth **I**nformation at **L**arge-scale **L**ongitudinal **E**vidence **S**ystems (ACHILLES) Achilles provides descriptive statistics on an OMOP CDM database. ACHILLES currently supports CDM version 5.3 and 5.4.
+**A**utomated **C**haracterization of **H**ealth **I**nformation at **L**arge-Scale **L**ongitudinal **E**vidence **S**ystems (ACHILLES) Achilles provides descriptive statistics on an OMOP CDM database. ACHILLES currently supports CDM version 5.3 and 5.4.
 
 # Features
 
@@ -35,7 +35,7 @@ remotes::install_github("OHDSI/Achilles")
 
 # User Documentation
 
-Documentation can be found on the [package website](https://ohdsi.github.io/Achilles).
+Documentation can be found on the [package website](https://ohdsi.github.io/Achilles/).
 
 # Support
 

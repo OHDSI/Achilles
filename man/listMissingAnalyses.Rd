@@ -23,8 +23,10 @@ not in achilles_results or achilles_results_dist
 }
 \examples{
 \dontrun{
-Achilles::listMissingAnalyses(connectionDetails = connectionDetails,
-                              resultsDatabaseSchema = "results")
+Achilles::listMissingAnalyses(
+  connectionDetails = connectionDetails,
+  resultsDatabaseSchema = "results"
+)
 }
 
 }

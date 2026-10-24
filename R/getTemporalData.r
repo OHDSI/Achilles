@@ -1,6 +1,6 @@
 # @file getTemporalData
 #
-# Copyright 2023 Observational Health Data Sciences and Informatics
+# Copyright 2025 Observational Health Data Sciences and Informatics
 #
 # This file is part of Achilles
 #
@@ -61,12 +61,14 @@
 #' @examples
 #' \dontrun{
 #' pneumonia <- 255848
-#' monthlyResults <- getTemporalData(connectionDetails = connectionDetails,
-#'                                   cdmDatabaseSchema = "cdm",
-#'
-#'   resultsDatabaseSchema = "results", conceptId = pneumonia)
+#' monthlyResults <- getTemporalData(
+#'   connectionDetails = connectionDetails,
+#'   cdmDatabaseSchema = "cdm",
+#'   resultsDatabaseSchema = "results", conceptId = pneumonia
+#' )
 #' }
 #'
+#' @importFrom dplyr rename_with
 #' @export
 
 
@@ -74,17 +76,21 @@ getTemporalData <- function(connectionDetails,
                             cdmDatabaseSchema,
                             resultsDatabaseSchema,
                             analysisIds = NULL,
-
-  conceptId = NULL) {
+                            conceptId = NULL) {
   if (!is.null(conceptId)) {
-    print(paste0("Retrieving Achilles monthly data for temporal support for concept_id: ",
-                 conceptId))
+    print(paste0(
+      "Retrieving Achilles monthly data for temporal support for concept_id: ",
+      conceptId
+    ))
     conceptIdGiven <- TRUE
     analysisIdGiven <- FALSE
   } else if (!is.null(analysisIds)) {
-    print(paste0("Retrieving Achilles monthly data for temporal support for analyses: ",
-                 paste(analysisIds,
-      collapse = ", ")))
+    print(paste0(
+      "Retrieving Achilles monthly data for temporal support for analyses: ",
+      paste(analysisIds,
+        collapse = ", "
+      )
+    ))
     conceptIdGiven <- FALSE
     analysisIdGiven <- TRUE
   } else {
@@ -93,21 +99,26 @@ getTemporalData <- function(connectionDetails,
     analysisIdGiven <- FALSE
   }
 
-  if (typeof(connectionDetails$server) == "character")
-    dbName <- toupper(strsplit(connectionDetails$server,
-                               "/")[[1]][2]) else dbName <- toupper(strsplit(connectionDetails$server(), "/")[[1]][2])
+  if (typeof(connectionDetails$server) == "character") {
+    dbName <- toupper(strsplit(connectionDetails$server, "/")[[1]][2])
+  } else if (typeof(connectionDetails$server()) == "character") {
+    dbName <- toupper(strsplit(connectionDetails$server(), "/")[[1]][2])
+  } else {
+    dbName <- NA
+  }
 
-  translatedSql <- SqlRender::loadRenderTranslateSql(sqlFilename = "temporal/achilles_temporal_data.sql",
+  translatedSql <- SqlRender::loadRenderTranslateSql(
+    sqlFilename = "temporal/achilles_temporal_data.sql",
     packageName = "Achilles", dbms = connectionDetails$dbms, db_name = dbName, cdm_schema = cdmDatabaseSchema,
     results_schema = resultsDatabaseSchema, concept_id = conceptId, analysis_ids = analysisIds, concept_id_given = conceptIdGiven,
-    analysis_id_given = analysisIdGiven)
+    analysis_id_given = analysisIdGiven
+  )
 
   conn <- DatabaseConnector::connect(connectionDetails)
 
-  queryResults <- DatabaseConnector::querySql(conn, translatedSql)
+  queryResults <- DatabaseConnector::querySql(conn, translatedSql) |> dplyr::rename_with(toupper)
 
   on.exit(DatabaseConnector::disconnect(conn))
 
   return(queryResults)
-
 }

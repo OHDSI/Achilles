@@ -50,10 +50,11 @@ Occurrence 702 - Drug Exposure 802 - Observation 1802 - Measurement 2102 - Devic
 \examples{
 \dontrun{
 pneumonia <- 255848
-monthlyResults <- getTemporalData(connectionDetails = connectionDetails,
-                                  cdmDatabaseSchema = "cdm",
-
-  resultsDatabaseSchema = "results", conceptId = pneumonia)
+monthlyResults <- getTemporalData(
+  connectionDetails = connectionDetails,
+  cdmDatabaseSchema = "cdm",
+  resultsDatabaseSchema = "results", conceptId = pneumonia
+)
 }
 
 }

@@ -8,7 +8,7 @@ exportToJson(
   connectionDetails,
   cdmDatabaseSchema,
   resultsDatabaseSchema,
-  outputPath = getwd(),
+  outputPath,
   reports = getAllReports(),
   vocabDatabaseSchema = cdmDatabaseSchema,
   compressIntoOneFile = FALSE
@@ -52,8 +52,10 @@ Creates individual files for each report found in Achilles.Web
 }
 \examples{
 \dontrun{
-connectionDetails <- DatabaseConnector::createConnectionDetails(dbms = "sql server",
-                                                                server = "yourserver")
+connectionDetails <- DatabaseConnector::createConnectionDetails(
+  dbms = "sql server",
+  server = "yourserver"
+)
 exportToJson(connectionDetails, cdmDatabaseSchema = "cdm4_sim", outputPath = "your/output/path")
 }
 }

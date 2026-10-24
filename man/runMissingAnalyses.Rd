@@ -51,16 +51,20 @@ this database.}
 Including non-default analyses is substantially more resource
 intensive.  Default = TRUE}
 }
+\value{
+No return value.  Run to execute analyses currently missing from results.
+}
 \description{
 \code{runMissingAnalyses} Automatically find and compute analyses that haven't been executed.
 }
 \examples{
 \dontrun{
-Achilles::runMissingAnalyses(connectionDetails = connectionDetails,
-                             cdmDatabaseSchema = "cdm",
-                             resultsDatabaseSchema = "results",
-
-  outputFolder = "/tmp")
+Achilles::runMissingAnalyses(
+  connectionDetails = connectionDetails,
+  cdmDatabaseSchema = "cdm",
+  resultsDatabaseSchema = "results",
+  outputFolder = "/tmp"
+)
 }
 
 }

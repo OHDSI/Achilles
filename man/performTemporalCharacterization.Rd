@@ -58,26 +58,29 @@ A csv file with temporal analyses for each time series
 # Example 1:
 pneumonia <- 255848
 performTemporalCharacterization(
-	connectionDetails     = connectionDetails,
-	cdmDatabaseSchema     = "cdm",
-	resultsDatabaseSchema = "results",
-	conceptId             = pneumonia,
- outputFolder          = "output/pneumoniaTemporalChar.csv")
+  connectionDetails = connectionDetails,
+  cdmDatabaseSchema = "cdm",
+  resultsDatabaseSchema = "results",
+  conceptId = pneumonia,
+  outputFolder = "output/pneumoniaTemporalChar.csv"
+)
 
 # Example 2:
 performTemporalCharacterization(
-	connectionDetails     = connectionDetails,
-	cdmDatabaseSchema     = "cdm",
-	resultsDatabaseSchema = "results",
-	analysisIds           = c(402,702),
- outputFolder          = "output/conditionAndDrugTemporalChar.csv")
+  connectionDetails = connectionDetails,
+  cdmDatabaseSchema = "cdm",
+  resultsDatabaseSchema = "results",
+  analysisIds = c(402, 702),
+  outputFolder = "output/conditionAndDrugTemporalChar.csv"
+)
 
 # Example 3:
 performTemporalCharacterization(
-	connectionDetails     = connectionDetails,
-	cdmDatabaseSchema     = "cdm",
-	resultsDatabaseSchema = "results",
- outputFolder          = "output/CompleteTemporalChar.csv")
+  connectionDetails = connectionDetails,
+  cdmDatabaseSchema = "cdm",
+  resultsDatabaseSchema = "results",
+  outputFolder = "output/CompleteTemporalChar.csv"
+)
 }
 
 }

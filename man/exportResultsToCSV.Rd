@@ -33,6 +33,9 @@ small cell count restrictions.}
 
 \item{exportFolder}{Path to store results}
 }
+\value{
+No return value.  Called to export CSV file to the file system.
+}
 \description{
 \code{exportResultsToCSV} exports all results to a CSV file
 }

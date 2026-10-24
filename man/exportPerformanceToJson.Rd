@@ -8,7 +8,7 @@ exportPerformanceToJson(
   connectionDetails,
   cdmDatabaseSchema,
   resultsDatabaseSchema,
-  outputPath = getwd(),
+  outputPath,
   vocabDatabaseSchema = cdmDatabaseSchema
 )
 }
@@ -40,10 +40,13 @@ Creates performance report including how long each Achilles result took to gener
 }
 \examples{
 \dontrun{
-connectionDetails <- DatabaseConnector::createConnectionDetails(dbms = "sql server",
-                                                                server = "yourserver")
+connectionDetails <- DatabaseConnector::createConnectionDetails(
+  dbms = "sql server",
+  server = "yourserver"
+)
 exportPerformanceToJson(connectionDetails,
-                        cdmDatabaseSchema = "cdm4_sim",
-                        outputPath = "your/output/path")
+  cdmDatabaseSchema = "cdm4_sim",
+  outputPath = "your/output/path"
+)
 }
 }

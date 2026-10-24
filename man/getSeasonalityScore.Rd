@@ -17,7 +17,7 @@ The seasonality score of a monthly time series is computed as its departure from
 }
 \details{
 The degree of seasonality of a monthly time series is based on its departure from a uniform distribution.
-If the number of cases for a given concept is uniformly distributed across all time periods (in this case, all months), 
+If the number of cases for a given concept is uniformly distributed across all time periods (in this case, all months),
 then its monthly proportion would be approximately constant.  In this case, the time series would be
 considered "strictly non-seasonal" and its "seasonality score" would be zero.
 Similarly, if all cases recur at a single point in time (that is, in a single month), such a time series would be considered

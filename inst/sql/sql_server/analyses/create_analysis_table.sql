@@ -16,5 +16,5 @@ select
 	stratum_5_name,
 	is_default,
 	category
-into @resultsDatabaseSchema.ACHILLES_analysis
+into @resultsDatabaseSchema.achilles_analysis
 from cte_analyses;
