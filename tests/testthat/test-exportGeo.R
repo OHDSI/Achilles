@@ -114,3 +114,28 @@ test_that("without a county column only the state level is produced", {
   manifest <- jsonlite::fromJSON(file.path(geoPath, "geo_manifest.json"))
   expect_equal(manifest$levels, "state")
 })
+
+test_that("an exposure interval spanning several years counts in each of them", {
+  connectionDetails <- createGeoSampleCdm()
+  conn <- DatabaseConnector::connect(connectionDetails)
+  DatabaseConnector::executeSql(conn, "
+    INSERT INTO external_exposure (external_exposure_id, location_id, person_id, exposure_concept_id,
+      exposure_start_date, exposure_end_date, exposure_type_concept_id, exposure_relationship_concept_id, value_as_number)
+    SELECT 900000000 + row_number() OVER (), location_id, entity_id, 2052497744, DATE '2019-01-01', DATE '2021-12-31',
+           2052499878, 2052496943, 55.5
+    FROM location_history WHERE entity_id <= 40",
+    progressBar = FALSE, reportOverallTime = FALSE
+  )
+  DatabaseConnector::disconnect(conn)
+
+  geoPath <- exportGeoToAres(connectionDetails, "main", outputPath = withr::local_tempdir(), minCellCount = 1)
+  con <- DBI::dbConnect(duckdb::duckdb())
+  withr::defer(DBI::dbDisconnect(con, shutdown = TRUE))
+  res <- DBI::dbGetQuery(con, sprintf(
+    "SELECT PERIOD, SUM(N_PERSONS) AS n FROM read_parquet('%s') WHERE EXPOSURE_CONCEPT_ID = 2052497744
+     AND REGION_LEVEL = 'state' GROUP BY PERIOD ORDER BY PERIOD",
+    file.path(geoPath, "geo_exposure_summary.parquet")
+  ))
+  expect_equal(res$PERIOD, 2019:2021)
+  expect_true(all(res$n > 0))
+})

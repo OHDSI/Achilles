@@ -55,8 +55,8 @@ location it was derived for, and writes aggregated parquet files plus a manifest
 used by \code{exportToAres}). If the tables are missing or empty nothing is written and
 \code{NULL} is returned.
 
-Statistics describe the distribution of person-level annual means (period = calendar year of
-\code{exposure_start_date}). No person-level data and no exact coordinates are exported; cells
+Statistics describe the distribution of person-level annual means (period = calendar year;
+an exposure interval spanning several years counts in each of them). No person-level data and no exact coordinates are exported; cells
 with fewer than \code{minCellCount} distinct persons are flagged as suppressed and carry no
 statistics, and centroids are only exported for regions with at least that many locations.
 

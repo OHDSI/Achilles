@@ -89,13 +89,23 @@ buildGeoTables <- function(
   con <- DBI::dbConnect(duckdb::duckdb())
   on.exit(DBI::dbDisconnect(con, shutdown = TRUE))
   reg <- function(name, df) duckdb::duckdb_register(con, name, df)
-  reg("person_year", personYear)
+  reg("person_year_raw", personYear)
   reg("units", units)
   reg("locations", locations)
   reg("residency", residency)
   reg("concept_names", conceptNames)
   minCell <- as.character(as.integer(ceiling(minCellCount)))
   run <- function(sql) DBI::dbExecute(con, gsub("min_cell()", minCell, sql, fixed = TRUE))
+
+  # an exposure interval counts in every calendar year it touches (e.g. a 2014-2019 SES value
+  # appears in each of those years); rows ending before they start are treated as one year
+  DBI::dbExecute(con, "
+    CREATE TABLE person_year AS
+    SELECT p.exposure_concept_id, p.county_id, p.state_id, t.period AS period, p.person_id,
+           p.n_records, p.value_mean
+    FROM person_year_raw p,
+         UNNEST(generate_series(CAST(p.period_start AS BIGINT),
+                                GREATEST(CAST(p.period_end AS BIGINT), CAST(p.period_start AS BIGINT)))) AS t(period)")
 
   # person x region x concept x period at each requested level (state pools across counties)
   levelExpr <- list(county = "county_id", state = "state_id")
@@ -399,8 +409,8 @@ generateGeoExport <- function(
 #' used by \code{exportToAres}). If the tables are missing or empty nothing is written and
 #' \code{NULL} is returned.
 #'
-#' Statistics describe the distribution of person-level annual means (period = calendar year of
-#' \code{exposure_start_date}). No person-level data and no exact coordinates are exported; cells
+#' Statistics describe the distribution of person-level annual means (period = calendar year;
+#' an exposure interval spanning several years counts in each of them). No person-level data and no exact coordinates are exported; cells
 #' with fewer than \code{minCellCount} distinct persons are flagged as suppressed and carry no
 #' statistics, and centroids are only exported for regions with at least that many locations.
 #'
