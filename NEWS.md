@@ -7,6 +7,7 @@
   - Improved unit concept ID naming and handling.
   - Added export of the location table to ARES.
   - Added database summary reporting.
+  - New optional `exportGeoToAres()` creates aggregated geographic exposure files (from `external_exposure`, `location` and `location_history`) for the ARES Geographic Exposures report. `exportToAres()` runs it automatically when the data is present (`exportGeo = "auto"`) and skips it silently otherwise.
   
 - **Performance Improvements**
   - Refactored performance logs to be captured directly (not just through console logs).

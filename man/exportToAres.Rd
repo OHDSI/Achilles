@@ -11,7 +11,9 @@ exportToAres(
   vocabDatabaseSchema,
   outputPath,
   outputFormat = "default",
-  reports = c()
+  reports = c(),
+  exportGeo = "auto",
+  geoOptions = list()
 )
 }
 \arguments{
@@ -30,6 +32,13 @@ exportToAres(
 \item{reports}{vector of reports to run, c() defaults to all reports
 
 See \code{showReportTypes} for a list of all report types}
+
+\item{exportGeo}{"auto" (default) also runs \code{exportGeoToAres} when the CDM has external_exposure
+data and quietly skips it otherwise; TRUE requires it (error if not possible); FALSE never runs it.
+The geo report can also be selected with \code{reports = "geo"}.}
+
+\item{geoOptions}{named list of further arguments for \code{exportGeoToAres}
+(regionColumns, regionIdScheme, minCellCount, boundaryPath, personDomainConceptId)}
 }
 \value{
 none

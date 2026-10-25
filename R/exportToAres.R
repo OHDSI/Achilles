@@ -2199,6 +2199,11 @@ generateQualityCompleteness <- function(connection, resultsDatabaseSchema) {
 #' @param vocabDatabaseSchema		        string name of database schema that contains OMOP Vocabulary. Default is cdmDatabaseSchema. On SQL Server, this should specifiy both the database and the schema, so for example 'results.dbo'.
 #' @param outputFormat                  default or alternatively "duckdb" to use parquet and duckdb formats.
 #' @param reports                       vector of reports to run, c() defaults to all reports
+#' @param exportGeo                     "auto" (default) also runs \code{exportGeoToAres} when the CDM has external_exposure
+#'                                      data and quietly skips it otherwise; TRUE requires it (error if not possible); FALSE never runs it.
+#'                                      The geo report can also be selected with \code{reports = "geo"}.
+#' @param geoOptions                    named list of further arguments for \code{exportGeoToAres}
+#'                                      (regionColumns, regionIdScheme, minCellCount, boundaryPath, personDomainConceptId)
 #'
 #' See \code{showReportTypes} for a list of all report types
 #'
@@ -2214,7 +2219,9 @@ exportToAres <- function(
     vocabDatabaseSchema,
     outputPath,
     outputFormat = "default",
-    reports = c()) {
+    reports = c(),
+    exportGeo = "auto",
+    geoOptions = list()) {
   conn <- DatabaseConnector::connect(connectionDetails)
   on.exit(DatabaseConnector::disconnect(connection = conn))
 
@@ -2631,5 +2638,30 @@ exportToAres <- function(
     currentTable <- generateAOPersonReport(connectionDetails, cdmDatabaseSchema, resultsDatabaseSchema, vocabDatabaseSchema, sourceOutputPath)
     jsonOutput <- jsonlite::toJSON(currentTable)
     write(jsonOutput, file = paste0(sourceOutputPath, "/person.json"))
+  }
+
+  if (!identical(exportGeo, FALSE) && (length(reports) == 0 || "geo" %in% reports)) {
+    geoArgs <- utils::modifyList(
+      list(
+        connection = conn,
+        cdmDatabaseSchema = cdmDatabaseSchema,
+        vocabDatabaseSchema = vocabDatabaseSchema,
+        releaseOutputPath = sourceOutputPath,
+        regionColumns = c(county = "county_fips", state = "state"),
+        regionIdScheme = list(county = "us_fips", state = "us_state_abbr"),
+        minCellCount = 11,
+        boundaryPath = NULL,
+        personDomainConceptId = geoDefaultPersonDomainConceptId,
+        required = isTRUE(exportGeo)
+      ),
+      geoOptions
+    )
+    tryCatch(
+      do.call(generateGeoExport, geoArgs),
+      error = function(e) {
+        if (isTRUE(exportGeo)) stop(e)
+        warning("Geographic exposure export failed and was skipped: ", conditionMessage(e), call. = FALSE)
+      }
+    )
   }
 }
