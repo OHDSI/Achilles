@@ -267,7 +267,7 @@ analysis_id,distribution,distributed_field,analysis_name,stratum_1_name,stratum_
 1825,0,,Number of measurement records by measurement_source_concept_id,measurement_source_concept_id,,,,,1,Measurement
 1826,0,,Number of measurement records by value_as_concept_id,value_as_concept_id,,,,,1,Measurement
 1827,0,,Number of measurement records by unit_concept_id,unit_as_concept_id,,,,,1,Measurement
-1830,0,,Number of visit_detail records inside a valid observation period,,,,,,0,Observation Period
+1830,0,,Number of measurement records inside a valid observation period,,,,,,0,Observation Period
 1831,0,,Proportion of people with at least one measurement record outside a valid observation period,Proportion,Number of people with a measurement record outside a valid observation period,Number of people in measurement,,,0,Observation Period
 1832,0,,Proportion of measurement records outside a valid observation period,Proportion,Number of records in measurement outside a valid observation period,Number of measurement records,,,0,Observation Period
 1833,0,,Proportion of measurement records inside a valid observation period and without a value,measurement_concept_id,Number of measurement records with no value for the given measurement_concept_id,proportion,,,0,Measurement
