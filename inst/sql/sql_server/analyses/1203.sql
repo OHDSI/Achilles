@@ -1,9 +1,10 @@
 -- 1203	Number of visits by place of service discharge type
 
+-- Keep version-list entries adjacent to commas because SqlRender does not trim them.
 --HINT DISTRIBUTE_ON_KEY(stratum_1)
 SELECT 
 	1203 AS analysis_id,
-	{@cdmVersion in ('5.4')} ? 
+	{@cdmVersion in ('5.4','5.5')} ?
 		{CAST(vo.discharged_to_concept_id AS VARCHAR(255)) AS stratum_1,}
 		:
 		{CAST(vo.discharge_to_concept_id AS VARCHAR(255)) AS stratum_1,}
@@ -25,12 +26,12 @@ AND
 AND 
 	vo.visit_start_date <= op.observation_period_end_date
 WHERE 
-	{@cdmVersion in ('5.4')} ? 
+	{@cdmVersion in ('5.4','5.5')} ?
 		{vo.discharged_to_concept_id != 0}
 		:
 		{vo.discharge_to_concept_id != 0}
 GROUP BY 
-	{@cdmVersion in ('5.4')} ? 
+	{@cdmVersion in ('5.4','5.5')} ?
 		{vo.discharged_to_concept_id;}
 		:
 		{vo.discharge_to_concept_id;}
