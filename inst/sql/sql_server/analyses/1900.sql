@@ -1,5 +1,6 @@
 -- 1900	completeness report
 
+-- Keep version-list entries adjacent to commas because SqlRender does not trim them.
 --HINT DISTRIBUTE_ON_KEY(stratum_1)
 select 1900 as analysis_id, 
   cast(table_name as varchar(255)) as stratum_1, 
@@ -57,11 +58,11 @@ cnt as count_value
   select 'specimen' as table_name, 'anatomic_site_source_value' as column_name, anatomic_site_source_value as source_value, count_big(*) as cnt from @cdmDatabaseSchema.specimen where anatomic_site_concept_id = 0 group by anatomic_site_source_value                    
   union
   select 'specimen' as table_name, 'disease_status_source_value' as column_name, disease_status_source_value as source_value, count_big(*) as cnt from @cdmDatabaseSchema.specimen where disease_status_concept_id = 0 group by disease_status_source_value                    
-  {@cdmVersion in ('5.3', '5.4')}?{
+  {@cdmVersion in ('5.3','5.4','5.5')}?{
   union
   select 'visit_detail' as table_name, 'visit_detail_source_value' as column_name, visit_detail_source_value as source_value, count_big(*) as cnt from @cdmDatabaseSchema.visit_detail where visit_detail_concept_id = 0 group by visit_detail_source_value
   union
-  {@cdmVersion in ('5.4')} ? 
+  {@cdmVersion in ('5.4','5.5')} ?
 	{
   select 'visit_detail' as table_name, 'admitted_from_source_value' as column_name, admitted_from_source_value as source_value, count_big(*) as cnt from @cdmDatabaseSchema.visit_detail where admitted_from_concept_id = 0 group by admitted_from_source_value
   union
@@ -77,7 +78,7 @@ cnt as count_value
   union
   select 'visit_occurrence' as table_name, 'visit_source_value' as column_name, visit_source_value as source_value, count_big(*) as cnt from @cdmDatabaseSchema.visit_occurrence where visit_concept_id = 0 group by visit_source_value
   union
-  {@cdmVersion in ('5.4')} ?
+  {@cdmVersion in ('5.4','5.5')} ?
 	{
 	select 'visit_occurrence' as table_name, 'admitted_from_source_value' as column_name, admitted_from_source_value as source_value, count_big(*) as cnt from @cdmDatabaseSchema.visit_occurrence where  admitted_from_concept_id = 0 group by admitted_from_source_value
   union
